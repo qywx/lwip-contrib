@@ -104,11 +104,11 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 		struct ppp_addrs *ppp_addrs = arg;
 
 		printf("pppLinkStatusCallback: PPPERR_NONE");
-		printf(" our_ipaddr=%s", inet_ntoa(ppp_addrs->our_ipaddr.addr));
-		printf(" his_ipaddr=%s", inet_ntoa(ppp_addrs->his_ipaddr.addr));
-		printf(" netmask=%s", inet_ntoa(ppp_addrs->netmask.addr));
-		printf(" dns1=%s", inet_ntoa(ppp_addrs->dns1.addr));
-		printf(" dns2=%s\n", inet_ntoa(ppp_addrs->dns2.addr));
+		printf(" our_ipaddr=%s", _inet_ntoa(ppp_addrs->our_ipaddr.addr));
+		printf(" his_ipaddr=%s", _inet_ntoa(ppp_addrs->his_ipaddr.addr));
+		printf(" netmask=%s", _inet_ntoa(ppp_addrs->netmask.addr));
+		printf(" dns1=%s", _inet_ntoa(ppp_addrs->dns1.addr));
+		printf(" dns2=%s\n", _inet_ntoa(ppp_addrs->dns2.addr));
 	    }
 	    break;
 
@@ -329,8 +329,6 @@ main_thread(void *arg)
   IP4_ADDR(&ipaddr, 192,168,0,2);
   IP4_ADDR(&netmask, 255,255,255,0);
   
-  /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, tapif_init,
-      tcpip_input));*/
   netif_set_default(netif_add(&netif,&ipaddr, &netmask, &gw, NULL, tapif_init,
 			      tcpip_input));
 #endif
@@ -347,8 +345,8 @@ main_thread(void *arg)
   IP4_ADDR(&ipaddr, 127,0,0,1);
   IP4_ADDR(&netmask, 255,0,0,0);
   
-  netif_add(&loopif, &ipaddr, &netmask, &gw, NULL, loopif_init,
-	    tcpip_input);
+  netif_set_default(netif_add(&loopif, &ipaddr, &netmask, &gw, NULL, loopif_init,
+	    tcpip_input));
 #endif
   
 #if LWIP_TCP  
@@ -371,7 +369,7 @@ main_thread(void *arg)
 #ifdef MEM_PERF
   mem_perf_init("/tmp/memstats.client");
 #endif /* MEM_PERF */
-
+//	stats_display();
   /* Block for ever. */
   sem = sys_sem_new(0);
   sys_sem_wait(sem);
@@ -390,9 +388,9 @@ main(int argc, char **argv)
   mem_init();
   memp_init();
   pbuf_init();
-
+#ifdef LWIP_TCPDUMP
   tcpdump_init();
-
+#endif
   
   printf("System initialized.\n");
     
