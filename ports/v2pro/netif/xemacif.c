@@ -49,7 +49,7 @@
  */
 
 /*---------------------------------------------------------------------------*/
-/* V2PDK Include Files                                                       */
+/* EDK Include Files                                                         */
 /*---------------------------------------------------------------------------*/
 #include "xemac.h"
 #include "xparameters.h"
@@ -82,20 +82,8 @@
 /*---------------------------------------------------------------------------*/
 #define XEM_MAX_FRAME_SIZE_IN_WORDS ((XEM_MAX_FRAME_SIZE/sizeof(Xuint32))+1)
 
-/*---------------------------------------------------------------------------*/
-/* xemacif structure                                                         */
-/*    contains the ethernet address and the                                  */
-/*    pointer to the instance of the Xilinx                                  */
-/*    EMAC driver.                                                           */
-/*---------------------------------------------------------------------------*/
-
-struct xemacif {
-  struct eth_addr *ethaddr;
-  XEmac *instance_ptr;
-};
-
 static const struct eth_addr ethbroadcast = {{0xff,0xff,0xff,0xff,0xff,0xff}};
-static struct eth_addr mymac              = {{0x00,0x0A,0x35,0x00,0x22,0x20}};
+extern XEmacIf_Config XEmacIf_ConfigTable[];
 
 /*---------------------------------------------------------------------------*/
 /* Forward declarations                                                      */
@@ -116,13 +104,11 @@ static err_t
 low_level_init(struct netif *netif_ptr)
 {
    XEmac *InstancePtr = mem_malloc(sizeof(XEmac));
-   Xuint16 DeviceId = XPAR_MY_OPB_ETHERNET_DEVICE_ID;
+   XEmacIf_Config *xemacif_ptr = (XEmacIf_Config *) netif_ptr->state;
+   Xuint16 DeviceId = xemacif_ptr->DevId;
    XStatus Result;
    Xuint32 Options;
 
-   struct xemacif *xemacif_ptr;
-
-   xemacif_ptr = netif_ptr->state;
    xemacif_ptr->instance_ptr = InstancePtr;
 
    /* Call Initialize Function of EMAC driver */
@@ -176,7 +162,7 @@ low_level_init(struct netif *netif_ptr)
 static void FifoSendHandler(void *CallBackRef)
 {
    struct netif *netif_ptr = (struct netif *) CallBackRef;
-   XEmac *EmacPtr = ((struct xemacif*) netif_ptr->state)->instance_ptr;
+   XEmac *EmacPtr = ((XEmacIf_Config*) netif_ptr->state)->instance_ptr;
    XEmacStats Stats;
     
    /*
@@ -196,7 +182,7 @@ static void FifoSendHandler(void *CallBackRef)
 static void ErrorHandler(void *CallBackRef, XStatus Code)
 {
    struct netif *netif_ptr = (struct netif *) CallBackRef;
-   XEmac *EmacPtr = ((struct xemacif*) netif_ptr->state)->instance_ptr;
+   XEmac *EmacPtr = ((XEmacIf_Config*) netif_ptr->state)->instance_ptr;
     
    if (Code == XST_RESET_ERROR) {
       /*
@@ -228,7 +214,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
    int payload_size = 0, i;
    XStatus Result;
    Xuint32 Options;
-   struct xemacif *xemacif_ptr = netif->state;
+   XEmacIf_Config *xemacif_ptr = netif->state;
 
    frame_ptr = (Xuint8 *) frame_buffer;
 
@@ -265,7 +251,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
       {
          XEmac_Reset(xemacif_ptr->instance_ptr);
          XEmac_SetMacAddress(xemacif_ptr->instance_ptr, 
-               (Xuint8*) xemacif_ptr->ethaddr);
+               (Xuint8*) xemacif_ptr->ethaddr.addr);
          Options = ( XEM_INSERT_FCS_OPTION | 
                      XEM_INSERT_PAD_OPTION | 
                      XEM_UNICAST_OPTION | 
@@ -302,7 +288,7 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
 /* Allocates a pbuf pool and transfers bytes of                              */
 /* incoming packet from the interface into the pbuf.                         */
 /*---------------------------------------------------------------------------*/
-static struct pbuf * low_level_input(struct xemacif *xemacif_ptr)
+static struct pbuf * low_level_input(XEmacIf_Config *xemacif_ptr)
 {
    struct pbuf *p = NULL, *q = NULL;
    XEmac *EmacPtr = (XEmac *) xemacif_ptr->instance_ptr;
@@ -325,7 +311,7 @@ static struct pbuf * low_level_input(struct xemacif *xemacif_ptr)
       {
          XEmac_Reset(xemacif_ptr->instance_ptr);
          XEmac_SetMacAddress(xemacif_ptr->instance_ptr, 
-               (Xuint8*) xemacif_ptr->ethaddr);
+               (Xuint8*) xemacif_ptr->ethaddr.addr);
          Options = ( XEM_INSERT_FCS_OPTION | 
                      XEM_INSERT_PAD_OPTION | 
                      XEM_UNICAST_OPTION | 
@@ -389,7 +375,7 @@ static err_t xemacif_output(struct netif *netif_ptr,
                             struct pbuf *p,
                             struct ip_addr *ipaddr)
 {
-   struct xemacif *xemacif_ptr = xemacif_ptr = netif_ptr->state;
+   XEmacIf_Config *xemacif_ptr = xemacif_ptr = netif_ptr->state;
 
    p = etharp_output(netif_ptr, ipaddr, p);
 
@@ -408,10 +394,10 @@ static err_t xemacif_output(struct netif *netif_ptr,
 /* should handle the actual reception of bytes from the network              */
 /* interface.                                                                */
 /*---------------------------------------------------------------------------*/
-void xemacif_input(void *CallBackRef)
+err_t xemacif_input(void *CallBackRef)
 {
    struct netif * netif_ptr = (struct netif *) CallBackRef;
-   struct xemacif * xemacif_ptr;
+   XEmacIf_Config * xemacif_ptr;
    struct eth_hdr * ethernet_header;
    struct pbuf *p, *q;
 
@@ -435,7 +421,7 @@ void xemacif_input(void *CallBackRef)
          netif_ptr->input(p, netif_ptr);
          break;
       case ETHTYPE_ARP:
-         q = etharp_arp_input(netif_ptr, xemacif_ptr->ethaddr, p);
+         q = etharp_arp_input(netif_ptr, xemacif_ptr->ethaddr.addr, p);
          break;
       default:
          pbuf_free(p);
@@ -452,30 +438,35 @@ void xemacif_input(void *CallBackRef)
    /* Enable Interrupts again */
    XIntc_Enable(XIntc_GetInstance(0), XPAR_INTC_0_DEVICE_ID);
 #endif /* LWIP_XEMAC_USE_INTMODE */
+   return ERR_OK;
 }
 
 /*---------------------------------------------------------------------------*/
 /* xemacif_setmac():                                                         */
 /*                                                                           */
 /* Sets the MAC address of the system.                                       */
-/* Note:  Can only be called before xemacif_init is called.                  */
+/* Note:  Should only be called before xemacif_init is called.               */
+/*          - the stack calls xemacif_init after the user calls netif_add    */
 /*---------------------------------------------------------------------------*/
-void xemacif_setmac(u8_t *addr)
+void xemacif_setmac(u32_t index, u8_t *addr)
 {
-   mymac.addr[0] = addr[0];
-   mymac.addr[1] = addr[1];
-   mymac.addr[2] = addr[2];
-   mymac.addr[3] = addr[3];
-   mymac.addr[4] = addr[4];
-   mymac.addr[5] = addr[5];
+   XEmacIf_ConfigTable[index].ethaddr.addr[0] = addr[0];
+   XEmacIf_ConfigTable[index].ethaddr.addr[1] = addr[1];
+   XEmacIf_ConfigTable[index].ethaddr.addr[2] = addr[2];
+   XEmacIf_ConfigTable[index].ethaddr.addr[3] = addr[3];
+   XEmacIf_ConfigTable[index].ethaddr.addr[4] = addr[4];
+   XEmacIf_ConfigTable[index].ethaddr.addr[5] = addr[5];
 }
 
 /*---------------------------------------------------------------------------*/
 /* xemacif_getmac():                                                         */
 /*                                                                           */
-/* Returns a pointer to the mymac variable (6 bytes in length)               */
+/* Returns a pointer to the ethaddr variable in  the ConfigTable             */
+/* (6 bytes in length)                                                       */
 /*---------------------------------------------------------------------------*/
-u8_t * xemacif_getmac(void) { return &(mymac.addr[0]); }
+u8_t * xemacif_getmac(u32_t index) {
+   return &(XEmacIf_ConfigTable[index].ethaddr.addr[0]);
+}
 
 /*---------------------------------------------------------------------------*/
 /* xemacif_init():                                                           */
@@ -486,28 +477,31 @@ u8_t * xemacif_getmac(void) { return &(mymac.addr[0]); }
 /*---------------------------------------------------------------------------*/
 err_t xemacif_init(struct netif *netif_ptr)
 {
-   struct xemacif *xemacif_ptr;
+   XEmacIf_Config *xemacif_ptr;
 
-   xemacif_ptr = mem_malloc(sizeof(struct xemacif));
+   //struct xemacif *xemacif_ptr;
+   //xemacif_ptr = mem_malloc(sizeof(struct xemacif));
 
-   netif_ptr->state = xemacif_ptr;
-   netif_ptr->hwaddr[0] = mymac.addr[0];
-   netif_ptr->hwaddr[1] = mymac.addr[1];
-   netif_ptr->hwaddr[2] = mymac.addr[2];
-   netif_ptr->hwaddr[3] = mymac.addr[3];
-   netif_ptr->hwaddr[4] = mymac.addr[4];
-   netif_ptr->hwaddr[5] = mymac.addr[5];
+   xemacif_ptr = (XEmacIf_Config *) netif_ptr->state;
+
+   netif_ptr->mtu = 1500;
+   netif_ptr->hwaddr_len = 6;
+   netif_ptr->hwaddr[0] = xemacif_ptr->ethaddr.addr[0];
+   netif_ptr->hwaddr[1] = xemacif_ptr->ethaddr.addr[1];
+   netif_ptr->hwaddr[2] = xemacif_ptr->ethaddr.addr[2];
+   netif_ptr->hwaddr[3] = xemacif_ptr->ethaddr.addr[3];
+   netif_ptr->hwaddr[4] = xemacif_ptr->ethaddr.addr[4];
+   netif_ptr->hwaddr[5] = xemacif_ptr->ethaddr.addr[5];
    netif_ptr->name[0] = IFNAME0;
    netif_ptr->name[1] = IFNAME1;
    netif_ptr->output = xemacif_output;
    netif_ptr->linkoutput = low_level_output;
 
-   /* Copy pointer to netif_ptr->hwaddr into the xemacif_ptr->ethaddr */
-   xemacif_ptr->ethaddr = (struct eth_addr *)&(netif_ptr->hwaddr[0]);
+   /* removed this statement because the ethaddr in the XEmacIf_Config
+    * structure is now a struct not a pointer to a struct
+    */
+   //xemacif_ptr->ethaddr = (struct eth_addr *)&(netif_ptr->hwaddr[0]);
 
-   /* Set XEmac instance pointer to NULL. It gets set in low_level_init() */
-   xemacif_ptr->instance_ptr = NULL;
-   
    low_level_init(netif_ptr);
    etharp_init();
 

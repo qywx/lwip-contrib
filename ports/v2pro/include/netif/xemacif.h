@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001, 2002 Xilinx, Inc.
+ * Copyright (c) 2001, 2002, 2003 Xilinx, Inc.
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without 
@@ -38,31 +38,20 @@
 #include "netif/etharp.h"
 #include "xemac.h"
 
-void xemacif_setmac(u8_t *addr);
-u8_t * xemacif_getmac(void);
-void xemacif_setdeviceid(unsigned short id);
-unsigned short xemacif_getdeviceid(void);
+void xemacif_setmac(u32_t index, u8_t *addr);
+u8_t * xemacif_getmac(u32_t index);
 err_t xemacif_init(struct netif *netif);
 err_t xemacif_input(void *CallBackRef);
-
-/* define LWIP_XEMAC_USE_INTMODE to make the driver use interrupt mode.
- * otherwise, the xemac code will use poll mode.  the application
- * should check this as well for init stuff
- */
 
 /**
  * This typedef contains configuration information for an xemac instance.
  */
 typedef struct
 {
-   Xuint32 DevId;
-   Xuint32 IntrId;
-   struct eth_addr ethaddr;
-   //   Xuint8 Name[25];
-   XEmac* instance_ptr;
+  Xuint32 DevId;
+  Xuint32 IntrId;
+  struct eth_addr ethaddr;
+  XEmac* instance_ptr;
 } XEmacIf_Config;
-
-
-//#define LWIP_XEMAC_USE_INTMODE 1
 
 #endif /* __NETIF_XEMACIF_H__ */
