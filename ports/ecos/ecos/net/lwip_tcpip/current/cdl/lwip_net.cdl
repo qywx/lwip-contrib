@@ -46,7 +46,6 @@
 #####DESCRIPTIONEND####
 #
 # ====================================================================
-# !!!!conditional compile for sockets ...
 
 cdl_package CYGPKG_NET_LWIP {
 	display "lwIP"
@@ -164,7 +163,7 @@ cdl_package CYGPKG_NET_LWIP {
 		cdl_option CYGPKG_LWIP_MEM_SIZE {
 			display		"Memory size"
 			flavor		data
-			default_value 	20000
+			default_value 	4000
 			description   	"
 				MEM_SIZE: the size of the heap memory. If the application will send
 				a lot of data that needs to be copied, this should be set high."
@@ -350,14 +349,14 @@ cdl_package CYGPKG_NET_LWIP {
 		cdl_option CYGPKG_LWIP_TCP_MSS {
 			display		"Maximum segment size"
 			flavor		data
-			default_value 	1460
+			default_value 	2048
 			description   	"
 				TCP Maximum segment size."
 		}		 
 		cdl_option CYGPKG_LWIP_TCP_SND_BUF {
 			display		"Sender buffer space"
 			flavor		data
-			default_value 	1460
+			default_value 	2048	
 			description   	"
 				TCP sender buffer space (bytes)."
 
