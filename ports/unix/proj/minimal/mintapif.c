@@ -303,6 +303,7 @@ mintapif_init(struct netif *netif)
     
   mintapif = mem_malloc(sizeof(struct mintapif));
   netif->state = mintapif;
+  netif->hwaddr_len = 6;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
   netif->output = mintapif_output;
