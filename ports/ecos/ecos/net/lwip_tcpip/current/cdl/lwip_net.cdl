@@ -53,7 +53,7 @@
 cdl_package CYGPKG_NET_LWIP {
 	display "lwIP"
 	description	"Lightweight TCP/IP stack"	
-	requires {CYGPKG_IO_ETH_DRIVERS || (CYGPKG_LWIP_SLIP == 1)}
+	requires {CYGPKG_IO_ETH_DRIVERS || (CYGPKG_LWIP_SLIP == 1) || (CYGPKG_LWIP_PPP == 1)}
 
 	compile	core/mem.c	\
 		core/memp.c	\
@@ -278,7 +278,7 @@ cdl_package CYGPKG_NET_LWIP {
 		cdl_option CYGPKG_LWIP_PBUF_LINK_HLEN {
 			display		"Allocation for a link level header"
 			flavor		data
-			calculated 	{CYGPKG_LWIP_SLIP ? 0 : 16}
+			calculated 	{CYGPKG_LWIP_SLIP || CYGPKG_LWIP_PPP ? 0 : 16}
 			description   	"
 				PBUF_LINK_HLEN: the number of bytes that should be allocated for a
 				link level header."
@@ -296,7 +296,15 @@ cdl_package CYGPKG_NET_LWIP {
 			default_value 	1
 			description   	""
 
+		}
+		
+		cdl_option CYGPKG_LWIP_TCPIP_THREAD_PRIORITY {
+			display "tcpip thread priority"
+			flavor data
+			default_value	7
+			description "later"
 		}		 
+		
 		cdl_option CYGPKG_LWIP_TCP_TTL {
 			display		"Time To Live"
 			flavor		data
@@ -449,14 +457,59 @@ cdl_package CYGPKG_NET_LWIP {
 		default_value	0
 		description "IP over serial line"
 		compile netif/slipif.c ecos/sio.c
-
+		
+		cdl_option CYGPKG_LWIP_SLIPIF_THREAD_PRIORITY {
+			display "SLIP thread priority"
+			flavor data
+			default_value	8
+			description "later"
+		}
+		
 		cdl_option CYGPKG_LWIP_SLIP_DEV {
 			display "Serial device"
 			flavor 	data
-			default_value {"\"/dev/ser2\""}
+			default_value {"\"/dev/ser0\""}
 			description "
 			Which serial port to use SLIP on."
 		}
+	}
+	
+	cdl_component CYGPKG_LWIP_PPP {
+		display "PPP"
+		flavor bool
+		requires CYGPKG_IO_SERIAL_DEVICES
+		default_value	0
+		description "The Point-to-Point Protocol"
+		compile netif/ppp/ppp.c		\
+			netif/ppp/auth.c	\
+			netif/ppp/pap.c		\
+			netif/ppp/chap.c	\
+			netif/ppp/chpms.c	\
+			netif/ppp/fsm.c		\
+			netif/ppp/ipcp.c	\
+			netif/ppp/lcp.c		\
+			netif/ppp/magic.c	\
+			netif/ppp/md5.c		\
+			netif/ppp/randm.c	\
+			netif/ppp/vj.c		\
+			netif/ppp/target.c	\
+			ecos/sio.c
+			
+
+		cdl_option CYGPKG_LWIP_PPP_DEV {
+			display "Serial device for PPP"
+			flavor 	data
+			default_value {"\"/dev/ser0\""}
+			description "
+			Which serial port to use PPP on."
+		}
+
+		cdl_option CYGPKG_LWIP_PPP_THREAD_PRIORITY {
+			display "PPP main thread priority"
+			flavor data
+			default_value	8
+			description "later"
+		}	
 	}
 
 	cdl_component CYGPKG_LWIP_UDP_OPTIONS {

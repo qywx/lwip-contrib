@@ -35,7 +35,6 @@
 #define __LWIPOPTS_H__
 /*include the configuration made with configtool*/
 #include <pkgconf/net_lwip.h>
-#define TCPIP_THREAD_PRIO	7
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
    lwIP is compiled. 4 byte alignment -> define MEM_ALIGNMENT to 4, 2
@@ -122,7 +121,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_SYNMAXRTX           CYGPKG_LWIP_TCP_SYNMAXRTX
 
 /* ---------- ARP options ---------- */
-#define ARP_TABLE_SIZE 		CYGPKG_LWIP_ARP_TABLE_SIZE
+#define ARP_TABLE_SIZE          CYGPKG_LWIP_ARP_TABLE_SIZE
 
 /* ---------- IP options ---------- */
 /* Define IP_FORWARD to 1 if you wish to have the ability to forward
@@ -154,16 +153,20 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_UDP                CYGPKG_LWIP_UDP
 #define UDP_TTL                 CYGPKG_LWIP_UDP_TTL
 
-/* ---------- SLIP options --------- */	
-#define LWIP_SLIP		defined(CYGPKG_LWIP_SLIP)
-#define SLIP_DEV		CYGPKG_LWIP_SLIP_DEV
+/* ---------- SLIP options --------- */ 
+#define LWIP_SLIP               defined(CYGPKG_LWIP_SLIP)
+#define SLIP_DEV                CYGPKG_LWIP_SLIP_DEV
  
-/* ---------- PPP options --------- */	
-#define PPP_SUPPORT		defined(CYGPKG_LWIP_PPP)
-#define PPP_DEV			CYGPKG_LWIP_PPP_DEV
-#define MD5_SUPPORT		1
-#define PAP_SUPPORT		1
+/* ---------- PPP options --------- */  
+#define PPP_SUPPORT             defined(CYGPKG_LWIP_PPP)
+#define PPP_DEV                 CYGPKG_LWIP_PPP_DEV
+#define MD5_SUPPORT             1
+#define PAP_SUPPORT             1
 
+/* ------- Thread priorities ---------------*/
+#define TCPIP_THREAD_PRIO       CYGPKG_LWIP_TCPIP_THREAD_PRIORITY
+#define SLIPIF_THREAD_PRIO      CYGPKG_LWIP_SLIPIF_THREAD_PRIORITY
+#define PPP_THREAD_PRIO         CYGPKG_LWIP_PPP_THREAD_PRIORITY
 /* ---------- Statistics options ---------- */
 
 #endif /* __LWIPOPTS_H__ */

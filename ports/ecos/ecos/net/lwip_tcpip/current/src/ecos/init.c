@@ -41,10 +41,24 @@ struct netif mynetif;
 static void ecosglue_init(void);
 void lwip_set_addr(struct netif *netif);
 #if PPP_SUPPORT
-void pppMyCallback(void *a , int e)
+void 
+pppMyCallback(void *a , int e)
 {
 	diag_printf("callback %d \n",e);
 }
+
+/* These temporarily here */
+unsigned long
+ppp_jiffies(void)
+{
+   return cyg_current_time();
+}
+
+void 
+ppp_trace(int level, const char *format,...)
+{
+	diag_printf(format);
+}	
 #endif
 /*
  * Called by the eCos application at startup
