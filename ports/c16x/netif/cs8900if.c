@@ -123,6 +123,9 @@
 #  define leds_off()
 #endif
 
+#error TODO: Check if ETH_MIN_FRAME_LEN is defined correctly. (RFC1042 or CS8900)
+#define ETH_MIN_FRAME_LEN 76
+
 #include "cs8900if.h"
 #include "lwip/snmp.h"
 
@@ -325,8 +328,8 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
 
   /* issue 'transmit' command to CS8900 */
   TXCMD = 0x00C9U;
-  /* send length (in bytes) of packet to send */
-  TXLENGTH = p->tot_len;
+  /* send length (in bytes) of packet to send, but at least minimum frame length */
+  TXLENGTH = (p->tot_len < ETH_MIN_FRAME_LEN? ETH_MIN_FRAME_LEN: p->tot_len);
 
   PACKETPP = CS_PP_BUSSTATUS;
   // not ready for transmission and still within 100 retries?
@@ -341,28 +344,38 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
   // ready to transmit?
   if ((PPDATA & 0x0100U/*Rdy4TxNOW*/) != 0)
   {
-    // q traverses through linked list of pbuf's
+  	unsigned long sent_bytes = 0;
+    /* q traverses through linked list of pbuf's
+     * This list MUST consist of a single packet ONLY */
     struct pbuf *q;
-    for(q = p; q != NULL; q = q->next)
+    for (q = p; q != NULL; q = q->next)
     {
       u16_t i;
       u16_t *ptr = (u16_t *)q->payload;
-      // Send the data from the pbuf to the interface, one pbuf at a
-      // time. The size of the data in each pbuf is kept in the ->len
-      // variable.
-      for(i = 0; i < q->len; i += 2)
+      /* Send the data from the pbuf to the interface, one pbuf at a
+       * time. The size of the data in each pbuf is kept in the ->len
+       * variable.
+       */
+      for (i = 0; i < q->len; i += 2)
       {
         /** TODO: this routine assumes 16-bit boundary pbufs... */
         RXTXREG = *ptr++;
+        sent_bytes += 2;
       }
-#if (CS8900_STATS > 0)
-      ((struct cs8900if *)netif->state)->sentbytes += q->len;
-#endif
-      snmp_add_ifoutoctets(p->tot_len);
-#if (CS8900_STATS > 0)
-      ((struct cs8900if *)netif->state)->sentpackets++;
-#endif
     }
+    /* provide any additional padding to comply with minimum Ethernet
+     * frame length (RFC10242) */
+    while (sent_bytes < ETH_MIN_FRAME_LEN)
+    {
+      RXTXREG = *ptr++;
+      sent_bytes += 2;
+    }
+    /* { the packet has been sent } */
+#if (CS8900_STATS > 0)
+    ((struct cs8900if *)netif->state)->sentpackets++;
+    ((struct cs8900if *)netif->state)->sentbytes += sent_bytes;
+#endif
+    snmp_add_ifoutoctets(sent_bytes);
   }
   else
   {
