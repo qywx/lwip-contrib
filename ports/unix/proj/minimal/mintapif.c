@@ -200,7 +200,7 @@ low_level_input(struct mintapif *mintapif)
     bufptr = &buf[0];
     for(q = p; q != NULL; q = q->next) {
       /* Read enough bytes to fill this pbuf in the chain. The
-         avaliable data in the pbuf is given by the q->len
+         available data in the pbuf is given by the q->len
          variable. */
       /* read data into(q->payload, q->len); */
       memcpy(q->payload, bufptr, q->len);

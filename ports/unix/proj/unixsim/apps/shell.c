@@ -64,7 +64,7 @@ struct command {
 #define NCONNS 10
 static struct netconn *conns[NCONNS];
 
-static char help_msg[] = "Avaliable commands:\n\
+static char help_msg[] = "Available commands:\n\
 open [IP address] [TCP port]: opens a TCP connection to the specified address.\n\
 lstn [TCP port]: sets up a server on the specified port.\n\
 acpt [connection #]: waits for an incoming connection request.\n\
@@ -152,57 +152,57 @@ static char *stat_msgs[] = {
   "             reclaimed ",
   "             pbuf_alloc() locked ",
   "             pbuf_refresh() locked ",
-  "Memory     * avaliable ",
+  "Memory     * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
   "           * reclaimed ",
-  "Memp PBUF  * avaliable ",
+  "Memp PBUF  * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
   "           * reclaimed ",
-  "UDP PCB    * avaliable ",
+  "UDP PCB    * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
   "           * reclaimed ",
-  "TCP PCB    * avaliable ",
+  "TCP PCB    * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
   "           * reclaimed ",
-  "TCP LISTEN * avaliable ",
+  "TCP LISTEN * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
   "           * reclaimed ",
-  "TCP SEG    * avaliable ",
+  "TCP SEG    * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
   "           * reclaimed ",
-  "Netbufs    * avaliable ",
+  "Netbufs    * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
   "           * reclaimed ",
-  "Netconns   * avaliable ",
+  "Netconns   * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
   "           * reclaimed ",
-  "API msgs   * avaliable ",
+  "API msgs   * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
   "           * reclaimed ",
-  "TCPIP msgs * avaliable ",
+  "TCPIP msgs * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
   "           * reclaimed ",
-  "Timeouts   * avaliable ",
+  "Timeouts   * available ",
   "           * used ",
   "           * high water mark ",
   "           * errors ",
@@ -239,7 +239,7 @@ com_open(struct command *com)
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
   if(i == NCONNS) {
-    sendstr("No more connections avaliable, sorry.\n", com->conn);
+    sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
 
@@ -289,7 +289,7 @@ com_lstn(struct command *com)
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
   if(i == NCONNS) {
-    sendstr("No more connections avaliable, sorry.\n", com->conn);
+    sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
 
@@ -383,7 +383,7 @@ com_acpt(struct command *com)
   for(j = 0; j < NCONNS && conns[j] != NULL; j++);
 
   if(j == NCONNS) {
-    sendstr("No more connections avaliable, sorry.\n", com->conn);
+    sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
 
@@ -540,7 +540,7 @@ com_udpc(struct command *com)
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
   if(i == NCONNS) {
-    sendstr("No more connections avaliable, sorry.\n", com->conn);
+    sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
 
@@ -612,7 +612,7 @@ com_udpl(struct command *com)
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
   if(i == NCONNS) {
-    sendstr("No more connections avaliable, sorry.\n", com->conn);
+    sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
 
@@ -684,7 +684,7 @@ com_udpn(struct command *com)
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
   if(i == NCONNS) {
-    sendstr("No more connections avaliable, sorry.\n", com->conn);
+    sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
 
@@ -757,7 +757,7 @@ com_udpb(struct command *com)
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
   if(i == NCONNS) {
-    sendstr("No more connections avaliable, sorry.\n", com->conn);
+    sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
 

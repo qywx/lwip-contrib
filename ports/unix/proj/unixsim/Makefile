@@ -32,8 +32,8 @@
 CCDEP=gcc
 CC=gcc
 
-#To Compile for linux: make ARCH=linux
-#To Compile for cygwin: make ARCH=cygwin
+#To compile for linux: make ARCH=linux
+#To compile for cygwin: make ARCH=cygwin
 ARCH=unix
 CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -DLWIP_DEBUG -pedantic
 LDFLAGS=-lpcap
@@ -65,7 +65,7 @@ APIFILES=$(LWIPDIR)/api/api_lib.c $(LWIPDIR)/api/api_msg.c $(LWIPDIR)/api/tcpip.
 NETIFFILES=$(LWIPDIR)/netif/loopif.c \
 	$(LWIPDIR)/netif/etharp.c $(LWIPDIR)/netif/slipif.c 
 
-# ARCHFILES: Archiecture specific files.
+# ARCHFILES: Architecture specific files.
 ARCHFILES=$(wildcard $(LWIPARCH)/*.c $(LWIPARCH)/netif/*.c)
 
 # APPFILES: Applications.

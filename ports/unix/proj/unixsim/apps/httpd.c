@@ -72,7 +72,7 @@ send_data(struct tcp_pcb *pcb, struct http_state *hs)
   err_t err;
   u16_t len;
 
-  /* We cannot send more data than space avaliable in the send
+  /* We cannot send more data than space available in the send
      buffer. */     
   if(tcp_sndbuf(pcb) < hs->left) {
     len = tcp_sndbuf(pcb);
