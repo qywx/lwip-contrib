@@ -45,12 +45,12 @@
 
 #include "mintapif.h"
 
-/*-----------------------------------------------------------------------------------*/
+
 int
 main(int argc, char **argv)
 {
   struct ip_addr ipaddr, netmask, gw;
-  struct netif *netif;
+  struct netif netif;
   
 #ifdef PERF
   perf_init("/tmp/minimal.perf");
@@ -72,9 +72,9 @@ main(int argc, char **argv)
   IP4_ADDR(&ipaddr, 192,168,0,2);
   IP4_ADDR(&netmask, 255,255,255,0);
 
-  netif = netif_add(&ipaddr, &netmask, &gw, NULL, mintapif_init, ip_input);
+  netif_add(&netif, &ipaddr, &netmask, &gw, NULL, mintapif_init, ip_input);
   
-  netif_set_default(netif);
+  netif_set_default(&netif);
 
   echo_init();
   
@@ -83,7 +83,7 @@ main(int argc, char **argv)
 
   while (1) {
     
-    if (mintapif_wait(netif, TCP_TMR_INTERVAL) == MINTAPIF_TIMEOUT) {
+    if (mintapif_wait(&netif, TCP_TMR_INTERVAL) == MINTAPIF_TIMEOUT) {
       tcp_tmr();
     }
     
@@ -91,12 +91,3 @@ main(int argc, char **argv)
   
   return 0;
 }
-/*-----------------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-
