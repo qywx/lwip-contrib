@@ -346,6 +346,10 @@ low_level_output(struct netif *netif, struct pbuf *p)
     unsigned int i;
     u32_t old_level;
 
+    /* Make sure that there are no PBUF_REF buffers in the chain. These buffers
+       have to be freed immediately and this ethernet driver puts the buffers on
+       the dma chain, so they get freed later */
+    p = pbuf_take(p);
     /* Interrupts are disabled through this whole thing to support multi-threading
      * transmit calls. Also this function might be called from an ISR. */
     old_level = sys_arch_protect();
@@ -396,8 +400,8 @@ low_level_output(struct netif *netif, struct pbuf *p)
 #ifdef LINK_STATS
         lwip_stats.link.xmit++;
 #endif        
-        /* Indicate that there has been a transmit buffer produced */
-        MCF5272_WR_FEC_TDAR(imm,1);
+	/* Indicate that there has been a transmit buffer produced */
+	MCF5272_WR_FEC_TDAR(imm,1);
         sys_arch_unprotect(old_level);
     }
     return ERR_OK;
@@ -629,7 +633,7 @@ low_level_init(struct netif *netif)
     /* Set the source address for the controller */
     MCF5272_WR_FEC_MALR(imm,0 
                         | (mcf5272->ethaddr->addr[0] <<24) 
-                        | (mcf5272->ethaddr->addr[1] <<16)      
+                        | (mcf5272->ethaddr->addr[1] <<16)	
                         | (mcf5272->ethaddr->addr[2] <<8) 
                         | (mcf5272->ethaddr->addr[3] <<0)); 
     MCF5272_WR_FEC_MAUR(imm,0
@@ -775,6 +779,7 @@ mcf5272fecif_init(struct netif *netif)
         netif->linkoutput = low_level_output;
         netif->mtu = MTU_FEC - 18;      // mtu without ethernet header and crc
         mcf5272if->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
+        netif->hwaddr_len = 6; /* Ethernet interface */
         mcf5272if->imm = mcf5272_get_immp();
         
         low_level_init(netif);
