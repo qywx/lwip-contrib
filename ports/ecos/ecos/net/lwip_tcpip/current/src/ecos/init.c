@@ -54,6 +54,7 @@
 
 #include "netif/loopif.h"
 #include <cyg/hal/hal_if.h>
+#include <cyg/infra/diag.h>
 
 #ifdef CYGPKG_IO_ETH_DRIVERS
 #include "netif/etharp.h"
@@ -65,6 +66,7 @@
 // Define table boundaries
 CYG_HAL_TABLE_BEGIN(__NETDEVTAB__, netdev);
 CYG_HAL_TABLE_END(__NETDEVTAB_END__, netdev);
+static void ecosglue_init(void);
 #endif
 
 void inline IP_ADDR(struct ip_addr *ipaddr, char a, char b, char c, char d)
@@ -80,13 +82,12 @@ void tcpip_init_done(void * arg)
 }
 
 struct netif mynetif, loopif;
-static void ecosglue_init(void);
 void lwip_set_addr(struct netif *netif);
 #if PPP_SUPPORT
 #define PPP_USER "pppuser"
 #define PPP_PASS "ppppass"
 void 
-pppMyCallback(void *a , int e)
+pppMyCallback(void *a , int e, void * arg)
 {
 	diag_printf("callback %d \n",e);
 }

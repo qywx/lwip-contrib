@@ -39,6 +39,7 @@
 
 #include <cyg/io/io.h>
 #include <cyg/io/config_keys.h>
+#include <cyg/infra/diag.h>
 
 static cyg_io_handle_t ser;
 
