@@ -9,6 +9,7 @@
 ## -------------------------------------------
 ## This file is part of eCos, the Embedded Configurable Operating System.
 ## Copyright (C) 1998, 1999, 2000, 2001, 2002 Red Hat, Inc.
+## Copyright (C) 2004 eCosCentric 
 ##
 ## eCos is free software; you can redistribute it and/or modify it under
 ## the terms of the GNU General Public License as published by the Free
@@ -284,7 +285,7 @@ cdl_package CYGPKG_NET_LWIP {
 		cdl_option CYGPKG_LWIP_PBUF_POOL_SIZE {
 			display		"PBUF pool size"
 			flavor		data
-			default_value 	6
+			default_value 	60
 			description   	"
 			PBUF_POOL_SIZE: the number of buffers in the pbuf pool."
 	
@@ -327,7 +328,8 @@ cdl_package CYGPKG_NET_LWIP {
 			display "tcpip thread priority"
 			flavor data
 			default_value	7
-			description "later"
+			description "Pririty of the lwIP network thread.This thread handles all API messages and
+					network packets."
 		}		 
 		
 		cdl_option CYGPKG_LWIP_TCP_TTL {
@@ -511,7 +513,7 @@ cdl_package CYGPKG_NET_LWIP {
 			display "ethernet input thread priority"
 			flavor data
 			default_value	6
-			description "later"
+			description "Priority of the ethernet input thread"
 		}
 		
 	}
@@ -528,7 +530,7 @@ cdl_package CYGPKG_NET_LWIP {
 			display "SLIP thread priority"
 			flavor data
 			default_value	8
-			description "later"
+			description "Priority of the SLIP input thread"
 		}
 		
 		cdl_option CYGPKG_LWIP_SLIP_DEV {
@@ -585,7 +587,7 @@ cdl_package CYGPKG_NET_LWIP {
 			display "PPP main thread priority"
 			flavor data
 			default_value	8
-			description "later"
+			description "Priority of the PPP input thread"
 		}	
 	}
 
