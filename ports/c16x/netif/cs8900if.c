@@ -618,11 +618,12 @@ void cs8900if_service(struct netif *netif)
 err_t cs8900if_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
 {
   struct cs8900if *cs8900if = netif->state;
+  /* resolve the link destination hardware address */
   p = etharp_output(netif, ipaddr, p);
   /* network hardware address obtained? */
   if (p != NULL)
   {
-  /* send out the packet */
+    /* send out the packet */
     cs8900_output(netif, p);
     p = NULL;
   }
