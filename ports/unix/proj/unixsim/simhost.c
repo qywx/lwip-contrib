@@ -30,9 +30,8 @@
  *
  */
 
-#include "lwip/debug.h"
-
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "lwip/opt.h"
 
@@ -55,8 +54,12 @@
 
 #include "netif/tcpdump.h"
 
+#if PPP_SUPPORT
+#include "netif/ppp/ppp.h"
+#define PPP_PTY_TEST 1
+#endif
 
-
+#include <termios.h>
 
 #include "lwip/ip_addr.h"
 
@@ -84,12 +87,74 @@ tcpip_init_done(void *arg)
   sem = arg;
   sys_sem_signal(*sem);
 }
+
+#if PPP_SUPPORT
+void 
+pppLinkStatusCallback(void *ctx, int errCode, void *arg)
+{
+    switch(errCode) {
+	case PPPERR_NONE:               /* No error. */
+	    {
+		struct ppp_addrs *ppp_addrs = arg;
+
+		printf("pppLinkStatusCallback: PPPERR_NONE");
+		printf(" our_ipaddr=%s", inet_ntoa(ppp_addrs->our_ipaddr.addr));
+		printf(" his_ipaddr=%s", inet_ntoa(ppp_addrs->his_ipaddr.addr));
+		printf(" netmask=%s", inet_ntoa(ppp_addrs->netmask.addr));
+		printf(" dns1=%s", inet_ntoa(ppp_addrs->dns1.addr));
+		printf(" dns2=%s\n", inet_ntoa(ppp_addrs->dns2.addr));
+	    }
+	    break;
+
+	case PPPERR_PARAM:             /* Invalid parameter. */
+	    printf("pppLinkStatusCallback: PPPERR_PARAM\n");
+	    break;
+
+	case PPPERR_OPEN:              /* Unable to open PPP session. */
+	    printf("pppLinkStatusCallback: PPPERR_OPEN\n");
+	    break;
+
+	case PPPERR_DEVICE:            /* Invalid I/O device for PPP. */
+	    printf("pppLinkStatusCallback: PPPERR_DEVICE\n");
+	    break;
+
+	case PPPERR_ALLOC:             /* Unable to allocate resources. */
+	    printf("pppLinkStatusCallback: PPPERR_ALLOC\n");
+	    break;
+
+	case PPPERR_USER:              /* User interrupt. */
+	    printf("pppLinkStatusCallback: PPPERR_USER\n");
+	    break;
+
+	case PPPERR_CONNECT:           /* Connection lost. */
+	    printf("pppLinkStatusCallback: PPPERR_CONNECT\n");
+	    break;
+
+	case PPPERR_AUTHFAIL:          /* Failed authentication challenge. */
+	    printf("pppLinkStatusCallback: PPPERR_AUTHFAIL\n");
+	    break;
+
+	case PPPERR_PROTOCOL:          /* Failed to meet protocol. */
+	    printf("pppLinkStatusCallback: PPPERR_PROTOCOL\n");
+	    break;
+
+	default:
+	    printf("pppLinkStatusCallback: unknown errCode %d\n", errCode);
+	    break;
+    }
+}
+#endif
+
+/*-----------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------*/
 static void
 main_thread(void *arg)
 {
   struct ip_addr ipaddr, netmask, gw;
   sys_sem_t sem;
+#if PPP_SUPPORT
+  sio_fd_t ppp_sio;
+#endif
 
   netif_init();
 
@@ -98,6 +163,21 @@ main_thread(void *arg)
   sys_sem_wait(sem);
   sys_sem_free(sem);
   printf("TCP/IP initialized.\n");
+#if PPP_SUPPORT
+  pppInit();
+#if PPP_PTY_TEST
+  ppp_sio = sio_open(2);
+#else
+  ppp_sio = sio_open(0);
+#endif
+  if(!ppp_sio)
+  {
+      perror("Error opening device: ");
+      exit(1);
+  }
+
+  pppOpen(ppp_sio, pppLinkStatusCallback, NULL);
+#endif /* PPP_SUPPORT */
   
 #if LWIP_DHCP
   {
@@ -177,7 +257,7 @@ main(int argc, char **argv)
   
   printf("System initialized.\n");
     
-  sys_thread_new((void *)(main_thread), NULL, DEFAULT_THREAD_PRIO);
+  sys_thread_new(main_thread, NULL, DEFAULT_THREAD_PRIO);
   pause();
   return 0;
 }

@@ -36,7 +36,7 @@ CC=gcc
 #To compile for cygwin: make ARCH=cygwin
 ARCH=unix
 CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -DLWIP_DEBUG -pedantic
-LDFLAGS=-lpcap
+LDFLAGS=-lpcap -lutil
 CONTRIBDIR=../../../..
 LWIPARCH=$(CONTRIBDIR)/ports/unix
 ARFLAGS=rs
@@ -46,8 +46,9 @@ ARFLAGS=rs
 LWIPDIR=$(CONTRIBDIR)/../lwip/src
 
 CFLAGS:=$(CFLAGS) \
+	-Iapps -I. \
 	-I$(LWIPDIR)/include -I$(LWIPARCH)/include -I$(LWIPDIR)/include/ipv4 \
-	-Iapps -I.
+	-I$(LWIPDIR)
 
 # COREFILES, CORE4FILES: The minimum set of files needed for lwIP.
 COREFILES=$(LWIPDIR)/core/mem.c $(LWIPDIR)/core/memp.c $(LWIPDIR)/core/netif.c \
@@ -64,6 +65,15 @@ APIFILES=$(LWIPDIR)/api/api_lib.c $(LWIPDIR)/api/api_msg.c $(LWIPDIR)/api/tcpip.
 # NETIFFILES: Files implementing various generic network interface functions.'
 NETIFFILES=$(LWIPDIR)/netif/loopif.c \
 	$(LWIPDIR)/netif/etharp.c $(LWIPDIR)/netif/slipif.c 
+
+# NETIFFILES: Add PPP netif
+NETIFFILES+=$(LWIPDIR)/netif/ppp/auth.c $(LWIPDIR)/netif/ppp/chap.c \
+	$(LWIPDIR)/netif/ppp/chpms.c $(LWIPDIR)/netif/ppp/fsm.c \
+	$(LWIPDIR)/netif/ppp/ipcp.c $(LWIPDIR)/netif/ppp/lcp.c \
+	$(LWIPDIR)/netif/ppp/magic.c $(LWIPDIR)/netif/ppp/md5.c \
+	$(LWIPDIR)/netif/ppp/pap.c $(LWIPDIR)/netif/ppp/ppp.c \
+	$(LWIPDIR)/netif/ppp/randm.c $(LWIPDIR)/netif/ppp/vj.c \
+	$(LWIPARCH)/netif/sio.c
 
 # ARCHFILES: Architecture specific files.
 ARCHFILES=$(wildcard $(LWIPARCH)/*.c $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tcpdump.c)

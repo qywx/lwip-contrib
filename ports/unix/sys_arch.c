@@ -509,3 +509,42 @@ sys_arch_unprotect(sys_prot_t pval)
 }
 
 /*-----------------------------------------------------------------------------------*/
+
+#ifndef MAX_JIFFY_OFFSET
+#define MAX_JIFFY_OFFSET ((~0UL >> 1)-1)
+#endif
+
+#ifndef HZ
+#define HZ 100
+#endif
+
+unsigned long
+sys_jiffies(void)
+{
+    struct timeval tv;
+    unsigned long sec = tv.tv_sec;
+    long usec = tv.tv_usec;
+
+    gettimeofday(&tv,NULL);
+
+    if (sec >= (MAX_JIFFY_OFFSET / HZ))
+	return MAX_JIFFY_OFFSET;
+    usec += 1000000L / HZ - 1;
+    usec /= 1000000L / HZ;
+    return HZ * sec + usec;
+}
+
+#if PPP_DEBUG
+
+#include <stdarg.h>
+
+void ppp_trace(int level, const char *format, ...)
+{
+    va_list args;
+
+    (void)level;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+}
+#endif

@@ -28,6 +28,10 @@
 #include <sys/signal.h>
 #include <sys/types.h>
 
+#if PPP_SUPPORT
+#include <pty.h>
+#endif
+
 /*#define BAUDRATE B19200 */
 /*#define BAUDRATE B57600 */
 #define BAUDRATE B115200
@@ -51,8 +55,9 @@
 /*  } siostruct_t; */
 
 /** array of ((siostruct*)netif->state)->sio structs */
-static sio_status_t statusar[2];
+static sio_status_t statusar[3];
 
+#if ! PPP_SUPPORT
 /* --private-functions----------------------------------------------------------------- */
 /** 
  * Signal handler for ttyXX0 to indicate bytes received 
@@ -60,7 +65,7 @@ static sio_status_t statusar[2];
  */
 static void	signal_handler_IO_0( int status )
 {
-	LWIP_DEBUGF(SIO_DEBUG, ("SigHand: rxSignal chanel 0"));
+	LWIP_DEBUGF(SIO_DEBUG, ("SigHand: rxSignal channel 0\n"));
 	fifoPut( &statusar[0].myfifo, statusar[0].fd );
 }
 
@@ -70,9 +75,10 @@ static void	signal_handler_IO_0( int status )
  */
 static void signal_handler_IO_1( int status )
 {
-	LWIP_DEBUGF(SIO_DEBUG, ("SigHand: rxSignal channel 1"));
+	LWIP_DEBUGF(SIO_DEBUG, ("SigHand: rxSignal channel 1\n"));
 	fifoPut( &statusar[1].myfifo, statusar[1].fd );
 }
+#endif
 
 /**
 * Initiation of serial device 
@@ -83,10 +89,12 @@ static void signal_handler_IO_1( int status )
 static int sio_init( char * device, int devnum, sio_status_t * siostat )
 {
 	struct termios oldtio,newtio;
+#if ! PPP_SUPPORT
 	struct sigaction saio;           /* definition of signal action */
+#endif
 	int fd;
 
-	/* open the device to be non-blocking (read will return immediatly) */
+	/* open the device to be non-blocking (read will return immediately) */
 	fd = open( device, O_RDWR | O_NOCTTY | O_NONBLOCK );
 	if ( fd < 0 )
 	{
@@ -94,19 +102,20 @@ static int sio_init( char * device, int devnum, sio_status_t * siostat )
 		exit( -1 );
 	}
 
+#if ! PPP_SUPPORT
 	/* install the signal handler before making the device asynchronous */
 	switch ( devnum )
 	{
 		case 0:
-			LWIP_DEBUGF( SIO_DEBUG, ("sioinit, signal_handler_IO_0\r\n") );
+			LWIP_DEBUGF( SIO_DEBUG, ("sioinit, signal_handler_IO_0\n") );
 			saio.sa_handler = signal_handler_IO_0;
 			break;
 		case 1:
-			LWIP_DEBUGF( SIO_DEBUG, ("sioinit, signal_handler_IO_1\r\n") );
+			LWIP_DEBUGF( SIO_DEBUG, ("sioinit, signal_handler_IO_1\n") );
 			saio.sa_handler = signal_handler_IO_1;
 			break;
 		default:
-			LWIP_DEBUGF( SIO_DEBUG,("sioinit, devnum not allowed\r\n") );
+			LWIP_DEBUGF( SIO_DEBUG,("sioinit, devnum not allowed\n") );
 			break;
 	}
 
@@ -121,11 +130,14 @@ static int sio_init( char * device, int devnum, sio_status_t * siostat )
 	/* Make the file descriptor asynchronous (the manual page says only
 	O_APPEND and O_NONBLOCK, will work with F_SETFL...) */
 	fcntl( fd, F_SETFL, FASYNC );
+#else
+	fcntl( fd, F_SETFL, 0 );
+#endif /* ! PPP_SUPPORT */
 
 	tcgetattr( fd,&oldtio ); /* save current port settings */
 	/* set new port settings */
 	/* see 'man termios' for further settings */
-	newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD; /* | CRTSCTS; */
+	newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD | CRTSCTS;
 	newtio.c_iflag = 0;
 	newtio.c_oflag = 0;
 	newtio.c_lflag = 0; /*ECHO; */
@@ -178,7 +190,7 @@ void sio_send( u8_t c, sio_status_t * siostat )
 
 	if ( write( siostat->fd, &c, 1 ) <= 0 )
 	{
-		LWIP_DEBUGF( SIO_DEBUG,("sio_send: write refused") );
+		LWIP_DEBUGF( SIO_DEBUG,("sio_send: write refused\n") );
 	}
 }
 
@@ -189,9 +201,9 @@ void sio_send_string( u8_t *str, sio_status_t * siostat )
 
 	if ( write( siostat->fd, str, len ) <= 0 )
 	{
-		LWIP_DEBUGF( SIO_DEBUG,("sio_send_string: write refused") );
+		LWIP_DEBUGF( SIO_DEBUG,("sio_send_string: write refused\n") );
 	}
-	LWIP_DEBUGF( (PPP_DEBUG | SIO_DEBUG),("sent:%s",str ) );
+	LWIP_DEBUGF( (PPP_DEBUG | SIO_DEBUG),("sent:%s\n",str ) );
 }
 
 
@@ -202,6 +214,7 @@ void sio_flush( sio_status_t * siostat )
 }
 
 
+#if ! PPP_SUPPORT
 /*u8_t sio_recv( struct netif * netif )*/
 u8_t sio_recv( sio_status_t * siostat )
 {
@@ -243,7 +256,24 @@ void sio_expect_string( u8_t *str, sio_status_t * siostat )
 	}
 	LWIP_DEBUGF( (PPP_DEBUG | SIO_DEBUG), ("[match]\n") );
 }
+#endif /* ! PPP_SUPPORT */
 
+#if PPP_SUPPORT
+u32_t sio_write(sio_status_t * siostat, u8_t *buf, u32_t size)
+{
+    return write( siostat->fd, buf, size );
+}
+
+u32_t sio_read(sio_status_t * siostat, u8_t *buf, u32_t size)
+{
+    return read( siostat->fd, buf, size );
+}
+
+void sio_read_abort(sio_status_t * siostat)
+{
+    printf("sio_read_abort: not yet implemented for unix\n");
+}
+#endif /* PPP_SUPPORT */
 
 sio_status_t * sio_open( int devnum )
 {
@@ -261,7 +291,9 @@ sio_status_t * sio_open( int devnum )
 
 /* 	((sio_status_t*)(tmp->sio))->fd = 0; */
 
+#if ! PPP_SUPPORT
 	fifoInit( &siostate->myfifo );
+#endif /* ! PPP_SUPPORT */
 
 	sprintf( dev, "/dev/ttyS%d", devnum );
 
@@ -269,14 +301,39 @@ sio_status_t * sio_open( int devnum )
 	{
 		if ( ( siostate->fd = sio_init( dev, devnum, siostate ) ) == 0 )
 		{
-			LWIP_DEBUGF(SIO_DEBUG, ( "sio_open: ERROR opening serial device" ));
+			LWIP_DEBUGF(SIO_DEBUG, ( "sio_open: ERROR opening serial device\n" ));
 			abort( );
 			return NULL;
 		}
 	} 
+#if PPP_SUPPORT
+	else if (devnum == 2) {
+	    pid_t childpid;
+	    childpid = forkpty(&siostate->fd, NULL, NULL, NULL);
+	    if(childpid < 0) {
+		perror("forkpty");
+		exit (1);
+	    }
+	    if(childpid == 0) {
+		execl("/usr/sbin/pppd", "pppd",
+			"ms-dns", "198.168.100.7",
+			"local", "silent", "crtscts",
+			"noauth", "nodetach",
+			"mru", "1524",
+			"mtu", "1500",
+			"192.168.1.1:192.168.1.2",
+			NULL);
+		perror("execl pppd");
+		exit (1);
+	    } else {
+		LWIP_DEBUGF(SIO_DEBUG, ( "sio_open: spawned pppd pid %d\n", childpid));
+	    }
+
+	}
+#endif
 	else
 	{
-		LWIP_DEBUGF(SIO_DEBUG, ( "sio_open: device %s (%d) is not supported", dev, devnum ));
+		LWIP_DEBUGF(SIO_DEBUG, ( "sio_open: device %s (%d) is not supported\n", dev, devnum ));
 		return NULL;
 	}
 	LWIP_DEBUGF( 1,("sio_open: dev=%s open.\n", dev ));
@@ -312,7 +369,7 @@ void sio_change_baud( sioBaudrates baud, sio_status_t * siostat )
 			break;
 
 		default:
-			LWIP_DEBUGF( 1,("sio_change_baud: Unknown baudrate, code:%d", baud ));
+			LWIP_DEBUGF( 1,("sio_change_baud: Unknown baudrate, code:%d\n", baud ));
 			break;
 	}
 }
