@@ -30,7 +30,6 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: perf.h,v 1.1 2003/02/28 14:29:13 jani Exp $
  */
 #ifndef __PERF_H__
 #define __PERF_H__

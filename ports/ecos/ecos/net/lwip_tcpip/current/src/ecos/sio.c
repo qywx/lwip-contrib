@@ -1,10 +1,9 @@
 /* Serial operations for SLIP */
 
-#include "lwip/debug.h"
+#include "lwip/opt.h"
 #include "lwip/def.h"
 #include "lwip/sys.h"
 #include "lwip/netif.h"
-#include "lwipopts.h"
 
 #include <cyg/io/io.h>
 #include <cyg/io/config_keys.h>
@@ -44,8 +43,8 @@ void * sio_open(int devnum)
 {
 	int res;
 	cyg_uint32 nb = 0;
-	
 	char siodev[] = "/dev/serX";
+
 	if (devnum < 0 || devnum >9)
 		return NULL;
 	siodev[8] = '0' + devnum;

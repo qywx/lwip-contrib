@@ -2,11 +2,10 @@
  * This file implements the eCos specific sys_arch functions used by lwIP 
  */
 
-#include "lwipopts.h"
+#include "lwip/opt.h"
 #include "arch/sys_arch.h"
 #include "lwip/sys.h"
 #include "lwip/def.h"
-#include "lwip/debug.h"
 
 //FIXME use CYG_HWR_whatever for RTC 
 

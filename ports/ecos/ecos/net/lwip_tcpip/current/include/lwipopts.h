@@ -30,12 +30,12 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: lwipopts.h,v 1.1 2003/02/28 14:29:13 jani Exp $
  */
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 /*include the configuration made with configtool*/
 #include <pkgconf/net_lwip.h>
+#define TCPIP_THREAD_PRIO	7
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
    lwIP is compiled. 4 byte alignment -> define MEM_ALIGNMENT to 4, 2
@@ -153,23 +153,17 @@ a lot of data that needs to be copied, this should be set high. */
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                CYGPKG_LWIP_UDP
 #define UDP_TTL                 CYGPKG_LWIP_UDP_TTL
-	
-#define LWIP_SLIP		CYGPKG_LWIP_SLIP
+
+/* ---------- SLIP options --------- */	
+#define LWIP_SLIP		defined(CYGPKG_LWIP_SLIP)
 #define SLIP_DEV		CYGPKG_LWIP_SLIP_DEV
  
-/* ---------- Statistics options ---------- */
-#define STATS
+/* ---------- PPP options --------- */	
+#define PPP_SUPPORT		defined(CYGPKG_LWIP_PPP)
+#define PPP_DEV			CYGPKG_LWIP_PPP_DEV
+#define MD5_SUPPORT		1
+#define PAP_SUPPORT		1
 
-#ifdef STATS
-#define LINK_STATS
-#define IP_STATS
-#define ICMP_STATS
-#define UDP_STATS
-#define TCP_STATS
-#define MEM_STATS
-#define MEMP_STATS
-#define PBUF_STATS
-#define SYS_STATS
-#endif /* STATS */
+/* ---------- Statistics options ---------- */
 
 #endif /* __LWIPOPTS_H__ */

@@ -30,11 +30,11 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: cc.h,v 1.1 2003/02/28 14:29:13 jani Exp $
  */
 #ifndef __ARCH_CC_H__
 #define __ARCH_CC_H__
 
+#include <string.h>
 #include <cyg/error/codes.h>
 #include <cyg/infra/cyg_type.h>
 #if (CYG_BYTEORDER == CYG_LSBFIRST)

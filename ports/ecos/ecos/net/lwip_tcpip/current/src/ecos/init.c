@@ -2,16 +2,20 @@
  * init.c - helper code for initing applications that use lwIP		
  */
 
-#include "lwip/mem.h"
-#include "lwip/memp.h"
+#include "lwip/opt.h"
 #include "lwip/sys.h"
+#include "lwip/memp.h"
 #include "lwip/tcpip.h"
 #include "lwip/ip_addr.h"
-#include "lwipopts.h"
 
 #if LWIP_DHCP
 #include "lwip/dhcp.h"
 #endif
+
+#if LWIP_SLIP
+#include "netif/slipif.h"
+#endif
+
 #include "netif/etharp.h"
 
 #include <cyg/io/eth/eth_drv.h>
@@ -31,15 +35,17 @@ void tcpip_init_done(void * arg)
 {
 	sys_sem_t *sem = arg;
 	sys_sem_signal(*sem);
-}	
+}
+
 struct netif mynetif;
+static void ecosglue_init(void);
+void lwip_set_addr(struct netif *netif);
 #if PPP_SUPPORT
 void pppMyCallback(void *a , int e)
 {
 	diag_printf("callback %d \n",e);
 }
 #endif
-extern err_t ecosif_init(struct netif *);	
 /*
  * Called by the eCos application at startup
  * wraps various init calls
@@ -71,7 +77,6 @@ void lwip_init(void)
 #else	
 	ecosglue_init();		
 #endif	
-//	ecosif_init(&mynetif);
 }
 
 void lwip_set_addr(struct netif *netif)
