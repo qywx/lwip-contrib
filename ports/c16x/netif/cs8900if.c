@@ -1,7 +1,7 @@
 /** @file
 /*
- * Copyright (c) 2001, 2002 Leon Woestenberg <leon.woestenberg@axon.tv>
- * Copyright (c) 2001, 2002 Axon Digital Design B.V., The Netherlands.
+ * Copyright (c) 2001-2003 Leon Woestenberg <leon.woestenberg@axon.tv>
+ * Copyright (c) 2001-2003 Axon Digital Design B.V., The Netherlands.
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, 
@@ -199,9 +199,6 @@ _interrupt(0x18) void cs8900_interrupt(void)
     cs8900if->interrupts++;
 #endif
   }
-#ifdef LED_NEED_SERVICE
-  leds_on(LED_NEED_SERVICE);
-#endif
 }
 #endif
 
@@ -685,6 +682,16 @@ void cs8900if_init(struct netif *netif)
   // initialize cs8900 specific interface structure
   netif->state = cs8900if;
 
+#if 0
+  /* maximum transfer unit */
+  netif->mtu = 1500;
+  
+  /* broadcast capability */
+  netif->flags = NETIF_FLAG_BROADCAST;
+  
+  /* hardware address length */
+  netif->hwaddr_len = 6;
+#endif
   // initially assume no ISQ event
   cs8900if->needs_service = 0;
   // set to 1 if polling method is used
