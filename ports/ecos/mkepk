@@ -12,9 +12,11 @@ if [ $LWIP_CVS"" == "" ]; then
 	LWIP_CVS=../../../lwip;
 	exit;
 fi
+EPK=$EPK/lwip_epk
 
 #cleanup
-rm -Rf $EPK/*
+rm -Rf $EPK
+
 
 #copy files from CVS
 xargs -n 2 ./copy  < files
