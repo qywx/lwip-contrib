@@ -42,6 +42,7 @@
 
 #include <lwip/inet.h>
 #include <lwip/arch.h>
+#define LWIP_TIMEVAL_PRIVATE 
 #include <lwip/sockets.h>
 
 #ifndef CYGPKG_LIBC_STDIO
@@ -524,6 +525,9 @@ net_test(test_param_t param)
 #ifdef CYGDBG_NET_TIMING_STATS
     show_net_times();
 #endif
+#if LWIP_STATS_DISPLAY 
+    stats_display();
+#endif    
     cyg_test_exit();
 }
 
