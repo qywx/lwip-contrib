@@ -398,7 +398,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
     {
       // allocate a pbuf chain with total length 'len' 
       p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
-      if (p != 0)
+      if (p != NULL)
       {
         for (q = p; q != 0; q = q->next)
 	      {
@@ -506,11 +506,11 @@ static void cs8900_service(struct netif *netif)
 #if (CS8900_STATS > 0)
     else if ((irq_status & 0x003fU) == 0x0010U/*RxMISS Event*/)
     {
-	  miss_count += (irq_status >> 6);
+	    miss_count += (irq_status >> 6);
   	}
   	else if ((irq_status & 0x003fU) == 0x0012U/*TxCOL Event*/)
   	{
-	  coll_count += (irq_status >> 6);
+	    coll_count += (irq_status >> 6);
   	}
 #endif
     /* read ISQ register */
