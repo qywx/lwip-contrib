@@ -1,4 +1,7 @@
 /** @file
+ *
+ *  Ethernet network driver for IP
+ */
 /*
  * Copyright (c) 2001-2003 Leon Woestenberg <leon.woestenberg@axon.tv>
  * Copyright (c) 2001-2003 Axon Digital Design B.V., The Netherlands.
@@ -447,7 +450,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
  
 static void cs8900_service(struct netif *netif)
 {
-  // amount of ISQ's to handle (> 0) in one cs8900_service() call
+  /* amount of ISQ's to handle (> 0) in one cs8900_service() call */
   unsigned char events2service = 1;
 #if (CS8900_STATS > 0)
   unsigned int miss_count = 0, coll_count = 0;
@@ -471,28 +474,28 @@ static void cs8900_service(struct netif *netif)
 #ifdef LED_NEED_SERVICE
   leds_off(LED_NEED_SERVICE);
 #endif
-  // no unhandled irq_status left?
+  /* no unhandled irq_status left? */
   if (irq_status == 0x0000U)
   {
-    // read ISQ register
+    /* read ISQ register */
     irq_status = ISQ;
   }
-  // ISQ interrupt event, and allowed to service in this loop?
+  /* ISQ interrupt event, and allowed to service in this loop? */
   while ((irq_status != 0x0000U) && (events2service-- > 0))
   {
-    // investigate event
+    /* investigate event */
     if ((irq_status & 0x003fU) == 0x0004U/*Receiver Event*/)
     {
-      // correctly received frame, either broadcast or individual address
-      // TODO: think where these checks should appear: here or in cs8900_input()
+      /* correctly received frame, either broadcast or individual address */
+      /* TODO: think where these checks should appear: here or in cs8900_input() */
       if ((irq_status & 0x0100U/*RxOK*/) && (irq_status & 0x0c00U/*Broadcast | Individual*/))
       {
-        // read the frame from the cs8900a
+        /* read the frame from the cs8900a */
         cs8900if_input(netif);
       }
       else
       {
-        // skip this frame
+        /* skip this frame */
         PACKETPP = CS_PP_RXCFG;
         PPDATA |= 0x0040U/*Skip_1*/;
 #if (CS8900_STATS > 0)
@@ -505,33 +508,34 @@ static void cs8900_service(struct netif *netif)
     {
 	  miss_count += (irq_status >> 6);
   	}
-    else if ((irq_status & 0x003fU) == 0x0012U/*TxCOL Event*/)
-    {
+  	else if ((irq_status & 0x003fU) == 0x0012U/*TxCOL Event*/)
+  	{
 	  coll_count += (irq_status >> 6);
   	}
 #endif
-    // read ISQ register
+    /* read ISQ register */
     irq_status = ISQ;
   }
 
-  // we did not deplete the ISQ?
+  /* we did not deplete the ISQ? */
   if (irq_status != 0x0000U)
   {
-    // the cs8900a still needs service
+    /* the cs8900a still needs service */
     ((struct cs8900if *)netif->state)->needs_service = 1;
 #ifdef LED_NEED_SERVICE
     leds_on(LED_NEED_SERVICE);
 #endif
   }
 #if (CS8900_STATS > 1) /* follow misses and collisions on a per-packet basis? */
-  // read RxMiss Counter (zeroes itself upon read)
+  /* read RxMiss Counter (zeroes itself upon read) */
   PACKETPP = CS_PP_RXMISS;
   miss_count += (PPDATA >> 6);
-  // read RxCol Counter (zeroes itself upon read)
+  /* read RxCol Counter (zeroes itself upon read) */
   PACKETPP = CS_PP_TXCOL;
   coll_count += (PPDATA >> 6);
 #endif
 #if (CS8900_STATS > 0)
+  /* copy statistics counters into netif state fields */
   ((struct cs8900if *)netif->state)->missed += miss_count;
   if (miss_count > 0) DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u missed packets due to rx buffer overrun\n", miss_count));
 
