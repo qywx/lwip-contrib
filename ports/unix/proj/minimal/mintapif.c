@@ -263,12 +263,12 @@ mintapif_input(struct netif *netif)
 
     switch (htons(ethhdr->type)) {
     case ETHTYPE_IP:
-      etharp_ip_input(netif, p);
+      q = etharp_ip_input(netif, p);
       pbuf_header(p, -14);
       netif->input(p, netif);
       break;
     case ETHTYPE_ARP:
-      etharp_arp_input(netif, mintapif->ethaddr, p);
+      q = etharp_arp_input(netif, mintapif->ethaddr, p);
       break;
     default:
       pbuf_free(p);
