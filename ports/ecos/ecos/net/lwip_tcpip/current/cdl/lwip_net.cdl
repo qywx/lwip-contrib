@@ -668,7 +668,7 @@ cdl_package CYGPKG_NET_LWIP {
 	        flavor  data
        		no_define
         	calculated { 
-                   	"tests/tcpecho tests/udpecho tests/httpd.c tests/socket.c tests/nc_test_slave" 
+                   	"tests/tcpecho tests/udpecho tests/httpd tests/socket tests/nc_test_slave tests/sys_timeout"
 		}  
        		description   "
         	    This option specifies the set of tests for lwIP.They show the usage of 
