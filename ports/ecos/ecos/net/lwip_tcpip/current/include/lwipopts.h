@@ -125,7 +125,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define PBUF_LINK_HLEN          CYGPKG_LWIP_PBUF_LINK_HLEN
 
 /* ---------- TCP options ---------- */
-#define LWIP_TCP                CYGPKG_LWIP_TCP
+#define LWIP_TCP                defined (CYGPKG_LWIP_TCP)
 #define TCP_TTL                 CYGPKG_LWIP_TCP_TTL
 
 /* Controls if TCP should queue segments that arrive out of
