@@ -124,7 +124,7 @@
 #endif
 
 #include "cs8900if.h"
-#include "snmp.h"
+#include "lwip/snmp.h"
 
 // Define those to better describe your network interface
 #define IFNAME0 'e'
@@ -228,7 +228,7 @@ static err_t cs8900_init(struct netif *netif)
 #endif
 
   // { the RESET bit will be cleared by the cs8900a
-  //   as a result of the reset }
+  //   as a result of a hardware reset - wait for it}
   // RESET bit cleared?
   while ((PPDATA & 0x0040U) != 0); // TODO: add timeout
 
