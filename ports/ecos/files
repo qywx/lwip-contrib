@@ -46,8 +46,10 @@ src/include/lwip/sio.h include/lwip/sio.h
 src/include/lwip/dhcp.h include/lwip/dhcp.h
 src/include/netif/etharp.h include/netif/etharp.h
 src/include/netif/slipif.h include/netif/slipif.h
+src/include/netif/loopif.h include/netif/loopif.h
 src/netif/etharp.c src/netif/etharp.c
 src/netif/slipif.c src/netif/slipif.c
+src/netif/loopif.c src/netif/loopif.c
 src/netif/ppp/ppp.c src/netif/ppp/ppp.c 
 src/netif/ppp/auth.c src/netif/ppp/auth.c 
 src/netif/ppp/chap.c src/netif/ppp/chap.c 

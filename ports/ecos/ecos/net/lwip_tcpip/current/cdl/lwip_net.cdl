@@ -76,6 +76,7 @@ cdl_package CYGPKG_NET_LWIP {
 		api/err.c	\
 		api/sockets.c	\
 		netif/etharp.c	\
+		netif/loopif.c	\
 		ecos/sys_arch.c	\
 		ecos/init.c	
 	
