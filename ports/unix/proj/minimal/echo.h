@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
+ * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved. 
  * 
  * Redistribution and use in source and binary forms, with or without modification, 
@@ -26,69 +26,10 @@
  *
  * This file is part of the lwIP TCP/IP stack.
  * 
- * Author: Adam Dunkels <adam@sics.se>
- *
  */
+#ifndef __ECHO_H__
+#define __ECHO_H__
 
-#include "lwip/debug.h"
+void echo_init(void);
 
-#include "lwip/mem.h"
-#include "lwip/memp.h"
-#include "lwip/sys.h"
-
-#include "lwip/stats.h"
-
-#include "lwip/ip.h"
-/*#include "lwip/ip_frag.h"*/
-#include "lwip/udp.h"
-#include "lwip/tcp.h"
-
-#include "mintapif.h"
-
-#include "echo.h"
-
-int
-main(int argc, char **argv)
-{
-  struct ip_addr ipaddr, netmask, gw;
-  struct netif netif;
-  
-#ifdef PERF
-  perf_init("/tmp/minimal.perf");
-#endif /* PERF */
-#ifdef STATS
-  stats_init();
-#endif /* STATS */
-
-  mem_init();
-  memp_init();
-  pbuf_init(); 
-  netif_init();
-  ip_init();
-  udp_init();
-  tcp_init();
-  printf("TCP/IP initialized.\n");
-  
-  IP4_ADDR(&gw, 192,168,0,1);
-  IP4_ADDR(&ipaddr, 192,168,0,2);
-  IP4_ADDR(&netmask, 255,255,255,0);
-
-  netif_add(&netif, &ipaddr, &netmask, &gw, NULL, mintapif_init, ip_input);
-  
-  netif_set_default(&netif);
-
-  echo_init();
-  
-  printf("Applications started.\n");
-    
-
-  while (1) {
-    
-    if (mintapif_wait(&netif, TCP_TMR_INTERVAL) == MINTAPIF_TIMEOUT) {
-      tcp_tmr();
-    }
-    
-  }
-  
-  return 0;
-}
+#endif /* __MINIMAL_ECHO_H */
