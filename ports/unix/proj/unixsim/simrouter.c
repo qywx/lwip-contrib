@@ -80,7 +80,9 @@ tcpip_init_done(void *arg)
   sem = arg;
   sys_sem_signal(*sem);
 }
-/*-----------------------------------------------------------------------------------*/
+
+struct netif netif_tap, netif_unix;
+
 static void
 main_thread(void *arg)
 {
@@ -92,13 +94,13 @@ main_thread(void *arg)
   IP4_ADDR(&ipaddr, 192,168,0,2);
   IP4_ADDR(&netmask, 255,255,255,0);
 
-  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, tapif_init,
+  netif_set_default(netif_add(&netif_tap,&ipaddr, &netmask, &gw, NULL, tapif_init,
 			      tcpip_input));
 
   IP4_ADDR(&gw, 192,168,1,1);
   IP4_ADDR(&ipaddr, 192,168,1,1);
   IP4_ADDR(&netmask, 255,255,255,0);
-  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, unixif_init_server,
+  netif_set_default(netif_add(&netif_unix,&ipaddr, &netmask, &gw, NULL, unixif_init_server,
 			      tcpip_input));
 
   system("route add 192.168.1.1 192.168.0.2");
