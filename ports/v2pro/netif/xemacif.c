@@ -54,8 +54,8 @@
 #include "xemac.h"
 #include "xparameters.h"
 #include "xstatus.h"
-#include "xintc.h"
-#include "exception.h"
+//#include "xintc.h"
+#include "xexception_l.h"
 
 /*---------------------------------------------------------------------------*/
 /* LWIP Include Files                                                        */
@@ -65,6 +65,7 @@
 #include "lwip/def.h"
 #include "lwip/mem.h"
 #include "lwip/pbuf.h"
+#include "lwip/stats.h"
 #include "lwip/sys.h"
 #include "lwip/netif.h"
 #include "netif/etharp.h"
@@ -79,7 +80,6 @@
 /*---------------------------------------------------------------------------*/
 /* Constant Definitions                                                      */
 /*---------------------------------------------------------------------------*/
-#define EMAC_INTR_ID 28 /* Interrupt ID for EMAC */
 #define XEM_MAX_FRAME_SIZE_IN_WORDS ((XEM_MAX_FRAME_SIZE/sizeof(Xuint32))+1)
 
 /*---------------------------------------------------------------------------*/
@@ -115,97 +115,53 @@ static void ErrorHandler(void *CallBackRef, XStatus Code);
 static err_t 
 low_level_init(struct netif *netif_ptr)
 {
-   XIntc *IntcInstancePtr;
-   
-   XEmac * InstancePtr;
-   Xuint16 DeviceId = XPAR_EMAC_0_DEVICE_ID; /* from xparameters.h */
-#ifdef LWIP_XEMAC_USE_INTMODE
-   Xuint16 IntcDeviceId = XPAR_INTC_0_DEVICE_ID;
-#endif /* LWIP_XEMAC_USE_INTMODE */
+   XEmac *InstancePtr = mem_malloc(sizeof(XEmac));
+   Xuint16 DeviceId = XPAR_MY_OPB_ETHERNET_DEVICE_ID;
    XStatus Result;
    Xuint32 Options;
 
    struct xemacif *xemacif_ptr;
 
    xemacif_ptr = netif_ptr->state;
-
-   /* Get Instance of EMAC Driver */
-   xemacif_ptr->instance_ptr = InstancePtr = XEmac_GetInstance(0);
-
-#ifdef LWIP_XEMAC_USE_INTMODE
-   /* Get Instance of Interrupt Controller Driver */
-   IntcInstancePtr = XIntc_GetInstance(0);
-#endif /* LWIP_XEMAC_USE_INTMODE */
+   xemacif_ptr->instance_ptr = InstancePtr;
 
    /* Call Initialize Function of EMAC driver */
    Result = XEmac_Initialize(InstancePtr, DeviceId);
+   if (Result != XST_SUCCESS) return ERR_MEM;
+
+   /* Do self-test */
+/*   Result = XEmac_SelfTest(InstancePtr);
    if (Result != XST_SUCCESS) {
       return ERR_MEM;
    }
-
-#ifdef LWIP_XEMAC_USE_INTMODE
-   if (XIntc_Initialize(IntcInstancePtr, IntcDeviceId) != XST_SUCCESS) {
-      return ERR_MEM;
-   }
-#endif /* LWIP_XEMAC_USE_INTMODE */
-
-   if (XEmac_IsSgDma(InstancePtr)) {
-      /* not configured for direct FIFO access */
-      return ERR_MEM;
-   }
-
-   Result = XEmac_SelfTest(InstancePtr);
-   if (Result != XST_SUCCESS && Result != XST_DEVICE_IS_STARTED) {
-      return ERR_MEM;
-   }
-
-#ifdef LWIP_XEMAC_USE_INTMODE
-   Result = XIntc_SelfTest(IntcInstancePtr);
-   if (Result != XST_SUCCESS && Result != XST_DEVICE_IS_STARTED) {
-      return ERR_MEM;
-   }
-#endif /* LWIP_XEMAC_USE_INTMODE */
+*/
 
    /* Stop the EMAC hardware */
-   (void) XEmac_Stop(InstancePtr);
+   XEmac_Stop(InstancePtr);
 
    /* Set MAC Address of EMAC */
    Result = XEmac_SetMacAddress(InstancePtr, (Xuint8*) netif_ptr->hwaddr);
    if (Result != XST_SUCCESS) return ERR_MEM;
 
-   /* Set MAC Options - UNICAST and BROADCAST */
-#ifdef LWIP_XEMAC_USE_INTMODE
-   Options = (XEM_UNICAST_OPTION | XEM_BROADCAST_OPTION);
-#else /* LWIP_XEMAC_USE_INTMODE */
-   Options = (XEM_UNICAST_OPTION | XEM_BROADCAST_OPTION | XEM_POLLED_OPTION);
-#endif /* LWIP_XEMAC_USE_INTMODE */
+   /* Set MAC Options */
    
+   Options = ( XEM_INSERT_FCS_OPTION | 
+               XEM_INSERT_PAD_OPTION | 
+               XEM_UNICAST_OPTION | 
+               XEM_BROADCAST_OPTION | 
+               XEM_POLLED_OPTION |
+               XEM_STRIP_PAD_FCS_OPTION);
+
    Result = XEmac_SetOptions(InstancePtr, Options);
    if (Result != XST_SUCCESS) return ERR_MEM;
 
-#ifdef LWIP_XEMAC_USE_INTMODE
-   /* Set Callbacks and error handler */
-   XEmac_SetFifoSendHandler(InstancePtr, netif_ptr, FifoSendHandler);
-   XEmac_SetFifoRecvHandler(InstancePtr, netif_ptr, xemacif_input);
-   XEmac_SetErrorHandler(InstancePtr, netif_ptr, ErrorHandler);
-
-   /* Connect to the interrupt controller and enable interrupts */
-   XIntc_Connect(IntcInstancePtr, EMAC_INTR_ID, 
-         XEmac_GetIntrHandler(InstancePtr), InstancePtr);
-#endif /* LWIP_XEMAC_USE_INTMODE */
-
    /* Start the EMAC hardware */
    Result = XEmac_Start(InstancePtr);
-   if (Result != XST_SUCCESS)
-      return ERR_MEM;
+   if (Result != XST_SUCCESS) return ERR_MEM;
 
-#ifdef LWIP_XEMAC_USE_INTMODE
-   if (XST_SUCCESS != XIntc_Start(IntcInstancePtr))
-      return ERR_MEM;
-
-   XIntc_Enable(IntcInstancePtr, EMAC_INTR_ID);
-#endif /* LWIP_XEMAC_USE_INTMODE */
-
+   /* Clear driver stats */
+   XEmac_ClearStats(InstancePtr);
+   
    return ERR_OK;
 }
 
@@ -264,13 +220,15 @@ static void ErrorHandler(void *CallBackRef, XStatus Code)
 /* contained in the pbuf that is passed to the function. This pbuf           */
 /* might be chained.                                                         */
 /*---------------------------------------------------------------------------*/
-static err_t low_level_output(struct xemacif *xemacif_ptr, struct pbuf *p)
+static err_t low_level_output(struct netif *netif, struct pbuf *p)
 {
    struct pbuf *q;
    u32_t frame_buffer[XEM_MAX_FRAME_SIZE_IN_WORDS];  /* word aligned */
    Xuint8 *frame_ptr;
    int payload_size = 0, i;
    XStatus Result;
+   Xuint32 Options;
+   struct xemacif *xemacif_ptr = netif->state;
 
    frame_ptr = (Xuint8 *) frame_buffer;
 
@@ -294,13 +252,42 @@ static err_t low_level_output(struct xemacif *xemacif_ptr, struct pbuf *p)
 
 #else /* LWIP_XEMAC_USE_INTMODE */
 
-   Result = XEmac_PollSend(xemacif_ptr->instance_ptr, 
+   Result = XEmac_PollSend(xemacif_ptr->instance_ptr,
                            (Xuint8 *) frame_buffer,
                            payload_size);
 
 #endif /* LWIP_XEMAC_USE_INTMODE */
 
-   if (Result != XST_SUCCESS) return ERR_MEM;      
+   if (Result != XST_SUCCESS)
+   {
+      xil_printf("XEmac_PollSend: failed\r\n");
+      if (Result == XST_FIFO_ERROR)
+      {
+         XEmac_Reset(xemacif_ptr->instance_ptr);
+         XEmac_SetMacAddress(xemacif_ptr->instance_ptr, 
+               (Xuint8*) xemacif_ptr->ethaddr);
+         Options = ( XEM_INSERT_FCS_OPTION | 
+                     XEM_INSERT_PAD_OPTION | 
+                     XEM_UNICAST_OPTION | 
+                     XEM_BROADCAST_OPTION | 
+                     XEM_POLLED_OPTION | 
+                     XEM_STRIP_PAD_FCS_OPTION);
+         XEmac_SetOptions(xemacif_ptr->instance_ptr, Options);
+         XEmac_Start(xemacif_ptr->instance_ptr);
+         xil_printf("XEmac_PollSend: returned XST_FIFO_ERROR\r\n");
+      }
+      return ERR_MEM;
+   }
+
+#if 0
+   xil_printf("\r\n\r\n TXFRAME:\r\n");
+   for (i=0 ; i < payload_size ; i++) {
+      xil_printf("%2X", ((Xuint8 *) frame_buffer)[i]);
+      if (! (i%20) && i) xil_printf("\r\n");
+      else xil_printf(" ");
+   }
+   xil_printf ("\r\n\r\n");
+#endif
 
 #ifdef LINK_STATS
    lwip_stats.link.xmit++;
@@ -322,13 +309,9 @@ static struct pbuf * low_level_input(struct xemacif *xemacif_ptr)
    
    Xuint32 RecvBuffer[XEM_MAX_FRAME_SIZE_IN_WORDS];
    Xuint32 FrameLen = XEM_MAX_FRAME_SIZE;
-   Xuint32 i;
+   Xuint32 i, Options;
    u8_t * frame_bytes = (u8_t *) RecvBuffer;
    XStatus Result;
-
-#ifdef CHRIS_DEBUG
-   char ascii[2];
-#endif /* CHRIS_DEBUG */
 
 #ifdef LWIP_XEMAC_USE_INTMODE
    Result = XEmac_FifoRecv(EmacPtr, (Xuint8 *)RecvBuffer, &FrameLen);
@@ -337,27 +320,43 @@ static struct pbuf * low_level_input(struct xemacif *xemacif_ptr)
 #endif /* LWIP_XEMAC_USE_INTMODE */
 
    if (Result != XST_SUCCESS)
+   {
+      if (!(Result == XST_NO_DATA || Result == XST_BUFFER_TOO_SMALL))
+      {
+         XEmac_Reset(xemacif_ptr->instance_ptr);
+         XEmac_SetMacAddress(xemacif_ptr->instance_ptr, 
+               (Xuint8*) xemacif_ptr->ethaddr);
+         Options = ( XEM_INSERT_FCS_OPTION | 
+                     XEM_INSERT_PAD_OPTION | 
+                     XEM_UNICAST_OPTION | 
+                     XEM_BROADCAST_OPTION | 
+                     XEM_POLLED_OPTION | 
+                     XEM_STRIP_PAD_FCS_OPTION);
+         XEmac_SetOptions(xemacif_ptr->instance_ptr, Options);
+         XEmac_Start(xemacif_ptr->instance_ptr);
+      }
       return p;
+   }
 
 #if 0
-   printf("\r\n");
+   xil_printf("\r\n");
    for (i=0 ; i < FrameLen ; i++) {
-      printf("%4X", frame_bytes[i]);
-      if (! (i%20) && i) printf("\r\n");
-      else printf(" ");
+      xil_printf("%2X", frame_bytes[i]);
+      if (! (i%20) && i) xil_printf("\r\n");
+      else xil_printf(" ");
    }
-   printf ("\r\n");
+   xil_printf ("\r\n");
 #endif
 
    /* Allocate a pbuf chain of pbufs from the pool. */
-   p = pbuf_alloc(PBUF_LINK, FrameLen, PBUF_POOL);
+   p = pbuf_alloc(PBUF_RAW, FrameLen, PBUF_POOL);
 
    if(p != NULL) {
    /* Iterate over the pbuf chain until we have
     * read the entire packet into the pbuf. */
       for(q = p; q != NULL; q = q->next) {
          /* Read enough bytes to fill this pbuf 
-          * in the chain.  The available data in 
+          * in the chain.  The avaliable data in 
           * the pbuf is given by the q->len variable. */
          for (i = 0 ; i < q->len ; i++) {
             ((u8_t *)q->payload)[i] = *(frame_bytes++);
@@ -393,8 +392,11 @@ static err_t xemacif_output(struct netif *netif_ptr,
    struct xemacif *xemacif_ptr = xemacif_ptr = netif_ptr->state;
 
    p = etharp_output(netif_ptr, ipaddr, p);
-   if (p != NULL)
-      return low_level_output(xemacif_ptr, p);
+
+   if (p != NULL) {
+      /* send the frame */
+      low_level_output(netif_ptr, p);
+   }
    return ERR_OK;
 }
 
@@ -441,7 +443,7 @@ void xemacif_input(void *CallBackRef)
       }
 
       if(q != NULL) {
-         low_level_output(xemacif_ptr, q);
+         low_level_output(netif_ptr, q);
          pbuf_free(q);
       }
    }
@@ -498,12 +500,12 @@ void xemacif_init(struct netif *netif_ptr)
    netif_ptr->name[0] = IFNAME0;
    netif_ptr->name[1] = IFNAME1;
    netif_ptr->output = xemacif_output;
-   netif_ptr->linkoutput = NULL;
+   netif_ptr->linkoutput = low_level_output;
 
    /* Copy pointer to netif_ptr->hwaddr into the xemacif_ptr->ethaddr */
    xemacif_ptr->ethaddr = (struct eth_addr *)&(netif_ptr->hwaddr[0]);
 
-   /* Set EXmac instance pointer to NULL. It gets set in low_level_init() */
+   /* Set XEmac instance pointer to NULL. It gets set in low_level_init() */
    xemacif_ptr->instance_ptr = NULL;
    
    low_level_init(netif_ptr);
