@@ -76,7 +76,7 @@ a lot of data that needs to be copied, this should be set high. */
    for sequential API communication and incoming packets. Used in
    src/api/tcpip.c. */
 #define MEMP_NUM_TCPIP_MSG      0
-/* MEMP_NUM_SYS_TIMEOUT: the number of simulateously active
+/* MEMP_NUM_SYS_TIMEOUT: the number of simultaneously active
    timeouts. */
 #define MEMP_NUM_SYS_TIMEOUT    0
 
@@ -137,7 +137,7 @@ a lot of data that needs to be copied, this should be set high. */
    on a device with only one network interface, define this to 0. */
 #define IP_FORWARD              0
 
-/* If defined to 1, IP options are allowed (but not parsed). If
+/* If defined to 1, IP options are allowed (but ignored). If
    defined to 0, all packets with IP options are dropped. */
 #define IP_OPTIONS              1
 
@@ -156,7 +156,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define DHCP_DOES_ARP_CHECK     1
 
 /* ---------- UDP options ---------- */
-#define LWIP_UDP                0
+#define LWIP_UDP                1
 #define UDP_TTL                 255
 
 
