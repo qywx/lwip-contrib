@@ -367,7 +367,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
         
     } else {
         /* Increment use count on pbuf */
-        pbuf_ref_chain(p);
+        pbuf_ref(p);
         
         /* Put buffers on descriptor ring, but don't mark them as ready yet */
         tx_insert_eof = tx_insert_sof = mcf5272->tx_insert;
