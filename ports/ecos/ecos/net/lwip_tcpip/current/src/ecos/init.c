@@ -86,7 +86,7 @@ void lwip_init(void)
 #elif PPP_SUPPORT
 	pppInit();
 #if PAP_SUPPORT || CHAP_SUPPORT
-	pppSetAuth("ecos", "picula");
+	pppSetAuth(PPPAUTHTYPE_PAP, "ecos", "picula");
 #endif
 	pppOpen(sio_open(2), pppMyCallback, NULL);
 #else	

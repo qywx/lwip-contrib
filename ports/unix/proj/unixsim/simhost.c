@@ -176,6 +176,10 @@ main_thread(void *arg)
       exit(1);
   }
 
+#ifdef LWIP_PPP_CHAP_TEST
+  pppSetAuth(PPPAUTHTYPE_CHAP, "lwip", "mysecret");
+#endif
+
   pppOpen(ppp_sio, pppLinkStatusCallback, NULL);
 #endif /* PPP_SUPPORT */
   

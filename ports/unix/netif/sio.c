@@ -317,10 +317,15 @@ sio_status_t * sio_open( int devnum )
 	    if(childpid == 0) {
 		execl("/usr/sbin/pppd", "pppd",
 			"ms-dns", "198.168.100.7",
-			"local", "silent", "crtscts",
-			"noauth", "nodetach",
-			"mru", "1524",
-			"mtu", "1500",
+			"local", "crtscts",
+			"debug",
+#ifdef LWIP_PPP_CHAP_TEST
+			"auth",
+			"require-chap",
+			"remotename", "lwip",
+#else
+			"noauth",
+#endif
 			"192.168.1.1:192.168.1.2",
 			NULL);
 		perror("execl pppd");
