@@ -31,7 +31,7 @@
 //==========================================================================
 
 /*
- * init.c - helper code for initing applications that use lwIP		
+ * init.c - misc lwip ecos glue functions 
  */
 #include <pkgconf/system.h>
 #include "lwip/opt.h"
@@ -86,6 +86,7 @@ void lwip_set_addr(struct netif *netif);
 #if PPP_SUPPORT
 #define PPP_USER "pppuser"
 #define PPP_PASS "ppppass"
+
 void 
 pppMyCallback(void *a , int e, void * arg)
 {
@@ -119,8 +120,8 @@ struct netif ecos_loopif;
  * Called by the eCos application at startup
  * wraps various init calls
  */
-extern int lwip_init(void);
-int lwip_init(void)
+int
+lwip_init(void)
 {
 	struct ip_addr ipaddr, netmask, gw;
 	static int inited = 0;
@@ -165,7 +166,8 @@ int lwip_init(void)
 	return 0;
 }
 
-void lwip_set_addr(struct netif *netif)
+void
+lwip_set_addr(struct netif *netif)
 {
 	struct ip_addr ipaddr, netmask, gw;
 
@@ -177,6 +179,7 @@ void lwip_set_addr(struct netif *netif)
 	netif_list = netif;
 	
 	netif->input = tcpip_input;
+	//netif->input = ip_input;
 }
 
 #ifdef CYGPKG_IO_ETH_DRIVERS
@@ -184,7 +187,8 @@ void lwip_set_addr(struct netif *netif)
 
 cyg_sem_t delivery;
 
-void lwip_dsr_stuff(void)
+void
+lwip_dsr_stuff(void)
 {
   cyg_semaphore_post(&delivery);
 }
@@ -244,9 +248,11 @@ arp_timer(void *arg)
 static void
 ecosglue_init(void)
 {
+  cyg_semaphore_init(&delivery, 0);
   init_hw_drivers();
-  sys_thread_new(input_thread, (void*)0, 6);
+  sys_thread_new(input_thread, (void*)0, CYGPKG_LWIP_ETH_THREAD_PRIORITY);
   etharp_init();
   sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
 }
-#endif
+
+#endif //CYGPKG_IO_ETH_DRIVERS

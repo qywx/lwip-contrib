@@ -51,7 +51,7 @@
 cdl_package CYGPKG_NET_LWIP {
 	display "lwIP"
 	description	"Lightweight TCP/IP stack"	
-	requires {CYGPKG_IO_ETH_DRIVERS || (CYGPKG_LWIP_SLIP == 1) || (CYGPKG_LWIP_PPP == 1)}
+	requires {(CYGPKG_LWIP_ETH ==  1) || (CYGPKG_LWIP_SLIP == 1) || (CYGPKG_LWIP_PPP == 1)}
 
 	compile	core/mem.c	\
 		core/memp.c	\
@@ -72,7 +72,6 @@ cdl_package CYGPKG_NET_LWIP {
 		api/tcpip.c	\
 		api/err.c	\
 		api/sockets.c	\
-		netif/etharp.c	\
 		ecos/sys_arch.c	\
 		ecos/init.c	
 	
@@ -149,7 +148,7 @@ cdl_package CYGPKG_NET_LWIP {
 		flavor 		none
 		no_define
 		description   	"
-			Memory options for lwIP."
+			Tunables for various aspects of memory usage throughout the stack."
 			
 		
 		
@@ -165,7 +164,7 @@ cdl_package CYGPKG_NET_LWIP {
 		cdl_option CYGPKG_LWIP_MEM_SIZE {
 			display		"Memory size"
 			flavor		data
-			default_value 	2000
+			default_value 	20000
 			description   	"
 				MEM_SIZE: the size of the heap memory. If the application will send
 				a lot of data that needs to be copied, this should be set high."
@@ -279,6 +278,8 @@ cdl_package CYGPKG_NET_LWIP {
 		display		"PBUF"
 		flavor 		none
 		no_define
+		description   	"
+		Packet buffer related tunings."
 
 			
 		cdl_option CYGPKG_LWIP_PBUF_POOL_SIZE {
@@ -312,6 +313,8 @@ cdl_package CYGPKG_NET_LWIP {
 		display		"TCP"
 		flavor 		none
 		no_define
+		description   	"
+		Tune the TCP protocol details"
 			
 		cdl_option CYGPKG_LWIP_TCP {
 			display		"Activate TCP"
@@ -431,6 +434,23 @@ cdl_package CYGPKG_NET_LWIP {
 				   defined to 0, all packets with IP options are dropped."
 		
 		}
+		
+		cdl_option CYGPKG_LWIP_IP_FRAG {
+			display		"Support IP fragmentation"
+			flavor		bool
+			default_value 	1
+			description   	"
+			"	
+		}
+
+		cdl_option CYGPKG_LWIP_IP_REASS {
+			display		"Support IP reassembly"
+			flavor		bool
+			default_value 	1
+			description   	"
+			"	
+		}
+
 	}
 
 	cdl_component CYGPKG_LWIP_ICMP_OPTIONS {
@@ -480,12 +500,29 @@ cdl_package CYGPKG_NET_LWIP {
 		compile netif/loopif.c
 	}
 
+	cdl_component CYGPKG_LWIP_ETH {
+		display "Ethernet support"
+		flavor bool
+		requires CYGPKG_IO_ETH_DRIVERS
+		default_value	1
+		description "Ethernet support"
+		compile netif/etharp.c
+		
+		cdl_option CYGPKG_LWIP_ETH_THREAD_PRIORITY {
+			display "ethernet input thread priority"
+			flavor data
+			default_value	6
+			description "later"
+		}
+		
+	}
+
 	cdl_component CYGPKG_LWIP_SLIP {
 		display "SLIP"
 		flavor bool
 		requires CYGPKG_IO_SERIAL_DEVICES
 		default_value	0
-		description "IP over serial line"
+		description "IP over Serial Line"
 		compile netif/slipif.c ecos/sio.c
 		
 		cdl_option CYGPKG_LWIP_SLIPIF_THREAD_PRIORITY {
