@@ -6,6 +6,8 @@
 /* printf() and abort() */
 #include <stdio.h>
 #include <stdlib.h>
+/* isdigit() */
+#include <ctype.h>
 
 #include "arch/cpu.h"
 
