@@ -32,6 +32,9 @@
 #ifndef __ARCH_CC_H__
 #define __ARCH_CC_H__
 
+/* Include some files for defining library routines */
+#include <string.h>
+
 /* Define platform endianness */
 #ifndef BYTE_ORDER
 #define BYTE_ORDER LITTLE_ENDIAN

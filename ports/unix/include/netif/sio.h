@@ -4,7 +4,7 @@
 #include "lwip/sys.h"
 #include "lwip/netif.h"
 #include "netif/fifo.h"
-//#include "netif/pppif.h"
+/*#include "netif/pppif.h"*/
 /* BAUDRATE is defined in sio.c as it is implementation specific */
 
 typedef struct sio_status_t {

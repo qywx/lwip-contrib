@@ -28,8 +28,8 @@
 #include <sys/signal.h>
 #include <sys/types.h>
 
-//#define BAUDRATE B19200 
-//#define BAUDRATE B57600
+/*#define BAUDRATE B19200 */
+/*#define BAUDRATE B57600 */
 #define BAUDRATE B115200
 
 #ifndef TRUE
@@ -45,10 +45,10 @@
 #endif
 
 
-// typedef struct siostruct_t
-// { 
-// 	sio_status_t *sio;
-// } siostruct_t;
+/*  typedef struct siostruct_t */
+/*  {  */
+/*  	sio_status_t *sio; */
+/*  } siostruct_t; */
 
 /** array of ((siostruct*)netif->state)->sio structs */
 static sio_status_t statusar[2];
@@ -125,10 +125,10 @@ static int sio_init( char * device, int devnum, sio_status_t * siostat )
 	tcgetattr( fd,&oldtio ); /* save current port settings */
 	/* set new port settings */
 	/* see 'man termios' for further settings */
-	newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD; // | CRTSCTS;
+	newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD; /* | CRTSCTS; */
 	newtio.c_iflag = 0;
 	newtio.c_oflag = 0;
-	newtio.c_lflag = 0; //ECHO;
+	newtio.c_lflag = 0; /*ECHO; */
 	newtio.c_cc[VMIN] = 1; /* Read 1 byte at a time, no timer */
 	newtio.c_cc[VTIME] = 0;
 
@@ -144,7 +144,7 @@ static int sio_init( char * device, int devnum, sio_status_t * siostat )
 static void sio_speed( int fd, int speed )
 {
 	struct termios oldtio,newtio;
-	//  int fd;
+	/*  int fd; */
 
 	DEBUGF( 1,("sio_speed: baudcode:%d  enter\n",speed ) );
 
@@ -158,10 +158,10 @@ static void sio_speed( int fd, int speed )
 
 	/* set new port settings 
 	* see 'man termios' for further settings */
-	newtio.c_cflag = speed | CS8 | CLOCAL | CREAD; //§ | CRTSCTS;
+	newtio.c_cflag = speed | CS8 | CLOCAL | CREAD; /*§ | CRTSCTS; */
 	newtio.c_iflag = 0;
 	newtio.c_oflag = 0;
-	newtio.c_lflag = 0; //ECHO;
+	newtio.c_lflag = 0; /*ECHO; */
 	newtio.c_cc[VMIN] = 1; /* Read 1 byte at a time, no timer */
 	newtio.c_cc[VTIME] = 0;
 
@@ -174,7 +174,7 @@ static void sio_speed( int fd, int speed )
 /* --public-functions----------------------------------------------------------------------------- */
 void sio_send( u8_t c, sio_status_t * siostat )
 {
-//	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;
+    /*	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio; */
 
 	if ( write( siostat->fd, &c, 1 ) <= 0 )
 	{
@@ -184,7 +184,7 @@ void sio_send( u8_t c, sio_status_t * siostat )
 
 void sio_send_string( u8_t *str, sio_status_t * siostat )
 {
-//	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;
+    /*	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio; */
 	int len = strlen( (const char *)str );
 
 	if ( write( siostat->fd, str, len ) <= 0 )
@@ -198,27 +198,27 @@ void sio_send_string( u8_t *str, sio_status_t * siostat )
 void sio_flush( sio_status_t * siostat )
 {
 	/* not implemented in unix as it is not needed */
- 	//sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;
+ 	/*sio_status_t * siostat = ((siostruct_t*)netif->state)->sio; */
 }
 
 
-//u8_t sio_recv( struct netif * netif )
+/*u8_t sio_recv( struct netif * netif )*/
 u8_t sio_recv( sio_status_t * siostat )
 {
-//	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;
+    /*	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio; */
 	return fifoGet( &(siostat->myfifo) );
 }
 
 s16_t sio_poll(sio_status_t * siostat)
 {
-//	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;
+    /*	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;*/
 	return fifoGetNonBlock( &(siostat->myfifo) );
 }
 
 
 void sio_expect_string( u8_t *str, sio_status_t * siostat )
 {
-//	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;
+    /*	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;*/
 	u8_t c;
  	int finger=0;
   
@@ -232,14 +232,14 @@ void sio_expect_string( u8_t *str, sio_status_t * siostat )
 			finger++;
 		} else if ( finger > 0 )
 		{
-			//it might fit in the beginning?
+                    /*it might fit in the beginning? */
 			if ( str[0] == c )
 			{
 				finger = 1;
 			}
 		}
 		if ( 0 == str[finger] ) 
-			break;	// done, we have a match
+                    break;	/* done, we have a match */
 	}
 	DEBUGF( (PPP_DEBUG | SIO_DEBUG), ("[match]\n") );
 }
@@ -251,15 +251,15 @@ sio_status_t * sio_open( int devnum )
 
 	/* would be nice with dynamic memory alloc */
 	sio_status_t * siostate = &statusar[ devnum ];
-// 	siostruct_t * tmp;
-// 
-// 
-// 	tmp = (siostruct_t*)(netif->state);
-// 	tmp->sio = siostate;
-// 
-// 	tmp = (siostruct_t*)(netif->state);
-// 
-// 	((sio_status_t*)(tmp->sio))->fd = 0;
+/* 	siostruct_t * tmp; */
+
+
+/* 	tmp = (siostruct_t*)(netif->state); */
+/* 	tmp->sio = siostate; */
+
+/* 	tmp = (siostruct_t*)(netif->state); */
+
+/* 	((sio_status_t*)(tmp->sio))->fd = 0; */
 
 	fifoInit( &siostate->myfifo );
 
@@ -289,7 +289,7 @@ sio_status_t * sio_open( int devnum )
 */
 void sio_change_baud( sioBaudrates baud, sio_status_t * siostat )
 {
-//	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;
+    /*	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;*/
 
 	DEBUGF( 1,("sio_change_baud\n" ));
 

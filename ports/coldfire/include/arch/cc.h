@@ -30,12 +30,13 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: cc.h,v 1.2 2003/02/11 20:59:49 davidhaas Exp $
+ * $Id: cc.h,v 1.3 2003/02/12 15:09:15 davidhaas Exp $
  */
 #ifndef __CC_H__
 #define __CC_H__
 
 #include <types.h>
+#include <string.h>
 
 #define BYTE_ORDER BIG_ENDIAN
 #define IMM_ADDRESS		(0x10000000)

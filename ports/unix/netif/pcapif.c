@@ -119,12 +119,12 @@ timeout(void *arg)
       ethhdr = p->payload;
       switch(htons(ethhdr->type)) {
       case ETHTYPE_IP:
-	arp_ip_input(netif, p);
+	etharp_ip_input(netif, p);
 	pbuf_header(p, -14);
 	netif->input(p, netif);
 	break;
       case ETHTYPE_ARP:
-	p = arp_arp_input(netif, pcapif->ethaddr, p);
+	p = etharp_arp_input(netif, pcapif->ethaddr, p);
 	if(p != NULL) {
 	  printf("ARP outout\n");
 	  pbuf_free(p);
