@@ -31,7 +31,11 @@
 
 CCDEP=gcc
 CC=gcc
-CFLAGS=-g -Wall -DIPv4 -DLWIP_DEBUG -pedantic
+
+#To Compile for linux: make ARCH=linux
+#To Compile for cygwin: make ARCH=cygwin
+ARCH=unix
+CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -DLWIP_DEBUG -pedantic
 LDFLAGS=-lpcap
 CONTRIBDIR=../../../..
 LWIPARCH=$(CONTRIBDIR)/ports/unix

@@ -30,12 +30,16 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: cc.h,v 1.1 2003/01/18 18:47:22 jani Exp $
+ * $Id: cc.h,v 1.2 2003/02/11 20:59:49 davidhaas Exp $
  */
 #ifndef __CC_H__
 #define __CC_H__
 
 #include <types.h>
+
+#define BYTE_ORDER BIG_ENDIAN
+#define IMM_ADDRESS		(0x10000000)
+#define FEC_LEVEL		4
 
 // typedef unsigned   char    u8_t;
 // typedef signed     char    s8_t;
@@ -46,6 +50,7 @@
 
 typedef u32_t mem_ptr_t;
 
+/* Compiler hints for packing structures */
 #define PACK_STRUCT_BEGIN #pragma pack(1,1,0)
 #define PACK_STRUCT_STRUCT
 #define ALIGN_STRUCT_8_BEGIN #pragma pack(1,8,0)
@@ -82,5 +87,20 @@ typedef	struct _types_fd_set {
      for (__i = 0; __i < sizeof (*(p)); ++__i)  \
        *__tmp++ = 0;                            \
 } while (0)
+
+/* prototypes for printf() and abort() */
+#include <stdio.h>
+#include <stdlib.h>
+/* Plaform specific diagnostic output */
+#if 0
+#define LWIP_PLATFORM_DIAG(x)	{printf x;}
+
+#define LWIP_PLATFORM_ASSERT(x)  {printf("Assertion \"%s\" failed at line %d in %s\n", \
+                                     x, __LINE__, __FILE__); fflush(NULL); abort();}
+#endif
+
+#define LWIP_PLATFORM_DIAG(x) ;
+
+#define LWIP_PLATFORM_ASSERT(x) ;
 
 #endif /* __CC_H__ */

@@ -150,7 +150,7 @@ current_thread(void)
   return st;
 }
 /*-----------------------------------------------------------------------------------*/
-void
+sys_thread_t
 sys_thread_new(void (*function)(void *arg), void *arg)
 {
   int code;
@@ -172,6 +172,7 @@ sys_thread_new(void (*function)(void *arg), void *arg)
 		       code, (int)st));
     abort();
   }
+  return st;
 }
 /*-----------------------------------------------------------------------------------*/
 struct sys_mbox *

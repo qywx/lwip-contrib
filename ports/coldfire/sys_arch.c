@@ -126,7 +126,7 @@ introduce_thread(NU_TASK *id, void (*function)(void *arg), void *arg)
 /*---------------------------------------------------------------------------------*/
 /* We use Nucleus task as thread. Create one with a standard size stack at a standard
  * priority. */
-void
+sys_thread_t
 sys_thread_new(void (*function)(void *arg), void *arg)
 {
     NU_TASK *p_thread;
@@ -161,7 +161,7 @@ sys_thread_new(void (*function)(void *arg), void *arg)
                                         NU_PREEMPT,
                                         NU_START);
                 if (status == NU_SUCCESS)
-                    return;
+                    return p_thread;
             }
             
         }

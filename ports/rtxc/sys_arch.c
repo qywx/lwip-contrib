@@ -241,7 +241,7 @@ sys_thread(void)
   KS_terminate(0);
 }
 /*-----------------------------------------------------------------------------------*/
-void
+sys_thread_t
 sys_thread_new(void (* function)(void *arg), void *arg) 
 {
   TASK newtask;
@@ -262,6 +262,7 @@ sys_thread_new(void (* function)(void *arg), void *arg)
   KS_deftask_arg(newtask, &threadarg);    
   KS_execute(newtask);
   KS_wait(THRDSYNC);
+  return newtask;
 }
 
 
