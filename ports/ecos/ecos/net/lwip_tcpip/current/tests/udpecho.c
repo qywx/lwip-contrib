@@ -30,7 +30,6 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: udpecho.c,v 1.2 2003/03/24 09:19:25 jani Exp $
  */
 
 #include "lwip/api.h"
