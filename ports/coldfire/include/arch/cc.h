@@ -30,13 +30,18 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: cc.h,v 1.3 2003/02/12 15:09:15 davidhaas Exp $
+ * $Id: cc.h,v 1.4 2003/02/12 22:02:02 davidhaas Exp $
  */
 #ifndef __CC_H__
 #define __CC_H__
 
 #include <types.h>
 #include <string.h>
+
+/* Specific code for NBS Card Technology */
+#ifdef CARDTECH
+#include <errorlog.h>
+#endif
 
 #define BYTE_ORDER BIG_ENDIAN
 #define IMM_ADDRESS		(0x10000000)
@@ -93,15 +98,14 @@ typedef	struct _types_fd_set {
 #include <stdio.h>
 #include <stdlib.h>
 /* Plaform specific diagnostic output */
-#if 0
+#ifndef LWIP_PLATFORM_DIAG
 #define LWIP_PLATFORM_DIAG(x)	{printf x;}
+#endif
 
+#ifndef LWIP_PLATFORM_ASSERT
 #define LWIP_PLATFORM_ASSERT(x)  {printf("Assertion \"%s\" failed at line %d in %s\n", \
                                      x, __LINE__, __FILE__); fflush(NULL); abort();}
 #endif
 
-#define LWIP_PLATFORM_DIAG(x) ;
-
-#define LWIP_PLATFORM_ASSERT(x) ;
 
 #endif /* __CC_H__ */
