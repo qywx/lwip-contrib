@@ -9,7 +9,8 @@ mkdir -p `dirname $CURRENT/$2`
 #type of BSD license which is not compatible with GPL
 #or that's what I'be been told and IANAL
 if [ "`dirname $1`" !=  "src/netif/ppp" ];  then
-	cat header $LWIP_CVS/$1 > $CURRENT/$2
+	#cat header $LWIP_CVS/$1 > $CURRENT/$2
+	cp -f $LWIP_CVS/$1 $CURRENT/$2
 else	
 	cp -f $LWIP_CVS/$1 $CURRENT/$2
 fi	
