@@ -154,6 +154,7 @@ lwip_init(void)
 #if LWIP_SLIP	
 	lwip_set_addr(&mynetif);
 	slipif_init(&mynetif);
+	netif_set_default(&mynetif);
 #elif PPP_SUPPORT
 	pppInit();
 #if PAP_SUPPORT || CHAP_SUPPORT
