@@ -481,8 +481,6 @@ cdl_package CYGPKG_NET_LWIP {
 		description "The Point-to-Point Protocol"
 		compile netif/ppp/ppp.c		\
 			netif/ppp/auth.c	\
-			netif/ppp/pap.c		\
-			netif/ppp/chap.c	\
 			netif/ppp/chpms.c	\
 			netif/ppp/fsm.c		\
 			netif/ppp/ipcp.c	\
@@ -494,6 +492,20 @@ cdl_package CYGPKG_NET_LWIP {
 			ecos/sio.c
 			
 
+		cdl_option CYGPKG_LWIP_PPP_PAP_AUTH {
+			display "Support PAP authentication"
+			flavor bool
+			default_value 1
+			compile netif/ppp/pap.c		
+		}
+		
+		cdl_option CYGPKG_LWIP_PPP_CHAP_AUTH {
+			display "Support CHAP authentication"
+			flavor bool
+			default_value 1
+			compile netif/ppp/chap.c		
+		}
+	
 		cdl_option CYGPKG_LWIP_PPP_DEV {
 			display "Serial device for PPP"
 			flavor 	data

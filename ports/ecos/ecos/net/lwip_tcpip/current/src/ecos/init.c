@@ -83,6 +83,8 @@ struct netif mynetif, loopif;
 static void ecosglue_init(void);
 void lwip_set_addr(struct netif *netif);
 #if PPP_SUPPORT
+#define PPP_USER "pppuser"
+#define PPP_PASS "ppppass"
 void 
 pppMyCallback(void *a , int e)
 {
@@ -140,7 +142,7 @@ int lwip_init(void)
 #elif PPP_SUPPORT
 	pppInit();
 #if PAP_SUPPORT || CHAP_SUPPORT
-	pppSetAuth(PPPAUTHTYPE_PAP, "ecos", "picula");
+	pppSetAuth(PPPAUTHTYPE_PAP, PPP_USER, PPP_PASS);
 #endif
 	pppOpen(sio_open(2), pppMyCallback, NULL);
 #else	
