@@ -96,8 +96,8 @@ static struct timeval starttime;
 static struct sys_sem *sys_sem_new_(u8_t count);
 static void sys_sem_free_(struct sys_sem *sem);
 
-static u16_t cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex,
-		       u16_t timeout);
+static u32_t cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex,
+		       u32_t timeout);
 
 /*-----------------------------------------------------------------------------------*/
 static struct sys_thread * 
@@ -244,10 +244,10 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
   sys_sem_signal(mbox->mutex);
 }
 /*-----------------------------------------------------------------------------------*/
-u16_t
-sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u16_t timeout)
+u32_t
+sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
 {
-  u16_t time = 1;
+  u32_t time = 1;
   
   /* The mutex lock is quick so we don't bother with the timeout
      stuff here. */
@@ -317,8 +317,8 @@ sys_sem_new_(u8_t count)
 }
 
 /*-----------------------------------------------------------------------------------*/
-static u16_t
-cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u16_t timeout)
+static u32_t
+cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
 {
   int tdiff;
   unsigned long sec, usec;
@@ -360,10 +360,10 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u16_t timeout)
   }
 }
 /*-----------------------------------------------------------------------------------*/
-u16_t
-sys_arch_sem_wait(struct sys_sem *sem, u16_t timeout)
+u32_t
+sys_arch_sem_wait(struct sys_sem *sem, u32_t timeout)
 {
-  u16_t time = 1;
+  u32_t time = 1;
   
   pthread_mutex_lock(&(sem->mutex));
   while(sem->c <= 0) {
