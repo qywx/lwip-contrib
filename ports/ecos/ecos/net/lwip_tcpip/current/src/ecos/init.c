@@ -1,7 +1,7 @@
 /*
  * init.c - helper code for initing applications that use lwIP		
  */
-
+#include <pkgconf/system.h>
 #include "lwip/opt.h"
 #include "lwip/sys.h"
 #include "lwip/memp.h"
@@ -16,15 +16,24 @@
 #include "netif/slipif.h"
 #endif
 
+#if PPP_SUPPORT
+#include "netif/ppp/ppp.h"
+#endif
+
+#include "netif/loopif.h"
+#include <cyg/hal/hal_if.h>
+
+#ifdef CYGPKG_IO_ETH_DRIVERS
 #include "netif/etharp.h"
 
 #include <cyg/io/eth/eth_drv.h>
 #include <cyg/io/eth/netdev.h>
-#include <cyg/hal/hal_if.h>
+
 
 // Define table boundaries
 CYG_HAL_TABLE_BEGIN(__NETDEVTAB__, netdev);
 CYG_HAL_TABLE_END(__NETDEVTAB_END__, netdev);
+#endif
 
 void inline IP_ADDR(struct ip_addr *ipaddr, char a, char b, char c, char d)
 {
@@ -38,7 +47,7 @@ void tcpip_init_done(void * arg)
 	sys_sem_signal(*sem);
 }
 
-struct netif mynetif;
+struct netif mynetif, loopif;
 static void ecosglue_init(void);
 void lwip_set_addr(struct netif *netif);
 #if PPP_SUPPORT
@@ -65,9 +74,14 @@ ppp_trace(int level, const char *format,...)
  * Called by the eCos application at startup
  * wraps various init calls
  */
-void lwip_init(void)
+int lwip_init(void)
 {
+	struct ip_addr ipaddr, netmask, gw;
+	static int inited = 0;
 	sys_sem_t sem;
+	if (inited)
+		return 1;
+	inited++;
 	
 	sys_init();	/* eCos specific initialization */
 	mem_init();	/* heap based memory allocator */
@@ -80,6 +94,14 @@ void lwip_init(void)
 	tcpip_init(tcpip_init_done,&sem);
 	sys_sem_wait(sem);
 	sys_sem_free(sem);
+
+
+  IP4_ADDR(&gw, 127,0,0,1);
+  IP4_ADDR(&ipaddr, 127,0,0,1);
+  IP4_ADDR(&netmask, 255,0,0,0);
+  
+  netif_add(&ipaddr, &netmask, &gw, NULL, loopif_init,
+	    tcpip_input);
 #if LWIP_SLIP	
 	lwip_set_addr(&mynetif);
 	slipif_init(&mynetif);
@@ -92,6 +114,7 @@ void lwip_init(void)
 #else	
 	ecosglue_init();		
 #endif	
+	return 0;
 }
 
 void lwip_set_addr(struct netif *netif)
@@ -102,12 +125,13 @@ void lwip_set_addr(struct netif *netif)
 	IP_ADDR(&ipaddr, CYGPKG_LWIP_MY_ADDR);
 	IP_ADDR(&netmask, CYGPKG_LWIP_NETMASK);
 	netif_set_addr(netif, &ipaddr, &netmask, &gw);
-	netif->next = NULL;
+	netif->next = netif_list;
 	netif_list = netif;
 	
 	netif->input = tcpip_input;
 }
 
+#ifdef CYGPKG_IO_ETH_DRIVERS
 //io eth stuff
 
 cyg_sem_t delivery;
@@ -177,3 +201,4 @@ ecosglue_init(void)
   etharp_init();
   sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
 }
+#endif
