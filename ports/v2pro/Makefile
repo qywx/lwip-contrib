@@ -9,26 +9,29 @@ ARCHIVER=powerpc-eabi-ar
 ARFLAGS=rs
 CP=cp
 COMPILERFLAGS=-Wall -gdwarf
-EXTRA_COMPILER_FLAGS = -DIPv4 -fpack-struct -msdata=eabi -mcpu=403
+#EXTRA_COMPILER_FLAGS = -DIPv4 -fpack-struct -msdata=eabi -mcpu=403
+EXTRA_COMPILER_FLAGS = -DIPv4 -msdata=eabi -mcpu=403
 LWIPDIR=../../../lwip/src
 LIB=liblwip4.a
-RELEASEDIR=../../../../../edk/projects/insight_v2pro/ppc405_i/lib
-INCLUDEDIR=../../../../../edk/projects/insight_v2pro/ppc405_i/include
+RELEASEDIR=../../../../../ppc405_i/lib
+INCLUDEDIR=../../../../../ppc405_i/include
 LEVEL=0
 
-#XLIBINCLUDEDIR=../../ppc405_i/include
-XLIBINCLUDEDIR=../../../../../edk/projects/insight_v2pro/ppc405_i/include
-XDRIVERSINCLUDEDIR=../../../../../edk/projects/insight_v2pro/
+XLIBINCLUDEDIR=../../../../../ppc405_i/include
 
 INCLUDES= \
 	-I$(LWIPDIR)/include \
-   -I$(LWIPDIR)/arch/$(LWIPARCH)/include \
    -I$(LWIPDIR)/include/ipv4 \
    -I$(XLIBINCLUDEDIR) \
 	-I./include \
    -I.
 
-INCLUDEFILES=../../../lwip/src/include
+INCLUDEFILES=../../../lwip/src/include/ipv4/lwip \
+             ../../../lwip/src/include/lwip \
+             ../../../lwip/src/include/netif \
+             ./include/netif \
+             ./include/arch \
+             ./lwipopts.h
 
 # COREFILES, CORE4FILES: The minimum set of files needed for lwIP.
 COREFILES=$(LWIPDIR)/core/mem.c \
@@ -45,7 +48,8 @@ COREFILES=$(LWIPDIR)/core/mem.c \
 CORE4FILES=$(LWIPDIR)/core/ipv4/icmp.c \
            $(LWIPDIR)/core/ipv4/ip.c \
 	        $(LWIPDIR)/core/inet.c \
-           $(LWIPDIR)/core/ipv4/ip_addr.c
+           $(LWIPDIR)/core/ipv4/ip_addr.c \
+           $(LWIPDIR)/core/ipv4/ip_frag.c
 
 # NETIFFILES: Files implementing various generic network interface functions.
 NETIFFILES=$(LWIPDIR)/netif/etharp.c
@@ -58,7 +62,6 @@ ARCHFILES=$(wildcard *.c \
 LWIPFILES=$(COREFILES) $(CORE4FILES) $(NETIFFILES) $(ARCHFILES)
 LWIPFILESW=$(wildcard $(LWIPFILES))
 LWIPOBJS=$(notdir $(LWIPFILESW:.c=.o))
-
 
 help:
 	@echo ""
@@ -93,13 +96,15 @@ help:
 	@echo ""
 	$(COMPILER) $(COMPILERFLAGS) $(EXTRA_COMPILER_FLAGS) $(INCLUDES) -c $(<:.o=.c)
 
-all ipv4 libs: $(LIB)
-.PHONY: all ipv4 libs
+all ipv4 libs: include $(LIB)
+.PHONY: all ipv4 libs include help
 
-include: dummy
-	${CP} -rf ${INCLUDEFILES} ${INCLUDEDIR}
+include:
+	@for i in $(INCLUDEFILES); do \
+      echo ${CP} -r $$i ${INCLUDEDIR}; \
+      ${CP} -r $$i ${INCLUDEDIR}; \
+   done
 
-dummy:
 clean:
 	@echo ""
 	@echo "Cleaning up..."
