@@ -73,6 +73,7 @@
 #if LWIP_RAW
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
+#include "lwip/sockets.h"
 #endif
 
 /*-----------------------------------------------------------------------------------*/
@@ -154,13 +155,16 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 /*-----------------------------------------------------------------------------------*/
 #if LWIP_RAW
 
-static void
+static int seq_num;
+
+#if 0
+/* Ping using the raw ip */
+static int
 ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *addr)
 {
   printf("ping recv\n");
+  return 1; /* eat the event */
 }
-
-static int seq_num;
 
 static void
 ping_send(struct raw_pcb *raw, struct ip_addr *addr)
@@ -177,7 +181,7 @@ ping_send(struct raw_pcb *raw, struct ip_addr *addr)
   iecho->seqno = htons(seq_num);
 
   iecho->chksum = inet_chksum(iecho, p->len);
-  raw_send_payload(raw,p,addr);
+  raw_send_to(raw,p,addr);
 
   pbuf_free(p);
 
@@ -205,6 +209,66 @@ ping_thread(void *arg)
   /* Never reaches this */
   raw_remove(raw);
 }
+#else
+/* Ping using the socket ip */
+
+static void
+ping_send(int s, struct ip_addr *addr)
+{
+  struct icmp_echo_hdr *iecho;
+  struct sockaddr_in to;
+
+  if (!(iecho = malloc(sizeof(struct icmp_echo_hdr))))
+    return;
+
+  ICMPH_TYPE_SET(iecho,ICMP_ECHO);
+  iecho->chksum = 0;
+  iecho->seqno = htons(seq_num);
+  iecho->chksum = inet_chksum(iecho, sizeof(*iecho));
+
+  to.sin_len = sizeof(to);
+  to.sin_family = AF_INET;
+  to.sin_addr.s_addr = addr->addr;
+
+  lwip_sendto(s,iecho,sizeof(*iecho),0,(struct sockaddr*)&to,sizeof(to));
+
+  free(iecho);
+  seq_num++;
+}
+
+static void
+ping_recv(int s, struct ip_addr *addr)
+{
+  char buf[200];
+  int fromlen,len;
+  struct sockaddr_in from;
+
+  len = lwip_recvfrom(s, buf,sizeof(buf),0,(struct sockaddr*)&from,&fromlen);
+
+  printf("Received %d bytes from %x\n",len,ntohl(from.sin_addr.s_addr));
+}
+
+static void
+ping_thread(void *arg)
+{
+  int s;
+  struct ip_addr dest_addr;
+
+  if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
+    return;
+  }
+
+  IP4_ADDR(&dest_addr,192,168,2,1);
+
+  while (1) {
+    printf("sending ping\n");
+    ping_send(s,&dest_addr);
+    ping_recv(s,&dest_addr);
+    sleep(1);
+  }
+}
+#endif
+
 #endif
 
 /*-----------------------------------------------------------------------------------*/

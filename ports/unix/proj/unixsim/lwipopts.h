@@ -215,6 +215,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- RAW options ---------- */
 #define LWIP_RAW                1
+#define RAW_TTL                 255
 
 /* ---------- Statistics options ---------- */
 
