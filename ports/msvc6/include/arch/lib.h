@@ -32,11 +32,6 @@
 #ifndef __ARCH_LIB_H__
 #define __ARCH_LIB_H__
 
-#ifndef _STRING_H_
-#ifndef _STRING_H
-int strlen(const char *str);
-int strncmp(const char *str1, const char *str2, int len);
-#endif /* _STRING_H */
-#endif /* _STRING_H_ */
+#include <string.h>
 
 #endif /* __ARCH_LIB_H__ */

@@ -100,7 +100,7 @@ SOURCE=.\test.c
 # End Group
 # Begin Source File
 
-SOURCE=.\lwip4\Release\lwip4.lib
+SOURCE=.\Release\lwip4.lib
 
 !IF  "$(CFG)" == "test - Win32 Release"
 
@@ -113,7 +113,7 @@ SOURCE=.\lwip4\Release\lwip4.lib
 # End Source File
 # Begin Source File
 
-SOURCE=.\lwip4\Debug\lwip4_d.lib
+SOURCE=.\Debug\lwip4_d.lib
 
 !IF  "$(CFG)" == "test - Win32 Release"
 
@@ -126,7 +126,7 @@ SOURCE=.\lwip4\Debug\lwip4_d.lib
 # End Source File
 # Begin Source File
 
-SOURCE=.\pktif\Debug\pktif_d.lib
+SOURCE=.\Debug\pktif_d.lib
 
 !IF  "$(CFG)" == "test - Win32 Release"
 
@@ -139,7 +139,7 @@ SOURCE=.\pktif\Debug\pktif_d.lib
 # End Source File
 # Begin Source File
 
-SOURCE=.\pktif\Release\pktif.lib
+SOURCE=.\Release\pktif.lib
 
 !IF  "$(CFG)" == "test - Win32 Release"
 

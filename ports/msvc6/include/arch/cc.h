@@ -46,5 +46,6 @@ typedef u32_t mem_ptr_t;
 #define PACK_STRUCT_FIELD(x) x
 #define PACK_STRUCT_STRUCT
 #pragma warning(disable: 4103)
+#define PACK_STRUCT_USE_INCLUDES
 
 #endif /* __ARCH_CC_H__ */
