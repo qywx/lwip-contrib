@@ -271,7 +271,10 @@ ping_thread(void *arg)
 
 #endif
 
-/*-----------------------------------------------------------------------------------*/
+struct netif netif;
+#if LWIP_HAVE_LOOPIF
+struct netif loopif;
+#endif
 /*-----------------------------------------------------------------------------------*/
 static void
 main_thread(void *arg)
@@ -311,16 +314,15 @@ main_thread(void *arg)
   
 #if LWIP_DHCP
   {
-    struct netif *netif;
     IP4_ADDR(&gw, 0,0,0,0);
     IP4_ADDR(&ipaddr, 0,0,0,0);
     IP4_ADDR(&netmask, 0,0,0,0);
 
-    netif = netif_add(&ipaddr, &netmask, &gw, NULL, tapif_init,
+    netif_add(&netif, &ipaddr, &netmask, &gw, NULL, tapif_init,
 		      tcpip_input);
-    netif_set_default(netif);
+    netif_set_default(&netif);
     dhcp_init();
-    dhcp_start(netif);
+    dhcp_start(&netif);
   }
 #else
   IP4_ADDR(&gw, 192,168,0,1);
@@ -329,7 +331,7 @@ main_thread(void *arg)
   
   /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, tapif_init,
       tcpip_input));*/
-  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, tapif_init,
+  netif_set_default(netif_add(&netif,&ipaddr, &netmask, &gw, NULL, tapif_init,
 			      tcpip_input));
 #endif
   /* Only used for testing purposes: */
@@ -339,13 +341,16 @@ main_thread(void *arg)
   
   netif_add(&ipaddr, &netmask, &gw, NULL, pcapif_init,
   tcpip_input);*/
-  
+
+#if LWIP_HAVE_LOOPIF  
   IP4_ADDR(&gw, 127,0,0,1);
   IP4_ADDR(&ipaddr, 127,0,0,1);
   IP4_ADDR(&netmask, 255,0,0,0);
   
-  netif_add(&ipaddr, &netmask, &gw, NULL, loopif_init,
+  netif_add(&loopif, &ipaddr, &netmask, &gw, NULL, loopif_init,
 	    tcpip_input);
+#endif
+  
 #if LWIP_TCP  
   tcpecho_init();
   shell_init();
