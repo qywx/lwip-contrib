@@ -98,10 +98,9 @@
  *
  */
 
-#include "lwip/debug.h"
-
 #include "lwip/opt.h"
 #include "lwip/def.h"
+#include "lwip/err.h"
 #include "lwip/mem.h"
 #include "lwip/pbuf.h"
 #include "lwip/stats.h"
@@ -204,7 +203,7 @@ _interrupt(0x18) void cs8900_interrupt(void)
 //
 // initializes the CS8900A chip
 //
-static void cs8900_init(struct netif *netif)
+static err_t cs8900_init(struct netif *netif)
 {
 #ifdef LED_NEED_SERVICE
   leds_off(LED_NEED_SERVICE);
@@ -287,6 +286,8 @@ static void cs8900_init(struct netif *netif)
   // - transmitter
   PACKETPP = CS_PP_LINECTL;
   PPDATA = (0x0013U | 0x0080U/*SerTxOn*/ | 0x0040U/*SerRxOn*/);
+  
+  return ERR_OK;
 }
 
 static err_t cs8900_output(struct netif *netif, struct pbuf *p)
@@ -620,6 +621,7 @@ void cs8900if_input(struct netif *netif)
     q = etharp_ip_input(netif, p);
     /* skip Ethernet header */
     pbuf_header(p, -14);
+    DEBUGF(NETIF_DEBUG, ("cs8900_input: passing packet up to IP\n"));
     /* pass to network layer */
     netif->input(p, netif);
     break;
@@ -657,23 +659,27 @@ void cs8900if_input(struct netif *netif)
  * @param netif The lwIP network interface data structure belonging to this device.
  *
  */
-void cs8900if_init(struct netif *netif)
+err_t cs8900if_init(struct netif *netif)
 {
   struct cs8900if *cs8900if;
 
   cs8900if = mem_malloc(sizeof(struct cs8900if));
-	if(cs8900if == NULL) return;
-
+	if (cs8900if == NULL)
+  {
+    DEBUGF(NETIF_DEBUG, ("cs8900_input: out of memory for cs8900if\n"));
+    return ERR_MEM;
+  }
   // initialize lwip network interface
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
+  /* downward functions */
   netif->output = cs8900if_output;
   netif->linkoutput = cs8900_output;
 
-  // initialize cs8900 specific interface structure
+  // initialize cs8900 specific interface state data pointer
   netif->state = cs8900if;
 
-#if 0
+#if 1
   /* maximum transfer unit */
   netif->mtu = 1500;
   
@@ -698,7 +704,8 @@ void cs8900if_init(struct netif *netif)
 #endif
 
   // intialize the cs8900a chip
-  cs8900_init(netif);
+  return cs8900_init(netif);
+  
 }
 
 #if 1 

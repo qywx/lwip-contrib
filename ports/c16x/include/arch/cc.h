@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "arch/cpu.h"
+
 typedef unsigned   char    u8_t;
 typedef signed     char    s8_t;
 typedef unsigned   short   u16_t;
@@ -26,12 +28,11 @@ typedef u32_t mem_ptr_t;
 
 /* LW: forward declaration */
 void debug_printf(char *format, ...);
+void page_printf(char *format, ...);
 
 /* Plaform specific diagnostic output */
 #define LWIP_PLATFORM_DIAG(x)	{debug_printf x;}
-
-#define LWIP_PLATFORM_ASSERT(x) { debug_printf("Assertion \"%s\" failed at line %d in %s\n", \
-                                     x, __LINE__, __FILE__);  while(1);}  
+#define LWIP_PLATFORM_ASSERT(x) { page_printf("\fline %d in %s\n", __LINE__, __FILE__);  while(1);}  
 
 #endif/* LWIP_DEBUG */
 
