@@ -365,13 +365,13 @@ diff -u -r1.2 eth_drv.c
 +
 +  switch (htons(ethhdr->type)) {
 +  case ETHTYPE_IP:
-+    DEBUGF(0, ("ecosif_input: IP packet\n"));
++    LWIP_DEBUGF(0, ("ecosif_input: IP packet\n"));
 +    q = etharp_ip_input(netif, p);
 +    pbuf_header(p, -14);
 +    netif->input(p, netif);
 +    break;
 +  case ETHTYPE_ARP:
-+    DEBUGF(0, ("ecosif_input: ARP packet\n"));
++    LWIP_DEBUGF(0, ("ecosif_input: ARP packet\n"));
 +    q = etharp_arp_input(netif, (struct eth_addr *) &sc->sc_arpcom.esa, p);
 +    break;
 +  default:
@@ -380,7 +380,7 @@ diff -u -r1.2 eth_drv.c
 +  }
 +
 +  if (q != NULL) {
-+    DEBUGF(0, ("ecosif_input: Sending ARP reply\n"));
++    LWIP_DEBUGF(0, ("ecosif_input: Sending ARP reply\n"));
 +    low_level_output(netif, q);
 +    pbuf_free(q);
 +  }

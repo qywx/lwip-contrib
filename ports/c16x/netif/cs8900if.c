@@ -415,7 +415,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
     event_type = 0;
     // read RxLength
     len = RXTXREG;
-    DEBUGF(NETIF_DEBUG, ("cs8900_input: packet len %u\n", len));
+    LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: packet len %u\n", len));
     snmp_add_ifinoctets(len);
     // positive length?
     if (len > 0)
@@ -425,9 +425,9 @@ static struct pbuf *cs8900_input(struct netif *netif)
       if (p != NULL)
       {
         for (q = p; q != 0; q = q->next)
-        {
-          DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %u len %u\n", q, q->tot_len, q->len));
-          ptr = q->payload;
+	{
+	  LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %u len %u\n", q, q->tot_len, q->len));
+	  ptr = q->payload;
           // TODO: CHECK: what if q->len is odd? we don't use the last byte?
           for (i = 0; i < (q->len + 1) / 2; i++)
           {
@@ -561,10 +561,10 @@ static void cs8900_service(struct netif *netif)
 #if (CS8900_STATS > 0)
   /* copy statistics counters into netif state fields */
   ((struct cs8900if *)netif->state)->missed += miss_count;
-  if (miss_count > 0) DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u missed packets due to rx buffer overrun\n", miss_count));
+  if (miss_count > 0) LWIP_DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u missed packets due to rx buffer overrun\n", miss_count));
 
   ((struct cs8900if *)netif->state)->collisions += coll_count;
-  if (coll_count > 0) DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u packet collisions\n", coll_count));
+  if (coll_count > 0) LWIP_DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u packet collisions\n", coll_count)); 
 #endif
 }
 
@@ -659,7 +659,7 @@ void cs8900if_input(struct netif *netif)
     q = etharp_ip_input(netif, p);
     /* skip Ethernet header */
     pbuf_header(p, -14);
-    DEBUGF(NETIF_DEBUG, ("cs8900_input: passing packet up to IP\n"));
+    LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: passing packet up to IP\n"));
     /* pass to network layer */
     netif->input(p, netif);
     break;
@@ -720,7 +720,7 @@ err_t cs8900if_init(struct netif *netif)
   cs8900if = mem_malloc(sizeof(struct cs8900if));
   if (cs8900if == NULL)
   {
-    DEBUGF(NETIF_DEBUG, ("cs8900_input: out of memory for cs8900if\n"));
+    LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: out of memory for cs8900if\n"));
     return ERR_MEM;
   }
   // initialize lwip network interface

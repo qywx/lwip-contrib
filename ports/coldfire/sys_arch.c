@@ -383,7 +383,7 @@ sys_mbox_post(sys_mbox_t mbox, void *msg)
 {
     UNSIGNED status;
     
-    DEBUGF(SYS_DEBUG, ("sys_mbox_post: mbox %p msg %p\n", mbox, msg));
+    LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_post: mbox %p msg %p\n", mbox, msg));
     status = NU_Send_To_Queue(mbox,
                               &msg,
                               1,
@@ -413,14 +413,14 @@ sys_arch_mbox_fetch(sys_mbox_t mbox, void **msg, u32_t timeout)
     {
         if (msg)    
             *msg = ret_msg;
-        DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p msg %p\n", mbox, ret_msg));
+        LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p msg %p\n", mbox, ret_msg));
     } else {
         if (msg)
             *msg = 0;
         if (status == NU_TIMEOUT)
-            DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: timeout on mbox %p\n", mbox));
+            LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: timeout on mbox %p\n", mbox));
         else
-            DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: Queue Error %i on mbox %p\n", status, mbox));
+            LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: Queue Error %i on mbox %p\n", status, mbox));
     }
    
     

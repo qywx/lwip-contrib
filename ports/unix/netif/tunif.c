@@ -80,7 +80,7 @@ low_level_init(struct netif *netif)
   /* Do whatever else is needed to initialize interface. */
   
   tunif->fd = open("/dev/tun0", O_RDWR);
-  DEBUGF(TUNIF_DEBUG, ("tunif_init: fd %d\n", tunif->fd));
+  LWIP_DEBUGF(TUNIF_DEBUG, ("tunif_init: fd %d\n", tunif->fd));
   if (tunif->fd == -1) {
     perror("tunif_init");
     exit(1);
@@ -95,7 +95,7 @@ low_level_init(struct netif *netif)
            ip4_addr3(&(netif->ip_addr)),
            ip4_addr4(&(netif->ip_addr)));
   
-  DEBUGF(TUNIF_DEBUG, ("tunif_init: system(\"%s\");\n", buf));
+  LWIP_DEBUGF(TUNIF_DEBUG, ("tunif_init: system(\"%s\");\n", buf));
   system(buf);
   sys_thread_new(tunif_thread, netif, DEFAULT_THREAD_PRIO);
 
@@ -263,7 +263,7 @@ tunif_input(struct netif *netif)
   p = low_level_input(tunif);
 
   if (p == NULL) {
-    DEBUGF(TUNIF_DEBUG, ("tunif_input: low_level_input returned NULL\n"));
+    LWIP_DEBUGF(TUNIF_DEBUG, ("tunif_input: low_level_input returned NULL\n"));
     return;
   }
 

@@ -100,7 +100,7 @@ low_level_init(struct netif *netif)
   /* Do whatever else is needed to initialize interface. */
   
   tapif->fd = open(DEVTAP, O_RDWR);
-  DEBUGF(TAPIF_DEBUG, ("tapif_init: fd %d\n", tapif->fd));
+  LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: fd %d\n", tapif->fd));
   if(tapif->fd == -1) {
 #ifdef linux
     perror("tapif_init: try running \"modprobe tun\" or rebuilding your kernel with CONFIG_TUN; cannot open "DEVTAP);
@@ -128,7 +128,7 @@ low_level_init(struct netif *netif)
            ip4_addr3(&(netif->gw)),
            ip4_addr4(&(netif->gw)));
   
-  DEBUGF(TAPIF_DEBUG, ("tapif_init: system(\"%s\");\n", buf));
+  LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: system(\"%s\");\n", buf));
   system(buf);
   sys_thread_new(tapif_thread, netif, DEFAULT_THREAD_PRIO);
 
@@ -299,7 +299,7 @@ tapif_input(struct netif *netif)
   p = low_level_input(tapif);
 
   if(p == NULL) {
-    DEBUGF(TAPIF_DEBUG, ("tapif_input: low_level_input returned NULL\n"));
+    LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: low_level_input returned NULL\n"));
     return;
   }
   ethhdr = p->payload;
@@ -307,13 +307,13 @@ tapif_input(struct netif *netif)
   q = NULL;
   switch(htons(ethhdr->type)) {
   case ETHTYPE_IP:
-    DEBUGF(TAPIF_DEBUG, ("tapif_input: IP packet\n"));
+    LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: IP packet\n"));
     q = etharp_ip_input(netif, p);
     pbuf_header(p, -14);
     netif->input(p, netif);
     break;
   case ETHTYPE_ARP:
-    DEBUGF(TAPIF_DEBUG, ("tapif_input: ARP packet\n"));
+    LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: ARP packet\n"));
     q = etharp_arp_input(netif, tapif->ethaddr, p);
     break;
   default:

@@ -51,7 +51,7 @@ tcpdump_init(void)
   if (file == NULL) {
     perror("tcpdump_init: fopen");
   }
-  DEBUGF(TCPDUMP_DEBUG, ("tcpdump: file %s\n", fname));
+  LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: file %s\n", fname));
 }
 /*-----------------------------------------------------------------------------------*/
 void
@@ -78,7 +78,7 @@ tcpdump(struct pbuf *p)
     if (inet_chksum_pseudo(p, (struct ip_addr *)&(iphdr->src),
 			  (struct ip_addr *)&(iphdr->dest),
 			  IP_PROTO_TCP, p->tot_len) != 0) {
-      DEBUGF(TCPDUMP_DEBUG, ("tcpdump: IP checksum failed!\n"));
+      LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: IP checksum failed!\n"));
       /*    fprintf(file, "chksum 0x%lx ", tcphdr->chksum);
 	    tcphdr->chksum = 0;
 	    fprintf(file, "should be 0x%lx ", inet_chksum_pseudo(p, (struct ip_addr *)&(iphdr->src),
@@ -147,7 +147,7 @@ tcpdump(struct pbuf *p)
     if (inet_chksum_pseudo(p, (struct ip_addr *)&(iphdr->src),
 			  (struct ip_addr *)&(iphdr->dest),
 			  IP_PROTO_UDP, p->tot_len) != 0) {
-      DEBUGF(TCPDUMP_DEBUG, ("tcpdump: IP checksum failed!\n"));
+      LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: IP checksum failed!\n"));
       /*    fprintf(file, "chksum 0x%lx ", tcphdr->chksum);
 	    tcphdr->chksum = 0;
 	    fprintf(file, "should be 0x%lx ", inet_chksum_pseudo(p, (struct ip_addr *)&(iphdr->src),

@@ -96,7 +96,7 @@ delif_input_timeout(void *arg)
 	} else {
 	  timeout = 0;
 	}
-	DEBUGF(DELIF_DEBUG, ("delif_output_timeout: timeout %u.\n", timeout));
+	LWIP_DEBUGF(DELIF_DEBUG, ("delif_output_timeout: timeout %u.\n", timeout));
 
       }
       input_list = dp->next;
@@ -128,7 +128,7 @@ delif_output_timeout(void *arg)
   while (dp != NULL) {
     now = sys_now();
     if (dp->time <= now) {
-      DEBUGF(DELIF_DEBUG, ("delif_output_timeout: now %u dp->time %u\n",
+      LWIP_DEBUGF(DELIF_DEBUG, ("delif_output_timeout: now %u dp->time %u\n",
 	     now, dp->time));
       delif->netif->output(delif->netif, dp->p, dp->ipaddr);
       if (dp->next != NULL) {
@@ -137,7 +137,7 @@ delif_output_timeout(void *arg)
 	} else {
 	  timeout = 0;
 	}
-	DEBUGF(DELIF_DEBUG, ("delif_output_timeout: timeout %u.\n", timeout));
+	LWIP_DEBUGF(DELIF_DEBUG, ("delif_output_timeout: timeout %u.\n", timeout));
 	
       }
       pbuf_free(dp->p);
@@ -162,17 +162,17 @@ delif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
   int i, j;
   char *data;
 
-  DEBUGF(DELIF_DEBUG, ("delif_output\n"));
+  LWIP_DEBUGF(DELIF_DEBUG, ("delif_output\n"));
     
 #ifdef DELIF_OUTPUT_DROPRATE
   if (((double)rand()/(double)RAND_MAX) < DELIF_OUTPUT_DROPRATE) {
-    DEBUGF(DELIF_DEBUG, ("delif_output: Packet dropped\n"));
+    LWIP_DEBUGF(DELIF_DEBUG, ("delif_output: Packet dropped\n"));
     return 0;
   }
 #endif /* DELIF_OUTPUT_DROPRATE */
 
   
-  DEBUGF(DELIF_DEBUG, ("delif_output\n"));
+  LWIP_DEBUGF(DELIF_DEBUG, ("delif_output\n"));
 
 
   dp = malloc(sizeof(struct delif_pbuf));
@@ -212,10 +212,10 @@ delif_input(struct pbuf *p, struct netif *inp)
 {
   struct delif_pbuf *dp, *np;
 
-  DEBUGF(DELIF_DEBUG, ("delif_input\n"));
+  LWIP_DEBUGF(DELIF_DEBUG, ("delif_input\n"));
 #ifdef DELIF_INPUT_DROPRATE
   if (((double)rand()/(double)RAND_MAX) < DELIF_INPUT_DROPRATE) {
-    DEBUGF(DELIF_DEBUG, ("delif_input: Packet dropped\n"));
+    LWIP_DEBUGF(DELIF_DEBUG, ("delif_input: Packet dropped\n"));
     pbuf_free(p);
     return ERR_OK;
   }
@@ -294,7 +294,7 @@ delif_init_thread(struct netif *netif)
 {
   struct delif *del;
 
-  DEBUGF(DELIF_DEBUG, ("delif_init_thread\n"));
+  LWIP_DEBUGF(DELIF_DEBUG, ("delif_init_thread\n"));
   
   del = malloc(sizeof(struct delif));
   if (!del)

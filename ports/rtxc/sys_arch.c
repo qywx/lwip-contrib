@@ -84,7 +84,7 @@ sys_arch_mbox_fetch(sys_mbox_t mbox, void **data, u16_t timeout)
   u16_t wtime = 1;
   
   if (timeout == 0) {
-    DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: without timeouts\n",KS_inqtask()));
+    LWIP_DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: without timeouts\n",KS_inqtask()));
     KS_dequeuew(mbox, data);
     
   } else { 
@@ -127,7 +127,7 @@ sys_arch_sem_wait(sys_sem_t sem, u16_t timeout)
   u16_t wtime = 1;
   
   if (timeout == 0) {
-    DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: without timeouts\n",KS_inqtask()));
+    LWIP_DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: without timeouts\n",KS_inqtask()));
     KS_wait(sem);
     
   } else { 
@@ -198,12 +198,12 @@ sys_arch_timeouts(void)
   TASK pid;
   struct timeoutlist *tl;  
   
-  DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: timeoutlist not empty\n",KS_inqtask()));
+  LWIP_DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: timeoutlist not empty\n",KS_inqtask()));
   pid = KS_inqtask();
   for(i = 0; i < nextthread; i++) {
     tl = &timeoutlist[i];
     if (tl->pid == pid) {
-      DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: corresponding pid found!\n",KS_inqtask()));
+      LWIP_DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: corresponding pid found!\n",KS_inqtask()));
       return &(tl->timeouts);
     }
   }

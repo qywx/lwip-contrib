@@ -245,7 +245,7 @@ low_level_init(struct netif *netif)
 	open_adapter(ethernetif);
 
 #ifdef NETIF_DEBUG
-	DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",ethernetif->ethaddr->addr[0],ethernetif->ethaddr->addr[1],ethernetif->ethaddr->addr[2],ethernetif->ethaddr->addr[3],ethernetif->ethaddr->addr[4],ethernetif->ethaddr->addr[5]));
+	LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",ethernetif->ethaddr->addr[0],ethernetif->ethaddr->addr[1],ethernetif->ethaddr->addr[2],ethernetif->ethaddr->addr[3],ethernetif->ethaddr->addr[4],ethernetif->ethaddr->addr[5]));
 #endif /* NETIF_DEBUG */
 	/* Do whatever else is needed to initialize interface. */
 
@@ -283,7 +283,7 @@ low_level_output(struct netif *ethernetif, struct pbuf *p)
        variable. */
     /* send data from(q->payload, q->len); */
 #ifdef NETIF_DEBUG
-		DEBUGF(NETIF_DEBUG, ("netif: send ptr %p q->payload %p q->len %i q->next %p\n", ptr, q->payload, (int)q->len, q->next));
+		LWIP_DEBUGF(NETIF_DEBUG, ("netif: send ptr %p q->payload %p q->len %i q->next %p\n", ptr, q->payload, (int)q->len, q->next));
 #endif
 		memcpy(ptr,q->payload,q->len);
 		ptr+=q->len;
@@ -324,7 +324,7 @@ low_level_input(struct netif *ethernetif)
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_LINK, (u16_t)length, PBUF_POOL);
 #ifdef NETIF_DEBUG
-	DEBUGF(NETIF_DEBUG, ("netif: recv length %i p->tot_len %i\n", length, (int)p->tot_len));
+	LWIP_DEBUGF(NETIF_DEBUG, ("netif: recv length %i p->tot_len %i\n", length, (int)p->tot_len));
 #endif
 	
   if (p != NULL) {
@@ -337,7 +337,7 @@ low_level_input(struct netif *ethernetif)
          variable. */
       /* read data into(q->payload, q->len); */
 #ifdef NETIF_DEBUG
-			DEBUGF(NETIF_DEBUG, ("netif: recv start %i length %i q->payload %p q->len %i q->next %p\n", start, length, q->payload, (int)q->len, q->next));
+			LWIP_DEBUGF(NETIF_DEBUG, ("netif: recv start %i length %i q->payload %p q->len %i q->next %p\n", start, length, q->payload, (int)q->len, q->next));
 #endif
       memcpy(q->payload,&cur_packet[start],q->len);
 			start+=q->len;

@@ -168,7 +168,7 @@ sys_thread_new(void (*function)(void *arg), void *arg, int prio)
   }
   
   if (NULL == st) {
-    DEBUGF(SYS_DEBUG, ("sys_thread_new: pthread_create %d, st = 0x%x",
+    LWIP_DEBUGF(SYS_DEBUG, ("sys_thread_new: pthread_create %d, st = 0x%x",
                        code, (int)st));
     abort();
   }
@@ -208,7 +208,7 @@ sys_mbox_free(struct sys_mbox *mbox)
     sys_sem_free_(mbox->mail);
     sys_sem_free_(mbox->mutex);
     mbox->mail = mbox->mutex = NULL;
-    /*  DEBUGF("sys_mbox_free: mbox 0x%lx\n", mbox); */
+    /*  LWIP_DEBUGF("sys_mbox_free: mbox 0x%lx\n", mbox); */
     free(mbox);
   }
 }
@@ -221,7 +221,7 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
   
   sys_sem_wait(mbox->mutex);
   
-  DEBUGF(SYS_DEBUG, ("sys_mbox_post: mbox %p msg %p\n", (void *)mbox, (void *)msg));
+  LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_post: mbox %p msg %p\n", (void *)mbox, (void *)msg));
   
   while ((mbox->last + 1) >= (mbox->first + SYS_MBOX_SIZE)) {
     mbox->wait_send++;
@@ -275,7 +275,7 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
     sys_arch_sem_wait(mbox->mutex, 0);
   }
 
-  DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p msg %p\n", (void *)mbox, *msg));
+  LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p msg %p\n", (void *)mbox, *msg));
 
   if (msg != NULL) {
     *msg = mbox->msgs[mbox->first % SYS_MBOX_SIZE];

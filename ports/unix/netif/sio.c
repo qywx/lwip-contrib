@@ -60,7 +60,7 @@ static sio_status_t statusar[2];
  */
 static void	signal_handler_IO_0( int status )
 {
-	DEBUGF(SIO_DEBUG, ("SigHand: rxSignal chanel 0"));
+	LWIP_DEBUGF(SIO_DEBUG, ("SigHand: rxSignal chanel 0"));
 	fifoPut( &statusar[0].myfifo, statusar[0].fd );
 }
 
@@ -70,7 +70,7 @@ static void	signal_handler_IO_0( int status )
  */
 static void signal_handler_IO_1( int status )
 {
-	DEBUGF(SIO_DEBUG, ("SigHand: rxSignal channel 1"));
+	LWIP_DEBUGF(SIO_DEBUG, ("SigHand: rxSignal channel 1"));
 	fifoPut( &statusar[1].myfifo, statusar[1].fd );
 }
 
@@ -98,15 +98,15 @@ static int sio_init( char * device, int devnum, sio_status_t * siostat )
 	switch ( devnum )
 	{
 		case 0:
-			DEBUGF( SIO_DEBUG, ("sioinit, signal_handler_IO_0\r\n") );
+			LWIP_DEBUGF( SIO_DEBUG, ("sioinit, signal_handler_IO_0\r\n") );
 			saio.sa_handler = signal_handler_IO_0;
 			break;
 		case 1:
-			DEBUGF( SIO_DEBUG, ("sioinit, signal_handler_IO_1\r\n") );
+			LWIP_DEBUGF( SIO_DEBUG, ("sioinit, signal_handler_IO_1\r\n") );
 			saio.sa_handler = signal_handler_IO_1;
 			break;
 		default:
-			DEBUGF( SIO_DEBUG,("sioinit, devnum not allowed\r\n") );
+			LWIP_DEBUGF( SIO_DEBUG,("sioinit, devnum not allowed\r\n") );
 			break;
 	}
 
@@ -146,11 +146,11 @@ static void sio_speed( int fd, int speed )
 	struct termios oldtio,newtio;
 	/*  int fd; */
 
-	DEBUGF( 1,("sio_speed: baudcode:%d  enter\n",speed ) );
+	LWIP_DEBUGF( 1,("sio_speed: baudcode:%d  enter\n",speed ) );
 
 	if ( fd < 0 )
 	{
-		DEBUGF(SIO_DEBUG, ( "sio_speed: fd ERROR\n" ));
+		LWIP_DEBUGF(SIO_DEBUG, ( "sio_speed: fd ERROR\n" ));
 		exit( -1 );
 	}
 
@@ -168,7 +168,7 @@ static void sio_speed( int fd, int speed )
 	tcsetattr( fd,TCSANOW,&newtio );
 	tcflush( fd, TCIOFLUSH );
 
-	DEBUGF( SIO_DEBUG ,("sio_speed: leave\n" ));
+	LWIP_DEBUGF( SIO_DEBUG ,("sio_speed: leave\n" ));
 }
 
 /* --public-functions----------------------------------------------------------------------------- */
@@ -178,7 +178,7 @@ void sio_send( u8_t c, sio_status_t * siostat )
 
 	if ( write( siostat->fd, &c, 1 ) <= 0 )
 	{
-		DEBUGF( SIO_DEBUG,("sio_send: write refused") );
+		LWIP_DEBUGF( SIO_DEBUG,("sio_send: write refused") );
 	}
 }
 
@@ -189,9 +189,9 @@ void sio_send_string( u8_t *str, sio_status_t * siostat )
 
 	if ( write( siostat->fd, str, len ) <= 0 )
 	{
-		DEBUGF( SIO_DEBUG,("sio_send_string: write refused") );
+		LWIP_DEBUGF( SIO_DEBUG,("sio_send_string: write refused") );
 	}
-	DEBUGF( (PPP_DEBUG | SIO_DEBUG),("sent:%s",str ) );
+	LWIP_DEBUGF( (PPP_DEBUG | SIO_DEBUG),("sent:%s",str ) );
 }
 
 
@@ -222,11 +222,11 @@ void sio_expect_string( u8_t *str, sio_status_t * siostat )
 	u8_t c;
  	int finger=0;
   
-	DEBUGF( (PPP_DEBUG | SIO_DEBUG), ("expect:%s\n",str) );
+	LWIP_DEBUGF( (PPP_DEBUG | SIO_DEBUG), ("expect:%s\n",str) );
 	while ( 1 )
 	{
 		c=fifoGet( &(siostat->myfifo) );
-		DEBUGF( (PPP_DEBUG | SIO_DEBUG), ("_%c",c) );
+		LWIP_DEBUGF( (PPP_DEBUG | SIO_DEBUG), ("_%c",c) );
 		if ( c==str[finger] )
 		{
 			finger++;
@@ -241,7 +241,7 @@ void sio_expect_string( u8_t *str, sio_status_t * siostat )
 		if ( 0 == str[finger] ) 
                     break;	/* done, we have a match */
 	}
-	DEBUGF( (PPP_DEBUG | SIO_DEBUG), ("[match]\n") );
+	LWIP_DEBUGF( (PPP_DEBUG | SIO_DEBUG), ("[match]\n") );
 }
 
 
@@ -269,17 +269,17 @@ sio_status_t * sio_open( int devnum )
 	{
 		if ( ( siostate->fd = sio_init( dev, devnum, siostate ) ) == 0 )
 		{
-			DEBUGF(SIO_DEBUG, ( "sio_open: ERROR opening serial device" ));
+			LWIP_DEBUGF(SIO_DEBUG, ( "sio_open: ERROR opening serial device" ));
 			abort( );
 			return NULL;
 		}
 	} 
 	else
 	{
-		DEBUGF(SIO_DEBUG, ( "sio_open: device %s (%d) is not supported", dev, devnum ));
+		LWIP_DEBUGF(SIO_DEBUG, ( "sio_open: device %s (%d) is not supported", dev, devnum ));
 		return NULL;
 	}
-	DEBUGF( 1,("sio_open: dev=%s open.\n", dev ));
+	LWIP_DEBUGF( 1,("sio_open: dev=%s open.\n", dev ));
 
 	return siostate;
 }
@@ -291,7 +291,7 @@ void sio_change_baud( sioBaudrates baud, sio_status_t * siostat )
 {
     /*	sio_status_t * siostat = ((siostruct_t*)netif->state)->sio;*/
 
-	DEBUGF( 1,("sio_change_baud\n" ));
+	LWIP_DEBUGF( 1,("sio_change_baud\n" ));
 
 	switch ( baud )
 	{
@@ -312,7 +312,7 @@ void sio_change_baud( sioBaudrates baud, sio_status_t * siostat )
 			break;
 
 		default:
-			DEBUGF( 1,("sio_change_baud: Unknown baudrate, code:%d", baud ));
+			LWIP_DEBUGF( 1,("sio_change_baud: Unknown baudrate, code:%d", baud ));
 			break;
 	}
 }

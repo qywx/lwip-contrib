@@ -196,11 +196,11 @@ unixif_input_handler(void *data)
     abort();
   }
 
-  DEBUGF(UNIXIF_DEBUG, ("unixif_irq_handler: len == %d plen == %d bytes\n", len, plen));  
+  LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_irq_handler: len == %d plen == %d bytes\n", len, plen));  
   if (len == sizeof(int)) {
 
     if (plen < 20 || plen > 1500) {
-      DEBUGF(UNIXIF_DEBUG, ("plen %d!\n", plen));
+      LWIP_DEBUGF(UNIXIF_DEBUG, ("plen %d!\n", plen));
       return;
     }
 
@@ -209,7 +209,7 @@ unixif_input_handler(void *data)
       perror("unixif_irq_handler: read");
       abort();
     }
-    DEBUGF(UNIXIF_DEBUG, ("unixif_irq_handler: read %d bytes\n", len));
+    LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_irq_handler: read %d bytes\n", len));
     p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
     
     if (p != NULL) {
@@ -229,7 +229,7 @@ unixif_input_handler(void *data)
       tcpdump(p);
       netif->input(p, netif);
     } else {
-      DEBUGF(UNIXIF_DEBUG, ("unixif_irq_handler: could not allocate pbuf\n"));
+      LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_irq_handler: could not allocate pbuf\n"));
     }
       
 
@@ -242,7 +242,7 @@ unixif_thread(void *arg)
   struct netif *netif;
   struct unixif *unixif;
   
-  DEBUGF(UNIXIF_DEBUG, ("unixif_thread: started.\n"));
+  LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_thread: started.\n"));
 
   netif = arg;
   unixif = netif->state;
@@ -262,7 +262,7 @@ unixif_thread2(void *arg)
   struct unixif *unixif;
   fd_set fdset;
   
-  DEBUGF(UNIXIF_DEBUG, ("unixif_thread2: started.\n"));
+  LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_thread2: started.\n"));
 
   netif = arg;
   unixif = netif->state;
@@ -298,7 +298,7 @@ unixif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
     sys_timeout((double)p->tot_len * 8000.0 / UNIXIF_BPS, unixif_output_timeout,
 		netif);
 
-    DEBUGF(UNIXIF_DEBUG, ("unixif_output: first on list\n"));
+    LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output: first on list\n"));
     
   } else {
     pbuf_ref(p);
@@ -314,7 +314,7 @@ unixif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
       free(buf);
       pbuf_free(p);
       
-      DEBUGF(UNIXIF_DEBUG, ("unixif_output: drop\n"));
+      LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output: drop\n"));
       
 #endif /* UNIXIF_DROP_FIRST */
 #ifdef LINK_STATS
@@ -322,7 +322,7 @@ unixif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
 #endif /* LINK_STATS */
 
     } else {
-      DEBUGF(UNIXIF_DEBUG, ("unixif_output: on list\n"));
+      LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output: on list\n"));
     }
 
   }
@@ -344,7 +344,7 @@ unixif_output_timeout(void *arg)
   netif = arg;
   unixif = netif->state;
 
-  DEBUGF(UNIXIF_DEBUG, ("unixif_output_timeout\n"));
+  LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output_timeout\n"));
 
   /*  buf = unixif->q[0];
   unixif->q[0] = unixif->q[1];
@@ -364,7 +364,7 @@ unixif_output_timeout(void *arg)
   
   if (p->tot_len == 0) {
 
-    DEBUGF(UNIXIF_DEBUG, ("p->len!\n"));
+    LWIP_DEBUGF(UNIXIF_DEBUG, ("p->len!\n"));
     abort();
   }
   data = malloc(p->tot_len);
@@ -377,7 +377,7 @@ unixif_output_timeout(void *arg)
     }
   }
 
-  DEBUGF(UNIXIF_DEBUG, ("unixif_output: sending %d (%d) bytes\n",
+  LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output: sending %d (%d) bytes\n",
 			p->len, p->tot_len));
   
   len = p->tot_len;
@@ -428,7 +428,7 @@ unixif_init_server(struct netif *netif)
     perror("unixif_server");
     abort();
   }
-  DEBUGF(UNIXIF_DEBUG, ("unixif_server: fd %d\n", fd));
+  LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_server: fd %d\n", fd));
     
   unixif = malloc(sizeof(struct unixif));
   if (!unixif)
@@ -448,7 +448,7 @@ unixif_init_server(struct netif *netif)
     abort();
   } 
 
-  DEBUGF(UNIXIF_DEBUG, ("unixif_accept: %d\n", fd2));
+  LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_accept: %d\n", fd2));
 
   unixif->fd = fd2;
   unixif->sem = sys_sem_new(0);
