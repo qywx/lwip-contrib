@@ -137,6 +137,7 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p);
 static struct pbuf *cs8900_input(struct netif *netif);
 static void cs8900_service(struct netif *netif);
 static u32_t cs8900_chksum(void *dataptr, int len);
+static void cs8900_reset(struct netif *netif);
 
 // Define these to match your hardware setup
 #define MEM_BASE 0x00E000
@@ -202,6 +203,20 @@ _interrupt(0x18) void cs8900_interrupt(void)
 }
 #endif
 
+/**
+ * Reset the CS8900A chip-wide using a soft reset
+ *
+ * @note You MUST wait 30 ms before accessing the CS8900
+ * after calling this function.
+ */
+static void cs8900_reset(struct netif *netif)
+{
+  (void)netif;
+  /* set RESET bit */
+  PACKETPP = CS_PP_SELFCTL;
+  PPDATA = 0x0055U;
+}
+
 // cs8900_init()
 //
 // initializes the CS8900A chip
@@ -212,14 +227,10 @@ static err_t cs8900_init(struct netif *netif)
   leds_off(LED_NEED_SERVICE);
 #endif
 
-  // set RESET bit
-  PACKETPP = CS_PP_SELFCTL;
-  PPDATA = 0x0055U;
-
   // { the RESET bit will be cleared by the cs8900a
   //   as a result of the reset }
   // RESET bit cleared?
-  while ((PPDATA & 0x0040U) != 0); // TODO: add timeout
+  //while ((PPDATA & 0x0040U) != 0); // TODO: add timeout
 
   // { after full initialization of the cs8900a
   //   the INITD bit will be set }
@@ -293,14 +304,25 @@ static err_t cs8900_init(struct netif *netif)
   return ERR_OK;
 }
 
+/**
+ *
+ *
+ * @return error code
+ * - ERR_OK: packet transferred to hardware
+ * - ERR_CONN: no link or link failure
+ * - ERR_IF: could not transfer to link (hardware buffer full?)
+ */ 
 static err_t cs8900_output(struct netif *netif, struct pbuf *p)
 {
 	int tries = 0;
+  err_t result;
 
   // exit if link has failed
   PACKETPP = CS_PP_LINESTATUS;
   if ((PPDATA & 0x0080U/*LinkOK*/) == 0) return ERR_CONN; // no Ethernet link
 
+  result = ERR_OK;  
+  
   /* issue 'transmit' command to CS8900 */
   TXCMD = 0x00C9U;
   /* send length (in bytes) of packet to send */
@@ -336,9 +358,9 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
 #if (CS8900_STATS > 0)
       ((struct cs8900if *)netif->state)->sentbytes += q->len;
 #endif
-    snmp_add_ifoutoctets(p->tot_len);
+      snmp_add_ifoutoctets(p->tot_len);
 #if (CS8900_STATS > 0)
-    ((struct cs8900if *)netif->state)->sentpackets++;
+      ((struct cs8900if *)netif->state)->sentpackets++;
 #endif
     }
   }
@@ -346,8 +368,10 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
   {
     // { not ready to transmit!? }
     snmp_inc_ifoutdiscards();
+    /* return not connected */
+    result = ERR_IF;
   }
-  return ERR_OK;
+  return result;
 }
 
 /**
@@ -667,10 +691,26 @@ void cs8900if_input(struct netif *netif)
     }
   }
 }
+
 /**
- * Initialize the CS8900 Ethernet MAC/PHY device driver.
+ * Reset the CS8900 Ethernet MAC/PHY chip.
  *
  * @param netif The lwIP network interface data structure belonging to this device.
+ * MAY be NULL as we do not support multiple devices yet.
+ * @note You SHOULD call cs8900if_init() afterwards to
+ * initialize and configure the chip.
+ */
+void cs8900if_reset(struct netif *netif)
+{
+  /* reset the cs8900a chip */
+  cs8900_reset(netif);
+}
+
+/**
+ * Initialize the CS8900 Ethernet MAC/PHY and its device driver.
+ *
+ * @param netif The lwIP network interface data structure belonging to this device.
+ * MAY be NULL as we do not support multiple devices yet.
  *
  */
 err_t cs8900if_init(struct netif *netif)
@@ -693,7 +733,6 @@ err_t cs8900if_init(struct netif *netif)
   // initialize cs8900 specific interface state data pointer
   netif->state = cs8900if;
 
-#if 1
   /* maximum transfer unit */
   netif->mtu = 1500;
   
@@ -702,7 +741,7 @@ err_t cs8900if_init(struct netif *netif)
   
   /* hardware address length */
   netif->hwaddr_len = 6;
-#endif
+
   // initially assume no ISQ event
   cs8900if->needs_service = 0;
   // set to 1 if polling method is used
@@ -719,10 +758,9 @@ err_t cs8900if_init(struct netif *netif)
 
   // intialize the cs8900a chip
   return cs8900_init(netif);
-  
 }
 
-#if 1 
+#if 1
 /**
  * Dump an array of bytes inside a UDP message's data field.
  *

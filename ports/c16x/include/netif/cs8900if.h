@@ -69,6 +69,7 @@ struct cs8900if
   /* Add whatever per-interface state that is needed here. */
 };
 
+void cs8900if_reset(struct netif *netif);
 err_t cs8900if_init(struct netif *);
 void cs8900if_service(struct netif *);
 void cs8900if_input(struct netif *netif);
