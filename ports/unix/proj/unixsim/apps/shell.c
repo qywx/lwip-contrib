@@ -419,6 +419,7 @@ com_acpt(struct command *com)
   return ESUCCESS;
 }
 /*-----------------------------------------------------------------------------------*/
+#if LWIP_STATS
 static s8_t
 com_stat(struct command *com)
 {
@@ -436,6 +437,7 @@ com_stat(struct command *com)
   
   return ESUCCESS;
 }
+#endif
 /*-----------------------------------------------------------------------------------*/
 static s8_t
 com_send(struct command *com)
@@ -879,9 +881,11 @@ parse_command(struct command *com, u32_t len)
   } else if (strncmp((const char *)buffer, "clos", 4) == 0) {
     com->exec = com_clos;
     com->nargs = 1;
+#if LWIP_STATS    
   } else if (strncmp((const char *)buffer, "stat", 4) == 0) {
     com->exec = com_stat;
     com->nargs = 0;
+#endif    
   } else if (strncmp((const char *)buffer, "send", 4) == 0) {
     com->exec = com_send;
     com->nargs = 2;
