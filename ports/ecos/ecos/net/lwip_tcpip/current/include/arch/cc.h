@@ -36,6 +36,10 @@
 
 #include <string.h>
 #include <cyg/error/codes.h>
+//while EFAULT should have no meaning in eCos since there are no address spaces
+//it is defined here because set/getsockopt in lwIP use it.
+#define EFAULT 14
+//#define LWIP_PROVIDE_ERRNO
 #include <cyg/infra/cyg_type.h>
 #if (CYG_BYTEORDER == CYG_LSBFIRST)
 #define BYTE_ORDER LITTLE_ENDIAN
