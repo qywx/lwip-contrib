@@ -492,7 +492,6 @@ cdl_package CYGPKG_NET_LWIP {
 			netif/ppp/md5.c		\
 			netif/ppp/randm.c	\
 			netif/ppp/vj.c		\
-			netif/ppp/target.c	\
 			ecos/sio.c
 			
 

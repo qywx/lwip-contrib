@@ -20,6 +20,7 @@
 
 #include <cyg/io/eth/eth_drv.h>
 #include <cyg/io/eth/netdev.h>
+#include <cyg/hal/hal_if.h>
 
 // Define table boundaries
 CYG_HAL_TABLE_BEGIN(__NETDEVTAB__, netdev);
@@ -49,7 +50,7 @@ pppMyCallback(void *a , int e)
 
 /* These temporarily here */
 unsigned long
-ppp_jiffies(void)
+sys_jiffies(void)
 {
    return cyg_current_time();
 }
@@ -87,7 +88,7 @@ void lwip_init(void)
 #if PAP_SUPPORT || CHAP_SUPPORT
 	pppSetAuth("ecos", "picula");
 #endif
-	pppOpen(0, pppMyCallback, NULL);
+	pppOpen(sio_open(2), pppMyCallback, NULL);
 #else	
 	ecosglue_init();		
 #endif	
@@ -115,6 +116,7 @@ void lwip_dsr_stuff(void)
 {
   cyg_semaphore_post(&delivery);
 }
+
 //Input thread signalled by DSR calls deliver() on low level drivers
 static void
 input_thread(void *arg)
@@ -127,7 +129,15 @@ input_thread(void *arg)
     for (t = &__NETDEVTAB__[0]; t != &__NETDEVTAB_END__; t++) {
       struct eth_drv_sc *sc = (struct eth_drv_sc *)t->device_instance;
       if (sc->state & ETH_DRV_NEEDS_DELIVERY) {
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+        cyg_bool was_ctrlc_int;
+#endif
 	sc->state &= ~ETH_DRV_NEEDS_DELIVERY;
+#if defined(CYGDBG_HAL_DEBUG_GDB_CTRLC_SUPPORT)
+        was_ctrlc_int = HAL_CTRLC_CHECK((*sc->funs->int_vector)(sc), (int)sc);
+          if (!was_ctrlc_int) // Fall through and run normal code
+		  
+#endif
 	(sc->funs->deliver) (sc);
       }
     }
@@ -163,7 +173,7 @@ static void
 ecosglue_init(void)
 {
   init_hw_drivers();
-  sys_thread_new(input_thread, (void*)0,7);
+  sys_thread_new(input_thread, (void*)0, 6);
   etharp_init();
   sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
 }

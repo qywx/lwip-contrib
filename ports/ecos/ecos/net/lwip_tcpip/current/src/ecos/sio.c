@@ -64,3 +64,8 @@ sio_open(int devnum)
 	return &ser; 
 }
 
+void 
+sio_read_abort(void * dev)
+{
+   diag_printf("Abort called\n");
+}

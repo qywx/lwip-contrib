@@ -55,7 +55,6 @@ src/netif/ppp/chpms.c src/netif/ppp/chpms.c
 src/netif/ppp/pap.c src/netif/ppp/pap.c 
 src/netif/ppp/magic.c src/netif/ppp/magic.c 
 src/netif/ppp/md5.c src/netif/ppp/md5.c 
-src/netif/ppp/target.c src/netif/ppp/target.c 
 src/netif/ppp/fsm.c src/netif/ppp/fsm.c 
 src/netif/ppp/ipcp.c src/netif/ppp/ipcp.c 
 src/netif/ppp/lcp.c src/netif/ppp/lcp.c 
@@ -69,7 +68,6 @@ src/netif/ppp/chpms.h src/netif/ppp/chpms.h
 src/netif/ppp/pap.h src/netif/ppp/pap.h 
 src/netif/ppp/magic.h src/netif/ppp/magic.h 
 src/netif/ppp/md5.h src/netif/ppp/md5.h 
-src/netif/ppp/target.h src/netif/ppp/target.h 
 src/netif/ppp/fsm.h src/netif/ppp/fsm.h 
 src/netif/ppp/ipcp.h src/netif/ppp/ipcp.h 
 src/netif/ppp/lcp.h src/netif/ppp/lcp.h 
