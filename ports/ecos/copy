@@ -1,0 +1,7 @@
+#!/bin/sh
+
+#make an ecos epk from CVS lwIP
+CURRENT=$EPK/net/lwip_tcpip/current
+mkdir -p `dirname $CURRENT/$2`
+
+cp -f  $LWIP_CVS/$1 $CURRENT/$2

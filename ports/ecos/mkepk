@@ -1,0 +1,27 @@
+#!/bin/sh
+
+#make an ecos epk from CVS lwIP
+
+if [ $EPK"" == "" ]; then
+	echo you must set the EPK environment var to the dir you want the EPK in
+	exit;
+fi
+
+if [ $LWIP_CVS"" == "" ]; then
+	echo you must set the LWIP_CVS  environment var to the dir you checked out the lwip module
+	LWIP_CVS=../../../lwip;
+	exit;
+fi
+
+#cleanup
+rm -Rf $EPK/*
+
+#copy files from CVS
+xargs -n 2 ./copy  < files
+
+#copy ecos specific files
+cp -R ecos/* $EPK
+
+#make epk
+cd $EPK && tar czf lwip.epk *
+
