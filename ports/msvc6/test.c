@@ -109,7 +109,7 @@ void netio_init(void)
 	tcp_accept(pcb, netio_accept);
 }
 
-struct netif;
+struct netif netif;
 
 void main_loop()
 {
