@@ -449,6 +449,9 @@ static void cs8900_service(struct netif *netif)
 {
   // amount of ISQ's to handle (> 0) in one cs8900_service() call
   unsigned char events2service = 1;
+#if (CS8900_STATS > 0)
+  unsigned int miss_count = 0, coll_count = 0;
+#endif
   // NOTES:
   // static, so only initialized to zero at program start.
   // irq_status will always hold the last ISQ event register that
@@ -500,11 +503,11 @@ static void cs8900_service(struct netif *netif)
 #if (CS8900_STATS > 0)
     else if ((irq_status & 0x003fU) == 0x0010U/*RxMISS Event*/)
     {
-  	  ((struct cs8900if *)netif->state)->missed += (irq_status >> 6);
+	  miss_count += (irq_status >> 6);
   	}
     else if ((irq_status & 0x003fU) == 0x0012U/*TxCOL Event*/)
     {
-  	  ((struct cs8900if *)netif->state)->collisions += (irq_status >> 6);
+	  coll_count += (irq_status >> 6);
   	}
 #endif
     // read ISQ register
@@ -520,13 +523,20 @@ static void cs8900_service(struct netif *netif)
     leds_on(LED_NEED_SERVICE);
 #endif
   }
-#if (CS8900_STATS > 1)
+#if (CS8900_STATS > 1) /* follow misses and collisions on a per-packet basis? */
   // read RxMiss Counter (zeroes itself upon read)
   PACKETPP = CS_PP_RXMISS;
-  ((struct cs8900if *)netif->state)->missed += (PPDATA >> 6);
+  miss_count += (PPDATA >> 6);
   // read RxCol Counter (zeroes itself upon read)
   PACKETPP = CS_PP_TXCOL;
-  ((struct cs8900if *)netif->state)->collisions += (PPDATA >> 6);
+  coll_count += (PPDATA >> 6);
+#endif
+#if (CS8900_STATS > 0)
+  ((struct cs8900if *)netif->state)->missed += miss_count;
+  if (miss_count > 0) DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u missed packets due to rx buffer overrun\n", miss_count));
+
+  ((struct cs8900if *)netif->state)->collisions += coll_count;
+  if (coll_count > 0) DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u packet collisions\n", coll_count)); 
 #endif
 }
 
