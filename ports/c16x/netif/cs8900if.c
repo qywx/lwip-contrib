@@ -6,8 +6,8 @@
  * Copyright (c) 2001-2003 Leon Woestenberg <leon.woestenberg@axon.tv>
  * Copyright (c) 2001-2003 Axon Digital Design B.V., The Netherlands.
  * All rights reserved.
- * 
- * Redistribution and use in source and binary forms, with or without modification, 
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice,
@@ -16,21 +16,21 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission. 
+ *    derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED 
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
- * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
- * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
- * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+ * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
  * This file is part of the lwIP TCP/IP stack.
- * 
+ *
  * Author: Leon Woestenberg <leon.woestenberg@axon.tv>
  *
  * This is a device driver for the Crystal Semiconductor CS8900
@@ -50,7 +50,7 @@
  * SHOULD NOT need to be called from outside this source.
  *
  * cs8900if_*() are the lwIP network interface functions.
- * 
+ *
  * cs8900_interrupt() is an early interrupt service routine (ISR).
  * It merely sets a flag to indicate the cs8900 needs servicing.
  * (This function MAY be tied to an interrupt vector, IF present).
@@ -73,7 +73,7 @@
  * cs8900if_init() initializes the lwIP network interface, and
  * calls cs8900_init() to initialize the hardware.
  * Function is called from lwIP.
- * 
+ *
  * cs8900if_service() is the service routine, which must be called
  * upon the need for service, or on a regular basis, in order to
  * service the Ethernet chip.
@@ -87,7 +87,7 @@
  * Function is called from lwIP.
  *
  * Future development:
- * 
+ *
  * Split the generic Ethernet functionality (a lot of the
  * cs8900if_*() functions) and the actual cs8900a dependencies.
  *
@@ -151,7 +151,7 @@ static void cs8900_reset(struct netif *netif);
 #define PACKETPP *((volatile u16_t *)(MEM_BASE + IO_BASE + 0x0A))
 #define PPDATA   *((volatile u16_t *)(MEM_BASE + IO_BASE + 0x0C))
 
-// CS8900 PacketPage register offsets 
+// CS8900 PacketPage register offsets
 #define  CS_PP_EISA        0x0000          // EISA Registration number of CS8900
 #define  CS_PP_PRODID      0x0002          // Product ID Number
 #define  CS_PP_IOBASE      0x0020          // I/O Base Address
@@ -187,7 +187,7 @@ static void cs8900_reset(struct netif *netif);
 
 // removed interrupt from library
 #if 0
-// hardware interrupt vector handler 
+// hardware interrupt vector handler
 _interrupt(0x18) void cs8900_interrupt(void)
 {
   struct cs8900if *cs8900if = cs8900if_netif->state;
@@ -245,9 +245,9 @@ static err_t cs8900_init(struct netif *netif)
   // { SIBUSY bit clear }
 
 #if 1
-  { 
+  {
   u16_t dummy;
-  // datasheet section 3.3.3 
+  // datasheet section 3.3.3
   dummy = *(u16_t *)(MEM_BASE + IO_BASE + 0x0D);
   // Dummy read, put chip in 16-bit mode
   dummy = *(u16_t *)(MEM_BASE + IO_BASE + 0x0D);
@@ -265,7 +265,7 @@ static err_t cs8900_init(struct netif *netif)
   // accept valid unicast or broadcast frames
   PACKETPP = CS_PP_RXCTL;
   PPDATA = (0x0005U | 0x0800U/*broadcast*/ | 0x0400U/*individual*/ | 0x0100U/*RxOK*/);
- 
+
   // enable receive interrupt
   PACKETPP = CS_PP_RXCFG;
   PPDATA = (0x0003U | 0x0100U/*RXIRQ*/);
@@ -283,7 +283,7 @@ static err_t cs8900_init(struct netif *netif)
   // - a received frame is lost
   PACKETPP = CS_PP_BUFCFG;
   PPDATA = (0x000bU |
-#if (CS8900_STATS > 0) // interrupt before counter overflow 
+#if (CS8900_STATS > 0) // interrupt before counter overflow
   (0x2000U/*MissOvfloiE*/ | 0x1000U/*TxColOvfloiE*/) |
 #endif
 #if (CS8900_STATS > 1) // interrupt on counter increment
@@ -300,7 +300,7 @@ static err_t cs8900_init(struct netif *netif)
   // - transmitter
   PACKETPP = CS_PP_LINECTL;
   PPDATA = (0x0013U | 0x0080U/*SerTxOn*/ | 0x0040U/*SerRxOn*/);
-  
+
   return ERR_OK;
 }
 
@@ -311,18 +311,18 @@ static err_t cs8900_init(struct netif *netif)
  * - ERR_OK: packet transferred to hardware
  * - ERR_CONN: no link or link failure
  * - ERR_IF: could not transfer to link (hardware buffer full?)
- */ 
+ */
 static err_t cs8900_output(struct netif *netif, struct pbuf *p)
 {
-	int tries = 0;
+  int tries = 0;
   err_t result;
 
   // exit if link has failed
   PACKETPP = CS_PP_LINESTATUS;
   if ((PPDATA & 0x0080U/*LinkOK*/) == 0) return ERR_CONN; // no Ethernet link
 
-  result = ERR_OK;  
-  
+  result = ERR_OK;
+
   /* issue 'transmit' command to CS8900 */
   TXCMD = 0x00C9U;
   /* send length (in bytes) of packet to send */
@@ -336,7 +336,7 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
     PACKETPP = CS_PP_RXCFG;
     PPDATA = (0x0003U | 0x0040U/*Skip_1*/ | 0x0100U/*RxOKiE*/);
     PACKETPP = CS_PP_BUSSTATUS;
-    /* cs8900if->dropped++; // CHECK: we do not know if we actually will drop a frame here */ 
+    /* cs8900if->dropped++; // CHECK: we do not know if we actually will drop a frame here */
   }
   // ready to transmit?
   if ((PPDATA & 0x0100U/*Rdy4TxNOW*/) != 0)
@@ -412,7 +412,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
       snmp_inc_ifinnucastpkts();
     }
 #endif
-    event_type = 0; 
+    event_type = 0;
     // read RxLength
     len = RXTXREG;
     DEBUGF(NETIF_DEBUG, ("cs8900_input: packet len %u\n", len));
@@ -420,21 +420,21 @@ static struct pbuf *cs8900_input(struct netif *netif)
     // positive length?
     if (len > 0)
     {
-      // allocate a pbuf chain with total length 'len' 
+      // allocate a pbuf chain with total length 'len'
       p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
       if (p != NULL)
       {
         for (q = p; q != 0; q = q->next)
-	      {
+        {
           DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %u len %u\n", q, q->tot_len, q->len));
-	        ptr = q->payload;
+          ptr = q->payload;
           // TODO: CHECK: what if q->len is odd? we don't use the last byte?
-	        for (i = 0; i < (q->len + 1) / 2; i++)
-      	  {
-	          *ptr = RXTXREG;
-	          ptr++;
-      	  }
-      	}
+          for (i = 0; i < (q->len + 1) / 2; i++)
+          {
+            *ptr = RXTXREG;
+            ptr++;
+          }
+        }
       }
       // could not allocate a pbuf
       else
@@ -462,16 +462,16 @@ static struct pbuf *cs8900_input(struct netif *netif)
 /**
  * To be called when the cs8900a needs service. Does
  * not assume the cs8900a needs service. Does test the
- * cs8900a whether it needs service. 
+ * cs8900a whether it needs service.
  *
  * As such, may be used robustly called as a deferred
  * (or "late") interrupt handler, or may be called in
  * a loop to implement polling, or both.
  *
  * Use cs8900if_service() from your application instead
- * of this function. 
+ * of this function.
  */
- 
+
 static void cs8900_service(struct netif *netif)
 {
   /* amount of ISQ's to handle (> 0) in one cs8900_service() call */
@@ -489,7 +489,7 @@ static void cs8900_service(struct netif *netif)
 
   // The "cs8900_needs_service" flag indicates whether any events
   // still need to be serviced.
-  // clear flag here. 
+  // clear flag here.
   // a receive interrupt can, *concurrently with this function*,
   // set this flag on new ISQ event occurences.
   // we will re-evaluate the correct setting of this flag at
@@ -530,12 +530,12 @@ static void cs8900_service(struct netif *netif)
 #if (CS8900_STATS > 0)
     else if ((irq_status & 0x003fU) == 0x0010U/*RxMISS Event*/)
     {
-	    miss_count += (irq_status >> 6);
-  	}
-  	else if ((irq_status & 0x003fU) == 0x0012U/*TxCOL Event*/)
-  	{
-	    coll_count += (irq_status >> 6);
-  	}
+      miss_count += (irq_status >> 6);
+   }
+    else if ((irq_status & 0x003fU) == 0x0012U/*TxCOL Event*/)
+    {
+      coll_count += (irq_status >> 6);
+    }
 #endif
     /* read ISQ register */
     irq_status = ISQ;
@@ -564,7 +564,7 @@ static void cs8900_service(struct netif *netif)
   if (miss_count > 0) DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u missed packets due to rx buffer overrun\n", miss_count));
 
   ((struct cs8900if *)netif->state)->collisions += coll_count;
-  if (coll_count > 0) DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u packet collisions\n", coll_count)); 
+  if (coll_count > 0) DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u packet collisions\n", coll_count));
 #endif
 }
 
@@ -609,16 +609,16 @@ err_t cs8900if_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipadd
   /* network hardware address obtained? */
   if (p != NULL)
   {
-	  /* send out the packet */
+  /* send out the packet */
     cs8900_output(netif, p);
     p = NULL;
   }
   // { p == NULL }
-	else
-	{
-	  /* we cannot tell if the packet was sent, the packet could have been queued */
+  else
+  {
+    /* we cannot tell if the packet was sent, the packet could have been queued */
     /* on an ARP entry that was already pending. */
-	}
+  }
   return ERR_OK;
 }
 /**
@@ -650,7 +650,7 @@ void cs8900if_input(struct netif *netif)
   }
   /* points to packet payload, which starts with an Ethernet header */
   ethhdr = p->payload;
-  
+
   q = NULL;
   switch (htons(ethhdr->type)) {
   /* IP packet? */
@@ -718,7 +718,7 @@ err_t cs8900if_init(struct netif *netif)
   struct cs8900if *cs8900if;
 
   cs8900if = mem_malloc(sizeof(struct cs8900if));
-	if (cs8900if == NULL)
+  if (cs8900if == NULL)
   {
     DEBUGF(NETIF_DEBUG, ("cs8900_input: out of memory for cs8900if\n"));
     return ERR_MEM;
@@ -735,10 +735,10 @@ err_t cs8900if_init(struct netif *netif)
 
   /* maximum transfer unit */
   netif->mtu = 1500;
-  
+
   /* broadcast capability */
   netif->flags = NETIF_FLAG_BROADCAST;
-  
+
   /* hardware address length */
   netif->hwaddr_len = 6;
 
@@ -772,7 +772,7 @@ err_t cs8900if_init(struct netif *netif)
  */
 void cs8900_send_debug(unsigned char *p, unsigned int len)
 {
-	int tries = 0, i;
+  int tries = 0, i;
 
   // network interface state
   extern struct netif *ethif;
@@ -783,7 +783,7 @@ void cs8900_send_debug(unsigned char *p, unsigned int len)
 
   // transmit command
   TXCMD = 0x00C9U;
-	// send at least 60 bytes
+  // send at least 60 bytes
   TXLENGTH = (14 + 20 + 8 + len < 60) ? 60 : (14 + 20 + 8 + len);
 
   PACKETPP = CS_PP_BUSSTATUS;
@@ -794,38 +794,38 @@ void cs8900_send_debug(unsigned char *p, unsigned int len)
     PACKETPP = CS_PP_RXCFG;
     PPDATA = (0x0003U | 0x0040U/*Skip_1*/ | 0x0100U/*RxOKiE*/);
     PACKETPP = CS_PP_BUSSTATUS;
-    /* cs8900if->dropped++; CHECK: we do not know if we actually will drop a frame here, do we? */ 
+    /* cs8900if->dropped++; CHECK: we do not know if we actually will drop a frame here, do we? */
   }
   // ready to transmit?
   if ((PPDATA & 0x0100U/*Rdy4TxNOW*/) != 0)
-  { 
+  {
     u16_t data, checksum = 0;
     u32_t udp_checksum = 0;
-                     
+
     // destination Ethernet address
-    RXTXREG = 0xa000U; 
-    RXTXREG = 0xc524U; 
-    RXTXREG = 0x6d72U; 
+    RXTXREG = 0xa000U;
+    RXTXREG = 0xc524U;
+    RXTXREG = 0x6d72U;
     // source Ethernet address
-    RXTXREG = htons(((u16_t)ethif->hwaddr[0] << 8U) | (u16_t)ethif->hwaddr[1]); 
-    RXTXREG = htons(((u16_t)ethif->hwaddr[2] << 8U) | (u16_t)ethif->hwaddr[3]); 
+    RXTXREG = htons(((u16_t)ethif->hwaddr[0] << 8U) | (u16_t)ethif->hwaddr[1]);
+    RXTXREG = htons(((u16_t)ethif->hwaddr[2] << 8U) | (u16_t)ethif->hwaddr[3]);
     RXTXREG = htons(((u16_t)ethif->hwaddr[4] << 8U) | (u16_t)ethif->hwaddr[5]);
     // frame type
     RXTXREG = htons(0x0800);
     // TOS, version
-    RXTXREG = htons(data = ((0x40 | 0x05) << 8) | 0x00); 
+    RXTXREG = htons(data = ((0x40 | 0x05) << 8) | 0x00);
     checksum += data;
     // length
-    RXTXREG = htons(data = 20 + 8 + len); 
+    RXTXREG = htons(data = 20 + 8 + len);
     checksum += data;
     // identifier
-    RXTXREG = htons(data = 0); 
+    RXTXREG = htons(data = 0);
     checksum += data;
     // fragment offset
-    RXTXREG = htons(data = 0); 
+    RXTXREG = htons(data = 0);
     checksum += data;
     // TTL, UDP protocol
-    RXTXREG = htons(data = (255U << 8) | 17U); 
+    RXTXREG = htons(data = (255U << 8) | 17U);
     checksum += data;
 
     checksum += (htonl(ethif->ip_addr.addr) & 0xffff0000U) >> 16;
@@ -835,22 +835,22 @@ void cs8900_send_debug(unsigned char *p, unsigned int len)
     checksum += 6; // LW: kludge/hack: checksum calculation seems to be wrong somehow
     // LW: this seems (?) to fix it
     // checksum
-    RXTXREG = htons(~checksum); 
+    RXTXREG = htons(~checksum);
 
     // source IP
-    RXTXREG = htons((htonl(ethif->ip_addr.addr) & 0xffff0000U) >> 16); 
-    // source IP           
-    RXTXREG = htons( htonl(ethif->ip_addr.addr) & 0x0000ffffU); 
+    RXTXREG = htons((htonl(ethif->ip_addr.addr) & 0xffff0000U) >> 16);
+    // source IP
+    RXTXREG = htons( htonl(ethif->ip_addr.addr) & 0x0000ffffU);
     // destination IP
-    RXTXREG = htons(0xc0a8U); 
+    RXTXREG = htons(0xc0a8U);
     // destination IP
-    RXTXREG = htons(0x0001U); 
+    RXTXREG = htons(0x0001U);
     // source port 3000
-    RXTXREG = htons(3000U); 
+    RXTXREG = htons(3000U);
     // destination port 3000
-    RXTXREG = htons(3000U); 
+    RXTXREG = htons(3000U);
     // UDP length
-    RXTXREG = htons(len); 
+    RXTXREG = htons(len);
     // UDP checksum (not present)
 
     udp_checksum =  (htonl(ethif->ip_addr.addr) & 0xffff0000U) >> 16;
@@ -865,20 +865,19 @@ void cs8900_send_debug(unsigned char *p, unsigned int len)
     udp_checksum += cs8900_chksum(p, len);
     while (udp_checksum >> 16) {
       udp_checksum = (udp_checksum & 0xffffUL) + (udp_checksum >> 16);
-    }    
+    }
 
     RXTXREG = htons(~(udp_checksum & 0xffff));
-	  // UDP data
     for (i = 0; i < len; i += 2)
     {
       RXTXREG = htons((p[i] << 8) | p[i + 1]);
-    } 
-	  // pad to 60 bytes
-	  while (i < 60)
-	  {
+    }
+    // pad to 60 bytes
+    while (i < 60)
+    {
       RXTXREG = 0;
-	    i += 2;
-	  }
+      i += 2;
+    }
   }
 }
 
@@ -886,7 +885,7 @@ static u32_t cs8900_chksum(void *dataptr, int len)
 {
   u32_t acc = 0;
   u16_t *ptr = (u16_t *)dataptr;
-    
+
   for(acc = 0; len > 1; len -= 2) {
     acc += *ptr;
     ptr++;
