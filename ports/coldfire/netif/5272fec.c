@@ -113,6 +113,7 @@ typedef struct mcf5272if mcf5272if_t;
 
 static mcf5272if_t *mcf5272if;
 static const struct eth_addr ethbroadcast = {{0xff,0xff,0xff,0xff,0xff,0xff}};
+static sys_sem_t tx_sem;
 
 u32_t phy;
 
@@ -259,6 +260,15 @@ mcf5272_dis_tx_int(void)
 
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
+static void mcf5272fec_tx_hisr(void)
+{
+    /* Just signal task that it can run and cleanup */
+    sys_sem_signal(tx_sem);
+}
+
+/*-----------------------------------------------------------------------------------*
+  This function must be run as a task, since it ends up calling free() through pbuf_free()
+ *-----------------------------------------------------------------------------------*/
 static void
 mcf5272fec_tx_cleanup(void)
 {
@@ -345,7 +355,6 @@ low_level_output(struct netif *netif, struct pbuf *p)
     if (num_desc > mcf5272->tx_free)
     {
         /* Drop the frame, we have no place to put it */
-        pbuf_free(p);
 #ifdef LINK_STATS
         lwip_stats.link.memerr++;
 #endif
@@ -600,7 +609,7 @@ low_level_init(struct netif *netif)
 
     /* Plug appropriate low level interrupt vectors */
     sys_setvect(MCF5272_VECTOR_ERx, mcf5272fec_rx, mcf5272_dis_rx_int);
-    sys_setvect(MCF5272_VECTOR_ETx, mcf5272fec_tx_cleanup, mcf5272_dis_tx_int);
+    sys_setvect(MCF5272_VECTOR_ETx, mcf5272fec_tx_hisr, mcf5272_dis_tx_int);
     //sys_setvect(MCF5272_VECTOR_ENTC, mcf5272fec_ntc);
 
     /* Set the I_MASK register to enable only rx & tx frame interrupts */
@@ -711,18 +720,18 @@ static void
 etharp_timer_thread(void *arg)
 {
     sys_sem_t *psem = (sys_sem_t *) arg;
-    sys_sem_t sem;
     
     /* Create timeout timer */
     sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler)arp_timer, NULL);
     /* Signal previous task that it can go */
     sys_sem_signal(*psem);
 
-    sem = sys_sem_new(0);
+    tx_sem = sys_sem_new(0);
 
     while(1)
     {
-        sys_sem_wait(sem);
+        sys_sem_wait(tx_sem);
+        mcf5272fec_tx_cleanup();
     }
 }
 

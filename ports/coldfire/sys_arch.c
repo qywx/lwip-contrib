@@ -67,8 +67,8 @@ static struct sys_thread *threads = NULL;
 static struct sys_hisr *hisrs = NULL;
 
 #define TICKS_PER_SECOND 10000
-#define MS_TO_TICKS(MS) (MS * TICKS_PER_SECOND) / 1000
-#define TICKS_TO_MS(TICKS) (1000 * TICKS) / TICKS_PER_SECOND
+#define MS_TO_TICKS(MS) (MS * (TICKS_PER_SECOND / 1000))
+#define TICKS_TO_MS(TICKS) ((unsigned long)((1000ULL * TICKS) / TICKS_PER_SECOND))
 
 #define SYS_MBOX_SIZE 128               // Number of elements in mbox queue
 #define SYS_STACK_SIZE 2048             // A minimum Nucleus stack for coldfire
@@ -277,8 +277,8 @@ sys_sem_signal(sys_sem_t sem)
 }
 
 /*---------------------------------------------------------------------------------*/
-u16_t
-sys_arch_sem_wait(sys_sem_t sem, u16_t timeout)
+u32_t
+sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
 {
     UNSIGNED timestart, timespent;
     STATUS status;
@@ -294,7 +294,7 @@ sys_arch_sem_wait(sys_sem_t sem, u16_t timeout)
     if (status == NU_TIMEOUT)
         return 0;
     else
-        return timespent ? (u16_t) timespent : 1;
+        return timespent ? timespent : 1;
 }
 
 /*---------------------------------------------------------------------------------*/
@@ -400,8 +400,8 @@ sys_mbox_post(sys_mbox_t mbox, void *msg)
     ASSERT("sys_mbox_post: mbx post failed", status == NU_SUCCESS);
 }
 /*---------------------------------------------------------------------------------*/
-u16_t
-sys_arch_mbox_fetch(sys_mbox_t mbox, void **msg, u16_t timeout)
+u32_t
+sys_arch_mbox_fetch(sys_mbox_t mbox, void **msg, u32_t timeout)
 {
     UNSIGNED timestart, timespent;
     STATUS status;
@@ -423,7 +423,15 @@ sys_arch_mbox_fetch(sys_mbox_t mbox, void **msg, u16_t timeout)
         if (msg)    
             *msg = ret_msg;
         DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p msg %p\n", mbox, ret_msg));
+    } else {
+        if (msg)
+            *msg = 0;
+        if (status == NU_TIMEOUT)
+            DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: timeout on mbox %p\n", mbox));
+        else
+            DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: Queue Error %i on mbox %p\n", status, mbox));
     }
+   
     
     /* This next statement takes wraparound into account. It works. Really! */
     timespent = TICKS_TO_MS(((s32_t) ((s32_t) NU_Retrieve_Clock() - (s32_t) timestart)));
@@ -431,7 +439,7 @@ sys_arch_mbox_fetch(sys_mbox_t mbox, void **msg, u16_t timeout)
     if (status == NU_TIMEOUT)
         return 0;
     else
-        return timespent ? (u16_t) timespent : 1;
+        return timespent ? timespent : 1;
 }
 
 /*---------------------------------------------------------------------------------*/
