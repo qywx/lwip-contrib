@@ -66,7 +66,7 @@ NETIFFILES=$(LWIPDIR)/netif/loopif.c \
 	$(LWIPDIR)/netif/etharp.c $(LWIPDIR)/netif/slipif.c 
 
 # ARCHFILES: Architecture specific files.
-ARCHFILES=$(wildcard $(LWIPARCH)/*.c $(LWIPARCH)/netif/*.c)
+ARCHFILES=$(wildcard $(LWIPARCH)/*.c $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tcpdump.c)
 
 # APPFILES: Applications.
 APPFILES=apps/fs.c apps/httpd.c \

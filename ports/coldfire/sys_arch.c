@@ -73,15 +73,6 @@ static struct sys_hisr *hisrs = NULL;
 #define SYS_MBOX_SIZE 128               // Number of elements in mbox queue
 #define SYS_STACK_SIZE 2048             // A minimum Nucleus stack for coldfire
 #define SYS_HISR_STACK_SIZE 2048             // A minimum Nucleus stack for coldfire
-/* People often make a mistake on the priority of their communications task.
-   The TCP/IP stack should be at a relatively low priority if it is an endpoint
-   (not a router) on a somewhat underpowered CPU. You are'nt going to keep up
-   with network traffic during a denial of service attack or misconfigured network
-   and you don't want an overburdened network task to cause other important tasks
-   (including your UI) to stop working. Drop packets! It forces flow control and
-   lets the rest of your system run.
-*/
-#define SYS_THREAD_PRIORITY 220         // Relatively low priority
 
 /*---------------------------------------------------------------------------------*/
 void
@@ -127,7 +118,7 @@ introduce_thread(NU_TASK *id, void (*function)(void *arg), void *arg)
 /* We use Nucleus task as thread. Create one with a standard size stack at a standard
  * priority. */
 sys_thread_t
-sys_thread_new(void (*function)(void *arg), void *arg)
+sys_thread_new(void (*function)(void *arg), void *arg, int prio)
 {
     NU_TASK *p_thread;
     u8_t *p_stack;
@@ -156,7 +147,7 @@ sys_thread_new(void (*function)(void *arg), void *arg)
                                         st,
                                         p_stack,
                                         SYS_STACK_SIZE,
-                                        SYS_THREAD_PRIORITY,
+                                        prio,
                                         0,                          //Disable timeslicing
                                         NU_PREEMPT,
                                         NU_START);

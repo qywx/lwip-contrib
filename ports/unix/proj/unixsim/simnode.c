@@ -139,7 +139,7 @@ main(int argc, char **argv)
   
   printf("System initialized.\n");
     
-  sys_thread_new((void *)(main_thread), NULL);
+  sys_thread_new((void *)(main_thread), NULL, DEFAULT_THREAD_PRIO);
   pause();
   return 0;
 }

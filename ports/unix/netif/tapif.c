@@ -126,7 +126,7 @@ low_level_init(struct netif *netif)
   
   DEBUGF(TAPIF_DEBUG, ("tapif_init: system(\"%s\");\n", buf));
   system(buf);
-  sys_thread_new(tapif_thread, netif);
+  sys_thread_new(tapif_thread, netif, DEFAULT_THREAD_PRIO);
 
 }
 /*-----------------------------------------------------------------------------------*/

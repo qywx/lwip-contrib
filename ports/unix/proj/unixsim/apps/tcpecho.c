@@ -80,7 +80,7 @@ tcpecho_thread(void *arg)
 void
 tcpecho_init(void)
 {
-  sys_thread_new(tcpecho_thread, NULL);  
+  sys_thread_new(tcpecho_thread, NULL, DEFAULT_THREAD_PRIO);  
 }
 /*-----------------------------------------------------------------------------------*/
 

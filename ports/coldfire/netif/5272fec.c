@@ -741,7 +741,7 @@ etharp_timer_thread(void *arg)
 static void
 etharp_timer_init(void *arg)
 {
-    sys_thread_new((void *)etharp_timer_thread, arg);
+    sys_thread_new((void *)etharp_timer_thread, arg, DEFAULT_THREAD_PRIO);
 }
 
 

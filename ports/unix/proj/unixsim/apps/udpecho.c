@@ -62,5 +62,5 @@ udpecho_thread(void *arg)
 void
 udpecho_init(void)
 {
-  sys_thread_new(udpecho_thread, NULL);
+  sys_thread_new(udpecho_thread, NULL, DEFAULT_THREAD_PRIO);
 }

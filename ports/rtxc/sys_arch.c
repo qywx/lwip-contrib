@@ -242,10 +242,10 @@ sys_thread(void)
 }
 /*-----------------------------------------------------------------------------------*/
 sys_thread_t
-sys_thread_new(void (* function)(void *arg), void *arg) 
+sys_thread_new(void (* function)(void *arg), void *arg, int prio) 
 {
   TASK newtask;
-  PRIORITY pri = 2;       /* This may have to be changed. */
+  PRIORITY pri = prio;       /* This may have to be changed. */
   char *stack;
   int stacksize = 512;   /* This may have to be changed. */
   struct sys_thread_arg threadarg;

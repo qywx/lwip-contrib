@@ -200,4 +200,17 @@ a lot of data that needs to be copied, this should be set high. */
 
 #define LWIP_COMPAT_SOCKETS 1
 #define LWIP_PROVIDE_ERRNO 1
+
+/* People often make a mistake on the priority of their communications task.
+   The TCP/IP stack should be at a relatively low priority if it is an endpoint
+   (not a router) on a somewhat underpowered CPU. You are'nt going to keep up
+   with network traffic during a denial of service attack or misconfigured network
+   and you don't want an overburdened network task to cause other important tasks
+   (including your UI) to stop working. Drop packets! It forces flow control and
+   lets the rest of your system run.
+*/
+#define TCPIP_THREAD_PRIO 220         // Relatively low priority
+
+#define DEFAULT_THREAD_PRIO 240
+
 #endif /* __LWIPOPTS_H__ */

@@ -209,7 +209,7 @@ pcapif_init(struct netif *netif)
   p->p = NULL;
   p->lasttime = 0; 
   
-  sys_thread_new(pcapif_thread, netif);
+  sys_thread_new(pcapif_thread, netif, DEFAULT_THREAD_PRIO);
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/

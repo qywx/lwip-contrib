@@ -1052,7 +1052,7 @@ shell_thread(void *arg)
 void
 shell_init(void)     
 {
-  sys_thread_new(shell_thread, NULL);
+  sys_thread_new(shell_thread, NULL, DEFAULT_THREAD_PRIO);
 }
 
 

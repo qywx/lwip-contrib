@@ -114,7 +114,7 @@ sys_arch_timeouts(void)
 }
 /*-----------------------------------------------------------------------------------*/
 sys_thread_t
-sys_thread_new(void (* function)(void *arg), void *arg)
+sys_thread_new(void (* function)(void *arg), void *arg, int prio)
 {
     return 0;
 }
