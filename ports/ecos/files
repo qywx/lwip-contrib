@@ -42,6 +42,7 @@ src/include/lwip/sys.h include/lwip/sys.h
 src/include/lwip/tcp.h include/lwip/tcp.h
 src/include/lwip/tcpip.h include/lwip/tcpip.h
 src/include/lwip/udp.h include/lwip/udp.h
+src/include/lwip/sio.h include/lwip/sio.h
 src/include/lwip/dhcp.h include/lwip/dhcp.h
 src/include/netif/etharp.h include/netif/etharp.h
 src/include/netif/slipif.h include/netif/slipif.h
