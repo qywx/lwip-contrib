@@ -35,6 +35,7 @@
 #include <stdarg.h>
 #include <time.h>
 #include <string.h>
+#include <conio.h>
 
 #include "lwip/debug.h"
 #include "lwip/mem.h"
@@ -116,8 +117,8 @@ void main_loop()
 	int timer2;
 	int done;
 	
-	IP4_ADDR(&gw, 192,168,2,201);
-	IP4_ADDR(&ipaddr, 192,168,2,200);
+	IP4_ADDR(&gw, 192,168,0,1);
+	IP4_ADDR(&ipaddr, 192,168,0,200);
 	IP4_ADDR(&netmask, 255,255,255,0);
 	
 	if (init_adapter() != 0)
@@ -172,7 +173,7 @@ void main_loop()
 		{
 			tcp_slowtmr();
 			timer2=0;
-			done=kbhit();
+			done=_kbhit();
 		}
 
 		update_adapter();
