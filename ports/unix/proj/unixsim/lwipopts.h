@@ -218,18 +218,12 @@ a lot of data that needs to be copied, this should be set high. */
 #define RAW_TTL                 255
 
 /* ---------- Statistics options ---------- */
+/* individual STATS options can be turned off by defining them to 0 
+ * (e.g #define TCP_STATS 0). All of them are turned off if LWIP_STATS
+ * is 0
+ * */
 
-#ifdef LWIP_STATS
-#define LINK_STATS
-#define IP_STATS
-#define ICMP_STATS
-#define UDP_STATS
-#define TCP_STATS
-#define MEM_STATS
-#define MEMP_STATS
-#define PBUF_STATS
-#define SYS_STATS
-#endif /* LWIP_STATS */
+#define LWIP_STATS	1
 
 /* ---------- PPP options ---------- */
 
