@@ -36,9 +36,9 @@
 #include <string.h>
 
 /* Define platform endianness */
-//#ifndef BYTE_ORDER
-//#define BYTE_ORDER LITTLE_ENDIAN
-//#endif /* BYTE_ORDER */
+#ifndef BYTE_ORDER
+#define BYTE_ORDER LITTLE_ENDIAN
+#endif /* BYTE_ORDER */
 
 /* Define generic types used in lwIP */
 typedef unsigned   char    u8_t;
