@@ -191,22 +191,23 @@ a lot of data that needs to be copied, this should be set high. */
 /* ---------- SLIP options --------- */ 
 #define LWIP_SLIP               defined(CYGPKG_LWIP_SLIP)
 #define SLIP_DEV                CYGPKG_LWIP_SLIP_DEV
- 
+
+#define LWIP_HAVE_LOOPIF	defined (CYGPKG_LWIP_LOOPIF)
 /* ---------- PPP options --------- */  
 #define PPP_SUPPORT             defined(CYGPKG_LWIP_PPP)
 #define PPP_DEV                 CYGPKG_LWIP_PPP_DEV
 #define MD5_SUPPORT             1
 
 #if defined(CYGPKG_LWIP_PPP_PAP_AUTH)
-	#define PAP_SUPPORT            	1
+#define PAP_SUPPORT	1
 #else
-	#define PAP_SUPPORT            	0
+#define PAP_SUPPORT	0
 #endif
 
-#if defined(CYGPKG_LWIP_PPP_CHAP_AUTH) 
-	#define CHAP_SUPPORT		1
+#if defined(CYGPKG_LWIP_PPP_CHAP_AUTH)
+#define CHAP_SUPPORT	1
 #else
-	#define CHAP_SUPPORT          	0 
+#define CHAP_SUPPORT	0
 #endif
 
 /* ------- Thread priorities ---------------*/
@@ -214,5 +215,43 @@ a lot of data that needs to be copied, this should be set high. */
 #define SLIPIF_THREAD_PRIO      CYGPKG_LWIP_SLIPIF_THREAD_PRIORITY
 #define PPP_THREAD_PRIO         CYGPKG_LWIP_PPP_THREAD_PRIORITY
 /* ---------- Statistics options ---------- */
+#define LWIP_STATS		defined(CYGPKG_LWIP_STATS)
+
+/* ---------- Debug options ---------- */
+#if !defined(CYGPKG_LWIP_ASSERTS)
+#define LWIP_NOASSERT
+#endif
+
+#if defined(CYGPKG_LWIP_DEBUG)
+#define LWIP_DEBUG
+#define MEM_DEBUG               DBG_ON
+#define MEMP_DEBUG              DBG_ON
+#define PBUF_DEBUG              DBG_ON
+#define API_LIB_DEBUG   DBG_ON
+#define API_MSG_DEBUG   DBG_ON 
+#define TCPIP_DEBUG             DBG_ON
+#define NETIF_DEBUG             DBG_ON
+#define SOCKETS_DEBUG   DBG_ON
+#define DEMO_DEBUG              DBG_ON
+#define IP_DEBUG                DBG_ON
+#define IP_REASS_DEBUG  DBG_ON
+#define RAW_DEBUG               DBG_ON
+#define ICMP_DEBUG              DBG_ON
+#define UDP_DEBUG               DBG_ON
+#define TCP_DEBUG               DBG_ON
+#define TCP_INPUT_DEBUG         DBG_ON
+#define TCP_OUTPUT_DEBUG        DBG_ON
+#define TCP_RTO_DEBUG   DBG_ON
+#define TCP_CWND_DEBUG  DBG_ON
+#define TCP_WND_DEBUG   DBG_ON
+#define TCP_FR_DEBUG    DBG_ON
+#define TCP_QLEN_DEBUG  DBG_ON
+#define TCP_RST_DEBUG   DBG_ON
+#define PPP_DEBUG   DBG_ON
+
+#define DBG_TYPES_ON    (DBG_ON|DBG_TRACE|DBG_STATE|DBG_FRESH|DBG_HALT)
+#endif
+
+
 
 #endif /* __LWIPOPTS_H__ */

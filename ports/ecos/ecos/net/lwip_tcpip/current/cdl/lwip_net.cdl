@@ -73,18 +73,43 @@ cdl_package CYGPKG_NET_LWIP {
 		api/err.c	\
 		api/sockets.c	\
 		netif/etharp.c	\
-		netif/loopif.c	\
 		ecos/sys_arch.c	\
 		ecos/init.c	
 	
 	
-	cdl_option CYGPKG_LWIP_STATS {
+	cdl_component CYGPKG_LWIP_STATS {
 		display		"Turn ON/OFF statistics"
 		flavor 		bool
 		default_value	0
 		description	"
 			Check this box to turn ON statistics options for lwIP."
+	}
+		
+	cdl_component CYGPKG_LWIP_DEBUG {
+		display		"Turn ON/OFF debug options"
+		flavor 		bool
+		default_value	0
+		description	"
+			Check this box to turn ON debug options for lwIP."
+
+		cdl_option CYGPKG_LWIP_DEBUG_TCP {
+			display	"Control TCP debug"
+			flavor 		bool
+			default_value	0
+			description	"
+				Generic TCP debug switch."
+			
 		}
+		
+	}
+
+	cdl_component CYGPKG_LWIP_ASSERTS {
+		display		"Turn ON/OFF assertions"
+		flavor 		bool
+		default_value	0
+		description	"
+			Check this box to turn ON assertions for lwIP."
+	}
 
 	cdl_component CYGPKG_LWIP_IPV4_CONF {
 		display		"IPV4 netconf"
@@ -446,6 +471,13 @@ cdl_package CYGPKG_NET_LWIP {
 				1 if you want to do an ARP check on the offered address
 				(recommended)."
 		}
+	}
+	
+	cdl_component CYGPKG_LWIP_LOOPIF {
+		display		"Support loop interface (127.0.0.1)"
+		flavor		bool
+		default_value 	1
+		compile netif/loopif.c
 	}
 
 	cdl_component CYGPKG_LWIP_SLIP {

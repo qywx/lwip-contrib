@@ -105,10 +105,16 @@ ppp_trace(int level, const char *format,...)
 	diag_printf(format);
 }	
 #endif
+
+#if LWIP_HAVE_LOOPIF
+struct netif ecos_loopif;
+#endif
+
 /*
  * Called by the eCos application at startup
  * wraps various init calls
  */
+extern int lwip_init(void);
 int lwip_init(void)
 {
 	struct ip_addr ipaddr, netmask, gw;
@@ -130,13 +136,15 @@ int lwip_init(void)
 	sys_sem_wait(sem);
 	sys_sem_free(sem);
 
-
-  IP4_ADDR(&gw, 127,0,0,1);
-  IP4_ADDR(&ipaddr, 127,0,0,1);
-  IP4_ADDR(&netmask, 255,0,0,0);
+#if LWIP_HAVE_LOOPIF
+	IP4_ADDR(&gw, 127,0,0,1);
+	IP4_ADDR(&ipaddr, 127,0,0,1);
+	IP4_ADDR(&netmask, 255,0,0,0);
   
-  netif_add(&ipaddr, &netmask, &gw, NULL, loopif_init,
+	netif_add(&ecos_loopif, &ipaddr, &netmask, &gw, NULL, loopif_init,
 	    tcpip_input);
+#endif
+	
 #if LWIP_SLIP	
 	lwip_set_addr(&mynetif);
 	slipif_init(&mynetif);
