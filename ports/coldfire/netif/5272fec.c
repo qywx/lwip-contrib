@@ -363,7 +363,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
         
     } else {
         /* Increment use count on pbuf */
-        pbuf_ref(p);
+        pbuf_ref_chain(p);
         
         /* Put buffers on descriptor ring, but don't mark them as ready yet */
         tx_insert_eof = tx_insert_sof = mcf5272->tx_insert;
@@ -670,8 +670,8 @@ low_level_init(struct netif *netif)
     
     /* Set the tranceiver interface to MII mode */
     MCF5272_WR_FEC_RCR(imm, 0
-                       | MCF5272_FEC_RCR_MII_MODE);
-    /*  | MCF5272_FEC_RCR_DRT); */      /* half duplex */
+                       | MCF5272_FEC_RCR_MII_MODE
+                       | MCF5272_FEC_RCR_DRT); 	/* half duplex */
 
     /* Only operate in half-duplex, no heart beat control */
     MCF5272_WR_FEC_TCR(imm, 0);

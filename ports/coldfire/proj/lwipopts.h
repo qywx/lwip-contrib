@@ -183,9 +183,9 @@ a lot of data that needs to be copied, this should be set high. */
 
 
 /* ---------- Statistics options ---------- */
-#define STATS
+#define LWIP_STATS 1
 
-#ifdef STATS
+#ifdef LWIP_STATS
 #define LINK_STATS
 #define IP_STATS
 #define ICMP_STATS

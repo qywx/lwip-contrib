@@ -293,7 +293,7 @@ unixif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
   buf->payload = p->payload;
 
   if(list_elems(unixif->q) == 0) {
-    pbuf_ref(p);
+    pbuf_ref_chain(p);
     list_push(unixif->q, buf);
     sys_timeout((double)p->tot_len * 8000.0 / UNIXIF_BPS, unixif_output_timeout,
 		netif);
@@ -301,7 +301,7 @@ unixif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
     DEBUGF(UNIXIF_DEBUG, ("unixif_output: first on list\n"));
     
   } else {
-    pbuf_ref(p);
+    pbuf_ref_chain(p);
     if(list_push(unixif->q, buf) == 0) {
 #ifdef UNIXIF_DROP_FIRST
       struct unixif_buf *buf2;

@@ -62,7 +62,6 @@ static int num_sem = 0;                 // Number of semaphores created
 static int num_mbox = 0;                // Number of mailboxes created
 static int num_thread = 0;              // Number of threads created
 static int num_hisr = 0;                // Number of hisrs created
-static sys_sem_t thread_sem;            // Protect thread structure
 static struct sys_thread *threads = NULL;
 static struct sys_hisr *hisrs = NULL;
 
@@ -78,7 +77,6 @@ static struct sys_hisr *hisrs = NULL;
 void
 sys_init(void)
 {
-    thread_sem = sys_sem_new(1);
     return;
 }
 
@@ -97,18 +95,19 @@ static struct sys_thread *
 introduce_thread(NU_TASK *id, void (*function)(void *arg), void *arg)
 {
   struct sys_thread *thread;
+  sys_prot_t old_level;
   
   thread = (struct sys_thread *) calloc(1,sizeof(struct sys_thread));
     
   if(thread) {
-      sys_arch_sem_wait(thread_sem, 0);         //Wait to obtain the semaphore
+      old_level = sys_arch_protect();
       thread->next = threads;
       thread->timeouts.next = NULL;
       thread->pthread = id;
       thread->function = function;
       thread->arg = arg;
       threads = thread;
-      sys_sem_signal(thread_sem);               //Release semaphore
+      sys_arch_unprotect(old_level);
   }
     
   return thread;
@@ -165,23 +164,22 @@ static struct sys_thread *
 current_thread(void)
 {
     struct sys_thread *st;
+    sys_prot_t old_level;
     NU_TASK *pt;
     
     pt = NU_Current_Task_Pointer();
-    sys_arch_sem_wait(thread_sem, 0);
+    old_level = sys_arch_protect();
     
     for(st = threads; st != NULL; st = st->next)
     {    
         if(st->pthread == pt)
         {
-            sys_sem_signal(thread_sem);
-            
+            sys_arch_unprotect(old_level);
             return st;
         }
     }
 
-    sys_sem_signal(thread_sem);
-
+    sys_arch_unprotect(old_level);
     st = introduce_thread(pt, 0, 0);
     
     if(!st) {
