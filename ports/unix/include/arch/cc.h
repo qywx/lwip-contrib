@@ -32,10 +32,14 @@
 #ifndef __ARCH_CC_H__
 #define __ARCH_CC_H__
 
+/* Define platform endianness */
+#ifndef BYTE_ORDER
+#define BYTE_ORDER LITTLE_ENDIAN
+#endif /* BYTE_ORDER */
+
+/* Define generic types used in lwIP */
 typedef unsigned   char    u8_t;
 typedef signed     char    s8_t;
-/*typedef unsigned   short   u8_t;
-  typedef signed     short   s8_t; */
 typedef unsigned   short   u16_t;
 typedef signed     short   s16_t;
 typedef unsigned   long    u32_t;
@@ -43,9 +47,18 @@ typedef signed     long    s32_t;
 
 typedef u32_t mem_ptr_t;
 
+/* Compiler hints for packing structures */
 #define PACK_STRUCT_FIELD(x) x __attribute__((packed))
 #define PACK_STRUCT_STRUCT __attribute__((packed))
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_END
 
+/* prototypes for printf() and abort() */
+#include <stdio.h>
+#include <stdlib.h>
+/* Plaform specific diagnostic output */
+#define LWIP_PLATFORM_DIAG(x)	{printf x;}
+
+#define LWIP_PLATFORM_ASSERT(x)  {printf("Assertion \"%s\" failed at line %d in %s\n", \
+                                     x, __LINE__, __FILE__); fflush(NULL); abort();}
 #endif /* __ARCH_CC_H__ */
