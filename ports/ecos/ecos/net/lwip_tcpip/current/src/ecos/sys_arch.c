@@ -100,8 +100,7 @@ sys_mbox_fetch(sys_mbox_t mbox, void **msg){
 
 /* 
  * Fetch data from a mbox.Wait for at most timeout millisecs
- * Return 0 if timed out otherwise time spent waiting or 1 
- * if there was no wait.
+ * Return -1 if timed out otherwise time spent waiting.
  */ 
 u32_t sys_arch_mbox_fetch(sys_mbox_t mbox, void **data, u32_t timeout)
 {
@@ -113,7 +112,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t mbox, void **data, u32_t timeout)
 		end_time = cyg_current_time();
 
 		if (d == NULL)
-			return 0;
+			return 0xffffffff;
 	} else {
 		d = cyg_mbox_get(mbox);
 	}
@@ -154,8 +153,7 @@ sys_timeout(u16_t msecs, sys_timeout_handler h, void *arg)
 #endif
 /* 
  * Wait on a semaphore for at most timeout millisecs
- * Return 0 if timed out otherwise time spent waiting or 1 
- * if there was no wait.
+ * Return -1 if timed out otherwise time spent waiting.
  */ 
 u32_t sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
 {
@@ -168,7 +166,7 @@ u32_t sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
 		end_time = cyg_current_time();
 
 		if (r == false) {
-			return 0;
+			return 0xffffffff;
 		}	
 	} else {
 		cyg_semaphore_wait(sem);
