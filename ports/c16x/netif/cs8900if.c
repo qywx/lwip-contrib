@@ -123,7 +123,10 @@
 #  define leds_off()
 #endif
 
-#error TODO: Check if ETH_MIN_FRAME_LEN is defined correctly. (RFC1042 or CS8900)
+/**
+ * Dependend on physical layer. This is a safe minimum for 802.3 10base5/T.
+ * @sa RFC1042
+ */
 #define ETH_MIN_FRAME_LEN 76
 
 #include "cs8900if.h"
