@@ -37,4 +37,6 @@
 #define PERF_START    /* null definition */
 #define PERF_STOP(x)  /* null definition */
 
+void perf_init(char *fname);
+
 #endif /* __ARCH_PERF_H__ */
