@@ -30,7 +30,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: cc.h,v 1.4 2003/02/12 22:02:02 davidhaas Exp $
+ * $Id: cc.h,v 1.5 2003/02/18 19:27:08 davidhaas Exp $
  */
 #ifndef __CC_H__
 #define __CC_H__
@@ -99,12 +99,12 @@ typedef	struct _types_fd_set {
 #include <stdlib.h>
 /* Plaform specific diagnostic output */
 #ifndef LWIP_PLATFORM_DIAG
-#define LWIP_PLATFORM_DIAG(x)	{printf x;}
+#define LWIP_PLATFORM_DIAG(x)	do {printf x;} while(0)
 #endif
 
 #ifndef LWIP_PLATFORM_ASSERT
-#define LWIP_PLATFORM_ASSERT(x)  {printf("Assertion \"%s\" failed at line %d in %s\n", \
-                                     x, __LINE__, __FILE__); fflush(NULL); abort();}
+#define LWIP_PLATFORM_ASSERT(x) do {printf("Assertion \"%s\" failed at line %d in %s\n", \
+                                     x, __LINE__, __FILE__); fflush(NULL); abort();} while(0)
 #endif
 
 

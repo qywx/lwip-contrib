@@ -31,7 +31,10 @@
  
 CCDEP=gcc
 CC=gcc
-CFLAGS=-g -Wall -DIPv4 -Os -fpack-struct
+#To Compile for linux: make ARCH=linux
+#To Compile for cygwin: make ARCH=cygwin
+ARCH=unix
+CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -Os -fpack-struct
 ARFLAGS=rs
 
 CONTRIBDIR=../../../..
