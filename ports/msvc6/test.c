@@ -109,6 +109,8 @@ void netio_init(void)
 	tcp_accept(pcb, netio_accept);
 }
 
+struct netif;
+
 void main_loop()
 {
 	struct ip_addr ipaddr, netmask, gw;
@@ -124,7 +126,7 @@ void main_loop()
 	if (init_adapter(0) != 0)
 		return;
 
-	netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, ethernetif_init,
+	netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init,
 		ip_input));
 
 	/*

@@ -26,7 +26,7 @@
  * 
  * Author: Kieran Mansley <kjm25@cam.ac.uk>
  *
- * $Id: unixlib.c,v 1.2 2003/02/06 22:18:31 davidhaas Exp $
+ * $Id: unixlib.c,v 1.3 2003/11/24 08:54:46 jani Exp $
  */
 
 /*-----------------------------------------------------------------------------------*/
@@ -60,6 +60,8 @@ tcpip_init_done(void *arg)
   sys_sem_signal(*sem);
 }
 
+struct netif;
+
 void _init(void){
   struct ip_addr ipaddr, netmask, gateway;
   sys_sem_t sem;
@@ -83,7 +85,7 @@ void _init(void){
   IP4_ADDR(&ipaddr, 192,168,1,1);
   IP4_ADDR(&netmask, 255,255,255,0);
   
-  netif_set_default(netif_add(&ipaddr, &netmask, &gateway, NULL, tapif_init,
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gateway, NULL, tapif_init,
 			      tcpip_input));
 }
 
