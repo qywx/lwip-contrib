@@ -161,11 +161,14 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t mbox, void **data, u32_t timeout)
 	} else {
 		d = cyg_mbox_get(mbox);
 	}
-	if (data)
+
+	if (data) {
 		if (d == (void *)&dummy_msg)
 			*data = NULL;
 		else
 			*data = d;
+	}
+
 	return tick_to_msec(end_time - start_time);	
 }
 

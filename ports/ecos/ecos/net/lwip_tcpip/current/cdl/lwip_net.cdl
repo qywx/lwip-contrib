@@ -46,7 +46,7 @@
 #####DESCRIPTIONEND####
 #
 # ====================================================================
-# !!!!conditional compile for UDP, sockets ...
+# !!!!conditional compile for sockets ...
 
 cdl_package CYGPKG_NET_LWIP {
 	display "lwIP"
@@ -62,7 +62,6 @@ cdl_package CYGPKG_NET_LWIP {
 		core/tcp.c	\
 		core/tcp_in.c	\
 		core/tcp_out.c	\
-		core/udp.c	\
 		core/inet.c	\
 		core/ipv4/icmp.c	\
 		core/ipv4/ip.c	\
@@ -532,6 +531,7 @@ cdl_package CYGPKG_NET_LWIP {
 			flavor		bool
 			default_value 	1
 			description   	""
+			compile core/udp.c
 		}
 
 		cdl_option CYGPKG_LWIP_UDP_TTL {
@@ -547,6 +547,7 @@ cdl_package CYGPKG_NET_LWIP {
 		flavor		bool
 		default_value 	1
 		description   	""
+		compile core/raw.c
 	}
 
 	cdl_component CYGPKG_LWIP_APP_MEM_OPTIONS {
