@@ -127,7 +127,7 @@
  * Dependend on physical layer. This is a safe minimum for 802.3 10base5/T.
  * @sa RFC1042
  */
-#define ETH_MIN_FRAME_LEN 76
+#define ETH_MIN_FRAME_LEN 60
 
 #include "cs8900if.h"
 #include "lwip/snmp.h"
@@ -679,7 +679,7 @@ void cs8900if_input(struct netif *netif)
     /* update ARP table */
     etharp_ip_input(netif, p);
     /* skip Ethernet header */
-    pbuf_header(p, -sizeof(struct eth_hdr));
+    pbuf_header(p, -(s16_t)sizeof(struct eth_hdr));
     LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: passing packet up to IP\n"));
     /* pass to network layer */
     netif->input(p, netif);
