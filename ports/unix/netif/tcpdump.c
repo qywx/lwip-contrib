@@ -44,14 +44,12 @@ static FILE *file = NULL;
 void
 tcpdump_init(void)
 {
-  char *fname;
-
-  fname = "/tmp/tcpdump";
-  file = fopen(fname, "w");
+#define TCPDUMP_FNAME "/tmp/tcpdump"
+  file = fopen(TCPDUMP_FNAME, "w");
   if (file == NULL) {
-    perror("tcpdump_init: fopen");
+    perror("tcpdump_init: cannot open \""TCPDUMP_FNAME"\" for writing");
   }
-  LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: file %s\n", fname));
+  LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: file %s\n", TCPDUMP_FNAME));
 }
 /*-----------------------------------------------------------------------------------*/
 void

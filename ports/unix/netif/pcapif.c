@@ -61,7 +61,9 @@
 #include "lwip/ip.h"
 
 
+#if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
 #include "netif/tcpdump.h"
+#endif /* LWIP_DEBUG && LWIP_TCPDUMP */
 
 struct pcapif {
   pcap_t *pd;
@@ -115,6 +117,10 @@ timeout(void *arg)
 	bcopy(bufptr, q->payload, q->len);
 	bufptr += q->len;
       }
+
+#if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
+      tcpdump(p);
+#endif /* LWIP_DEBUG && LWIP_TCPDUMP */
 
       ethhdr = p->payload;
       switch (htons(ethhdr->type)) {

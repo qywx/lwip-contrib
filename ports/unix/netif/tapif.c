@@ -51,6 +51,10 @@
 
 #include "netif/etharp.h"
 
+#if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
+#include "netif/tcpdump.h"
+#endif /* LWIP_DEBUG && LWIP_TCPDUMP */
+
 #ifdef linux
 #include <sys/ioctl.h>
 #include <linux/if.h>
@@ -310,6 +314,9 @@ tapif_input(struct netif *netif)
     LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: IP packet\n"));
     q = etharp_ip_input(netif, p);
     pbuf_header(p, -14);
+#if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
+    tcpdump(p);
+#endif /* LWIP_DEBUG && LWIP_TCPDUMP */
     netif->input(p, netif);
     break;
   case ETHTYPE_ARP:
