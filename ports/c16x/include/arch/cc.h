@@ -3,6 +3,9 @@
 
 /* memset(), memcpy() */
 #include <string.h>
+/* printf() and abort() */
+#include <stdio.h>
+#include <stdlib.h>
 
 typedef unsigned   char    u8_t;
 typedef signed     char    s8_t;
@@ -13,10 +16,23 @@ typedef signed     long    s32_t;
 
 typedef u32_t mem_ptr_t;
 
-// LW: Supported in at least >=v7.5 r2, but lwIP worked without the "_packed" attribute already
+/* LW: Supported in at least >=v7.5 r2, but lwIP worked without the "_packed" attribute already */
 #define PACK_STRUCT_BEGIN _packed
 #define PACK_STRUCT_STRUCT
 #define PACK_STRUCT_END
 #define PACK_STRUCT_FIELD(x) x
+
+#ifdef LWIP_DEBUG
+
+/* LW: forward declaration */
+void debug_printf(char *format, ...);
+
+/* Plaform specific diagnostic output */
+#define LWIP_PLATFORM_DIAG(x)	{debug_printf x;}
+
+#define LWIP_PLATFORM_ASSERT(x) { debug_printf("Assertion \"%s\" failed at line %d in %s\n", \
+                                     x, __LINE__, __FILE__);  while(1);}  
+
+#endif/* LWIP_DEBUG */
 
 #endif /* __CC_H__ */

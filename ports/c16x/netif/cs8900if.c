@@ -122,9 +122,7 @@
 #endif
 
 #include "cs8900if.h"
-#if LWIP_SNMP > 0
-#  include "snmp.h"
-#endif
+#include "snmp.h"
 
 // Define those to better describe your network interface
 #define IFNAME0 'e'
@@ -328,14 +326,13 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
       // variable.
       for(i = 0; i < q->len; i += 2)
       {
+        /** TODO: this routine assumes 16-bit boundary pbufs... */
         RXTXREG = *ptr++;
       }
 #if (CS8900_STATS > 0)
       ((struct cs8900if *)netif->state)->sentbytes += q->len;
 #endif
-#if LWIP_SNMP > 0
     snmp_add_ifoutoctets(p->tot_len);
-#endif
 #if (CS8900_STATS > 0)
     ((struct cs8900if *)netif->state)->sentpackets++;
 #endif
@@ -344,9 +341,7 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
   else
   {
     // { not ready to transmit!? }
-#if LWIP_SNMP > 0
     snmp_inc_ifoutdiscards();
-#endif
   }
   return ERR_OK;
 }
@@ -393,9 +388,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
     // read RxLength
     len = RXTXREG;
     DEBUGF(NETIF_DEBUG, ("cs8900_input: packet len %u\n", len));
-#if LWIP_SNMP > 0    
     snmp_add_ifinoctets(len);
-#endif
     // positive length?
     if (len > 0)
     {
@@ -425,9 +418,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
 #if (CS8900_STATS > 0)
         ((struct cs8900if *)netif->state)->dropped++;
 #endif
-#if LWIP_SNMP > 0    
         snmp_inc_ifindiscards();
-#endif
         len = 0;
       }
     }
