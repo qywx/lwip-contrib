@@ -251,7 +251,7 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
 u32_t
 sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
 {
-  u32_t time = 1;
+  u32_t time = 0;
   
   /* The mutex lock is quick so we don't bother with the timeout
      stuff here. */
@@ -266,8 +266,8 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
       time = sys_arch_sem_wait(mbox->mail, timeout);
       
       /* If time == 0, the sem_wait timed out, and we return 0. */
-      if(time == 0) {
-        return 0;
+      if(time == 0xffffffff) {
+        return 0xffffffff;
       }
     } else {
       sys_arch_sem_wait(mbox->mail, 0);
@@ -345,7 +345,7 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
     retval = pthread_cond_timedwait(cond, mutex, &ts);
     
     if(retval == ETIMEDOUT) {
-      return 0;
+      return 0xffffffff;
     } else {
       /* Calculate for how long we waited for the cond. */
       gettimeofday(&rtime2, &tz);
@@ -353,30 +353,30 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
         (rtime2.tv_usec - rtime1.tv_usec) / 1000;
       
       if(tdiff <= 0) {
-        return 1;
+        return 0;
       }
       
       return tdiff;
     }
   } else {
     pthread_cond_wait(cond, mutex);
-    return 0;
+    return 0xffffffff;
   }
 }
 /*-----------------------------------------------------------------------------------*/
 u32_t
 sys_arch_sem_wait(struct sys_sem *sem, u32_t timeout)
 {
-  u32_t time = 1;
+  u32_t time = 0;
   
   pthread_mutex_lock(&(sem->mutex));
   while(sem->c <= 0) {
     if(timeout > 0) {
       time = cond_wait(&(sem->cond), &(sem->mutex), timeout);
       
-      if(time == 0) {
+      if(time == 0xffffffff) {
         pthread_mutex_unlock(&(sem->mutex));
-        return 0;
+        return 0xffffffff;
       }
       /*      pthread_mutex_unlock(&(sem->mutex));
               return time; */

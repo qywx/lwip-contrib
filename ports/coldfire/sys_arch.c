@@ -68,6 +68,7 @@ static struct sys_hisr *hisrs = NULL;
 #define TICKS_PER_SECOND 10000
 #define MS_TO_TICKS(MS) (MS * (TICKS_PER_SECOND / 1000))
 #define TICKS_TO_MS(TICKS) ((unsigned long)((1000ULL * TICKS) / TICKS_PER_SECOND))
+#define TICKS_TO_HUNDMICROSEC(TICKS) TICKS
 
 #define SYS_MBOX_SIZE 128               // Number of elements in mbox queue
 #define SYS_STACK_SIZE 2048             // A minimum Nucleus stack for coldfire
@@ -278,12 +279,13 @@ sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
     status = NU_Obtain_Semaphore(sem,
                                  timeout ? MS_TO_TICKS(timeout) : NU_SUSPEND);
     /* This next statement takes wraparound into account. It works. Really! */
-    timespent = TICKS_TO_MS(((s32_t) ((s32_t) NU_Retrieve_Clock() - (s32_t) timestart)));
+    timespent = TICKS_TO_HUNDMICROSEC(((s32_t) ((s32_t) NU_Retrieve_Clock() - (s32_t) timestart)));
     
     if (status == NU_TIMEOUT)
-        return 0;
+        return 0xffffffff;
     else
-        return timespent ? timespent : 1;
+        /* Round off to milliseconds */
+        return (timespent+5)/10;
 }
 
 /*---------------------------------------------------------------------------------*/
@@ -423,12 +425,13 @@ sys_arch_mbox_fetch(sys_mbox_t mbox, void **msg, u32_t timeout)
    
     
     /* This next statement takes wraparound into account. It works. Really! */
-    timespent = TICKS_TO_MS(((s32_t) ((s32_t) NU_Retrieve_Clock() - (s32_t) timestart)));
+    timespent = TICKS_TO_HUNDMICROSEC(((s32_t) ((s32_t) NU_Retrieve_Clock() - (s32_t) timestart)));
     
     if (status == NU_TIMEOUT)
-        return 0;
+        return 0xffffffff;
     else
-        return timespent ? timespent : 1;
+        /* Round off to milliseconds */
+        return (timespent+5)/10;
 }
 
 /*---------------------------------------------------------------------------------*/
