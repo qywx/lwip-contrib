@@ -31,6 +31,15 @@
  */
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
+#define DBG_MIN_LEVEL 0
+#define LWIP_COMPAT_SOCKETS 1
+#define TAPIF_DEBUG 0
+#define TUNIF_DEBUG 0
+#define UNIXIF_DEBUG 0
+#define DELIF_DEBUG 0
+#define SIO_FIFO_DEBUG 0
+#define PPP_DEBUG 0
+#define TCPDUMP_DEBUG 0
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
    lwIP is compiled. 4 byte alignment -> define MEM_ALIGNMENT to 4, 2
@@ -76,10 +85,6 @@ a lot of data that needs to be copied, this should be set high. */
    src/api/tcpip.c. */
 #define MEMP_NUM_TCPIP_MSG      8
 
-/* These two control is reclaimer functions should be compiled
-   in. Should always be turned on (1). */
-#define MEM_RECLAIM             1
-#define MEMP_RECLAIM            1
 
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */
@@ -90,7 +95,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* PBUF_LINK_HLEN: the number of bytes that should be allocated for a
    link level header. */
-#define PBUF_LINK_HLEN          16
+#define PBUF_LINK_HLEN          16 
 
 /** SYS_LIGHTWEIGHT_PROT
  * define SYS_LIGHTWEIGHT_PROT in lwipopts.h if you want inter-task protection
@@ -151,9 +156,6 @@ a lot of data that needs to be copied, this should be set high. */
    on a device with only one network interface, define this to 0. */
 #define IP_FORWARD              1
 
-/* If defined to 1, IP options are allowed (but not parsed). If
-   defined to 0, all packets with IP options are dropped. */
-#define IP_OPTIONS              1
 
 /* IP reassembly and segmentation.These are orthogonal even
  * if they both deal with IP fragments */
@@ -179,9 +181,8 @@ a lot of data that needs to be copied, this should be set high. */
 
 
 /* ---------- Statistics options ---------- */
-#define STATS
 
-#ifdef STATS
+#if LWIP_STATS
 #define LINK_STATS
 #define IP_STATS
 #define ICMP_STATS
@@ -191,6 +192,6 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_STATS
 #define PBUF_STATS
 #define SYS_STATS
-#endif /* STATS */
+#endif /* LWIP_STATS */
 
 #endif /* __LWIPOPTS_H__ */

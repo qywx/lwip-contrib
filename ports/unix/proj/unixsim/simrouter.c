@@ -137,7 +137,7 @@ main(int argc, char **argv)
 #ifdef PERF
   perf_init("/tmp/client.perf");
 #endif /* PERF */
-#ifdef STATS
+#if LWIP_STATS
   stats_init();
 #endif /* STATS */
   sys_init();
