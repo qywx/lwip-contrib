@@ -79,10 +79,21 @@ void sys_mbox_free(sys_mbox_t mbox)
 }
 
 /* 
+ * cyg_mbox_put should not be passed a NULL otherwise the cyg_mbox_get will not
+ * know if it's real data or error condition. But lwIP does pass NULL on occasion
+ * in cases when maybe using a semaphore would be better. So this dummy_msg replaces
+ * NULL data
+ */
+
+int dummy_msg = 1;
+
+/* 
  * Post data to a mbox.
  */ 
 void sys_mbox_post(sys_mbox_t mbox, void *data)
 {
+	if (!data)
+		data = &dummy_msg;
 	while (cyg_mbox_put(mbox,data) == false);
 }
 
