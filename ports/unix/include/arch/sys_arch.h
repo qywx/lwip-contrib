@@ -38,6 +38,8 @@
 #define SYS_MBOX_NULL NULL
 #define SYS_SEM_NULL  NULL
 
+typedef u32_t sys_prot_t;
+
 struct sys_sem;
 typedef struct sys_sem * sys_sem_t;
 

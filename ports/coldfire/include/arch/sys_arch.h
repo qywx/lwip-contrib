@@ -49,6 +49,7 @@ struct timeval {
 typedef NU_SEMAPHORE * sys_sem_t;
 typedef NU_QUEUE * sys_mbox_t;
 typedef NU_TASK * sys_thread_t;
+typedef u32_t sys_prot_t;
 
 /* Functions specific to Coldfire/Nucleus */
 void

@@ -549,7 +549,7 @@ sys_setvect(u32_t vector, void (*isr_function)(void), void (*dis_funct)(void))
 }
 
 /*---------------------------------------------------------------------------------*/
-u32_t
+sys_prot_t
 sys_arch_protect(void)
 {
     return NU_Control_Interrupts(NU_DISABLE_INTERRUPTS);
@@ -557,7 +557,7 @@ sys_arch_protect(void)
 
 /*---------------------------------------------------------------------------------*/
 void
-sys_arch_unprotect(u32_t pval)
+sys_arch_unprotect(sys_prot_t pval)
 {
     NU_Control_Interrupts(pval);
 }

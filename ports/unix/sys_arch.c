@@ -455,7 +455,7 @@ sys_arch_timeouts(void)
   return &thread->timeouts;
 }
 /*-----------------------------------------------------------------------------------*/
-u32_t
+sys_prot_t
 sys_arch_protect(void)
 {
     /* Note that for the UNIX port, we are using a lightweight mutex, and our
@@ -476,7 +476,7 @@ sys_arch_protect(void)
 }
 /*-----------------------------------------------------------------------------------*/
 void
-sys_arch_unprotect(u32_t pval)
+sys_arch_unprotect(sys_prot_t pval)
 {
     if (lwprot_thread == pthread_self())
     {
