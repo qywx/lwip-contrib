@@ -136,11 +136,14 @@ main_thread(void *arg)
   
   netif_add(&ipaddr, &netmask, &gw, NULL, loopif_init,
 	    tcpip_input);
-   
+#if LWIP_TCP  
   tcpecho_init();
   shell_init();
   httpd_init();
+#endif
+#if LWIP_UDP  
   udpecho_init();
+#endif  
   
   printf("Applications started.\n");
 
