@@ -259,7 +259,7 @@ global errorInfo
    puts "********************************\n"
    puts "Using LWIP sources from directory $topdir "
 
-   if { [catch {exec bash -c "cd src;gmake all \"TOPDIR=$topdir\" >& logs"} errmsg] } {
+   if { [catch {exec bash -c "cd src;make all \"TOPDIR=$topdir\" >& logs"} errmsg] } {
       error $errmsg $errorInfo
    }
 }
