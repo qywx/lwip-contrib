@@ -71,6 +71,10 @@
 //while EFAULT should have no meaning in eCos since there are no address spaces
 //it is defined here because set/getsockopt in lwIP use it.
 #define EFAULT 14
+
+//found no better place for this prototype
+int lwip_init(void);
+
 //#define LWIP_PROVIDE_ERRNO
 #include <cyg/infra/cyg_type.h>
 #if (CYG_BYTEORDER == CYG_LSBFIRST)

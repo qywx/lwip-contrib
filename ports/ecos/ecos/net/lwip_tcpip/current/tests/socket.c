@@ -61,7 +61,7 @@ socket_thread(void *arg)
 }
 
 void
-tmain(void * p)
+tmain(cyg_addrword_t p)
 {
   lwip_init();	
   sys_thread_new(socket_thread, (void*)"socket",7);

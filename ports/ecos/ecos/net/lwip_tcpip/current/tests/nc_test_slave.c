@@ -735,7 +735,7 @@ cyg_start(void *n)
 #endif
 
 void
-tmain(void * p)
+tmain(cyg_addrword_t p)
 {
   lwip_init();
   sys_thread_new(net_test, 0, MAIN_THREAD_PRIORITY);

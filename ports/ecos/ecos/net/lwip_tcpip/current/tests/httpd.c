@@ -203,7 +203,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 	  }
 	}
 
-	hs->file = sdata;
+	hs->file = &sdata;
 	hs->left = sizeof(sdata);
 
 	pbuf_free(p);
@@ -276,7 +276,7 @@ httpd_init(void *arg)
 }
 
 void
-tmain(void * p)
+tmain(cyg_addrword_t p)
 {
   lwip_init();	
   sys_thread_new(httpd_init, (void*)"httpd",7);  

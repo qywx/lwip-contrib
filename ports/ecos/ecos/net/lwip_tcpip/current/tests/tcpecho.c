@@ -108,7 +108,7 @@ tcpecho_thread(void *arg)
 }
 
 void
-tmain(void * p)
+tmain(cyg_addrword_t p)
 {
   lwip_init();	
   sys_thread_new(tcpecho_thread, (void*)"tcpecho",7);  

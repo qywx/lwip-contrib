@@ -91,7 +91,7 @@ udpecho_thread(void *arg)
   }
 }
 /*-----------------------------------------------------------------------------------*/
-void tmain(void * i)
+void tmain(cyg_addrword_t p)
 {
   lwip_init();	
   sys_thread_new(udpecho_thread, (void*)"udpecho",7);
