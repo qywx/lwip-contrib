@@ -30,7 +30,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: udpecho.c,v 1.1 2003/02/28 14:29:13 jani Exp $
+ * $Id: udpecho.c,v 1.2 2003/03/24 09:19:25 jani Exp $
  */
 
 #include "lwip/api.h"
@@ -63,7 +63,7 @@ udpecho_thread(void *arg)
 void tmain(void * i)
 {
   lwip_init();	
-  sys_thread_new(udpecho_thread, (void*)"udpecho");
+  sys_thread_new(udpecho_thread, (void*)"udpecho",7);
 }
 
 #define STACK_SIZE 0x1000

@@ -738,7 +738,7 @@ void
 tmain(void * p)
 {
   lwip_init();
-  sys_thread_new(net_test, 0);
+  sys_thread_new(net_test, 0,7);
 }
 
 static char stack[STACK_SIZE];

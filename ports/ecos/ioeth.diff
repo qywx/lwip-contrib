@@ -1,10 +1,10 @@
-Index: io/eth/current//include/eth_drv.h
+Index: io/eth//current/include/eth_drv.h
 ===================================================================
 RCS file: /cvs/ecos/ecos/packages/io/eth/current/include/eth_drv.h,v
-retrieving revision 1.8
-diff -u -r1.8 eth_drv.h
---- io/eth/current//include/eth_drv.h	13 Aug 2002 15:55:53 -0000	1.8
-+++ io/eth/current//include/eth_drv.h	1 Mar 2003 10:36:59 -0000
+retrieving revision 1.9
+diff -u -r1.9 eth_drv.h
+--- io/eth//current/include/eth_drv.h	11 Mar 2003 15:41:12 -0000	1.9
++++ io/eth//current/include/eth_drv.h	21 Mar 2003 16:30:52 -0000
 @@ -81,6 +81,9 @@
  #else // !CYGPKG_NET
  #include <cyg/hal/drv_api.h>
@@ -25,17 +25,46 @@ diff -u -r1.8 eth_drv.h
      unsigned char esa[6];
  };
  #endif
-Index: io/eth/current//src/lwip/eth_drv.c
+Index: io/eth//current/src/lwip/README
+===================================================================
+RCS file: /cvs/ecos/ecos/packages/io/eth/current/src/lwip/README,v
+retrieving revision 1.1
+diff -u -r1.1 README
+--- io/eth//current/src/lwip/README	20 May 2002 22:24:21 -0000	1.1
++++ io/eth//current/src/lwip/README	21 Mar 2003 16:30:52 -0000
+@@ -1,10 +1,2 @@
+ An EPK of lwip is available from http://humans.iv.ro/jani which has the most
+ up-to-date package (at least until it all gets integrated).
+-
+-It has just been tested on another ARM similar to the EB40 with CS89000
+-and it works there too (that board has 128K of RAM).
+-
+-Alternatively, lw.diff is the diff against the lwip-0.5.3 tree. It contains
+-eCos support + an eCos project sample based on unixsim. Look at
+-lwip-0.5.3/proj/ecos to see how to use it. Modify the Makefile to suit
+-your needs and to reflect your eCos project dir.
+Index: io/eth//current/src/lwip/eth_drv.c
 ===================================================================
 RCS file: /cvs/ecos/ecos/packages/io/eth/current/src/lwip/eth_drv.c,v
 retrieving revision 1.2
 diff -u -r1.2 eth_drv.c
---- io/eth/current//src/lwip/eth_drv.c	23 May 2002 23:06:02 -0000	1.2
-+++ io/eth/current//src/lwip/eth_drv.c	1 Mar 2003 10:37:01 -0000
-@@ -69,113 +69,149 @@
+--- io/eth//current/src/lwip/eth_drv.c	23 May 2002 23:06:02 -0000	1.2
++++ io/eth//current/src/lwip/eth_drv.c	21 Mar 2003 16:30:53 -0000
+@@ -47,7 +47,6 @@
+ // Description:  Based on the standalone driver for RedBoot.
+ //               
+ //      TODO:
+-//              support more than 1 lowlevel device
+ //              play nice with RedBoot too
+ //
+ //####DESCRIPTIONEND####
+@@ -69,113 +68,92 @@
  #include <cyg/hal/hal_tables.h>
  #include <cyg/kernel/kapi.h>
  
+-// Define table boundaries
+-CYG_HAL_TABLE_BEGIN( __NETDEVTAB__, netdev );
+-CYG_HAL_TABLE_END( __NETDEVTAB_END__, netdev );
 +#include "lwip/opt.h"
 +#include "lwip/ip.h"
 +#include "lwip/mem.h"
@@ -46,36 +75,35 @@ diff -u -r1.2 eth_drv.c
 +
 +
 +
- // Define table boundaries
--CYG_HAL_TABLE_BEGIN( __NETDEVTAB__, netdev );
--CYG_HAL_TABLE_END( __NETDEVTAB_END__, netdev );
-+CYG_HAL_TABLE_BEGIN(__NETDEVTAB__, netdev);
-+CYG_HAL_TABLE_END(__NETDEVTAB_END__, netdev);
  
  // Interfaces exported to drivers
  
  static void eth_drv_init(struct eth_drv_sc *sc, unsigned char *enaddr);
  static void eth_drv_recv(struct eth_drv_sc *sc, int total_len);
 -static void eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status);
+-
+-struct eth_drv_funs eth_drv_funs = {eth_drv_init, eth_drv_recv, eth_drv_tx_done};
 +static void eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key,
 +			    int status);
  
--struct eth_drv_funs eth_drv_funs = {eth_drv_init, eth_drv_recv, eth_drv_tx_done};
+-struct eth_drv_sc *__local_enet_sc;
 +struct eth_drv_funs eth_drv_funs =
 +    { eth_drv_init, eth_drv_recv, eth_drv_tx_done };
  
--struct eth_drv_sc *__local_enet_sc;
--
 -//this is where lwIP keeps hw address
 -unsigned char *lwip_hw_addr; 
  
- cyg_sem_t delivery;
+-cyg_sem_t delivery;
  
 -//lwIP callback to pass received data to
 -typedef void (*lwip_input_t)(char *,int);
 -static lwip_input_t lwip_input;
 -void input_thread(void * arg)
--{
++extern void lwip_dsr_stuff(void);
++//DSR called from the low level driver.Signals the input_thread
++void
++eth_drv_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
+ {
 -	struct eth_drv_sc * sc;
 -	//sc = (struct eth_drv_sc *)arg;
 -	sc = __local_enet_sc;
@@ -83,72 +111,29 @@ diff -u -r1.2 eth_drv.c
 -	cyg_semaphore_wait(&delivery);
 -	(sc->funs->deliver)(sc);
 -	}	
-+//DSR called from the low level driver.Signals the input_thread
-+void
-+eth_drv_dsr(cyg_vector_t vector, cyg_ucount32 count, cyg_addrword_t data)
-+{
+-
 +  struct eth_drv_sc *sc = (struct eth_drv_sc *) data;
 +  sc->state |= ETH_DRV_NEEDS_DELIVERY;
-+  cyg_semaphore_post(&delivery);
-+}
-+
-+//Input thread signalled by DSR calls deliver() on low level drivers
-+static void
-+input_thread(void *arg)
-+{
-+  cyg_netdevtab_entry_t *t;
-+
-+  for (;;) {
-+    cyg_semaphore_wait(&delivery);
-+
-+    for (t = &__NETDEVTAB__[0]; t != &__NETDEVTAB_END__; t++) {
-+      struct eth_drv_sc *sc = (struct eth_drv_sc *)t->device_instance;
-+      if (sc->state & ETH_DRV_NEEDS_DELIVERY) {
-+	sc->state &= ~ETH_DRV_NEEDS_DELIVERY;
-+	(sc->funs->deliver) (sc);
-+      }
-+    }
-+  }
- 
++  lwip_dsr_stuff();	
  }
  
 -void
 -eth_drv_dsr(cyg_vector_t vector,
 -            cyg_ucount32 count,
 -            cyg_addrword_t data)
-+// Initialize all network devices
-+static void
-+init_hw_drivers(void)
- {
+-{
 -	//  struct eth_drv_sc *sc = (struct eth_drv_sc *)data;
 -	//  sc->state |= ETH_DRV_NEEDS_DELIVERY;
 -	cyg_semaphore_post(&delivery);
-+  cyg_netdevtab_entry_t *t;
-+
-+  for (t = &__NETDEVTAB__[0]; t != &__NETDEVTAB_END__; t++) {
-+    if (t->init(t)) {
-+      t->status = CYG_NETDEVTAB_STATUS_AVAIL;
-+    } else {
-+      // What to do if device init fails?
-+      t->status = 0;		// Device not [currently] available
-+    }
-+  }
- }
+-}
  
-+static void
-+arp_timer(void *arg)
-+{
-+  etharp_tmr();
-+  sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
-+}
  
++extern void lwip_set_addr(struct netif *);
  
 -//Called from lwIP init code to init the hw devices
 -//and pass the lwip input callback address 
 -void init_hw_drivers(unsigned char *hw_addr,lwip_input_t input)
-+void
-+ecosglue_init(void)
- {
+-{
 -    cyg_netdevtab_entry_t *t;
 -    
 -    lwip_hw_addr = hw_addr;
@@ -163,20 +148,10 @@ diff -u -r1.2 eth_drv.c
 -            t->status = 0;  // Device not [currently] available
 -        }
 -    }
-+  init_hw_drivers();
-+  sys_thread_new(input_thread, (void*)0);
-+  etharp_init();
-+  sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
- }
+-}
++err_t ecosif_init(struct netif *netif);
  
 -//
-+extern void lwip_set_addr(struct netif *);
-+
-+err_t
-+ecosif_init(struct netif *netif);
-+
-+
-+
  // This function is called during system initialization to register a
  // network interface with the system.
 -//
@@ -224,6 +199,17 @@ diff -u -r1.2 eth_drv.c
 -    struct eth_drv_sg sg_list[MAX_ETH_DRV_SG];
 -    struct eth_drv_sc *sc = __local_enet_sc;
 -    int sg_len = 1;
+-
+-    while (!(sc->funs->can_send)(sc)) {
+-  	cyg_thread_delay(1);
+-    }
+-   
+-    sg_list[0].buf = (CYG_ADDRESS)buf;
+-    sg_list[0].len = len;
+-//    cyg_semaphore_init(&packet_sent,0);
+-    (sc->funs->send)(sc, sg_list, sg_len, len, (CYG_ADDRWORD)&packet_sent);
+-    
+-//    cyg_semaphore_wait(&packet_sent);
 +  struct eth_drv_sg sg_list[MAX_ETH_DRV_SG];
 +  struct eth_drv_sc *sc = netif->state;
 +  int sg_len = 0;
@@ -240,21 +226,11 @@ diff -u -r1.2 eth_drv.c
 +
 +  (sc->funs->send) (sc, sg_list, sg_len, p->tot_len,
 +		    (CYG_ADDRWORD) & packet_sent);
- 
--    while (!(sc->funs->can_send)(sc)) {
--  	cyg_thread_delay(1);
--    }
--   
--    sg_list[0].buf = (CYG_ADDRESS)buf;
--    sg_list[0].len = len;
--//    cyg_semaphore_init(&packet_sent,0);
--    (sc->funs->send)(sc, sg_list, sg_len, len, (CYG_ADDRWORD)&packet_sent);
--    
--//    cyg_semaphore_wait(&packet_sent);
++
  }
  
  //
-@@ -185,15 +221,16 @@
+@@ -185,15 +163,16 @@
  static void
  eth_drv_tx_done(struct eth_drv_sc *sc, CYG_ADDRWORD key, int status)
  {
@@ -278,7 +254,7 @@ diff -u -r1.2 eth_drv.c
  
  #define MAX_ETH_MSG 1540
  //
-@@ -204,23 +241,129 @@
+@@ -204,23 +183,129 @@
  static void
  eth_drv_recv(struct eth_drv_sc *sc, int total_len)
  {
@@ -290,10 +266,16 @@ diff -u -r1.2 eth_drv.c
 +  struct netif *netif = &sc->sc_arpcom.ac_if;
 +
 +  struct pbuf *p, *q;
-+
+ 
+-    if ((total_len > MAX_ETH_MSG) || (total_len < 0)) {        
+-        total_len = MAX_ETH_MSG;
+-    }
 +  int sg_len = 0;
 +  CYGARC_HAL_SAVE_GP();
-+
+ 
+-    sg_list[0].buf = (CYG_ADDRESS)buf;
+-    sg_list[0].len = total_len;
+-    sg_len = 1;
 +  if ((total_len > MAX_ETH_MSG) || (total_len < 0)) {
 +    total_len = MAX_ETH_MSG;
 +  }
@@ -313,20 +295,11 @@ diff -u -r1.2 eth_drv.c
 +  ecosif_input(netif, p);
 +  CYGARC_HAL_RESTORE_GP();
 +}
- 
--    if ((total_len > MAX_ETH_MSG) || (total_len < 0)) {        
--        total_len = MAX_ETH_MSG;
--    }
- 
--    sg_list[0].buf = (CYG_ADDRESS)buf;
--    sg_list[0].len = total_len;
--    sg_len = 1;
++
++
 +#define IFNAME0 'e'
 +#define IFNAME1 't'
- 
--    (sc->funs->recv)(sc, sg_list, sg_len);
--    (lwip_input)((char*)sg_list[0].buf,total_len);		
--    CYGARC_HAL_RESTORE_GP();
++
 +
 +
 +/*
@@ -345,7 +318,10 @@ diff -u -r1.2 eth_drv.c
 +  eth_drv_send(netif, p);
 +  return ERR_OK;
 +}
-+
+ 
+-    (sc->funs->recv)(sc, sg_list, sg_len);
+-    (lwip_input)((char*)sg_list[0].buf,total_len);		
+-    CYGARC_HAL_RESTORE_GP();
 +/*
 + * ecosif_output():
 + *

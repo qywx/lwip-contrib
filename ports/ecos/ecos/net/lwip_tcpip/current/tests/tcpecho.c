@@ -30,7 +30,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: tcpecho.c,v 1.1 2003/02/28 14:29:13 jani Exp $
+ * $Id: tcpecho.c,v 1.2 2003/03/24 09:19:25 jani Exp $
  */
 
 #include "lwip/sys.h"
@@ -80,7 +80,7 @@ void
 tmain(void * p)
 {
   lwip_init();	
-  sys_thread_new(tcpecho_thread, (void*)"tcpecho");  
+  sys_thread_new(tcpecho_thread, (void*)"tcpecho",7);  
 }
 
 #define STACK_SIZE 0x4000

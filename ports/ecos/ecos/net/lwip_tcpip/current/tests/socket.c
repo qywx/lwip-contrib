@@ -32,7 +32,7 @@ void
 tmain(void * p)
 {
   lwip_init();	
-  sys_thread_new(socket_thread, (void*)"socket");
+  sys_thread_new(socket_thread, (void*)"socket",7);
 }
 
 #define STACK_SIZE 0x1000

@@ -197,7 +197,7 @@ void sys_sem_free(sys_sem_t sem)
 /*
  * Create new thread 
  */
-sys_thread_t sys_thread_new(void (*function) (void *arg), void *arg)
+sys_thread_t sys_thread_new(void (*function) (void *arg), void *arg,int prio)
 {
 	struct lwip_thread * nt;
 	void * stack;
@@ -210,8 +210,7 @@ sys_thread_t sys_thread_new(void (*function) (void *arg), void *arg)
 	threads = nt;
 
 	stack = (void *)(memfix+CYGNUM_LWIP_THREAD_STACK_SIZE*thread_count++);
-
-	cyg_thread_create(5, (cyg_thread_entry_t *)function, (cyg_addrword_t)arg,
+	cyg_thread_create(prio, (cyg_thread_entry_t *)function, (cyg_addrword_t)arg,
 			(char *)arg , stack, CYGNUM_LWIP_THREAD_STACK_SIZE, &(nt->th), &(nt->t) );
 
 	cyg_thread_resume(nt->th);
