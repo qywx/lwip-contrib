@@ -82,7 +82,7 @@ main(int argc, char **argv)
 
   while (1) {
     
-    if (mintapif_wait(netif, 100) == MINTAPIF_TIMEOUT) {
+    if (mintapif_wait(netif, TCP_TMR_INTERVAL) == MINTAPIF_TIMEOUT) {
       tcp_tmr();
     }
     
