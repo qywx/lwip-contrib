@@ -357,6 +357,8 @@ tapif_init(struct netif *netif)
   netif->output = tapif_output;
   netif->linkoutput = low_level_output;
   netif->mtu = 1500; 	 
+  /* hardware address length */
+  netif->hwaddr_len = 6;
   
   tapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
   low_level_init(netif);
