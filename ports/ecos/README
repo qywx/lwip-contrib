@@ -1,5 +1,7 @@
 This part of the lwip-contrib section is the ecos glue  
 
+Check out latest ecos or beta 2 if available and apply ioeth.diff to packages/io/eth
+
 You must have the current lwip sources checked out and the scripts here will hopefully generate
 a correct EPK suitable for use with ecos.
 
