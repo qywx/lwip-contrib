@@ -101,6 +101,10 @@ SOURCE="$(LWIP_SRC)\core\ipv4\ip_addr.c"
 # End Source File
 # Begin Source File
 
+SOURCE="$(LWIP_SRC)\core\ipv4\ip_frag.c"
+# End Source File
+# Begin Source File
+
 SOURCE="$(LWIP_SRC)\core\mem.c"
 # End Source File
 # Begin Source File

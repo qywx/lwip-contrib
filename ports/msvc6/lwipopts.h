@@ -146,7 +146,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define DHCP_DOES_ARP_CHECK     1
 
 /* ---------- UDP options ---------- */
-#define LWIP_UDP                0
+#define LWIP_UDP                1
 #define UDP_TTL                 255
 
 

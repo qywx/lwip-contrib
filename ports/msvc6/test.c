@@ -123,7 +123,7 @@ void main_loop()
 	if (init_adapter() != 0)
 		return;
 
-	netif_set_default(netif_add(&ipaddr, &netmask, &gw, ethernetif_init,
+	netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, ethernetif_init,
 		ip_input));
 
 	/*

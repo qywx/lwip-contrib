@@ -63,6 +63,11 @@
  */
 
 #define WIN32_LEAN_AND_MEAN
+/* get the windows definitions of the following 4 functions out of the way */
+#define htons win_htons
+#define ntohs win_ntons
+#define htonl win_htonl
+#define ntohl win_ntonl
 #include <stdlib.h>
 #include <stdio.h>
 #include <windows.h>
