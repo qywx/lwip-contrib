@@ -275,10 +275,12 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
     sys_arch_sem_wait(mbox->mutex, 0);
   }
 
-  LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p msg %p\n", (void *)mbox, *msg));
-
   if (msg != NULL) {
+    LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p msg %p\n", (void *)mbox, *msg));
     *msg = mbox->msgs[mbox->first % SYS_MBOX_SIZE];
+  }
+  else{
+    LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p, null msg\n", (void *)mbox));
   }
 
   mbox->first++;
