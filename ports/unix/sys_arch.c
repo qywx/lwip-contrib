@@ -93,6 +93,10 @@ struct sys_thread {
 
 static struct timeval starttime;
 
+static pthread_mutex_t lwprot_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_t lwprot_thread = (pthread_t) 0xDEAD;
+static int lwprot_count = 0;
+
 static struct sys_sem *sys_sem_new_(u8_t count);
 static void sys_sem_free_(struct sys_sem *sem);
 
@@ -450,4 +454,38 @@ sys_arch_timeouts(void)
   thread = current_thread();
   return &thread->timeouts;
 }
+/*-----------------------------------------------------------------------------------*/
+u32_t
+sys_arch_protect(void)
+{
+    /* Note that for the UNIX port, we are using a lightweight mutex, and our
+     * own counter (which is locked by the mutex). The return code is not actually
+     * used. */
+    if (lwprot_thread != pthread_self())
+    {
+        /* We are locking the mutex where it has not been locked before *
+        * or is being locked by another thread */
+        pthread_mutex_lock(&lwprot_mutex);
+        lwprot_thread = pthread_self();
+        lwprot_count = 1;
+    }
+    else
+        /* It is already locked by THIS thread */
+        lwprot_count++;
+    return 0;
+}
+/*-----------------------------------------------------------------------------------*/
+void
+sys_arch_unprotect(u32_t pval)
+{
+    if (lwprot_thread == pthread_self())
+    {
+        if (--lwprot_count == 0)
+        {
+            lwprot_thread = (pthread_t) 0xDEAD;
+            pthread_mutex_unlock(&lwprot_mutex);
+        }
+    }
+}
+
 /*-----------------------------------------------------------------------------------*/

@@ -53,10 +53,6 @@ typedef NU_TASK * sys_thread_t;
 /* Functions specific to Coldfire/Nucleus */
 void
 sys_setvect(u32_t vector, void (*isr_function)(void), void (*dis_funct)(void));
-u32_t
-sys_disable_interrupts(void);
-void
-sys_restore_interrupts(u32_t old_level);
 void
 sys_get_eth_addr(struct eth_addr *eth_addr);
 int *

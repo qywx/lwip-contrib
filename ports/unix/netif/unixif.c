@@ -91,7 +91,7 @@ unix_socket_client(char *name)
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
   sprintf(unix_addr.sun_path, "%s%05d", "/var/tmp/", getpid());
-#ifndef linux
+#if !defined(linux) && !defined(cygwin)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;
   unix_addr.sun_len = len;
@@ -115,7 +115,7 @@ unix_socket_client(char *name)
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
   strcpy(unix_addr.sun_path, name);
-#ifndef linux
+#if !defined(linux) && !defined(cygwin)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;  
   unix_addr.sun_len = len;
@@ -149,7 +149,7 @@ unix_socket_server(char *name)
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
   strcpy(unix_addr.sun_path, name);
-#ifndef linux
+#if !defined(linux) && !defined(cygwin)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;
   unix_addr.sun_len = len;

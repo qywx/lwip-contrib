@@ -195,7 +195,7 @@ disable_fec(mcf5272if_t *mcf5272)
 
     /* We need to disable interrupts here, It is important when dealing with shared
        registers. */
-    old_level = sys_disable_interrupts();
+    old_level = sys_arch_protect();
     
     /* First disable the FEC interrupts. Do it in the appropriate ICR register. */
     value = MCF5272_RD_SIM_ICR3(imm);
@@ -206,7 +206,7 @@ disable_fec(mcf5272if_t *mcf5272)
     /* Now we can restore interrupts. This is because we can assume that
      * we are single threaded here (only 1 thread will be calling disable_fec
      * for THIS interface). */
-    sys_restore_interrupts(old_level);
+    sys_arch_unprotect(old_level);
     
     /* Release all buffers attached to the descriptors.  Since the driver
      * ALWAYS zeros the pbuf array locations and descriptors when buffers are
@@ -317,13 +317,13 @@ mcf5272fec_tx_cleanup(void)
     mcf5272->tx_remove = tx_remove_eof;
 
     /* clear interrupt status for tx interrupt */
-    old_level = sys_disable_interrupts();
+    old_level = sys_arch_protect();
     MCF5272_WR_FEC_EIR(imm, MCF5272_FEC_EIR_TXF);
     value = MCF5272_RD_FEC_IMR(imm);
     /* Set tx interrupt bit again */
     MCF5272_WR_FEC_IMR(imm, (value | MCF5272_FEC_IMR_TXFEN));
     /* Now we can re-enable higher priority interrupts again */
-    sys_restore_interrupts(old_level);
+    sys_arch_unprotect(old_level);
 }
 
 
@@ -348,7 +348,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
 
     /* Interrupts are disabled through this whole thing to support multi-threading
      * transmit calls. Also this function might be called from an ISR. */
-    old_level = sys_disable_interrupts();
+    old_level = sys_arch_protect();
     
     /* Determine number of descriptors needed */
     num_desc = pbuf_clen(p);
@@ -358,7 +358,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
 #ifdef LINK_STATS
         lwip_stats.link.memerr++;
 #endif
-        sys_restore_interrupts(old_level);
+        sys_arch_unprotect(old_level);
         return ERR_MEM;
         
     } else {
@@ -398,7 +398,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
 #endif        
 	/* Indicate that there has been a transmit buffer produced */
 	MCF5272_WR_FEC_TDAR(imm,1);
-        sys_restore_interrupts(old_level);
+        sys_arch_unprotect(old_level);
     }
     return ERR_OK;
 }
@@ -568,13 +568,13 @@ mcf5272fec_rx(void)
     mcf5272->rx_remove = rx_remove_sof;
     
     /* clear interrupt status for rx interrupt */
-    old_level = sys_disable_interrupts();
+    old_level = sys_arch_protect();
     MCF5272_WR_FEC_EIR(imm, MCF5272_FEC_EIR_RXF);
     value = MCF5272_RD_FEC_IMR(imm);
     /* Set rx interrupt bit again */
     MCF5272_WR_FEC_IMR(imm, (value | MCF5272_FEC_IMR_RXFEN));
     /* Now we can re-enable higher priority interrupts again */
-    sys_restore_interrupts(old_level);
+    sys_arch_unprotect(old_level);
 
     /* Fill up empty descriptor rings */
     fill_rx_ring(mcf5272);
@@ -620,11 +620,11 @@ low_level_init(struct netif *netif)
 
     /* Set up the appropriate interrupt levels */
     /* Disable interrupts, since this is a read/modify/write operation */
-    old_level = sys_disable_interrupts();
+    old_level = sys_arch_protect();
     value = MCF5272_RD_SIM_ICR3(imm);
     MCF5272_WR_SIM_ICR3(imm, value | MCF5272_SIM_ICR_ERX_IL(FEC_LEVEL) |
                         MCF5272_SIM_ICR_ETX_IL(FEC_LEVEL));
-    sys_restore_interrupts(old_level);
+    sys_arch_unprotect(old_level);
     
     /* Set the source address for the controller */
     MCF5272_WR_FEC_MALR(imm,0 
