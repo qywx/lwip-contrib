@@ -48,25 +48,10 @@ struct command {
   char *args[10];
 };
 
-/* Following #undefs are here to keep compiler from issuing warnings
-   about them being double defined. (They are defined in lwip/inet.h
-   as well as the Unix #includes below.) */
-#undef htonl
-#undef ntohl
-#undef htons
-#undef ntohs
-#undef HTONL
-#undef NTOHL
-#undef HTONS
-#undef NTOHS
 #undef IP_HDRINCL
 
 #include <stdio.h>
 #include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <stdlib.h>
 #include <limits.h>
 
