@@ -41,9 +41,4 @@
 #define errno (*sys_arch_errno())
 
 
-/* Error numbers */
-#define	EBADF 9		/* Bad file number */
-#define	EINVAL 22	/* Invalid argument */
-#define ENOBUFS 105	/* No buffer space available */
-#define EWOULDBLOCK 40  /* We would have blocked if this was'nt non-blocking i/o */
 #endif

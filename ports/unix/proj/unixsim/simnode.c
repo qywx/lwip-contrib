@@ -90,9 +90,9 @@ main_thread(void *arg)
   IP4_ADDR(&ipaddr, 192,168,1,2);
   IP4_ADDR(&netmask, 255,255,255,0);
 
-  netif_set_default(netif_add(&ipaddr, &netmask, &gw, unixif_init_client,
+  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, unixif_init_client,
 			      tcpip_input));
-  /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, sioslipif_init1,
+  /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, sioslipif_init1,
 			      tcpip_input)); */
 
   

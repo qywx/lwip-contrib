@@ -26,7 +26,7 @@
  * 
  * Author: Kieran Mansley <kjm25@cam.ac.uk>
  *
- * $Id: unixlib.c,v 1.1 2003/01/31 13:35:43 jani Exp $
+ * $Id: unixlib.c,v 1.2 2003/02/06 22:18:31 davidhaas Exp $
  */
 
 /*-----------------------------------------------------------------------------------*/
@@ -83,7 +83,7 @@ void _init(void){
   IP4_ADDR(&ipaddr, 192,168,1,1);
   IP4_ADDR(&netmask, 255,255,255,0);
   
-  netif_set_default(netif_add(&ipaddr, &netmask, &gateway, tapif_init,
+  netif_set_default(netif_add(&ipaddr, &netmask, &gateway, NULL, tapif_init,
 			      tcpip_input));
 }
 

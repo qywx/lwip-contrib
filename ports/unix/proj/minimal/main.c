@@ -71,7 +71,7 @@ main(int argc, char **argv)
   IP4_ADDR(&ipaddr, 192,168,0,2);
   IP4_ADDR(&netmask, 255,255,255,0);
 
-  netif = netif_add(&ipaddr, &netmask, &gw, mintapif_init, ip_input);
+  netif = netif_add(&ipaddr, &netmask, &gw, NULL, mintapif_init, ip_input);
   
   netif_set_default(netif);
 

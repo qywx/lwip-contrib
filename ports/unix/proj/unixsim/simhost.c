@@ -106,7 +106,7 @@ main_thread(void *arg)
     IP4_ADDR(&ipaddr, 0,0,0,0);
     IP4_ADDR(&netmask, 0,0,0,0);
 
-    netif = netif_add(&ipaddr, &netmask, &gw, tapif_init,
+    netif = netif_add(&ipaddr, &netmask, &gw, NULL, tapif_init,
 		      tcpip_input);
     netif_set_default(netif);
     dhcp_init();
@@ -117,9 +117,9 @@ main_thread(void *arg)
   IP4_ADDR(&ipaddr, 192,168,0,2);
   IP4_ADDR(&netmask, 255,255,255,0);
   
-  /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, tapif_init,
+  /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, tapif_init,
       tcpip_input));*/
-  netif_set_default(netif_add(&ipaddr, &netmask, &gw, tapif_init,
+  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, tapif_init,
 			      tcpip_input));
 #endif
   /* Only used for testing purposes: */
@@ -127,14 +127,14 @@ main_thread(void *arg)
   IP4_ADDR(&ipaddr, 193,10,66,107);
   IP4_ADDR(&netmask, 255,255,252,0);
   
-  netif_add(&ipaddr, &netmask, &gw, pcapif_init,
+  netif_add(&ipaddr, &netmask, &gw, NULL, pcapif_init,
   tcpip_input);*/
   
   IP4_ADDR(&gw, 127,0,0,1);
   IP4_ADDR(&ipaddr, 127,0,0,1);
   IP4_ADDR(&netmask, 255,0,0,0);
   
-  netif_add(&ipaddr, &netmask, &gw, loopif_init,
+  netif_add(&ipaddr, &netmask, &gw, NULL, loopif_init,
 	    tcpip_input);
    
   tcpecho_init();

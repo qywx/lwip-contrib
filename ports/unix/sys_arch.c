@@ -46,7 +46,6 @@
  */
 #include "lwip/debug.h"
 
-#include <errno.h>
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -221,7 +220,7 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
   
   sys_sem_wait(mbox->mutex);
   
-  DEBUGF(SYS_DEBUG, ("sys_mbox_post: mbox %p msg %p\n", mbox, msg));
+  DEBUGF(SYS_DEBUG, ("sys_mbox_post: mbox %p msg %p\n", (void *)mbox, (void *)msg));
   
   while((mbox->last + 1) >= (mbox->first + SYS_MBOX_SIZE)) {
     mbox->wait_send++;
@@ -276,7 +275,7 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
     sys_arch_sem_wait(mbox->mutex, 0);
   }
 
-  DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p msg %p\n", mbox, *msg));
+  DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p msg %p\n", (void *)mbox, *msg));
 
   if(msg != NULL) {
     *msg = mbox->msgs[mbox->first % SYS_MBOX_SIZE];

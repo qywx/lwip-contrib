@@ -397,7 +397,7 @@ sys_mbox_post(sys_mbox_t mbox, void *msg)
                               &msg,
                               1,
                               NU_NO_SUSPEND);
-    ASSERT("sys_mbox_post: mbx post failed", status == NU_SUCCESS);
+    LWIP_ASSERT("sys_mbox_post: mbx post failed", status == NU_SUCCESS);
 }
 /*---------------------------------------------------------------------------------*/
 u32_t

@@ -123,6 +123,11 @@ a lot of data that needs to be copied, this should be set high. */
 /* Maximum number of retransmissions of SYN segments. */
 #define TCP_SYNMAXRTX           4
 
+/* TCP writable space (bytes). This must be less than or equal
+   to TCP_SND_BUF. It is the amount of space which must be
+   available in the tcp snd_buf for select to return writable */
+#define TCP_SNDLOWAT            TCP_SND_BUF/2
+
 /* ---------- ARP options ---------- */
 #define ARP_TABLE_SIZE 10
 #define ARP_QUEUEING 1

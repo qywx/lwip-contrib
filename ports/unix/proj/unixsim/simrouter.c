@@ -92,20 +92,20 @@ main_thread(void *arg)
   IP4_ADDR(&ipaddr, 192,168,0,2);
   IP4_ADDR(&netmask, 255,255,255,0);
 
-  netif_set_default(netif_add(&ipaddr, &netmask, &gw, tapif_init,
+  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, tapif_init,
 			      tcpip_input));
 
   IP4_ADDR(&gw, 192,168,1,1);
   IP4_ADDR(&ipaddr, 192,168,1,1);
   IP4_ADDR(&netmask, 255,255,255,0);
-  netif_set_default(netif_add(&ipaddr, &netmask, &gw, unixif_init_server,
+  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, unixif_init_server,
 			      tcpip_input));
 
   system("route add 192.168.1.1 192.168.0.2");
   system("route add 192.168.1.2 192.168.0.2");
 
   
-  /*netif_set_default(netif_add(&ipaddr, &netmask, &gw, sioslipif_init1,
+  /*netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, sioslipif_init1,
 			      tcpip_input)); */
 
   
