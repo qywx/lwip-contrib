@@ -102,7 +102,11 @@ low_level_init(struct netif *netif)
   tapif->fd = open(DEVTAP, O_RDWR);
   DEBUGF(TAPIF_DEBUG, ("tapif_init: fd %d\n", tapif->fd));
   if(tapif->fd == -1) {
-    perror("tapif_init");
+#ifdef linux
+    perror("tapif_init: try running \"modprobe tun\" or rebuilding your kernel with CONFIG_TUN; cannot open "DEVTAP);
+#else
+    perror("tapif_init: cannot open "DEVTAP);
+#endif
     exit(1);
   }
 
@@ -112,7 +116,7 @@ low_level_init(struct netif *netif)
     memset(&ifr, 0, sizeof(ifr));
     ifr.ifr_flags = IFF_TAP|IFF_NO_PI;
     if (ioctl(tapif->fd, TUNSETIFF, (void *) &ifr) < 0) {
-      perror(buf);
+      perror("tapif_init: "DEVTAP" ioctl TUNSETIFF");
       exit(1);
     }
   }
