@@ -29,6 +29,9 @@
 // -------------------------------------------
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
+// Author: Jani Monoses
+// Contributors: Claudio Leonel
+//
 
 /* 
  * This file implements the eCos specific sys_arch functions used by lwIP 
@@ -159,7 +162,10 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t mbox, void **data, u32_t timeout)
 		d = cyg_mbox_get(mbox);
 	}
 	if (data)
-		*data = d;
+		if (d == (void *)&dummy_msg)
+			*data = NULL;
+		else
+			*data = d;
 	return tick_to_msec(end_time - start_time);	
 }
 
