@@ -35,16 +35,33 @@
 #define __NETIF_XEMACIF_H__
 
 #include "lwip/netif.h"
+#include "netif/etharp.h"
+#include "xemac.h"
 
 void xemacif_setmac(u8_t *addr);
 u8_t * xemacif_getmac(void);
-void xemacif_init(struct netif *netif);
-void xemacif_input(void *CallBackRef);
+void xemacif_setdeviceid(unsigned short id);
+unsigned short xemacif_getdeviceid(void);
+err_t xemacif_init(struct netif *netif);
+err_t xemacif_input(void *CallBackRef);
 
 /* define LWIP_XEMAC_USE_INTMODE to make the driver use interrupt mode.
  * otherwise, the xemac code will use poll mode.  the application
  * should check this as well for init stuff
  */
+
+/**
+ * This typedef contains configuration information for an xemac instance.
+ */
+typedef struct
+{
+   Xuint32 DevId;
+   Xuint32 IntrId;
+   struct eth_addr ethaddr;
+   //   Xuint8 Name[25];
+   XEmac* instance_ptr;
+} XEmacIf_Config;
+
 
 //#define LWIP_XEMAC_USE_INTMODE 1
 
