@@ -230,7 +230,7 @@ static err_t cs8900_init(struct netif *netif)
   // { the RESET bit will be cleared by the cs8900a
   //   as a result of the reset }
   // RESET bit cleared?
-  //while ((PPDATA & 0x0040U) != 0); // TODO: add timeout
+  while ((PPDATA & 0x0040U) != 0); // TODO: add timeout
 
   // { after full initialization of the cs8900a
   //   the INITD bit will be set }
