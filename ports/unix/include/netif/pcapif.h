@@ -34,6 +34,6 @@
 
 #include "lwip/netif.h"
 
-void pcapif_init(struct netif *netif);
+err_t pcapif_init(struct netif *netif);
 
 #endif /* __PCAPIF_H__ */

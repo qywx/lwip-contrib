@@ -281,12 +281,14 @@ tunif_input(struct netif *netif)
  *
  */
 /*-----------------------------------------------------------------------------------*/
-void
+err_t
 tunif_init(struct netif *netif)
 {
   struct tunif *tunif;
     
   tunif = mem_malloc(sizeof(struct tunif));
+  if (!tunif)
+      return ERR_MEM;
   netif->state = tunif;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
@@ -294,5 +296,6 @@ tunif_init(struct netif *netif)
   
   
   low_level_init(netif);
+  return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/

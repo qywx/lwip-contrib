@@ -235,18 +235,24 @@ delif_input(struct pbuf *p, struct netif *inp)
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
-void
+err_t
 delif_init(struct netif *netif)
 {
   struct delif *del;
   
   del = malloc(sizeof(struct delif));
+  if (!del)
+      return ERR_MEM;
   netif->state = del;
   netif->name[0] = 'd';
   netif->name[1] = 'e';
   netif->output = delif_output;
 
   del->netif = malloc(sizeof(struct netif));  
+  if (!del->netif) {
+      free(del);
+      return ERR_MEM;
+  }
 #ifdef linux
   /*  tapif_init(del->netif);*/
   tunif_init(del->netif);
@@ -257,6 +263,7 @@ delif_init(struct netif *netif)
   del->netif->input = delif_input;
   sys_timeout(DELIF_TIMEOUT, delif_input_timeout, netif);
   sys_timeout(DELIF_TIMEOUT, delif_output_timeout, netif);
+  return ERR_OK;
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -282,7 +289,7 @@ delif_thread(void *arg)
 
 }
 /*-----------------------------------------------------------------------------------*/
-void
+err_t
 delif_init_thread(struct netif *netif)
 {
   struct delif *del;
@@ -290,18 +297,25 @@ delif_init_thread(struct netif *netif)
   DEBUGF(DELIF_DEBUG, ("delif_init_thread\n"));
   
   del = malloc(sizeof(struct delif));
+  if (!del)
+      return ERR_MEM;
   netif->state = del;
   netif->name[0] = 'd';
   netif->name[1] = 'e';
   netif->output = delif_output;
 
   del->netif = malloc(sizeof(struct netif));
+  if (!del->netif) {
+      free(del);
+      return ERR_MEM;
+  }
   del->netif->ip_addr = netif->ip_addr;
   del->netif->gw = netif->gw;
   del->netif->netmask = netif->netmask;
   del->input = netif->input;
   del->netif->input = delif_input;
   sys_thread_new(delif_thread, netif);
+  return ERR_OK;
 }
 
 /*-----------------------------------------------------------------------------------*/

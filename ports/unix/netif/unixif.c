@@ -414,7 +414,7 @@ unixif_output_timeout(void *arg)
   }
 }
 /*-----------------------------------------------------------------------------------*/
-void
+err_t
 unixif_init_server(struct netif *netif)
 {
   int fd, fd2;
@@ -431,6 +431,8 @@ unixif_init_server(struct netif *netif)
   DEBUGF(UNIXIF_DEBUG, ("unixif_server: fd %d\n", fd));
     
   unixif = malloc(sizeof(struct unixif));
+  if (!unixif)
+      return ERR_MEM;
   netif->state = unixif;
   netif->name[0] = 'u';
   netif->name[1] = 'n';
@@ -452,13 +454,16 @@ unixif_init_server(struct netif *netif)
   unixif->sem = sys_sem_new(0);
   sys_thread_new(unixif_thread, netif);
   sys_thread_new(unixif_thread2, netif);
+  return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
-void
+err_t
 unixif_init_client(struct netif *netif)
 {
   struct unixif *unixif;
   unixif = malloc(sizeof(struct unixif));
+  if (!unixif)
+      return ERR_MEM;
   netif->state = unixif;
   netif->name[0] = 'u';
   netif->name[1] = 'n';
@@ -473,6 +478,7 @@ unixif_init_client(struct netif *netif)
   unixif->sem = sys_sem_new(0);
   sys_thread_new(unixif_thread, netif);
   sys_thread_new(unixif_thread2, netif);
+  return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
 

@@ -186,12 +186,14 @@ pcapif_thread(void *arg)
   }
 }
 /*-----------------------------------------------------------------------------------*/
-void
+err_t
 pcapif_init(struct netif *netif)
 {
   struct pcapif *p;
     
   p = malloc(sizeof(struct pcapif));
+  if (p == NULL)
+      return ERR_MEM;
   netif->state = p;
   netif->name[0] = 'p';
   netif->name[1] = 'c';
@@ -200,7 +202,7 @@ pcapif_init(struct netif *netif)
   p->pd = pcap_open_offline("pcapdump", errbuf);
   if(p->pd == NULL) {
     printf("pcapif_init: failed %s\n", errbuf);
-    return;
+    return ERR_IF;
   }
 
   p->sem = sys_sem_new(0);
@@ -208,6 +210,7 @@ pcapif_init(struct netif *netif)
   p->lasttime = 0; 
   
   sys_thread_new(pcapif_thread, netif);
+  return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
 #endif /* linux */

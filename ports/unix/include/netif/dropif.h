@@ -36,6 +36,6 @@
 
 #include "lwip/pbuf.h"
 
-void dropif_init(struct netif *netif);
+err_t dropif_init(struct netif *netif);
 
 #endif /* __DROPIF_H__ */

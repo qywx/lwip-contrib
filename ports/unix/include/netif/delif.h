@@ -36,7 +36,7 @@
 
 #include "lwip/pbuf.h"
 
-void delif_init(struct netif *netif);
-void delif_init_thread(struct netif *netif);
+err_t delif_init(struct netif *netif);
+err_t delif_init_thread(struct netif *netif);
 
 #endif /* __DELIF_H__ */

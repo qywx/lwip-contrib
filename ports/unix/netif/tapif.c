@@ -339,12 +339,14 @@ arp_timer(void *arg)
  *
  */
 /*-----------------------------------------------------------------------------------*/
-void
+err_t
 tapif_init(struct netif *netif)
 {
   struct tapif *tapif;
     
   tapif = mem_malloc(sizeof(struct tapif));
+  if (!tapif)
+      return ERR_MEM;
   netif->state = tapif;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
@@ -357,5 +359,6 @@ tapif_init(struct netif *netif)
   etharp_init();
   
   sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler)arp_timer, NULL);
+  return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/

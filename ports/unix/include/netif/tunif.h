@@ -36,7 +36,6 @@
 
 #include "lwip/pbuf.h"
 
-void tunif_init(struct netif *netif);
-void tunif_init_thread(struct netif *netif);
+err_t tunif_init(struct netif *netif);
 
 #endif /* __TUNIF_H__ */

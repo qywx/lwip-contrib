@@ -34,7 +34,7 @@
 
 #include "lwip/netif.h"
 
-void unixif_init_server(struct netif *netif);
-void unixif_init_client(struct netif *netif);
+err_t unixif_init_server(struct netif *netif);
+err_t unixif_init_client(struct netif *netif);
 
 #endif /* __UNIXIF_H__ */

@@ -34,6 +34,6 @@
 
 #include "lwip/netif.h"
 
-void tapif_init(struct netif *netif);
+err_t tapif_init(struct netif *netif);
 
 #endif /* __TAPIF_H__ */
