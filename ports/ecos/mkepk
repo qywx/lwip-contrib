@@ -20,8 +20,7 @@ rm -Rf $EPK/*
 xargs -n 2 ./copy  < files
 
 #copy ecos specific files
-cp -R ecos/* $EPK
-
+cd ecos && find . ! -path '*CVS*' -a -type f -exec cp --parents {} $EPK \;
 #make epk
 cd $EPK && tar czf lwip.epk *
 
