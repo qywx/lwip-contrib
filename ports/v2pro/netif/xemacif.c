@@ -484,7 +484,7 @@ u8_t * xemacif_getmac(void) { return &(mymac.addr[0]); }
 /* network interface. It calls the function low_level_init() to do the       */
 /* actual setup of the hardware.                                             */
 /*---------------------------------------------------------------------------*/
-void xemacif_init(struct netif *netif_ptr)
+err_t xemacif_init(struct netif *netif_ptr)
 {
    struct xemacif *xemacif_ptr;
 
@@ -510,4 +510,6 @@ void xemacif_init(struct netif *netif_ptr)
    
    low_level_init(netif_ptr);
    etharp_init();
+
+   return ERR_OK;
 }
