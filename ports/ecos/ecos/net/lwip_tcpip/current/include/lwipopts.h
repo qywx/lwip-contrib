@@ -153,6 +153,9 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_UDP                CYGPKG_LWIP_UDP
 #define UDP_TTL                 CYGPKG_LWIP_UDP_TTL
 
+/* ---------- RAW socket support ---------- */
+#define LWIP_RAW                CYGPKG_LWIP_RAW
+
 /* ---------- SLIP options --------- */ 
 #define LWIP_SLIP               defined(CYGPKG_LWIP_SLIP)
 #define SLIP_DEV                CYGPKG_LWIP_SLIP_DEV

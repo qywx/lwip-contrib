@@ -19,6 +19,7 @@ src/core/ipv4/ip_frag.c src/core/ipv4/ip_frag.c
 src/core/udp.c src/core/udp.c
 src/core/dhcp.c src/core/dhcp.c
 src/core/tcp_in.c src/core/tcp_in.c
+src/core/raw.c src/core/raw.c
 src/include/ipv4/lwip/ip_addr.h include/lwip/ip_addr.h
 src/include/ipv4/lwip/icmp.h include/lwip/icmp.h
 src/include/ipv4/lwip/inet.h include/lwip/inet.h
@@ -40,6 +41,7 @@ src/include/lwip/pbuf.h include/lwip/pbuf.h
 src/include/lwip/stats.h include/lwip/stats.h
 src/include/lwip/sys.h include/lwip/sys.h
 src/include/lwip/tcp.h include/lwip/tcp.h
+src/include/lwip/raw.h include/lwip/raw.h
 src/include/lwip/tcpip.h include/lwip/tcpip.h
 src/include/lwip/udp.h include/lwip/udp.h
 src/include/lwip/sio.h include/lwip/sio.h

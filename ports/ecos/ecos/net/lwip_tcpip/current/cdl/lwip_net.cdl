@@ -531,7 +531,14 @@ cdl_package CYGPKG_NET_LWIP {
 			description   	""
 		}
 	}
-		
+	
+	cdl_option CYGPKG_LWIP_RAW {
+		display		"Enable RAW socket support"
+		flavor		bool
+		default_value 	1
+		description   	""
+	}
+
 	cdl_component CYGPKG_LWIP_APP_MEM_OPTIONS {
 		display		"Memory options for apps"
 		flavor 		none
