@@ -328,6 +328,11 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
   if ((PPDATA & 0x0080U/*LinkOK*/) == 0) return ERR_CONN; // no Ethernet link
 
   result = ERR_OK;
+  /* TODO: should this occur AFTER setting TXLENGTH??? */
+  /* drop the padding word */
+#if ETH_PAD_SIZE
+  pbuf_header(p, -ETH_PAD_SIZE);
+#endif
 
   /* issue 'transmit' command to CS8900 */
   TXCMD = 0x00C9U;
@@ -387,6 +392,10 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
     /* return not connected */
     result = ERR_IF;
   }
+#if ETH_PAD_SIZE
+  /* reclaim the padding word */
+  pbuf_header(p, ETH_PAD_SIZE);
+#endif
   return result;
 }
 
@@ -436,14 +445,19 @@ static struct pbuf *cs8900_input(struct netif *netif)
     // positive length?
     if (len > 0)
     {
-      // allocate a pbuf chain with total length 'len'
-      p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
+      // allocate a pbuf chain with total length 'len + ETH_PAD_SIZE'
+      p = pbuf_alloc(PBUF_RAW, len + ETH_PAD_SIZE, PBUF_POOL);
       if (p != NULL)
       {
+#if ETH_PAD_SIZE
+        /* drop the padding word */
+        pbuf_header(p, -ETH_PAD_SIZE);     /* drop the padding word */
+#endif
+
         for (q = p; q != 0; q = q->next)
-	{
-	  LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %u len %u\n", q, q->tot_len, q->len));
-	  ptr = q->payload;
+        {
+	        LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %u len %u\n", q, q->tot_len, q->len));
+	        ptr = q->payload;
           // TODO: CHECK: what if q->len is odd? we don't use the last byte?
           for (i = 0; i < (q->len + 1) / 2; i++)
           {
@@ -451,6 +465,10 @@ static struct pbuf *cs8900_input(struct netif *netif)
             ptr++;
           }
         }
+#if ETH_PAD_SIZE
+        /* reclaim the padding word */
+        pbuf_header(p, ETH_PAD_SIZE);     /* reclaim the padding word */
+#endif
       }
       // could not allocate a pbuf
       else
@@ -623,25 +641,8 @@ void cs8900if_service(struct netif *netif)
  */
 err_t cs8900if_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
 {
-  struct cs8900if *cs8900if = netif->state;
-  err_t result;
   /* resolve the link destination hardware address */
-  p = etharp_output(netif, ipaddr, p);
-  /* network hardware address obtained? */
-  if (p != NULL)
-  {
-    /* send out the packet */
-    result = cs8900_output(netif, p);
-    p = NULL;
-  }
-  /* { p == NULL } */
-  else
-  {
-    /* we cannot tell if the packet was sent, the packet could have been queued */
-    /* on an ARP entry that was already pending. */
-    return ERR_OK;
-  }
-  return result;
+  return etharp_output(netif, ipaddr, p);
 }
 /**
  * Read a received packet from the CS8900.
@@ -659,9 +660,8 @@ err_t cs8900if_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipadd
  */
 void cs8900if_input(struct netif *netif)
 {
-  struct cs8900if *cs8900if = netif->state;
   struct eth_hdr *ethhdr = NULL;
-  struct pbuf *p = NULL, *q = NULL;
+  struct pbuf *p = NULL;
 
   /* move received packet into a new pbuf */
   p = cs8900_input(netif);
@@ -673,22 +673,21 @@ void cs8900if_input(struct netif *netif)
   /* points to packet payload, which starts with an Ethernet header */
   ethhdr = p->payload;
 
-  q = NULL;
   switch (htons(ethhdr->type)) {
   /* IP packet? */
   case ETHTYPE_IP:
-    /* update ARP table, obtain first queued packet */
-    q = etharp_ip_input(netif, p);
+    /* update ARP table */
+    etharp_ip_input(netif, p);
     /* skip Ethernet header */
-    pbuf_header(p, -14);
+    pbuf_header(p, -sizeof(struct eth_hdr));
     LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: passing packet up to IP\n"));
     /* pass to network layer */
     netif->input(p, netif);
     break;
   /* ARP packet? */
   case ETHTYPE_ARP:
-    /* pass p to ARP module, get ARP reply or ARP queued packet */
-    q = etharp_arp_input(netif, (struct eth_addr *)&netif->hwaddr, p);
+    /* pass p to ARP module */
+    etharp_arp_input(netif, (struct eth_addr *)&netif->hwaddr, p);
     break;
   /* unsupported Ethernet packet type */
   default:
@@ -696,21 +695,6 @@ void cs8900if_input(struct netif *netif)
     pbuf_free(p);
     p = NULL;
     break;
-  }
-  /* send out the ARP reply or ARP queued packet */
-  if (q != NULL) {
-    /* q pbuf has been succesfully sent? */
-    if (cs8900_output(netif, q) == ERR_OK)
-    {
-      pbuf_free(q);
-      q = NULL;
-    }
-    else
-    {
-      /* TODO: re-queue packet in the ARP cache here (?) */
-      pbuf_free(q);
-      q = NULL;
-    }
   }
 }
 

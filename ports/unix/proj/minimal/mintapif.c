@@ -228,11 +228,7 @@ static err_t
 mintapif_output(struct netif *netif, struct pbuf *p,
 		  struct ip_addr *ipaddr)
 {
-  p = etharp_output(netif, ipaddr, p);
-  if (p != NULL) {
-    return low_level_output(netif, p);
-  }
-  return ERR_OK;
+  return etharp_output(netif, ipaddr, p);
 }
 /*-----------------------------------------------------------------------------------*/
 /*
@@ -250,7 +246,7 @@ mintapif_input(struct netif *netif)
 {
   struct mintapif *mintapif;
   struct eth_hdr *ethhdr;
-  struct pbuf *p, *q;
+  struct pbuf *p;
 
 
   mintapif = netif->state;
@@ -265,25 +261,19 @@ mintapif_input(struct netif *netif)
 
     ethhdr = p->payload;
 
-    q = NULL;
     switch (htons(ethhdr->type)) {
     case ETHTYPE_IP:
-      q = etharp_ip_input(netif, p);
+      etharp_ip_input(netif, p);
       pbuf_header(p, -14);
       netif->input(p, netif);
       break;
     case ETHTYPE_ARP:
-      q = etharp_arp_input(netif, mintapif->ethaddr, p);
+      etharp_arp_input(netif, mintapif->ethaddr, p);
       break;
     default:
       pbuf_free(p);
       break;
     }
-    if (q != NULL) {
-      low_level_output(netif, q);
-      pbuf_free(q);
-    }
-
   }
 }
 /*-----------------------------------------------------------------------------------*/

@@ -272,12 +272,7 @@ static err_t
 tapif_output(struct netif *netif, struct pbuf *p,
 		  struct ip_addr *ipaddr)
 {
-  p = etharp_output(netif, ipaddr, p);
-  if(p != NULL) {
-    low_level_output(netif, p);
-    p = NULL;
-  }
-  return ERR_OK;
+  return etharp_output(netif, ipaddr, p);
 }
 /*-----------------------------------------------------------------------------------*/
 /*
@@ -295,7 +290,7 @@ tapif_input(struct netif *netif)
 {
   struct tapif *tapif;
   struct eth_hdr *ethhdr;
-  struct pbuf *p, *q;
+  struct pbuf *p;
 
 
   tapif = netif->state;
@@ -308,11 +303,10 @@ tapif_input(struct netif *netif)
   }
   ethhdr = p->payload;
 
-  q = NULL;
   switch(htons(ethhdr->type)) {
   case ETHTYPE_IP:
     LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: IP packet\n"));
-    q = etharp_ip_input(netif, p);
+    etharp_ip_input(netif, p);
     pbuf_header(p, -14);
 #if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
     tcpdump(p);
@@ -321,17 +315,12 @@ tapif_input(struct netif *netif)
     break;
   case ETHTYPE_ARP:
     LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: ARP packet\n"));
-    q = etharp_arp_input(netif, tapif->ethaddr, p);
+    etharp_arp_input(netif, tapif->ethaddr, p);
     break;
   default:
     pbuf_free(p);
     break;
   }
-  if(q != NULL) {
-    low_level_output(netif, q);
-    pbuf_free(q);
-  }
-
 }
 /*-----------------------------------------------------------------------------------*/
 static void

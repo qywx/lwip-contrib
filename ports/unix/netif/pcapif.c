@@ -130,15 +130,11 @@ timeout(void *arg)
 	netif->input(p, netif);
 	break;
       case ETHTYPE_ARP:
-	p = etharp_arp_input(netif, pcapif->ethaddr, p);
-	if (p != NULL) {
-	  printf("ARP outout\n");
-	  pbuf_free(p);
-	}
-	break;
-      default:
-	pbuf_free(p);
-	break;
+	    etharp_arp_input(netif, pcapif->ethaddr, p);
+     	break;
+  default:
+	    pbuf_free(p);
+     	break;
       }
     }
   } else {

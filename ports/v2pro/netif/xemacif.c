@@ -302,13 +302,7 @@ static err_t xemacif_output(struct netif *netif_ptr,
 {
    XEmacIf_Config *xemacif_ptr = xemacif_ptr = netif_ptr->state;
 
-   p = etharp_output(netif_ptr, ipaddr, p);
-
-   if (p != NULL) {
-      /* send the frame */
-      low_level_output(netif_ptr, p);
-   }
-   return ERR_OK;
+   return etharp_output(netif_ptr, ipaddr, p);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -324,7 +318,7 @@ err_t xemacif_input(void *CallBackRef)
    struct netif * netif_ptr = (struct netif *) CallBackRef;
    XEmacIf_Config * xemacif_ptr;
    struct eth_hdr * ethernet_header;
-   struct pbuf *p, *q;
+   struct pbuf *p;
 
    xemacif_ptr = netif_ptr->state;
 
@@ -336,21 +330,16 @@ err_t xemacif_input(void *CallBackRef)
       q = NULL;
       switch (htons(ethernet_header->type)) {
       case ETHTYPE_IP:
-         q = etharp_ip_input(netif_ptr, p);
+         etharp_ip_input(netif_ptr, p);
          pbuf_header(p, -14);
          netif_ptr->input(p, netif_ptr);
          break;
       case ETHTYPE_ARP:
-         q = etharp_arp_input(netif_ptr, &(xemacif_ptr->ethaddr), p);
+         etharp_arp_input(netif_ptr, &(xemacif_ptr->ethaddr), p);
          break;
       default:
          pbuf_free(p);
          break;
-      }
-
-      if (q != NULL) {
-         low_level_output(netif_ptr, q);
-         pbuf_free(q);
       }
    }
 

@@ -239,11 +239,7 @@ static err_t
 ethernetif_output(struct netif *netif, struct pbuf *p,
 		  struct ip_addr *ipaddr)
 {
-  p = etharp_output(netif, ipaddr, p);
-  if (p != NULL) {
-    return low_level_output(netif, p);
-  }
-  return ERR_OK;
+  return etharp_output(netif, ipaddr, p);
 }
 /*-----------------------------------------------------------------------------------*/
 /*
@@ -280,16 +276,10 @@ ethernetif_input(struct netif *netif)
     case ETHTYPE_IP:
       etharp_ip_input(netif, p);
       pbuf_header(p, -14);
-			//if (ip_lookup(p->payload, netif)) {
-	      netif->input(p, netif);
-			//}
+      netif->input(p, netif);
       break;
     case ETHTYPE_ARP:
-      p = etharp_arp_input(netif, ethernetif->ethaddr, p);
-      if (p != NULL) {
-				low_level_output(netif, p);
-				pbuf_free(p);
-      }
+      etharp_arp_input(netif, ethernetif->ethaddr, p);
       break;
     default:
       pbuf_free(p);

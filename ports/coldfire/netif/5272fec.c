@@ -422,12 +422,7 @@ static err_t
 mcf5272fecif_output(struct netif *netif, struct pbuf *p,
                     struct ip_addr *ipaddr)
 {
-    p = etharp_output(netif, ipaddr, p);
-    if (p != NULL) {
-        low_level_output(netif, p);
-    }
-    return ERR_OK;
-
+    return etharp_output(netif, ipaddr, p);
 }
             
 /*-----------------------------------------------------------------------------------*/
@@ -437,27 +432,22 @@ eth_input(struct pbuf *p, struct netif *netif)
     /* Ethernet protocol layer */
     struct eth_hdr *ethhdr;
     mcf5272if_t *mcf5272 = netif->state;
-    struct pbuf *q = NULL;
 
     ethhdr = p->payload;
     
     switch (htons(ethhdr->type)) {
       case ETHTYPE_IP:
-        q = etharp_ip_input(netif, p);
+        etharp_ip_input(netif, p);
         pbuf_header(p, -14);
         netif->input(p, netif);
         break;
       case ETHTYPE_ARP:
-        q = etharp_arp_input(netif, mcf5272->ethaddr, p);
+        etharp_arp_input(netif, mcf5272->ethaddr, p);
         break;
       default:
         pbuf_free(p);
         break;
     }
-    if (q != NULL) {
-        low_level_output(netif, q);
-        pbuf_free(q);
-  }
 }
 
 /*-----------------------------------------------------------------------------------*/
