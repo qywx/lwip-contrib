@@ -426,7 +426,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
       {
         for (q = p; q != 0; q = q->next)
 	      {
-          DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p len %u\n", q, q->len));
+          DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %u len %u\n", q, q->tot_len, q->len));
 	        ptr = q->payload;
           // TODO: CHECK: what if q->len is odd? we don't use the last byte?
 	        for (i = 0; i < (q->len + 1) / 2; i++)
