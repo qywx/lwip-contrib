@@ -17,6 +17,11 @@ v2pro/     - Architectural files for the Xilinx Virtex-II PRO device with
              
 coldfire/  - Architectural files for Motorola Coldfire 5272 CPU running
              under Nucleus OS. Supports DMA and ISRs in ethernet driver.
+                          
+ti_c6711/  - Architectural files for TI TMS320C6711 DSP running under uC/OS-II.
+             Supports lwIP Raw API only. 
+             It's done with an 10/100M ethernet daughtercard.
+             [more info at https://sourceforge.net/projects/ucos-lwip-c6x/]
 
 
 Each subdirectory (may) also include:
