@@ -56,7 +56,7 @@
 struct cs8900if
 {
   //struct eth_addr *ethaddr;
-  u8_t needs_service;
+  volatile u8_t needs_service;
   u8_t use_polling;
 #if (CS8900_STATS > 0)
   u32_t interrupts; // #interrupt requests of cs8900
