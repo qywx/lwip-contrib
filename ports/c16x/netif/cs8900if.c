@@ -370,7 +370,7 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
      * frame length (RFC10242) */
     while (sent_bytes < ETH_MIN_FRAME_LEN)
     {
-      RXTXREG = *ptr++;
+      RXTXREG = 0x0000;
       sent_bytes += 2;
     }
     /* { the packet has been sent } */
