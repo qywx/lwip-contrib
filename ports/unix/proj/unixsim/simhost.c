@@ -70,6 +70,11 @@
 #include "tcpecho.h"
 #include "shell.h"
 
+#if LWIP_RAW
+#include "lwip/icmp.h"
+#include "lwip/raw.h"
+#endif
+
 /*-----------------------------------------------------------------------------------*/
 static void
 tcp_timeout(void *data)
@@ -142,6 +147,63 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 	    printf("pppLinkStatusCallback: unknown errCode %d\n", errCode);
 	    break;
     }
+}
+#endif
+
+/*-----------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------*/
+#if LWIP_RAW
+
+static void
+ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *addr)
+{
+  printf("ping recv\n");
+}
+
+static int seq_num;
+
+static void
+ping_send(struct raw_pcb *raw, struct ip_addr *addr)
+{
+  struct pbuf *p;
+  struct icmp_echo_hdr *iecho;
+
+  p = pbuf_alloc(PBUF_IP,sizeof(struct icmp_echo_hdr),PBUF_RAM);
+  if (!p) return;
+
+  iecho = p->payload;
+  ICMPH_TYPE_SET(iecho,ICMP_ECHO);
+  iecho->chksum = 0;
+  iecho->seqno = htons(seq_num);
+
+  iecho->chksum = inet_chksum(iecho, p->len);
+  raw_send_payload(raw,p,addr);
+
+  pbuf_free(p);
+
+  seq_num++;
+}
+
+static void
+ping_thread(void *arg)
+{
+  struct raw_pcb *raw;
+  struct ip_addr dest_addr;
+
+  if (!(raw = raw_new(IP_PROTO_ICMP))) return;
+
+  raw_recv(raw,ping_recv,NULL);
+
+  IP4_ADDR(&dest_addr,192,168,2,1);
+
+  while (1)
+  {
+    printf("ping send\n");
+    ping_send(raw,&dest_addr);
+    sleep(1);
+  }
+  /* Never reaches this */
+  raw_remove(raw);
 }
 #endif
 
@@ -228,7 +290,11 @@ main_thread(void *arg)
 #if LWIP_UDP  
   udpecho_init();
 #endif  
-  
+
+#if LWIP_RAW
+  sys_thread_new(ping_thread, NULL, DEFAULT_THREAD_PRIO);
+#endif
+
   printf("Applications started.\n");
 
   /*  sys_timeout(5000, tcp_timeout, NULL);*/
