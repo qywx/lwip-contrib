@@ -341,7 +341,7 @@ err_t xemacif_input(void *CallBackRef)
          netif_ptr->input(p, netif_ptr);
          break;
       case ETHTYPE_ARP:
-         q = etharp_arp_input(netif_ptr, xemacif_ptr->ethaddr.addr, p);
+         q = etharp_arp_input(netif_ptr, &(xemacif_ptr->ethaddr), p);
          break;
       default:
          pbuf_free(p);
