@@ -219,7 +219,7 @@ static err_t cs8900_init(struct netif *netif)
   // { the RESET bit will be cleared by the cs8900a
   //   as a result of the reset }
   // RESET bit cleared?
-  while((PPDATA & 0x0040U) != 0); // TODO: add timeout
+  while ((PPDATA & 0x0040U) != 0); // TODO: add timeout
 
   // { after full initialization of the cs8900a
   //   the INITD bit will be set }
@@ -308,7 +308,7 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
 
   PACKETPP = CS_PP_BUSSTATUS;
   // not ready for transmission and still within 100 retries?
-  while(((PPDATA & 0x0100U/*Rdy4TxNOW*/) == 0) && (tries++ < 100))
+  while (((PPDATA & 0x0100U/*Rdy4TxNOW*/) == 0) && (tries++ < 100))
   {
     // throw away the last committed received frame
     PACKETPP = CS_PP_RXCFG;
@@ -317,7 +317,7 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
     /* cs8900if->dropped++; // CHECK: we do not know if we actually will drop a frame here */ 
   }
   // ready to transmit?
-  if((PPDATA & 0x0100U/*Rdy4TxNOW*/) != 0)
+  if ((PPDATA & 0x0100U/*Rdy4TxNOW*/) != 0)
   {
     // q traverses through linked list of pbuf's
     struct pbuf *q;
@@ -628,7 +628,7 @@ void cs8900if_input(struct netif *netif)
   ethhdr = p->payload;
   
   q = NULL;
-  switch(htons(ethhdr->type)) {
+  switch (htons(ethhdr->type)) {
   /* IP packet? */
   case ETHTYPE_IP:
     /* update ARP table, obtain first queued packet */
@@ -759,7 +759,7 @@ void cs8900_send_debug(unsigned char *p, unsigned int len)
     /* cs8900if->dropped++; CHECK: we do not know if we actually will drop a frame here, do we? */ 
   }
   // ready to transmit?
-  if((PPDATA & 0x0100U/*Rdy4TxNOW*/) != 0)
+  if ((PPDATA & 0x0100U/*Rdy4TxNOW*/) != 0)
   { 
     u16_t data, checksum = 0;
     u32_t udp_checksum = 0;
@@ -825,7 +825,7 @@ void cs8900_send_debug(unsigned char *p, unsigned int len)
     udp_checksum += 3000;
     udp_checksum += (8 + len);
     udp_checksum += cs8900_chksum(p, len);
-    while(udp_checksum >> 16) {
+    while (udp_checksum >> 16) {
       udp_checksum = (udp_checksum & 0xffffUL) + (udp_checksum >> 16);
     }    
 
@@ -854,7 +854,7 @@ static u32_t cs8900_chksum(void *dataptr, int len)
     ptr++;
   }
   /* add up any odd byte */
-  if(len == 1) {
+  if (len == 1) {
     acc += htons((u16_t)((*(u8_t *)ptr) & 0xffU) << 8);
   }
   return acc;

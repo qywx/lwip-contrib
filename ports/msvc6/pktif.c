@@ -151,7 +151,7 @@ int init_adapter(void)
 	dwWindowsMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
 	if (!(dwVersion >= 0x80000000 && dwWindowsMajorVersion >= 4))
 	{  // Windows NT
-		if(PacketGetAdapterNames((char *)AdapterName,&AdapterLength)==FALSE){
+		if (PacketGetAdapterNames((char *)AdapterName,&AdapterLength)==FALSE){
 			printf("Unable to retrieve the list of the adapters!\n");
 			return -1;
 		}
@@ -174,7 +174,7 @@ int init_adapter(void)
 
 	else	//windows 95
 	{
-		if(PacketGetAdapterNames(AdapterNamea,&AdapterLength)==FALSE){
+		if (PacketGetAdapterNames(AdapterNamea,&AdapterLength)==FALSE){
 			printf("Unable to retrieve the list of the adapters!\n");
 			return -1;
 		}
@@ -211,7 +211,7 @@ int init_adapter(void)
 	PacketSetBuff(lpAdapter,512000);
 	PacketSetReadTimeout(lpAdapter,1);
 	PacketSetHwFilter(lpAdapter,NDIS_PACKET_TYPE_ALL_LOCAL);
-	if((lpPacket = PacketAllocatePacket())==NULL){
+	if ((lpPacket = PacketAllocatePacket())==NULL){
 		return (-1);
 	}
 	PacketInitPacket(lpPacket,(char*)buffer,256000);
@@ -273,7 +273,7 @@ low_level_output(struct netif *ethernetif, struct pbuf *p)
   /* initiate transfer(); */
   if (p->tot_len>=1600)
  		return ERR_BUF;
-	if((lpPacket = PacketAllocatePacket())==NULL)
+	if ((lpPacket = PacketAllocatePacket())==NULL)
  		return ERR_BUF;
 	PacketInitPacket(lpPacket,buffer,p->tot_len);
 	ptr=buffer;
@@ -327,7 +327,7 @@ low_level_input(struct netif *ethernetif)
 	DEBUGF(NETIF_DEBUG, ("netif: recv length %i p->tot_len %i\n", length, (int)p->tot_len));
 #endif
 	
-  if(p != NULL) {
+  if (p != NULL) {
     /* We iterate over the pbuf chain until we have read the entire
        packet into the pbuf. */
 		start=0;
@@ -376,7 +376,7 @@ ethernetif_output(struct netif *netif, struct pbuf *p,
 		  struct ip_addr *ipaddr)
 {
   p = etharp_output(netif, ipaddr, p);
-  if(p != NULL) {
+  if (p != NULL) {
     return low_level_output(netif, p);
   }
   return ERR_OK;
@@ -404,7 +404,7 @@ ethernetif_input(struct netif *netif)
   
   p = low_level_input(netif);
 
-  if(p != NULL) {
+  if (p != NULL) {
 
 #ifdef LINK_STATS
     lwip_stats.link.recv++;
@@ -412,17 +412,17 @@ ethernetif_input(struct netif *netif)
 
     ethhdr = p->payload;
     
-    switch(htons(ethhdr->type)) {
+    switch (htons(ethhdr->type)) {
     case ETHTYPE_IP:
       etharp_ip_input(netif, p);
       pbuf_header(p, -14);
-			//if(ip_lookup(p->payload, netif)) {
+			//if (ip_lookup(p->payload, netif)) {
 	      netif->input(p, netif);
 			//}
       break;
     case ETHTYPE_ARP:
       p = etharp_arp_input(netif, ethernetif->ethaddr, p);
-      if(p != NULL) {
+      if (p != NULL) {
 				low_level_output(netif, p);
 				pbuf_free(p);
       }
@@ -495,9 +495,9 @@ static void ProcessPackets(LPPACKET lpPacket)
 
 	off=0;
 
-	while(off<ulBytesReceived)
+	while (off<ulBytesReceived)
   {	
-		//if(kbhit())return;
+		//if (kbhit())return;
 		hdr=(struct bpf_hdr *)(buf+off);
 		tlen1=hdr->bh_datalen;
 		cur_length=tlen1;
@@ -521,7 +521,7 @@ void update_adapter(void)
 
   ethernetif = pktif_netif->state;
   
-  if(PacketReceivePacket(lpAdapter,lpPacket,TRUE)==TRUE)
+  if (PacketReceivePacket(lpAdapter,lpPacket,TRUE)==TRUE)
     ProcessPackets(lpPacket);
   cur_length=0;
   cur_packet=NULL;

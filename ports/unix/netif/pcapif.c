@@ -97,13 +97,13 @@ timeout(void *arg)
   ethhdr = (struct eth_hdr *)pcapif->pkt;
 
   
-  if(htons(ethhdr->type) != ETHTYPE_IP ||
+  if (htons(ethhdr->type) != ETHTYPE_IP ||
      ip_lookup(pcapif->pkt + 14, netif)) {
     
     /* We allocate a pbuf chain of pbufs from the pool. */
     p = pbuf_alloc(PBUF_LINK, pcapif->len, PBUF_POOL);
     
-    if(p != NULL) {
+    if (p != NULL) {
       /* We iterate over the pbuf chain until we have read the entire
 	 packet into the pbuf. */
       bufptr = (u_char *)pcapif->pkt;
@@ -117,7 +117,7 @@ timeout(void *arg)
       }
 
       ethhdr = p->payload;
-      switch(htons(ethhdr->type)) {
+      switch (htons(ethhdr->type)) {
       case ETHTYPE_IP:
 	etharp_ip_input(netif, p);
 	pbuf_header(p, -14);
@@ -125,7 +125,7 @@ timeout(void *arg)
 	break;
       case ETHTYPE_ARP:
 	p = etharp_arp_input(netif, pcapif->ethaddr, p);
-	if(p != NULL) {
+	if (p != NULL) {
 	  printf("ARP outout\n");
 	  pbuf_free(p);
 	}
@@ -162,7 +162,7 @@ callback(u_char *arg, const struct pcap_pkthdr *hdr, const u_char *pkt)
   pcapif->lasttime = time;
   
 
-  if(lasttime == 0) {
+  if (lasttime == 0) {
     sys_timeout(1000, timeout, netif);
   } else {
     sys_timeout(time - lasttime, timeout, netif);
@@ -177,10 +177,10 @@ pcapif_thread(void *arg)
   netif = arg;
   pcapif = netif->state;
 
-  while(1) {
+  while (1) {
     pcap_loop(pcapif->pd, 1, callback, (u_char *)netif);
     sys_sem_wait(pcapif->sem);
-    if(pcapif->p != NULL) {
+    if (pcapif->p != NULL) {
       netif->input(pcapif->p, netif);
     }
   }
@@ -200,7 +200,7 @@ pcapif_init(struct netif *netif)
   netif->output = pcapif_output;
 
   p->pd = pcap_open_offline("pcapdump", errbuf);
-  if(p->pd == NULL) {
+  if (p->pd == NULL) {
     printf("pcapif_init: failed %s\n", errbuf);
     return ERR_IF;
   }

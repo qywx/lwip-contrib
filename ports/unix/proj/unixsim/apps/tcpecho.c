@@ -48,26 +48,26 @@ tcpecho_thread(void *arg)
   /* Tell connection to go into listening mode. */
   netconn_listen(conn);
 
-  while(1) {
+  while (1) {
 
     /* Grab new connection. */
     newconn = netconn_accept(conn);
     /*printf("accepted new connection %p\n", newconn);*/
     /* Process the new connection. */
-    if(newconn != NULL) {
+    if (newconn != NULL) {
       struct netbuf *buf;
       void *data;
       u16_t len;
       
-      while((buf = netconn_recv(newconn)) != NULL) {
+      while ((buf = netconn_recv(newconn)) != NULL) {
 	/*printf("Recved\n");*/
 	do {
 	  netbuf_data(buf, &data, &len);
 	  err = netconn_write(newconn, data, len, NETCONN_COPY);
-	  if(err != ERR_OK) {
+	  if (err != ERR_OK) {
 	    /*	    printf("tcpecho: netconn_write: error \"%s\"\n", lwip_strerr(err));*/
 	  }
-	} while(netbuf_next(buf) >= 0);
+	} while (netbuf_next(buf) >= 0);
 	netbuf_delete(buf);	
       }
       /*printf("Got EOF, looping\n");*/

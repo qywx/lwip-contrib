@@ -46,7 +46,7 @@ udpecho_thread(void *arg)
   conn = netconn_new(NETCONN_UDP);
   netconn_bind(conn, NULL, 7);
 
-  while(1) {
+  while (1) {
     buf = netconn_recv(conn);
     addr = netbuf_fromaddr(buf);
     port = netbuf_fromport(buf);

@@ -351,7 +351,7 @@ static struct pbuf * low_level_input(struct xemacif *xemacif_ptr)
    /* Allocate a pbuf chain of pbufs from the pool. */
    p = pbuf_alloc(PBUF_RAW, FrameLen, PBUF_POOL);
 
-   if(p != NULL) {
+   if (p != NULL) {
    /* Iterate over the pbuf chain until we have
     * read the entire packet into the pbuf. */
       for(q = p; q != NULL; q = q->next) {
@@ -424,11 +424,11 @@ void xemacif_input(void *CallBackRef)
 
    p = low_level_input(xemacif_ptr);
 
-   if(p != NULL) {
+   if (p != NULL) {
       ethernet_header = p->payload;
 
       q = NULL;
-      switch(htons(ethernet_header->type)) {
+      switch (htons(ethernet_header->type)) {
       case ETHTYPE_IP:
          q = etharp_ip_input(netif_ptr, p);
          pbuf_header(p, -14);
@@ -442,7 +442,7 @@ void xemacif_input(void *CallBackRef)
          break;
       }
 
-      if(q != NULL) {
+      if (q != NULL) {
          low_level_output(netif_ptr, q);
          pbuf_free(q);
       }

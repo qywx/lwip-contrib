@@ -100,7 +100,7 @@ introduce_thread(NU_TASK *id, void (*function)(void *arg), void *arg)
   
   thread = (struct sys_thread *) calloc(1,sizeof(struct sys_thread));
     
-  if(thread) {
+  if (thread) {
       old_level = sys_arch_protect();
       thread->next = threads;
       thread->timeouts.next = NULL;
@@ -173,7 +173,7 @@ current_thread(void)
     
     for(st = threads; st != NULL; st = st->next)
     {    
-        if(st->pthread == pt)
+        if (st->pthread == pt)
         {
             sys_arch_unprotect(old_level);
             return st;
@@ -183,7 +183,7 @@ current_thread(void)
     sys_arch_unprotect(old_level);
     st = introduce_thread(pt, 0, 0);
     
-    if(!st) {
+    if (!st) {
         abort();
     }
 
@@ -220,7 +220,7 @@ sys_sem_new(u8_t count)
 
 #ifdef SYS_STATS
     lwip_stats.sys.sem.used++;
-    if(lwip_stats.sys.sem.used > lwip_stats.sys.sem.max)
+    if (lwip_stats.sys.sem.used > lwip_stats.sys.sem.max)
     {
         lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
     }
@@ -318,7 +318,7 @@ sys_mbox_new(void)
                             NU_FIFO);
 #ifdef SYS_STATS
             lwip_stats.sys.mbox.used++;
-            if(lwip_stats.sys.mbox.used > lwip_stats.sys.mbox.max) {
+            if (lwip_stats.sys.mbox.used > lwip_stats.sys.mbox.max) {
                 lwip_stats.sys.mbox.max = lwip_stats.sys.mbox.used;
             }
 #endif /* SYS_STATS */

@@ -47,7 +47,7 @@ sys_arch_block(u16_t time)
   ticks = time * (CLK_TCK / 1000) + clock();
   printf("ticks %d\n", ticks);
 
-  while(clock() != ticks);  
+  while (clock() != ticks);  
 }
 /*-----------------------------------------------------------------------------------*/
 sys_mbox_t

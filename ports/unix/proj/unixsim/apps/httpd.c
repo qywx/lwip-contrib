@@ -74,7 +74,7 @@ send_data(struct tcp_pcb *pcb, struct http_state *hs)
 
   /* We cannot send more data than space available in the send
      buffer. */     
-  if(tcp_sndbuf(pcb) < hs->left) {
+  if (tcp_sndbuf(pcb) < hs->left) {
     len = tcp_sndbuf(pcb);
   } else {
     len = hs->left;
@@ -82,12 +82,12 @@ send_data(struct tcp_pcb *pcb, struct http_state *hs)
 
   do {
     err = tcp_write(pcb, hs->file, len, 0);
-    if(err == ERR_MEM) {
+    if (err == ERR_MEM) {
       len /= 2;
     }
-  } while(err == ERR_MEM && len > 1);  
+  } while (err == ERR_MEM && len > 1);  
   
-  if(err == ERR_OK) {
+  if (err == ERR_OK) {
     hs->file += len;
     hs->left -= len;
     /*  } else {
@@ -103,13 +103,13 @@ http_poll(void *arg, struct tcp_pcb *pcb)
   hs = arg;
   
   /*  printf("Polll\n");*/
-  if(hs == NULL) {
+  if (hs == NULL) {
     /*    printf("Null, close\n");*/
     tcp_abort(pcb);
     return ERR_ABRT;
   } else {
     ++hs->retries;
-    if(hs->retries == 4) {
+    if (hs->retries == 4) {
       tcp_abort(pcb);
       return ERR_ABRT;
     }
@@ -128,7 +128,7 @@ http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 
   hs->retries = 0;
   
-  if(hs->left > 0) {    
+  if (hs->left > 0) {    
     send_data(pcb, hs);
   } else {
     close_conn(pcb, hs);
@@ -147,27 +147,27 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 
   hs = arg;
 
-  if(err == ERR_OK && p != NULL) {
+  if (err == ERR_OK && p != NULL) {
 
     /* Inform TCP that we have taken the data. */
     tcp_recved(pcb, p->tot_len);
     
-    if(hs->file == NULL) {
+    if (hs->file == NULL) {
       data = p->payload;
       
-      if(strncmp(data, "GET ", 4) == 0) {
+      if (strncmp(data, "GET ", 4) == 0) {
 	for(i = 0; i < 40; i++) {
-	  if(((char *)data + 4)[i] == ' ' ||
+	  if (((char *)data + 4)[i] == ' ' ||
 	     ((char *)data + 4)[i] == '\r' ||
 	     ((char *)data + 4)[i] == '\n') {
 	    ((char *)data + 4)[i] = 0;
 	  }
 	}
 
-	if(*(char *)(data + 4) == '/' &&
+	if (*(char *)(data + 4) == '/' &&
 	   *(char *)(data + 5) == 0) {
 	  fs_open("/index.html", &file);
-	} else if(!fs_open((char *)data + 4, &file)) {
+	} else if (!fs_open((char *)data + 4, &file)) {
 	  fs_open("/404.html", &file);	 
 	}
 	hs->file = file.data;
@@ -189,7 +189,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
     }
   }
 
-  if(err == ERR_OK && p == NULL) {
+  if (err == ERR_OK && p == NULL) {
     close_conn(pcb, hs);
   }
   return ERR_OK;
@@ -206,7 +206,7 @@ http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
      connection. */
   hs = mem_malloc(sizeof(struct http_state));
 
-  if(hs == NULL) {
+  if (hs == NULL) {
     printf("http_accept: Out of memory\n");
     return ERR_MEM;
   }

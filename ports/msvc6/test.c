@@ -148,7 +148,7 @@ void main_loop()
 	timer2=0;
 	done=0;
 	
-	while(!done)
+	while (!done)
 	{
 		int cur_time;
 		int time_diff;

@@ -81,7 +81,7 @@ low_level_init(struct netif *netif)
   
   tunif->fd = open("/dev/tun0", O_RDWR);
   DEBUGF(TUNIF_DEBUG, ("tunif_init: fd %d\n", tunif->fd));
-  if(tunif->fd == -1) {
+  if (tunif->fd == -1) {
     perror("tunif_init");
     exit(1);
   }
@@ -120,7 +120,7 @@ low_level_output(struct tunif *tunif, struct pbuf *p)
   
   /* initiate transfer(); */
 
-  if(((double)rand()/(double)RAND_MAX) < 0.4) {
+  if (((double)rand()/(double)RAND_MAX) < 0.4) {
     printf("drop\n");
     return ERR_OK;
   }
@@ -138,7 +138,7 @@ low_level_output(struct tunif *tunif, struct pbuf *p)
   }
 
   /* signal that packet should be sent(); */
-  if(write(tunif->fd, buf, p->tot_len) == -1) {
+  if (write(tunif->fd, buf, p->tot_len) == -1) {
     perror("tunif: write");
   }
   return ERR_OK;
@@ -164,7 +164,7 @@ low_level_input(struct tunif *tunif)
      variable. */
   len = read(tunif->fd, buf, sizeof(buf));
 
-  /*  if(((double)rand()/(double)RAND_MAX) < 0.1) {
+  /*  if (((double)rand()/(double)RAND_MAX) < 0.1) {
     printf("drop\n");
     return NULL;
     }*/
@@ -173,7 +173,7 @@ low_level_input(struct tunif *tunif)
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
   
-  if(p != NULL) {
+  if (p != NULL) {
     /* We iterate over the pbuf chain until we have read the entire
        packet into the pbuf. */
     bufptr = &buf[0];
@@ -204,17 +204,17 @@ tunif_thread(void *arg)
   netif = arg;
   tunif = netif->state;
   
-  while(1) {
+  while (1) {
     FD_ZERO(&fdset);
     FD_SET(tunif->fd, &fdset);
 
     /* Wait for a packet to arrive. */
     ret = select(tunif->fd + 1, &fdset, NULL, NULL, NULL);
 
-    if(ret == 1) {
+    if (ret == 1) {
       /* Handle incoming packet. */
       tunif_input(netif);
-    } else if(ret == -1) {
+    } else if (ret == -1) {
       perror("tunif_thread: select");
     }
   }
@@ -262,12 +262,12 @@ tunif_input(struct netif *netif)
   
   p = low_level_input(tunif);
 
-  if(p == NULL) {
+  if (p == NULL) {
     DEBUGF(TUNIF_DEBUG, ("tunif_input: low_level_input returned NULL\n"));
     return;
   }
 
-  if(ip_lookup(p->payload, netif)) {
+  if (ip_lookup(p->payload, netif)) {
     netif->input(p, netif);
   }
 }

@@ -96,7 +96,7 @@ low_level_init(struct netif *netif)
   /* Do whatever else is needed to initialize interface. */  
   
   mintapif->fd = open(DEVTAP, O_RDWR);
-  if(mintapif->fd == -1) {
+  if (mintapif->fd == -1) {
     perror("tapif: tapif_init: open");
     exit(1);
   }
@@ -159,7 +159,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
   }
 
   /* signal that packet should be sent(); */
-  if(write(mintapif->fd, buf, p->tot_len) == -1) {
+  if (write(mintapif->fd, buf, p->tot_len) == -1) {
     perror("tapif: write");
   }
   return ERR_OK;
@@ -185,7 +185,7 @@ low_level_input(struct mintapif *mintapif)
      variable. */
   len = read(mintapif->fd, buf, sizeof(buf));
 
-  /*  if(((double)rand()/(double)RAND_MAX) < 0.1) {
+  /*  if (((double)rand()/(double)RAND_MAX) < 0.1) {
     printf("drop\n");
     return NULL;
     }*/
@@ -194,7 +194,7 @@ low_level_input(struct mintapif *mintapif)
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
   
-  if(p != NULL) {
+  if (p != NULL) {
     /* We iterate over the pbuf chain until we have read the entire
        packet into the pbuf. */
     bufptr = &buf[0];
@@ -229,7 +229,7 @@ mintapif_output(struct netif *netif, struct pbuf *p,
 		  struct ip_addr *ipaddr)
 {
   p = etharp_output(netif, ipaddr, p);
-  if(p != NULL) {
+  if (p != NULL) {
     return low_level_output(netif, p);
   }
   return ERR_OK;
@@ -257,7 +257,7 @@ mintapif_input(struct netif *netif)
   
   p = low_level_input(mintapif);
 
-  if(p != NULL) {
+  if (p != NULL) {
 
 #ifdef LINK_STATS
     lwip_stats.link.recv++;
@@ -266,7 +266,7 @@ mintapif_input(struct netif *netif)
     ethhdr = p->payload;
 
     q = NULL;
-    switch(htons(ethhdr->type)) {
+    switch (htons(ethhdr->type)) {
     case ETHTYPE_IP:
       q = etharp_ip_input(netif, p);
       pbuf_header(p, -14);
@@ -279,7 +279,7 @@ mintapif_input(struct netif *netif)
       pbuf_free(p);
       break;
     }
-    if(q != NULL) {
+    if (q != NULL) {
       low_level_output(netif, q);
       pbuf_free(q);
     }
@@ -324,9 +324,9 @@ mintapif_wait(struct netif *netif, u16_t time)
 
   mintapif = netif->state;
 
-  while(1) {
+  while (1) {
   
-    if(mintapif->lasttime >= (u32_t)time * 1000) {
+    if (mintapif->lasttime >= (u32_t)time * 1000) {
       mintapif->lasttime = 0;
       return MINTAPIF_TIMEOUT;
     }
@@ -340,7 +340,7 @@ mintapif_wait(struct netif *netif, u16_t time)
     
     gettimeofday(&now, &tz);
     ret = select(mintapif->fd + 1, &fdset, NULL, NULL, &tv);
-    if(ret == 0) {
+    if (ret == 0) {
       mintapif->lasttime = 0;    
       return MINTAPIF_TIMEOUT;
     } 

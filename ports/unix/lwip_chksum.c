@@ -57,13 +57,13 @@ lwip_chksum(void *dataptr, int len)
   }
 
   /* add up any odd byte */
-  if(len == 1) {
+  if (len == 1) {
     acc += htons((u16_t)((*(u8_t *)dataptr) & 0xff) << 8);
     DEBUGF(INET_DEBUG, ("inet: chksum: odd byte %d\n", *(u8_t *)dataptr));
   }
   acc = (acc >> 16) + (acc & 0xffffUL);
 
-  if(acc & 0xffff0000 != 0) {
+  if (acc & 0xffff0000 != 0) {
     acc = (acc >> 16) + (acc & 0xffffUL);
   }
 

@@ -73,7 +73,7 @@ sys_mbox_free(sys_mbox_t mbox)
 void
 sys_mbox_post(sys_mbox_t mbox, void *data)
 {
-  if(KS_enqueue(mbox, &data) != RC_GOOD) {
+  if (KS_enqueue(mbox, &data) != RC_GOOD) {
   }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -83,14 +83,14 @@ sys_arch_mbox_fetch(sys_mbox_t mbox, void **data, u16_t timeout)
   KSRC ret;
   u16_t wtime = 1;
   
-  if(timeout == 0) {
+  if (timeout == 0) {
     DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: without timeouts\n",KS_inqtask()));
     KS_dequeuew(mbox, data);
     
   } else { 
   
     ret = KS_dequeuet(mbox, data, (TICKS)timeout/CLKTICK);
-    if(ret == RC_TIMEOUT) {
+    if (ret == RC_TIMEOUT) {
       /* The call timed out, so we return 0. */
       wtime = 0;
     } else {
@@ -100,7 +100,7 @@ sys_arch_mbox_fetch(sys_mbox_t mbox, void **data, u16_t timeout)
       wtime = timeout / 2;
       
       /* Make sure we don't return 0 here. */
-      if(wtime == 0) {
+      if (wtime == 0) {
 	wtime = 1;
       }
     }
@@ -114,7 +114,7 @@ sys_sem_new(u8_t count)
   SEMA sem;
   KS_dequeuew(IP_SEMQ, &sem);
   KS_pend(sem);
-  if(count > 0) {
+  if (count > 0) {
     KS_signal(sem);
   }
   return sem;
@@ -126,13 +126,13 @@ sys_arch_sem_wait(sys_sem_t sem, u16_t timeout)
   KSRC ret;
   u16_t wtime = 1;
   
-  if(timeout == 0) {
+  if (timeout == 0) {
     DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: without timeouts\n",KS_inqtask()));
     KS_wait(sem);
     
   } else { 
     ret = KS_waitt(sem, (TICKS)timeout/CLKTICK);  
-    if(ret == RC_TIMEOUT) {
+    if (ret == RC_TIMEOUT) {
       /* The call timed out, so we return 0. */
       wtime = 0;
     } else {
@@ -142,7 +142,7 @@ sys_arch_sem_wait(sys_sem_t sem, u16_t timeout)
       wtime = timeout / 2;
       
       /* Make sure we don't return 0 here. */
-      if(wtime == 0) {
+      if (wtime == 0) {
 	wtime = 1;
       }
     }
@@ -202,7 +202,7 @@ sys_arch_timeouts(void)
   pid = KS_inqtask();
   for(i = 0; i < nextthread; i++) {
     tl = &timeoutlist[i];
-    if(tl->pid == pid) {
+    if (tl->pid == pid) {
       DEBUGF(SYS_DEBUG, ("PID: %d sys_mbox_fetch: corresponding pid found!\n",KS_inqtask()));
       return &(tl->timeouts);
     }
@@ -226,7 +226,7 @@ sys_thread(void)
   void *threadarg;
   
   arg = KS_inqtask_arg(0);
-  if(arg != NULL) {
+  if (arg != NULL) {
 
     timeoutlist[nextthread].timeouts.next = NULL;
     timeoutlist[nextthread].pid = KS_inqtask();

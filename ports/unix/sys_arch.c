@@ -110,7 +110,7 @@ introduce_thread(pthread_t id)
   
   thread = malloc(sizeof(struct sys_thread));
     
-  if(thread) {
+  if (thread) {
     pthread_mutex_lock(&threads_mutex);
     thread->next = threads;
     thread->timeouts.next = NULL;
@@ -131,7 +131,7 @@ current_thread(void)
   pthread_mutex_lock(&threads_mutex);
 
   for(st = threads; st != NULL; st = st->next) {    
-    if(pthread_equal(st->pthread, pt)) {
+    if (pthread_equal(st->pthread, pt)) {
       pthread_mutex_unlock(&threads_mutex);
       
       return st;
@@ -142,7 +142,7 @@ current_thread(void)
 
   st = introduce_thread(pt);
 
-  if(!st) {
+  if (!st) {
     printf("current_thread???\n");
     abort();
   }
@@ -163,11 +163,11 @@ sys_thread_new(void (*function)(void *arg), void *arg, int prio)
                         function, 
                         arg);
   
-  if(0 == code) {
+  if (0 == code) {
     st = introduce_thread(tmp);
   }
   
-  if(NULL == st) {
+  if (NULL == st) {
     DEBUGF(SYS_DEBUG, ("sys_thread_new: pthread_create %d, st = 0x%x",
                        code, (int)st));
     abort();
@@ -188,7 +188,7 @@ sys_mbox_new()
   
 #ifdef SYS_STATS
   lwip_stats.sys.mbox.used++;
-  if(lwip_stats.sys.mbox.used > lwip_stats.sys.mbox.max) {
+  if (lwip_stats.sys.mbox.used > lwip_stats.sys.mbox.max) {
     lwip_stats.sys.mbox.max = lwip_stats.sys.mbox.used;
   }
 #endif /* SYS_STATS */
@@ -199,7 +199,7 @@ sys_mbox_new()
 void
 sys_mbox_free(struct sys_mbox *mbox)
 {
-  if(mbox != SYS_MBOX_NULL) {
+  if (mbox != SYS_MBOX_NULL) {
 #ifdef SYS_STATS
     lwip_stats.sys.mbox.used--;
 #endif /* SYS_STATS */
@@ -223,7 +223,7 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
   
   DEBUGF(SYS_DEBUG, ("sys_mbox_post: mbox %p msg %p\n", (void *)mbox, (void *)msg));
   
-  while((mbox->last + 1) >= (mbox->first + SYS_MBOX_SIZE)) {
+  while ((mbox->last + 1) >= (mbox->first + SYS_MBOX_SIZE)) {
     mbox->wait_send++;
     sys_sem_signal(mbox->mutex);
     sys_arch_sem_wait(mbox->mail, 0);
@@ -233,7 +233,7 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
   
   mbox->msgs[mbox->last % SYS_MBOX_SIZE] = msg;
   
-  if(mbox->last == mbox->first) {
+  if (mbox->last == mbox->first) {
     first = 1;
   } else {
     first = 0;
@@ -241,7 +241,7 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
   
   mbox->last++;
   
-  if(first) {
+  if (first) {
     sys_sem_signal(mbox->mail);
   }
 
@@ -257,16 +257,16 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
      stuff here. */
   sys_arch_sem_wait(mbox->mutex, 0);
 
-  while(mbox->first == mbox->last) {
+  while (mbox->first == mbox->last) {
     sys_sem_signal(mbox->mutex);
     
     /* We block while waiting for a mail to arrive in the mailbox. We
        must be prepared to timeout. */
-    if(timeout != 0) {
+    if (timeout != 0) {
       time = sys_arch_sem_wait(mbox->mail, timeout);
       
       /* If time == 0, the sem_wait timed out, and we return 0. */
-      if(time == 0xffffffff) {
+      if (time == 0xffffffff) {
         return 0xffffffff;
       }
     } else {
@@ -278,13 +278,13 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
 
   DEBUGF(SYS_DEBUG, ("sys_mbox_fetch: mbox %p msg %p\n", (void *)mbox, *msg));
 
-  if(msg != NULL) {
+  if (msg != NULL) {
     *msg = mbox->msgs[mbox->first % SYS_MBOX_SIZE];
   }
 
   mbox->first++;
   
-  if(mbox->wait_send) {
+  if (mbox->wait_send) {
     sys_sem_signal(mbox->mail);
   }
 
@@ -298,7 +298,7 @@ sys_sem_new(u8_t count)
 {
 #ifdef SYS_STATS
   lwip_stats.sys.sem.used++;
-  if(lwip_stats.sys.sem.used > lwip_stats.sys.sem.max) {
+  if (lwip_stats.sys.sem.used > lwip_stats.sys.sem.max) {
     lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
   }
 #endif /* SYS_STATS */
@@ -331,7 +331,7 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
   struct timezone tz;
   int retval;
   
-  if(timeout > 0) {
+  if (timeout > 0) {
     /* Get a timestamp and add the timeout value. */
     gettimeofday(&rtime1, &tz);
     sec = rtime1.tv_sec;
@@ -344,7 +344,7 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
     
     retval = pthread_cond_timedwait(cond, mutex, &ts);
     
-    if(retval == ETIMEDOUT) {
+    if (retval == ETIMEDOUT) {
       return 0xffffffff;
     } else {
       /* Calculate for how long we waited for the cond. */
@@ -352,7 +352,7 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
       tdiff = (rtime2.tv_sec - rtime1.tv_sec) * 1000 +
         (rtime2.tv_usec - rtime1.tv_usec) / 1000;
       
-      if(tdiff <= 0) {
+      if (tdiff <= 0) {
         return 0;
       }
       
@@ -370,11 +370,11 @@ sys_arch_sem_wait(struct sys_sem *sem, u32_t timeout)
   u32_t time = 0;
   
   pthread_mutex_lock(&(sem->mutex));
-  while(sem->c <= 0) {
-    if(timeout > 0) {
+  while (sem->c <= 0) {
+    if (timeout > 0) {
       time = cond_wait(&(sem->cond), &(sem->mutex), timeout);
       
-      if(time == 0xffffffff) {
+      if (time == 0xffffffff) {
         pthread_mutex_unlock(&(sem->mutex));
         return 0xffffffff;
       }
@@ -395,7 +395,7 @@ sys_sem_signal(struct sys_sem *sem)
   pthread_mutex_lock(&(sem->mutex));
   sem->c++;
 
-  if(sem->c > 1) {
+  if (sem->c > 1) {
     sem->c = 1;
   }
 
@@ -406,7 +406,7 @@ sys_sem_signal(struct sys_sem *sem)
 void
 sys_sem_free(struct sys_sem *sem)
 {
-  if(sem != SYS_SEM_NULL) {
+  if (sem != SYS_SEM_NULL) {
 #ifdef SYS_STATS
     lwip_stats.sys.sem.used--;
 #endif /* SYS_STATS */

@@ -45,7 +45,7 @@ echo_err(void *arg, err_t err)
 {
   struct echo_state *es = arg;
 
-  if(arg != NULL) {
+  if (arg != NULL) {
     pbuf_free(es->p);
     mem_free(arg);
   }
@@ -59,7 +59,7 @@ close_conn(struct tcp_pcb *pcb, struct echo_state *es)
   tcp_sent(pcb, NULL);  
   tcp_recv(pcb, NULL);
 #endif /* 0 */
-  if(es != NULL) {
+  if (es != NULL) {
     pbuf_free(es->p);
     mem_free(es);
   }
@@ -74,14 +74,14 @@ send_buf(struct tcp_pcb *pcb, struct echo_state *es)
   do {
     q = es->p;
     es->p = pbuf_dechain(q);
-    if(tcp_write(pcb, q->payload, q->len, 1) == ERR_MEM) {
+    if (tcp_write(pcb, q->payload, q->len, 1) == ERR_MEM) {
       pbuf_chain(q, es->p);
       es->p = q;
       return;
     }
     tcp_recved(pcb, q->len);
     pbuf_free(q);
-  } while(es->p != NULL);   
+  } while (es->p != NULL);   
 }
 /*-----------------------------------------------------------------------------------*/
 static err_t
@@ -89,19 +89,19 @@ echo_poll(void *arg, struct tcp_pcb *pcb)
 {
   struct echo_state *es;
 
-  if(arg == NULL) {
+  if (arg == NULL) {
     return tcp_close(pcb);
   }
   
   es = arg;
 
-  if(es->failed >= FAILED_MAX) {
+  if (es->failed >= FAILED_MAX) {
     close_conn(pcb, es);
     tcp_abort(pcb);
     return ERR_ABRT;
   }
   
-  if(es->p != NULL) {
+  if (es->p != NULL) {
     ++es->failed;
     send_buf(pcb, es);
   }
@@ -115,7 +115,7 @@ echo_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
   
   es = arg;
 
-  if(es != NULL && es->p != NULL) {
+  if (es != NULL && es->p != NULL) {
     send_buf(pcb, es);
   }
   return ERR_OK;
@@ -128,12 +128,12 @@ echo_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
   
   es = arg;
 
-  if(p == NULL) {
+  if (p == NULL) {
     close_conn(pcb, es);
     return ERR_OK;
   }
   
-  if(es->p != NULL) {
+  if (es->p != NULL) {
     pbuf_chain(es->p, p);
   } else {
     es->p = p;
@@ -155,7 +155,7 @@ echo_accept(void *arg, struct tcp_pcb *pcb, err_t err)
      connection. */
   es = mem_malloc(sizeof(struct echo_state));
 
-  if(es == NULL) {
+  if (es == NULL) {
     return ERR_MEM;
   }
   
@@ -198,7 +198,7 @@ lwip_tcp_event(void *arg, struct tcp_pcb *pcb,
 	       enum lwip_event ev, struct pbuf *p,
 	       u16_t size, err_t err)
 {
-  switch(ev) {
+  switch (ev) {
   case LWIP_EVENT_ACCEPT:
     return echo_accept(arg, pcb, err);
   case LWIP_EVENT_SENT:

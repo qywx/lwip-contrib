@@ -85,13 +85,13 @@ delif_input_timeout(void *arg)
   
   /* Check if there is anything on the input list. */
   dp = input_list;
-  while(dp != NULL) {
+  while (dp != NULL) {
     now = sys_now();
     
-    if(dp->time <= now) {
+    if (dp->time <= now) {
       delif->input(dp->p, netif);
-      if(dp->next != NULL) {
-	if(dp->next->time > now) {
+      if (dp->next != NULL) {
+	if (dp->next->time > now) {
 	  timeout = dp->next->time - now;
 	} else {
 	  timeout = 0;
@@ -125,14 +125,14 @@ delif_output_timeout(void *arg)
   
   /* Check if there is anything on the output list. */
   dp = output_list;
-  while(dp != NULL) {
+  while (dp != NULL) {
     now = sys_now();
-    if(dp->time <= now) {
+    if (dp->time <= now) {
       DEBUGF(DELIF_DEBUG, ("delif_output_timeout: now %u dp->time %u\n",
 	     now, dp->time));
       delif->netif->output(delif->netif, dp->p, dp->ipaddr);
-      if(dp->next != NULL) {
-	if(dp->next->time > now) {
+      if (dp->next != NULL) {
+	if (dp->next->time > now) {
 	  timeout = dp->next->time - now;
 	} else {
 	  timeout = 0;
@@ -165,7 +165,7 @@ delif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
   DEBUGF(DELIF_DEBUG, ("delif_output\n"));
     
 #ifdef DELIF_OUTPUT_DROPRATE
-  if(((double)rand()/(double)RAND_MAX) < DELIF_OUTPUT_DROPRATE) {
+  if (((double)rand()/(double)RAND_MAX) < DELIF_OUTPUT_DROPRATE) {
     DEBUGF(DELIF_DEBUG, ("delif_output: Packet dropped\n"));
     return 0;
   }
@@ -194,7 +194,7 @@ delif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
   dp->ipaddr = ipaddr;
   dp->time = sys_now() + DELIF_OUTPUT_DELAY;
   dp->next = NULL;
-  if(output_list == NULL) {
+  if (output_list == NULL) {
     output_list = dp;
   } else {
     for(np = output_list; np->next != NULL; np = np->next);
@@ -214,7 +214,7 @@ delif_input(struct pbuf *p, struct netif *inp)
 
   DEBUGF(DELIF_DEBUG, ("delif_input\n"));
 #ifdef DELIF_INPUT_DROPRATE
-  if(((double)rand()/(double)RAND_MAX) < DELIF_INPUT_DROPRATE) {
+  if (((double)rand()/(double)RAND_MAX) < DELIF_INPUT_DROPRATE) {
     DEBUGF(DELIF_DEBUG, ("delif_input: Packet dropped\n"));
     pbuf_free(p);
     return ERR_OK;
@@ -226,7 +226,7 @@ delif_input(struct pbuf *p, struct netif *inp)
   dp->p = p;
   dp->time = sys_now() + DELIF_INPUT_DELAY;
   dp->next = NULL;
-  if(input_list == NULL) {
+  if (input_list == NULL) {
     input_list = dp;
   } else {
     for(np = input_list; np->next != NULL; np = np->next);

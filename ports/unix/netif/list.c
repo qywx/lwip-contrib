@@ -61,15 +61,15 @@ list_push(struct list *list, void *data)
 {
   struct elem *elem;
   
-  if(list->elems < list->size) {
+  if (list->elems < list->size) {
     elem = malloc(sizeof(struct elem));
     elem->data = data;
     elem->next = NULL;
-    if(list->last != NULL) {
+    if (list->last != NULL) {
       list->last->next = elem;
     }
     list->last = elem;
-    if(list->first == NULL) {
+    if (list->first == NULL) {
       list->first = elem;
     }
     list->elems++;
@@ -84,9 +84,9 @@ list_pop(struct list *list)
   struct elem *elem;
   void *data;
   
-  if(list->elems > 0) {    
+  if (list->elems > 0) {    
     elem = list->first;
-    if(elem == list->last) {
+    if (elem == list->last) {
       list->last = elem->next;
     }
     list->first = elem->next;
@@ -116,7 +116,7 @@ list_elems(struct list *list)
 void
 list_delete(struct list *list)
 {
-  while(list_pop(list) != NULL);
+  while (list_pop(list) != NULL);
   free(list);
 }
 /*-----------------------------------------------------------------------------------*/
@@ -127,15 +127,15 @@ list_remove(struct list *list, void *elem)
   
   p = NULL;
   for(e = list->first; e != NULL; e = e->next) {
-    if(e->data == elem) {
-      if(p != NULL) {
+    if (e->data == elem) {
+      if (p != NULL) {
         p->next = e->next;
       } else {
         list->first = e->next;
       }
-      if(list->last == e) {
+      if (list->last == e) {
         list->last = p;
-        if(p != NULL) {
+        if (p != NULL) {
           p->next = NULL;
         }
       }

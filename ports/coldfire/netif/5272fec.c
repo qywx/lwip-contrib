@@ -423,7 +423,7 @@ mcf5272fecif_output(struct netif *netif, struct pbuf *p,
                     struct ip_addr *ipaddr)
 {
     p = etharp_output(netif, ipaddr, p);
-    if(p != NULL) {
+    if (p != NULL) {
         low_level_output(netif, p);
     }
     return ERR_OK;
@@ -441,7 +441,7 @@ eth_input(struct pbuf *p, struct netif *netif)
 
     ethhdr = p->payload;
     
-    switch(htons(ethhdr->type)) {
+    switch (htons(ethhdr->type)) {
       case ETHTYPE_IP:
         q = etharp_ip_input(netif, p);
         pbuf_header(p, -14);
@@ -454,7 +454,7 @@ eth_input(struct pbuf *p, struct netif *netif)
         pbuf_free(p);
         break;
     }
-    if(q != NULL) {
+    if (q != NULL) {
         low_level_output(netif, q);
         pbuf_free(q);
   }
@@ -737,7 +737,7 @@ etharp_timer_thread(void *arg)
 
     tx_sem = sys_sem_new(0);
 
-    while(1)
+    while (1)
     {
         sys_sem_wait(tx_sem);
         mcf5272fec_tx_cleanup();

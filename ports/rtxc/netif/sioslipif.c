@@ -74,7 +74,7 @@ sioslipif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
   for(q = p; q != NULL; q = q->next) {
     for(i = 0; i < q->len; i++) {
       c = ((u8_t *)q->payload)[i];
-      switch(c) {
+      switch (c) {
       case SLIP_END:
         sio_send(SLIP_ESC);
         sio_send(SLIP_ESC_END);
@@ -105,11 +105,11 @@ sioslipif_input(void)
   q = p;
   recved = i = 0;
   
-  while(1) {
+  while (1) {
     c = sio_recv();
-    switch(c) {
+    switch (c) {
     case SLIP_END:
-      if(recved > 0) {
+      if (recved > 0) {
         /* Received whole packet. */
         pbuf_realloc(p, recved);
         return p;
@@ -117,7 +117,7 @@ sioslipif_input(void)
       break;
     case SLIP_ESC:
       c = sio_recv();
-      switch(c) {
+      switch (c) {
       case SLIP_ESC_END:
         c = SLIP_END;
         break;
@@ -127,11 +127,11 @@ sioslipif_input(void)
       }
       /* FALLTHROUGH */
     default:
-      if(recved < p->tot_len && q != NULL) {
+      if (recved < p->tot_len && q != NULL) {
         ((u8_t *)q->payload)[i] = c;
         recved++;
         i++;
-        if(i >= q->len) {
+        if (i >= q->len) {
           i = 0;
           q = q->next;
         }
@@ -149,7 +149,7 @@ sioslipif_loop(void)
   struct netif *netif;
 
   netif = netif_pass;
-  while(1) {
+  while (1) {
     p = sioslipif_input();    
     netif->input(p, netif);
   }

@@ -80,9 +80,9 @@ main(int argc, char **argv)
   printf("Applications started.\n");
     
 
-  while(1) {
+  while (1) {
     
-    if(mintapif_wait(netif, 100) == MINTAPIF_TIMEOUT) {
+    if (mintapif_wait(netif, 100) == MINTAPIF_TIMEOUT) {
       tcp_tmr();
     }
     

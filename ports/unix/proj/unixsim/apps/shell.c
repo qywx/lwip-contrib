@@ -229,7 +229,7 @@ com_open(struct command *com)
   int i;
   err_t err;
 
-  if(inet_aton(com->args[0], (struct in_addr *)&ipaddr) == -1) {
+  if (inet_aton(com->args[0], (struct in_addr *)&ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
@@ -238,7 +238,7 @@ com_open(struct command *com)
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
-  if(i == NCONNS) {
+  if (i == NCONNS) {
     sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
@@ -250,12 +250,12 @@ com_open(struct command *com)
   sendstr("\n", com->conn);
 
   conns[i] = netconn_new(NETCONN_TCP);
-  if(conns[i] == NULL) {    
+  if (conns[i] == NULL) {    
     sendstr("Could not create connection identifier (out of memory).\n", com->conn); 
     return ESUCCESS;
   }
   err = netconn_connect(conns[i], &ipaddr, port);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     fprintf(stderr, "error %s\n", lwip_strerr(err));
     sendstr("Could not connect to remote host: ", com->conn);
 #ifdef LWIP_DEBUG
@@ -288,7 +288,7 @@ com_lstn(struct command *com)
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
-  if(i == NCONNS) {
+  if (i == NCONNS) {
     sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
@@ -298,13 +298,13 @@ com_lstn(struct command *com)
   sendstr("\n", com->conn);
 
   conns[i] = netconn_new(NETCONN_TCP);
-  if(conns[i] == NULL) {    
+  if (conns[i] == NULL) {    
     sendstr("Could not create connection identifier (out of memory).\n", com->conn); 
     return ESUCCESS;
   }
   
   err = netconn_bind(conns[i], IP_ADDR_ANY, port);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;
     sendstr("Could not bind: ", com->conn);
@@ -318,7 +318,7 @@ com_lstn(struct command *com)
   }
   
   err = netconn_listen(conns[i]);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;
     sendstr("Could not listen: ", com->conn);
@@ -347,17 +347,17 @@ com_clos(struct command *com)
   
   i = strtol(com->args[0], NULL, 10);
 
-  if(i > NCONNS) {
+  if (i > NCONNS) {
     sendstr("Connection identifier too high.\n", com->conn);
     return ESUCCESS;
   }
-  if(conns[i] == NULL) {
+  if (conns[i] == NULL) {
     sendstr("Connection identifier not in use.\n", com->conn);
     return ESUCCESS;
   }
 
   err = netconn_close(conns[i]);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     sendstr("Could not close connection: ", com->conn);
 #ifdef LWIP_DEBUG
     sendstr(lwip_strerr(err), com->conn);
@@ -382,25 +382,25 @@ com_acpt(struct command *com)
   /* Find the first unused connection in conns. */
   for(j = 0; j < NCONNS && conns[j] != NULL; j++);
 
-  if(j == NCONNS) {
+  if (j == NCONNS) {
     sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
 
   i = strtol(com->args[0], NULL, 10);
 
-  if(i > NCONNS) {
+  if (i > NCONNS) {
     sendstr("Connection identifier too high.\n", com->conn);
     return ESUCCESS;
   }
-  if(conns[i] == NULL) {
+  if (conns[i] == NULL) {
     sendstr("Connection identifier not in use.\n", com->conn);
     return ESUCCESS;
   }
 
   conns[j] = netconn_accept(conns[i]);
   
-  if(conns[j] == NULL) {
+  if (conns[j] == NULL) {
     sendstr("Could not accept connection: ", com->conn);
 #ifdef LWIP_DEBUG
     sendstr(lwip_strerr(netconn_err(conns[i])), com->conn);
@@ -445,12 +445,12 @@ com_send(struct command *com)
   
   i = strtol(com->args[0], NULL, 10);
 
-  if(i > NCONNS) {
+  if (i > NCONNS) {
     sendstr("Connection identifier too high.\n", com->conn);
     return ESUCCESS;
   }
 
-  if(conns[i] == NULL) {
+  if (conns[i] == NULL) {
     sendstr("Connection identifier not in use.\n", com->conn);
     return ESUCCESS;
   }
@@ -461,7 +461,7 @@ com_send(struct command *com)
   com->args[1][len + 2] = 0;
   
   err = netconn_write(conns[i], com->args[1], len + 3, NETCONN_COPY);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     sendstr("Could not send data: ", com->conn);
 #ifdef LWIP_DEBUG
     sendstr(lwip_strerr(err), com->conn);
@@ -486,18 +486,18 @@ com_recv(struct command *com)
   
   i = strtol(com->args[0], NULL, 10);
 
-  if(i > NCONNS) {
+  if (i > NCONNS) {
     sendstr("Connection identifier too high.\n", com->conn);
     return ESUCCESS;
   }
 
-  if(conns[i] == NULL) {
+  if (conns[i] == NULL) {
     sendstr("Connection identifier not in use.\n", com->conn);
     return ESUCCESS;
   }
 
   buf = netconn_recv(conns[i]);
-  if(buf != NULL) {
+  if (buf != NULL) {
       
     netbuf_copy(buf, buffer, 1024);
     len = netbuf_len(buf);
@@ -508,7 +508,7 @@ com_recv(struct command *com)
     sendstr("EOF.\n", com->conn); 
   }
   err = netconn_err(conns[i]);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     sendstr("Could not receive data: ", com->conn);
 #ifdef LWIP_DEBUG
     sendstr(lwip_strerr(err), com->conn);
@@ -530,7 +530,7 @@ com_udpc(struct command *com)
   err_t err;
 
   lport = strtol(com->args[0], NULL, 10);
-  if(inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
+  if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
@@ -539,7 +539,7 @@ com_udpc(struct command *com)
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
-  if(i == NCONNS) {
+  if (i == NCONNS) {
     sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
@@ -553,13 +553,13 @@ com_udpc(struct command *com)
   sendstr("\n", com->conn);
 
   conns[i] = netconn_new(NETCONN_UDP);
-  if(conns[i] == NULL) {    
+  if (conns[i] == NULL) {    
     sendstr("Could not create connection identifier (out of memory).\n", com->conn); 
     return ESUCCESS;
   }
 
   err = netconn_connect(conns[i], &ipaddr, rport);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;
     sendstr("Could not connect to remote host: ", com->conn);
@@ -573,7 +573,7 @@ com_udpc(struct command *com)
   }
 
   err = netconn_bind(conns[i], IP_ADDR_ANY, lport);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;
     sendstr("Could not bind: ", com->conn);
@@ -602,7 +602,7 @@ com_udpl(struct command *com)
   err_t err;
 
   lport = strtol(com->args[0], NULL, 10);
-  if(inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
+  if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
@@ -611,7 +611,7 @@ com_udpl(struct command *com)
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
-  if(i == NCONNS) {
+  if (i == NCONNS) {
     sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
@@ -625,13 +625,13 @@ com_udpl(struct command *com)
   sendstr("\n", com->conn);
 
   conns[i] = netconn_new(NETCONN_UDPLITE);
-  if(conns[i] == NULL) {    
+  if (conns[i] == NULL) {    
     sendstr("Could not create connection identifier (out of memory).\n", com->conn); 
     return ESUCCESS;
   }
 
   err = netconn_connect(conns[i], &ipaddr, rport);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;
     sendstr("Could not connect to remote host: ", com->conn);
@@ -645,7 +645,7 @@ com_udpl(struct command *com)
   }
 
   err = netconn_bind(conns[i], IP_ADDR_ANY, lport);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;
     sendstr("Could not bind: ", com->conn);
@@ -674,7 +674,7 @@ com_udpn(struct command *com)
   err_t err;
 
   lport = strtol(com->args[0], NULL, 10);
-  if(inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
+  if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
@@ -683,7 +683,7 @@ com_udpn(struct command *com)
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
-  if(i == NCONNS) {
+  if (i == NCONNS) {
     sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
@@ -697,13 +697,13 @@ com_udpn(struct command *com)
   sendstr("\n", com->conn);
 
   conns[i] = netconn_new(NETCONN_UDPNOCHKSUM);
-  if(conns[i] == NULL) {    
+  if (conns[i] == NULL) {    
     sendstr("Could not create connection identifier (out of memory).\n", com->conn); 
     return ESUCCESS;
   }
 
   err = netconn_connect(conns[i], &ipaddr, rport);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;
     sendstr("Could not connect to remote host: ", com->conn);
@@ -717,7 +717,7 @@ com_udpn(struct command *com)
   }
 
   err = netconn_bind(conns[i], IP_ADDR_ANY, lport);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;
     sendstr("Could not bind: ", com->conn);
@@ -747,7 +747,7 @@ com_udpb(struct command *com)
   struct ip_addr bcaddr;
 
   lport = strtol(com->args[0], NULL, 10);
-  if(inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
+  if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
@@ -756,7 +756,7 @@ com_udpb(struct command *com)
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
 
-  if(i == NCONNS) {
+  if (i == NCONNS) {
     sendstr("No more connections available, sorry.\n", com->conn);
     return ESUCCESS;
   }
@@ -768,13 +768,13 @@ com_udpb(struct command *com)
   sendstr("\n", com->conn);
 
   conns[i] = netconn_new(NETCONN_UDP);
-  if(conns[i] == NULL) {    
+  if (conns[i] == NULL) {    
     sendstr("Could not create connection identifier (out of memory).\n", com->conn); 
     return ESUCCESS;
   }
 
   err = netconn_connect(conns[i], &ipaddr, rport);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;
     sendstr("Could not connect to remote host: ", com->conn);
@@ -789,7 +789,7 @@ com_udpb(struct command *com)
 
   IP4_ADDR(&bcaddr, 255,255,255,255);
   err = netconn_bind(conns[i], &bcaddr, lport);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;
     sendstr("Could not bind: ", com->conn);
@@ -819,26 +819,26 @@ com_usnd(struct command *com)
   
   i = strtol(com->args[0], NULL, 10);
 
-  if(i > NCONNS) {
+  if (i > NCONNS) {
     sendstr("Connection identifier too high.\n", com->conn);
     return ESUCCESS;
   }
 
-  if(conns[i] == NULL) {
+  if (conns[i] == NULL) {
     sendstr("Connection identifier not in use.\n", com->conn);
     return ESUCCESS;
   }
 
   buf = netbuf_new();
   mem = netbuf_alloc(buf, strlen(com->args[1]) + 1);
-  if(mem == NULL) {
+  if (mem == NULL) {
     sendstr("Could not allocate memory for sending.\n", com->conn);
     return ESUCCESS;
   }
   strncpy(mem, com->args[1], strlen(com->args[1]) + 1);
   err = netconn_send(conns[i], buf);
   netbuf_delete(buf);
-  if(err != ERR_OK) {
+  if (err != ERR_OK) {
     sendstr("Could not send data: ", com->conn);
 #ifdef LWIP_DEBUG
     sendstr(lwip_strerr(err), com->conn);
@@ -866,86 +866,86 @@ parse_command(struct command *com, u32_t len)
   u16_t i;
   u16_t bufp;
   
-  if(strncmp((const char *)buffer, "open", 4) == 0) {
+  if (strncmp((const char *)buffer, "open", 4) == 0) {
     com->exec = com_open;
     com->nargs = 2;
-  } else if(strncmp((const char *)buffer, "lstn", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "lstn", 4) == 0) {
     com->exec = com_lstn;
     com->nargs = 1;
-  } else if(strncmp((const char *)buffer, "acpt", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "acpt", 4) == 0) {
     com->exec = com_acpt;
     com->nargs = 1;
-  } else if(strncmp((const char *)buffer, "clos", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "clos", 4) == 0) {
     com->exec = com_clos;
     com->nargs = 1;
-  } else if(strncmp((const char *)buffer, "stat", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "stat", 4) == 0) {
     com->exec = com_stat;
     com->nargs = 0;
-  } else if(strncmp((const char *)buffer, "send", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "send", 4) == 0) {
     com->exec = com_send;
     com->nargs = 2;
-  } else if(strncmp((const char *)buffer, "recv", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "recv", 4) == 0) {
     com->exec = com_recv;
     com->nargs = 1;
-  } else if(strncmp((const char *)buffer, "udpc", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "udpc", 4) == 0) {
     com->exec = com_udpc;
     com->nargs = 3;
-  } else if(strncmp((const char *)buffer, "udpb", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "udpb", 4) == 0) {
     com->exec = com_udpb;
     com->nargs = 2;
-  } else if(strncmp((const char *)buffer, "udpl", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "udpl", 4) == 0) {
     com->exec = com_udpl;
     com->nargs = 3;
-  } else if(strncmp((const char *)buffer, "udpn", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "udpn", 4) == 0) {
     com->exec = com_udpn;
     com->nargs = 3;
-  } else if(strncmp((const char *)buffer, "usnd", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "usnd", 4) == 0) {
     com->exec = com_usnd;
     com->nargs = 2;
-  } else if(strncmp((const char *)buffer, "help", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "help", 4) == 0) {
     com->exec = com_help;
     com->nargs = 0;
-  } else if(strncmp((const char *)buffer, "quit", 4) == 0) {
+  } else if (strncmp((const char *)buffer, "quit", 4) == 0) {
     printf("quit\n");
     return ECLOSED;
   } else {
     return ESYNTAX;
   }
 
-  if(com->nargs == 0) {
+  if (com->nargs == 0) {
     return ESUCCESS;
   }
   bufp = 0;
   for(; bufp < len && buffer[bufp] != ' '; bufp++);
   for(i = 0; i < 10; i++) {
     for(; bufp < len && buffer[bufp] == ' '; bufp++);
-    if(buffer[bufp] == '\r' ||
+    if (buffer[bufp] == '\r' ||
        buffer[bufp] == '\n') {
       buffer[bufp] = 0;
-      if(i < com->nargs - 1) {
+      if (i < com->nargs - 1) {
 	return ETOOFEW;
       }
-      if(i > com->nargs - 1) {
+      if (i > com->nargs - 1) {
 	return ETOOMANY;
       }
       break;
     }    
-    if(bufp > len) {
+    if (bufp > len) {
       return ETOOFEW;
     }    
     com->args[i] = (char *)&buffer[bufp];
     for(; bufp < len && buffer[bufp] != ' ' && buffer[bufp] != '\r' &&
 	  buffer[bufp] != '\n'; bufp++) {
-      if(buffer[bufp] == '\\') {
+      if (buffer[bufp] == '\\') {
 	buffer[bufp] = ' ';
       }
     }
-    if(bufp > len) {
+    if (bufp > len) {
       return ESYNTAX;
     }
     buffer[bufp] = 0;
     bufp++;
-    if(i == com->nargs - 1) {
+    if (i == com->nargs - 1) {
       break;
     }
 
@@ -957,7 +957,7 @@ parse_command(struct command *com, u32_t len)
 static void
 error(s8_t err, struct netconn *conn)
 {
-  switch(err) {
+  switch (err) {
   case ESYNTAX:
     sendstr("## Syntax error\n", conn);
     break;
@@ -987,22 +987,22 @@ shell_main(struct netconn *conn)
   
   do {
     buf = netconn_recv(conn);
-    if(buf != NULL) {
+    if (buf != NULL) {
       netbuf_copy(buf, buffer, 1024);
       len = netbuf_len(buf);
       netbuf_delete(buf);
-      if(len >= 4) {
-	if(buffer[0] != 0xff && 
+      if (len >= 4) {
+	if (buffer[0] != 0xff && 
 	   buffer[1] != 0xfe) {
 	  err = parse_command(&com, len);
-	  if(err == ESUCCESS) {	
+	  if (err == ESUCCESS) {	
 	    com.conn = conn;
 	    err = com.exec(&com);
 	  }
-	  if(err != ESUCCESS) {
+	  if (err != ESUCCESS) {
 	    error(err, conn);
 	  }
-	  if(err == ECLOSED) {
+	  if (err == ECLOSED) {
 	    printf("Closed\n");
 	    error(err, conn);
 	    goto close;
@@ -1016,16 +1016,16 @@ shell_main(struct netconn *conn)
 	}
       }
     }
-    if(buf != NULL) {
+    if (buf != NULL) {
       prompt(conn);
     }
-  } while(buf != NULL);
+  } while (buf != NULL);
   printf("buf == NULL err %s\n", lwip_strerr(conn->err));
  close:  
   netconn_close(conn);
   
   for(i = 0; i < NCONNS; i++) {
-    if(conns[i] != NULL) {
+    if (conns[i] != NULL) {
       netconn_delete(conns[i]);
     }
     conns[i] = NULL;
@@ -1042,7 +1042,7 @@ shell_thread(void *arg)
   netconn_bind(conn, NULL, 23);
   netconn_listen(conn);
 
-  while(1) {
+  while (1) {
     newconn = netconn_accept(conn);
     shell_main(newconn);
     netconn_delete(newconn);
