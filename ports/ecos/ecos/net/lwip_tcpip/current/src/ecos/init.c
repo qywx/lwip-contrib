@@ -56,7 +56,7 @@
 #include <cyg/hal/hal_if.h>
 #include <cyg/infra/diag.h>
 
-#ifdef CYGPKG_IO_ETH_DRIVERS
+#ifdef CYGPKG_LWIP_ETH
 #include "netif/etharp.h"
 
 #include <cyg/io/eth/eth_drv.h>
@@ -182,7 +182,7 @@ lwip_set_addr(struct netif *netif)
 	//netif->input = ip_input;
 }
 
-#ifdef CYGPKG_IO_ETH_DRIVERS
+#ifdef CYGPKG_LWIP_ETH
 //io eth stuff
 
 cyg_sem_t delivery;
@@ -255,4 +255,4 @@ ecosglue_init(void)
   sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
 }
 
-#endif //CYGPKG_IO_ETH_DRIVERS
+#endif //CYGPKG_LWIP_ETH

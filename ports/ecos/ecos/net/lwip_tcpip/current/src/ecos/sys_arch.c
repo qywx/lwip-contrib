@@ -30,7 +30,7 @@
 //####ECOSGPLCOPYRIGHTEND####
 //==========================================================================
 // Author: Jani Monoses
-// Contributors: Claudio Leonel
+// Contributors: Claudio Leonel Salvadori
 //
 
 /* 
@@ -84,8 +84,6 @@ void sys_init(void)
 	threads = NULL;
 	to.next = NULL;
 }
-
-/*------------------------------------ Message boxes ----------------------------------------*/
 
 /*
  * Create a new mbox.If no memory is available return NULL 
@@ -171,8 +169,6 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t mbox, void **data, u32_t timeout)
 
 	return tick_to_msec(end_time - start_time);	
 }
-
-/*----------------------------------------- Semaphores ------------------------------------ */
 
 /*
  * Create a new semaphore and initialize it.
