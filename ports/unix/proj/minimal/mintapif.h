@@ -39,7 +39,7 @@ enum mintapif_signal {
   MINTAPIF_PACKET
 };
 
-void mintapif_init(struct netif *netif);
+err_t mintapif_init(struct netif *netif);
 enum mintapif_signal mintapif_wait(struct netif *netif, u16_t time);
 
 #endif /* __MINTAPIF_H__ */

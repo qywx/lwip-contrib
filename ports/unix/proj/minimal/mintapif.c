@@ -296,7 +296,7 @@ mintapif_input(struct netif *netif)
  *
  */
 /*-----------------------------------------------------------------------------------*/
-void
+err_t
 mintapif_init(struct netif *netif)
 {
   struct mintapif *mintapif;
