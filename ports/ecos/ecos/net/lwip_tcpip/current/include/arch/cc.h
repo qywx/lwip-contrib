@@ -94,6 +94,7 @@ typedef unsigned long	mem_ptr_t;
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_END
 
+#include <cyg/infra/diag.h>
 #include <cyg/infra/cyg_ass.h>
 #define LWIP_PLATFORM_DIAG(x)	{diag_printf x;}
 #define LWIP_PLATFORM_ASSERT(x) {CYG_FAIL(x);}
