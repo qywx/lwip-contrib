@@ -79,6 +79,8 @@ tcpip_init_done(void *arg)
   sys_sem_signal(*sem);
 }
 /*-----------------------------------------------------------------------------------*/
+struct netif netif_unix;
+
 static void
 main_thread(void *arg)
 {
@@ -90,7 +92,7 @@ main_thread(void *arg)
   IP4_ADDR(&ipaddr, 192,168,1,2);
   IP4_ADDR(&netmask, 255,255,255,0);
 
-  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, unixif_init_client,
+  netif_set_default(netif_add(&netif_unix, &ipaddr, &netmask, &gw, NULL, unixif_init_client,
 			      tcpip_input));
   /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, sioslipif_init1,
 			      tcpip_input)); */
