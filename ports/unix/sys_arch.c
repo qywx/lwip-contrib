@@ -186,7 +186,7 @@ sys_mbox_new()
   mbox->mutex = sys_sem_new_(1);
   mbox->wait_send = 0;
   
-#ifdef SYS_STATS
+#if SYS_STATS
   lwip_stats.sys.mbox.used++;
   if (lwip_stats.sys.mbox.used > lwip_stats.sys.mbox.max) {
     lwip_stats.sys.mbox.max = lwip_stats.sys.mbox.used;
@@ -200,7 +200,7 @@ void
 sys_mbox_free(struct sys_mbox *mbox)
 {
   if (mbox != SYS_MBOX_NULL) {
-#ifdef SYS_STATS
+#if SYS_STATS
     lwip_stats.sys.mbox.used--;
 #endif /* SYS_STATS */
     sys_sem_wait(mbox->mutex);
@@ -295,7 +295,7 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
 struct sys_sem *
 sys_sem_new(u8_t count)
 {
-#ifdef SYS_STATS
+#if SYS_STATS
   lwip_stats.sys.sem.used++;
   if (lwip_stats.sys.sem.used > lwip_stats.sys.sem.max) {
     lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
@@ -406,7 +406,7 @@ void
 sys_sem_free(struct sys_sem *sem)
 {
   if (sem != SYS_SEM_NULL) {
-#ifdef SYS_STATS
+#if SYS_STATS
     lwip_stats.sys.sem.used--;
 #endif /* SYS_STATS */
     sys_sem_free_(sem);
