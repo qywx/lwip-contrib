@@ -2,7 +2,7 @@
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
  * All rights reserved. 
  *
- * Copyright (c) 2001, 2002 Xilinx, Inc.
+ * Copyright (c) 2001, 2002, 2003 Xilinx, Inc.
  * All rights reserved. 
  * 
  * Redistribution and use in source and binary forms, with or without 
@@ -54,7 +54,6 @@
 #include "xemac.h"
 #include "xparameters.h"
 #include "xstatus.h"
-//#include "xintc.h"
 #include "xexception_l.h"
 
 /*---------------------------------------------------------------------------*/
@@ -91,11 +90,6 @@ extern XEmacIf_Config XEmacIf_ConfigTable[];
 static err_t xemacif_output(struct netif *netif, struct pbuf *p,
                 struct ip_addr *ipaddr);
 
-#ifdef LWIP_XEMAC_USE_INTMODE
-static void FifoSendHandler(void *CallBackRef);
-static void ErrorHandler(void *CallBackRef, XStatus Code);
-#endif /* LWIP_XEMAC_USE_INTMODE */
-
 /*---------------------------------------------------------------------------*/
 /* low_level_init function                                                   */
 /*    - hooks up the data structures and sets the mac options and mac        */
@@ -114,13 +108,6 @@ low_level_init(struct netif *netif_ptr)
    /* Call Initialize Function of EMAC driver */
    Result = XEmac_Initialize(InstancePtr, DeviceId);
    if (Result != XST_SUCCESS) return ERR_MEM;
-
-   /* Do self-test */
-/*   Result = XEmac_SelfTest(InstancePtr);
-   if (Result != XST_SUCCESS) {
-      return ERR_MEM;
-   }
-*/
 
    /* Stop the EMAC hardware */
    XEmac_Stop(InstancePtr);
@@ -150,54 +137,6 @@ low_level_init(struct netif *netif_ptr)
    
    return ERR_OK;
 }
-
-#ifdef LWIP_XEMAC_USE_INTMODE
-/*---------------------------------------------------------------------------*/
-/* FifoSendHandler()                                                         */
-/*                                                                           */
-/* Checks for Tx Errors                                                      */
-/* TODO: Add actions.  Nothing happens if an error is found.                 */
-/*                                                                           */
-/*---------------------------------------------------------------------------*/
-static void FifoSendHandler(void *CallBackRef)
-{
-   struct netif *netif_ptr = (struct netif *) CallBackRef;
-   XEmac *EmacPtr = ((XEmacIf_Config*) netif_ptr->state)->instance_ptr;
-   XEmacStats Stats;
-    
-   /*
-   * Check stats for transmission errors (overrun or underrun errors are
-   * caught by the asynchronous error handler).
-   */
-   XEmac_GetStats(EmacPtr, &Stats);
-   if (Stats.XmitLateCollisionErrors || Stats.XmitExcessDeferral)
-      ;
-}
-
-/*---------------------------------------------------------------------------*/
-/* ErrorHandler()                                                            */
-/*                                                                           */
-/* Resets the MAC hardware is an error occurs                                */
-/*---------------------------------------------------------------------------*/
-static void ErrorHandler(void *CallBackRef, XStatus Code)
-{
-   struct netif *netif_ptr = (struct netif *) CallBackRef;
-   XEmac *EmacPtr = ((XEmacIf_Config*) netif_ptr->state)->instance_ptr;
-    
-   if (Code == XST_RESET_ERROR) {
-      /*
-       * A reset error means the application should reset the device because
-       * it encountered a reset condition (most likely a FIFO overrun, but
-       * can be other reasons).  You can look at the XEmac statistics to
-       * see what the error is.
-       */
-      XEmac_Reset(EmacPtr);
-      (void)XEmac_SetMacAddress(EmacPtr, (Xuint8*) netif_ptr->hwaddr);
-      (void)XEmac_SetOptions(EmacPtr,XEM_UNICAST_OPTION|XEM_BROADCAST_OPTION);
-      (void)XEmac_Start(EmacPtr);
-   }
-}
-#endif /* LWIP_XEMAC_USE_INTMODE */
 
 /*---------------------------------------------------------------------------*/
 /* low_level_output()                                                        */
@@ -230,19 +169,9 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
       }
    }
 
-#ifdef LWIP_XEMAC_USE_INTMODE
-
-   Result = XEmac_FifoSend(xemacif_ptr->instance_ptr, 
-                           (Xuint8 *) frame_buffer,
-                           payload_size);
-
-#else /* LWIP_XEMAC_USE_INTMODE */
-
    Result = XEmac_PollSend(xemacif_ptr->instance_ptr,
                            (Xuint8 *) frame_buffer,
                            payload_size);
-
-#endif /* LWIP_XEMAC_USE_INTMODE */
 
    if (Result != XST_SUCCESS)
    {
@@ -299,11 +228,7 @@ static struct pbuf * low_level_input(XEmacIf_Config *xemacif_ptr)
    u8_t * frame_bytes = (u8_t *) RecvBuffer;
    XStatus Result;
 
-#ifdef LWIP_XEMAC_USE_INTMODE
-   Result = XEmac_FifoRecv(EmacPtr, (Xuint8 *)RecvBuffer, &FrameLen);
-#else
    Result = XEmac_PollRecv(EmacPtr, (Xuint8 *)RecvBuffer, &FrameLen);
-#endif /* LWIP_XEMAC_USE_INTMODE */
 
    if (Result != XST_SUCCESS)
    {
@@ -401,11 +326,6 @@ err_t xemacif_input(void *CallBackRef)
    struct eth_hdr * ethernet_header;
    struct pbuf *p, *q;
 
-#ifdef LWIP_XEMAC_USE_INTMODE
-   /* Disable Interrupts */
-   XIntc_Disable(XIntc_GetInstance(0), XPAR_INTC_0_DEVICE_ID);
-#endif /* LWIP_XEMAC_USE_INTMODE */
-
    xemacif_ptr = netif_ptr->state;
 
    p = low_level_input(xemacif_ptr);
@@ -434,10 +354,6 @@ err_t xemacif_input(void *CallBackRef)
       }
    }
 
-#ifdef LWIP_XEMAC_USE_INTMODE
-   /* Enable Interrupts again */
-   XIntc_Enable(XIntc_GetInstance(0), XPAR_INTC_0_DEVICE_ID);
-#endif /* LWIP_XEMAC_USE_INTMODE */
    return ERR_OK;
 }
 
@@ -478,9 +394,6 @@ u8_t * xemacif_getmac(u32_t index) {
 err_t xemacif_init(struct netif *netif_ptr)
 {
    XEmacIf_Config *xemacif_ptr;
-
-   //struct xemacif *xemacif_ptr;
-   //xemacif_ptr = mem_malloc(sizeof(struct xemacif));
 
    xemacif_ptr = (XEmacIf_Config *) netif_ptr->state;
 
