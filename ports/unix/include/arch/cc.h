@@ -64,4 +64,9 @@ typedef u32_t mem_ptr_t;
 
 #define LWIP_PLATFORM_ASSERT(x) do {printf("Assertion \"%s\" failed at line %d in %s\n", \
                                      x, __LINE__, __FILE__); fflush(NULL); abort();} while(0)
+
+#define SYS_ARCH_DECL_PROTECT(x)
+#define SYS_ARCH_PROTECT(x)
+#define SYS_ARCH_UNPROTECT(x)
+				     
 #endif /* __ARCH_CC_H__ */
