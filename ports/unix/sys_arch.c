@@ -100,7 +100,7 @@ static struct sys_sem *sys_sem_new_(u8_t count);
 static void sys_sem_free_(struct sys_sem *sem);
 
 static u32_t cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex,
-		       u32_t timeout);
+                       u32_t timeout);
 
 /*-----------------------------------------------------------------------------------*/
 static struct sys_thread * 
@@ -158,10 +158,10 @@ sys_thread_new(void (*function)(void *arg), void *arg)
   struct sys_thread *st = NULL;
   
   code = pthread_create(&tmp,
-			NULL, 
-			(void *(*)(void *)) 
-			function, 
-			arg);
+                        NULL, 
+                        (void *(*)(void *)) 
+                        function, 
+                        arg);
   
   if(0 == code) {
     st = introduce_thread(tmp);
@@ -169,7 +169,7 @@ sys_thread_new(void (*function)(void *arg), void *arg)
   
   if(NULL == st) {
     DEBUGF(SYS_DEBUG, ("sys_thread_new: pthread_create %d, st = 0x%x",
-		       code, (int)st));
+                       code, (int)st));
     abort();
   }
   return st;
@@ -267,7 +267,7 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
       
       /* If time == 0, the sem_wait timed out, and we return 0. */
       if(time == 0) {
-	return 0;
+        return 0;
       }
     } else {
       sys_arch_sem_wait(mbox->mail, 0);
@@ -350,10 +350,10 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
       /* Calculate for how long we waited for the cond. */
       gettimeofday(&rtime2, &tz);
       tdiff = (rtime2.tv_sec - rtime1.tv_sec) * 1000 +
-	(rtime2.tv_usec - rtime1.tv_usec) / 1000;
+        (rtime2.tv_usec - rtime1.tv_usec) / 1000;
       
       if(tdiff <= 0) {
-	return 1;
+        return 1;
       }
       
       return tdiff;
@@ -375,11 +375,11 @@ sys_arch_sem_wait(struct sys_sem *sem, u32_t timeout)
       time = cond_wait(&(sem->cond), &(sem->mutex), timeout);
       
       if(time == 0) {
-	pthread_mutex_unlock(&(sem->mutex));
-	return 0;
+        pthread_mutex_unlock(&(sem->mutex));
+        return 0;
       }
       /*      pthread_mutex_unlock(&(sem->mutex));
-	      return time; */
+              return time; */
     } else {
       cond_wait(&(sem->cond), &(sem->mutex), 0);
     }
@@ -455,6 +455,20 @@ sys_arch_timeouts(void)
   return &thread->timeouts;
 }
 /*-----------------------------------------------------------------------------------*/
+/** sys_prot_t sys_arch_protect(void)
+
+This optional function does a "fast" critical region protection and returns
+the previous protection level. This function is only called during very short
+critical regions. An embedded system which supports ISR-based drivers might
+want to implement this function by disabling interrupts. Task-based systems
+might want to implement this by using a mutex or disabling tasking. This
+function should support recursive calls from the same task or interrupt. In
+other words, sys_arch_protect() could be called while already protected. In
+that case the return value indicates that it is already protected.
+
+sys_arch_protect() is only required if your port is supporting an operating
+system.
+*/
 sys_prot_t
 sys_arch_protect(void)
 {
@@ -475,6 +489,13 @@ sys_arch_protect(void)
     return 0;
 }
 /*-----------------------------------------------------------------------------------*/
+/** void sys_arch_unprotect(sys_prot_t pval)
+
+This optional function does a "fast" set of critical region protection to the
+value specified by pval. See the documentation for sys_arch_protect() for
+more information. This function is only required if your port is supporting
+an operating system.
+*/
 void
 sys_arch_unprotect(sys_prot_t pval)
 {

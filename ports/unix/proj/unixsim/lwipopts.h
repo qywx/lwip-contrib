@@ -92,8 +92,11 @@ a lot of data that needs to be copied, this should be set high. */
    link level header. */
 #define PBUF_LINK_HLEN          16
 
-/* SYS_LIGHTWEIGHT_PROT: Define this macro if pbuf_alloc() function is called from
-   an ISR or multiple tasks and you need extra (and faster) critical region protection. */
+/** SYS_LIGHTWEIGHT_PROT
+ * define SYS_LIGHTWEIGHT_PROT in lwipopts.h if you want inter-task protection
+ * for certain critical regions during buffer allocation, deallocation and memory
+ * allocation and deallocation.
+ */
 /*#define SYS_LIGHTWEIGHT_PROT           1*/
 
 /* ---------- TCP options ---------- */
