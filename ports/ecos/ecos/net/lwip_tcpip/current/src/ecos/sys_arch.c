@@ -111,7 +111,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t mbox, void **data, u32_t timeout)
 		end_time = cyg_current_time();
 
 		if (d == NULL)
-			return 0xffffffff;
+			return SYS_ARCH_TIMEOUT;
 	} else {
 		d = cyg_mbox_get(mbox);
 	}
@@ -165,7 +165,7 @@ u32_t sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
 		end_time = cyg_current_time();
 
 		if (r == false) {
-			return 0xffffffff;
+			return SYS_ARCH_TIMEOUT;
 		}	
 	} else {
 		cyg_semaphore_wait(sem);

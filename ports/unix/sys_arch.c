@@ -265,9 +265,8 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
     if (timeout != 0) {
       time = sys_arch_sem_wait(mbox->mail, timeout);
       
-      /* If time == 0, the sem_wait timed out, and we return 0. */
-      if (time == 0xffffffff) {
-        return 0xffffffff;
+      if (time == SYS_ARCH_TIMEOUT) {
+        return SYS_ARCH_TIMEOUT;
       }
     } else {
       sys_arch_sem_wait(mbox->mail, 0);
@@ -345,7 +344,7 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
     retval = pthread_cond_timedwait(cond, mutex, &ts);
     
     if (retval == ETIMEDOUT) {
-      return 0xffffffff;
+      return SYS_ARCH_TIMEOUT;
     } else {
       /* Calculate for how long we waited for the cond. */
       gettimeofday(&rtime2, &tz);
@@ -360,7 +359,7 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
     }
   } else {
     pthread_cond_wait(cond, mutex);
-    return 0xffffffff;
+    return SYS_ARCH_TIMEOUT;
   }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -374,9 +373,9 @@ sys_arch_sem_wait(struct sys_sem *sem, u32_t timeout)
     if (timeout > 0) {
       time = cond_wait(&(sem->cond), &(sem->mutex), timeout);
       
-      if (time == 0xffffffff) {
+      if (time == SYS_ARCH_TIMEOUT) {
         pthread_mutex_unlock(&(sem->mutex));
-        return 0xffffffff;
+        return SYS_ARCH_TIMEOUT;
       }
       /*      pthread_mutex_unlock(&(sem->mutex));
               return time; */
