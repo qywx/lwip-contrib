@@ -102,7 +102,12 @@ sys_jiffies(void)
 void 
 ppp_trace(int level, const char *format,...)
 {
-	diag_printf(format);
+    va_list args;
+
+    (void)level;
+    va_start(args, format);
+    diag_vprintf(format, args);
+    va_end(args);
 }	
 #endif
 
