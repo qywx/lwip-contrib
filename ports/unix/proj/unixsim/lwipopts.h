@@ -57,6 +57,8 @@
 #define ICMP_DEBUG              DBG_ON
 #define UDP_DEBUG               DBG_ON
 #define TCP_DEBUG               DBG_ON
+#define TCP_INPUT_DEBUG         DBG_ON
+#define TCP_OUTPUT_DEBUG        DBG_ON
 #define TCP_RTO_DEBUG   DBG_ON
 #define TCP_CWND_DEBUG  DBG_ON
 #define TCP_WND_DEBUG   DBG_ON
