@@ -29,41 +29,21 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef __ARCH_CC_H__
-#define __ARCH_CC_H__
+#ifndef __FSDATA_H__
+#define __FSDATA_H__
 
-/* Include some files for defining library routines */
-#include <string.h>
-#include <ctype.h>
+struct fsdata_file {
+  const struct fsdata_file *next;
+  const unsigned char *name;
+  const unsigned char *data;
+  const int len;
+};
 
-/* Define platform endianness */
-#ifndef BYTE_ORDER
-#define BYTE_ORDER LITTLE_ENDIAN
-#endif /* BYTE_ORDER */
+struct fsdata_file_noconst {
+  struct fsdata_file *next;
+  unsigned char *name;
+  unsigned char *data;
+  int len;
+};
 
-/* Define generic types used in lwIP */
-typedef unsigned   char    u8_t;
-typedef signed     char    s8_t;
-typedef unsigned   short   u16_t;
-typedef signed     short   s16_t;
-typedef unsigned   long    u32_t;
-typedef signed     long    s32_t;
-
-typedef u32_t mem_ptr_t;
-
-/* Compiler hints for packing structures */
-#define PACK_STRUCT_FIELD(x) x
-#define PACK_STRUCT_STRUCT
-#pragma warning(disable: 4103)
-#define PACK_STRUCT_USE_INCLUDES
-
-/* prototypes for printf() and abort() */
-#include <stdio.h>
-#include <stdlib.h>
-/* Plaform specific diagnostic output */
-#define LWIP_PLATFORM_DIAG(x)	do {printf x;} while(0)
-
-#define LWIP_PLATFORM_ASSERT(x) do {printf("Assertion \"%s\" failed at line %d in %s\n", \
-                                     x, __LINE__, __FILE__); fflush(NULL); abort();} while(0)
-
-#endif /* __ARCH_CC_H__ */
+#endif /* __FSDATA_H__ */

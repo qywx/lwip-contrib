@@ -62,17 +62,9 @@
  *
  */
 
-#define WIN32_LEAN_AND_MEAN
 /* get the windows definitions of the following 4 functions out of the way */
-#define htons win_htons
-#define ntohs win_ntons
-#define htonl win_htonl
-#define ntohl win_ntonl
 #include <stdlib.h>
 #include <stdio.h>
-#include <windows.h>
-#include <packet32.h>
-#include <ntddndis.h>
 
 #include "lwip/debug.h"
 
@@ -106,133 +98,10 @@ static err_t ethernetif_output(struct netif *netif, struct pbuf *p,
 
 static struct netif *pktif_netif;
 
-LPADAPTER  lpAdapter;
-LPPACKET   lpPacket;
-char buffer[256000];  // buffer to hold the data coming from the driver
-unsigned char *cur_packet;
-int cur_length;
-
-struct eth_addr ethaddr;
-
-/*-----------------------------------------------------------------------------------*/
-int init_adapter(void)
-{
-  #define Max_Num_Adapter 10
-
-  char AdapterList[Max_Num_Adapter][1024];
-
-	int i;
-	DWORD dwVersion;
-	DWORD dwWindowsMajorVersion;
-
-	//unicode strings (winnt)
-	WCHAR		AdapterName[8192]; // string that contains a list of the network adapters
-	WCHAR		*temp,*temp1;
-
-	//ascii strings (win95)
-	char		AdapterNamea[8192]; // string that contains a list of the network adapters
-	char		*tempa,*temp1a;
-
-	int			AdapterNum=0;
-	ULONG		AdapterLength;
-
-  PPACKET_OID_DATA ppacket_oid_data;
-
-	// obtain the name of the adapters installed on this machine
-	AdapterLength=4096;
-
-  memset(AdapterList,0,sizeof(AdapterList));
-
-  i=0;
-
-	// the data returned by PacketGetAdapterNames is different in Win95 and in WinNT.
-	// We have to check the os on which we are running
-	dwVersion=GetVersion();
-	dwWindowsMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
-	if (!(dwVersion >= 0x80000000 && dwWindowsMajorVersion >= 4))
-	{  // Windows NT
-		if (PacketGetAdapterNames((char *)AdapterName,&AdapterLength)==FALSE){
-			printf("Unable to retrieve the list of the adapters!\n");
-			return -1;
-		}
-		temp=AdapterName;
-		temp1=AdapterName;
-		while ((*temp!='\0')||(*(temp-1)!='\0'))
-		{
-			if (*temp=='\0')
-			{
-				memcpy(AdapterList[i],temp1,(temp-temp1)*2);
-				temp1=temp+1;
-				i++;
-		}
-
-		temp++;
-		}
-
-		AdapterNum=i;
-	}
-
-	else	//windows 95
-	{
-		if (PacketGetAdapterNames(AdapterNamea,&AdapterLength)==FALSE){
-			printf("Unable to retrieve the list of the adapters!\n");
-			return -1;
-		}
-		tempa=AdapterNamea;
-		temp1a=AdapterNamea;
-
-		while ((*tempa!='\0')||(*(tempa-1)!='\0'))
-		{
-			if (*tempa=='\0')
-			{
-				memcpy(AdapterList[i],temp1a,tempa-temp1a);
-				temp1a=tempa+1;
-				i++;
-			}
-			tempa++;
-		}
-
-		AdapterNum=i;
-	}
-
-  if (AdapterNum<=0)
-    return -1;
-
-  ppacket_oid_data=malloc(sizeof(PACKET_OID_DATA)+6);
-  lpAdapter=PacketOpenAdapter(AdapterList[0]);
-	if (!lpAdapter || (lpAdapter->hFile == INVALID_HANDLE_VALUE))
-	  return -1;
-  ppacket_oid_data->Oid=OID_802_3_PERMANENT_ADDRESS;
-  ppacket_oid_data->Length=6;
-  if (!PacketRequest(lpAdapter,FALSE,ppacket_oid_data))
-		return -1;
-  memcpy(ppacket_oid_data->Data,&ethaddr,6);
-  free(ppacket_oid_data);
-	PacketSetBuff(lpAdapter,512000);
-	PacketSetReadTimeout(lpAdapter,1);
-	PacketSetHwFilter(lpAdapter,NDIS_PACKET_TYPE_ALL_LOCAL);
-	if ((lpPacket = PacketAllocatePacket())==NULL){
-		return (-1);
-	}
-	PacketInitPacket(lpPacket,(char*)buffer,256000);
-
-	return 0;
-}
-
-void shutdown_adapter(void)
-{
-  struct ethernetif *ethernetif;
-
-  ethernetif = pktif_netif->state;
-
-	PacketFreePacket(lpPacket);
-	PacketCloseAdapter(lpAdapter);
-}
-
-static void open_adapter(struct ethernetif *ethernetif)
-{
-	memcpy(&ethaddr,ethernetif->ethaddr,6);
-}
+extern unsigned char ethaddr[6];
+extern unsigned char *cur_packet;
+extern int cur_length;
+extern int packet_send(void *buffer, int len);
 
 /*-----------------------------------------------------------------------------------*/
 static void
@@ -242,7 +111,7 @@ low_level_init(struct netif *netif)
 
 	ethernetif = netif->state;
 
-	open_adapter(ethernetif);
+	memcpy(&ethaddr,ethernetif->ethaddr,6);
 
 #ifdef NETIF_DEBUG
 	LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",ethernetif->ethaddr->addr[0],ethernetif->ethaddr->addr[1],ethernetif->ethaddr->addr[2],ethernetif->ethaddr->addr[3],ethernetif->ethaddr->addr[4],ethernetif->ethaddr->addr[5]));
@@ -268,14 +137,10 @@ low_level_output(struct netif *ethernetif, struct pbuf *p)
   struct pbuf *q;
   unsigned char buffer[1600];
 	unsigned char *ptr;
-	LPPACKET lpPacket;
 
   /* initiate transfer(); */
   if (p->tot_len>=1600)
  		return ERR_BUF;
-	if ((lpPacket = PacketAllocatePacket())==NULL)
- 		return ERR_BUF;
-	PacketInitPacket(lpPacket,buffer,p->tot_len);
 	ptr=buffer;
   for(q = p; q != NULL; q = q->next) {
     /* Send the data from the pbuf to the interface, one pbuf at a
@@ -291,9 +156,8 @@ low_level_output(struct netif *ethernetif, struct pbuf *p)
 
   /* signal that packet should be sent(); */
 
-	if (!PacketSendPacket(lpAdapter,lpPacket,TRUE))
-		return ERR_BUF;
-	PacketFreePacket(lpPacket);
+  if (packet_send(buffer, p->tot_len) < 0)
+	  return ERR_BUF;
 
 #ifdef LINK_STATS
   lwip_stats.link.xmit++;
@@ -450,7 +314,7 @@ arp_timer(void *arg)
  *
  */
 /*-----------------------------------------------------------------------------------*/
-void
+err_t
 ethernetif_init(struct netif *netif)
 {
   struct ethernetif *ethernetif;
@@ -463,7 +327,7 @@ ethernetif_init(struct netif *netif)
   netif->output = ethernetif_output;
 
   netif->mtu = 1500;
-  netif->flags = 0;
+  netif->flags = NETIF_FLAG_BROADCAST;
   netif->hwaddr_len = 6;
   ethernetif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
 
@@ -471,6 +335,8 @@ ethernetif_init(struct netif *netif)
   etharp_init();
 
   sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler)arp_timer, NULL);
+  
+  return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
 /*
@@ -480,54 +346,9 @@ ethernetif_init(struct netif *netif)
  * be done inside a thread.
  */
 /*-----------------------------------------------------------------------------------*/
-static void ProcessPackets(LPPACKET lpPacket)
+void process_input(void)
 {
-
-	ULONG	ulLines, ulBytesReceived;
-	char	*base;
-	char	*buf;
-	u_int off=0;
-	u_int tlen,tlen1;
-	struct bpf_hdr *hdr;
-  struct ethernetif *ethernetif;
-
-  ethernetif = pktif_netif->state;
-
-	ulBytesReceived = lpPacket->ulBytesReceived;
-
-	buf = lpPacket->Buffer;
-
-	off=0;
-
-	while (off<ulBytesReceived)
-  {	
-		//if (kbhit())return;
-		hdr=(struct bpf_hdr *)(buf+off);
-		tlen1=hdr->bh_datalen;
-		cur_length=tlen1;
-		tlen=hdr->bh_caplen;
-		off+=hdr->bh_hdrlen;
-
-		ulLines = (tlen + 15) / 16;
-		if (ulLines > 5) ulLines=5;
-
-		base =(char*)(buf+off);
-		cur_packet=base;
-		off=Packet_WORDALIGN(off+tlen);
-
-		ethernetif_input(pktif_netif);
-	}
+  ethernetif_input(pktif_netif);
 }
 
-void update_adapter(void)
-{
-  struct ethernetif *ethernetif;
-
-  ethernetif = pktif_netif->state;
-  
-  if (PacketReceivePacket(lpAdapter,lpPacket,TRUE)==TRUE)
-    ProcessPackets(lpPacket);
-  cur_length=0;
-  cur_packet=NULL;
-}
 

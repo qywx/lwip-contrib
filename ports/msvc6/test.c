@@ -50,12 +50,12 @@
 
 #include "arch/perf.h"
 
-//#include "httpd.h"
+#include "httpd.h"
 //#include "ftpd.h"
 //#include "fs.h"
 
 void ethernetif_init(struct netif *netif);
-int init_adapter(void);
+int init_adapter(int adapter_num);
 void shutdown_adapter(void);
 void update_adapter(void);
 
@@ -121,7 +121,7 @@ void main_loop()
 	IP4_ADDR(&ipaddr, 192,168,0,200);
 	IP4_ADDR(&netmask, 255,255,255,0);
 	
-	if (init_adapter() != 0)
+	if (init_adapter(0) != 0)
 		return;
 
 	netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, ethernetif_init,
@@ -140,7 +140,7 @@ void main_loop()
 	udp_init();
 	ip_init();
 
-	//httpd_init();
+	httpd_init();
 	netio_init();
 	//ftpd_init();
 
