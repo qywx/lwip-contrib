@@ -31,7 +31,6 @@
  */
 
 
-#include "lwip/list.h"
 
 #include <stdlib.h>
 

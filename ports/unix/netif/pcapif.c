@@ -60,7 +60,6 @@
 
 #include "lwip/ip.h"
 
-#include "lwip/list.h"
 
 #include "netif/tcpdump.h"
 

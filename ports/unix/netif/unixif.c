@@ -53,7 +53,6 @@
 #include "netif/unixif.h"
 #include "lwip/sys.h"
 
-#include "lwip/list.h"
 
 #include "netif/tcpdump.h"
 
