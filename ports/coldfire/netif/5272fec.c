@@ -396,8 +396,8 @@ low_level_output(struct netif *netif, struct pbuf *p)
 #ifdef LINK_STATS
         lwip_stats.link.xmit++;
 #endif        
-	/* Indicate that there has been a transmit buffer produced */
-	MCF5272_WR_FEC_TDAR(imm,1);
+        /* Indicate that there has been a transmit buffer produced */
+        MCF5272_WR_FEC_TDAR(imm,1);
         sys_arch_unprotect(old_level);
     }
     return ERR_OK;
@@ -629,7 +629,7 @@ low_level_init(struct netif *netif)
     /* Set the source address for the controller */
     MCF5272_WR_FEC_MALR(imm,0 
                         | (mcf5272->ethaddr->addr[0] <<24) 
-                        | (mcf5272->ethaddr->addr[1] <<16)	
+                        | (mcf5272->ethaddr->addr[1] <<16)      
                         | (mcf5272->ethaddr->addr[2] <<8) 
                         | (mcf5272->ethaddr->addr[3] <<0)); 
     MCF5272_WR_FEC_MAUR(imm,0
@@ -671,7 +671,7 @@ low_level_init(struct netif *netif)
     /* Set the tranceiver interface to MII mode */
     MCF5272_WR_FEC_RCR(imm, 0
                        | MCF5272_FEC_RCR_MII_MODE);
-    /*	| MCF5272_FEC_RCR_DRT); */	/* half duplex */
+    /*  | MCF5272_FEC_RCR_DRT); */      /* half duplex */
 
     /* Only operate in half-duplex, no heart beat control */
     MCF5272_WR_FEC_TCR(imm, 0);
@@ -756,7 +756,7 @@ etharp_timer_init(void *arg)
  * Note that there is only one fec in a 5272!
  *
  */
-void
+err_t
 mcf5272fecif_init(struct netif *netif)
 {
     sys_sem_t sem;
@@ -785,12 +785,10 @@ mcf5272fecif_init(struct netif *netif)
         sys_sem_wait(sem);
         sys_sem_free(sem);
         
-        
+        return ERR_OK;
     }
-    /*
-      else
-         Give some error message if we are out of memory
-    */
+    else
+        return ERR_MEM;
 }
 
 /*-----------------------------------------------------------------------------------*/

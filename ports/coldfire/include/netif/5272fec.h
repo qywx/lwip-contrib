@@ -36,7 +36,7 @@
 #define _5272FEC_H 1
 
 
-void
+err_t
 mcf5272fecif_init(struct netif *netif);
 
 

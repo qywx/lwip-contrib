@@ -198,6 +198,6 @@ a lot of data that needs to be copied, this should be set high. */
 #endif /* STATS */
 
 
-#define LWIP_COMPAT_SOCKETS
-#define LWIP_PROVIDE_ERRNO
+#define LWIP_COMPAT_SOCKETS 1
+#define LWIP_PROVIDE_ERRNO 1
 #endif /* __LWIPOPTS_H__ */
