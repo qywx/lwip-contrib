@@ -611,6 +611,9 @@ void cs8900if_service(struct netif *netif)
  * @param p pbuf to be transmitted (or the first pbuf of a chained list of pbufs).
  * @param ipaddr destination IP address.
  *
+ * @return ERR_OK if the packet was sent or queued. There is no way to
+ * find out if a packet really makes it onto the network link.
+ * 
  * @internal It uses the function cs8900_input() that should handle the actual
  * reception of bytes from the network interface.
  *
@@ -618,22 +621,24 @@ void cs8900if_service(struct netif *netif)
 err_t cs8900if_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
 {
   struct cs8900if *cs8900if = netif->state;
+  err_t result;
   /* resolve the link destination hardware address */
   p = etharp_output(netif, ipaddr, p);
   /* network hardware address obtained? */
   if (p != NULL)
   {
     /* send out the packet */
-    cs8900_output(netif, p);
+    result = cs8900_output(netif, p);
     p = NULL;
   }
-  // { p == NULL }
+  /* { p == NULL } */
   else
   {
     /* we cannot tell if the packet was sent, the packet could have been queued */
     /* on an ARP entry that was already pending. */
+    return ERR_OK;
   }
-  return ERR_OK;
+  return result;
 }
 /**
  * Read a received packet from the CS8900.
