@@ -284,7 +284,9 @@ mcf5272fec_tx_cleanup(void)
     
 
     tx_remove_sof = tx_remove_eof = mcf5272->tx_remove;
-
+    /* We must protect reading the flags and then reading the buffer pointer. They must
+       both be read together. */
+    old_level = sys_arch_protect();
     /* Loop, looking for completed buffers at eof */
     while ((((flags = mcf5272->txbd_a[tx_remove_eof].flags) & MCF5272_FEC_TX_BD_R) == 0) &&
            (mcf5272->tx_pbuf_a[tx_remove_eof] != 0))
@@ -306,7 +308,9 @@ mcf5272fec_tx_cleanup(void)
                     break;
             } while (1);
 
+            sys_arch_unprotect(old_level);
             pbuf_free(p);       // Will be head of chain
+            old_level = sys_arch_protect();
             /* Look at next descriptor */
             INC_TX_BD_INDEX(tx_remove_eof);
             tx_remove_sof = tx_remove_eof;
@@ -314,10 +318,9 @@ mcf5272fec_tx_cleanup(void)
         else
             INC_TX_BD_INDEX(tx_remove_eof);
     }
-    mcf5272->tx_remove = tx_remove_eof;
+    mcf5272->tx_remove = tx_remove_sof;
 
     /* clear interrupt status for tx interrupt */
-    old_level = sys_arch_protect();
     MCF5272_WR_FEC_EIR(imm, MCF5272_FEC_EIR_TXF);
     value = MCF5272_RD_FEC_IMR(imm);
     /* Set tx interrupt bit again */
@@ -525,9 +528,11 @@ mcf5272fec_rx(void)
                 {
                     p = mcf5272->rx_pbuf_a[rx_remove_sof];       // First in chain
                     p->tot_len = p->len;                        // Important since len might have changed
-                }
-                else
+                } else {
                     pbuf_chain(p, mcf5272->rx_pbuf_a[rx_remove_sof]);
+                    pbuf_free(mcf5272->rx_pbuf_a[rx_remove_sof]);
+                }
+                
                 /* Clear pointer to mark descriptor as free */
                 mcf5272->rx_pbuf_a[rx_remove_sof] = 0;
                 mcf5272->rxbd_a[rx_remove_sof].p_buf = 0;

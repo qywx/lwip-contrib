@@ -30,7 +30,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: cc.h,v 1.5 2003/02/18 19:27:08 davidhaas Exp $
+ * $Id: cc.h,v 1.6 2003/04/09 20:34:51 davidhaas Exp $
  */
 #ifndef __CC_H__
 #define __CC_H__
@@ -106,6 +106,12 @@ typedef	struct _types_fd_set {
 #define LWIP_PLATFORM_ASSERT(x) do {printf("Assertion \"%s\" failed at line %d in %s\n", \
                                      x, __LINE__, __FILE__); fflush(NULL); abort();} while(0)
 #endif
+
+asm u32_t GET_CALLER_PC (void)
+{
+! "d0"
+    move.l 4(a6),d0
+}
 
 
 #endif /* __CC_H__ */

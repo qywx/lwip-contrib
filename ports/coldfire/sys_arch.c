@@ -282,7 +282,7 @@ sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
     timespent = TICKS_TO_HUNDMICROSEC(((s32_t) ((s32_t) NU_Retrieve_Clock() - (s32_t) timestart)));
     
     if (status == NU_TIMEOUT)
-        return 0xffffffff;
+        return SYS_ARCH_TIMEOUT;
     else
         /* Round off to milliseconds */
         return (timespent+5)/10;
@@ -428,7 +428,7 @@ sys_arch_mbox_fetch(sys_mbox_t mbox, void **msg, u32_t timeout)
     timespent = TICKS_TO_HUNDMICROSEC(((s32_t) ((s32_t) NU_Retrieve_Clock() - (s32_t) timestart)));
     
     if (status == NU_TIMEOUT)
-        return 0xffffffff;
+        return SYS_ARCH_TIMEOUT;
     else
         /* Round off to milliseconds */
         return (timespent+5)/10;
