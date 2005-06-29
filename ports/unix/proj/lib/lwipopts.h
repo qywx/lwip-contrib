@@ -155,18 +155,28 @@ a lot of data that needs to be copied, this should be set high. */
 
 
 /* ---------- Statistics options ---------- */
-#define STATS
+/*#define LWIP_STATS 1*/
 
-#ifdef STATS
-#define LINK_STATS
-#define IP_STATS
-#define ICMP_STATS
-#define UDP_STATS
-#define TCP_STATS
-#define MEM_STATS
-#define MEMP_STATS
-#define PBUF_STATS
-#define SYS_STATS
+#ifdef LWIP_STATS
+#define LINK_STATS 1
+#define IP_STATS 1
+#define ICMP_STATS 1
+#define UDP_STATS 1
+#define TCP_STATS 1
+#define MEM_STATS 1
+#define MEMP_STATS 1
+#define PBUF_STATS 1
+#define SYS_STATS 1
+#else
+#define LINK_STATS 0
+#define IP_STATS 0
+#define ICMP_STATS 0
+#define UDP_STATS 0
+#define TCP_STATS 0
+#define MEM_STATS 0
+#define MEMP_STATS 0 
+#define PBUF_STATS 0
+#define SYS_STATS 0
 #endif /* STATS */
 
 #endif /* __LWIPOPTS_H__ */
