@@ -89,7 +89,7 @@ unix_socket_client(char *name)
                                 /* fill socket address structure w/our address */
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
-  sprintf(unix_addr.sun_path, "%s%05d", "/var/tmp/", getpid());
+  snprintf(unix_addr.sun_path, sizeof(unix_addr.sun_path), "%s%05d", "/var/tmp/", getpid());
 #if !defined(linux) && !defined(cygwin)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;

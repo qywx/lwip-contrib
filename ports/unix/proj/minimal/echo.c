@@ -46,6 +46,7 @@ echo_err(void *arg, err_t err)
   struct echo_state *es = arg;
 
   if (arg != NULL) {
+    LWIP_ASSERT("es->p != NULL", es->p != NULL);
     pbuf_free(es->p);
     mem_free(arg);
   }
@@ -60,7 +61,9 @@ close_conn(struct tcp_pcb *pcb, struct echo_state *es)
   tcp_recv(pcb, NULL);
 #endif /* 0 */
   if (es != NULL) {
+    if (es->p != NULL) {
     pbuf_free(es->p);
+    }
     mem_free(es);
   }
   tcp_close(pcb);
@@ -80,6 +83,7 @@ send_buf(struct tcp_pcb *pcb, struct echo_state *es)
       return;
     }
     tcp_recved(pcb, q->len);
+    LWIP_ASSERT("q != NULL", q != NULL);
     pbuf_free(q);
   } while (es->p != NULL);   
 }

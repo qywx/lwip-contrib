@@ -20,6 +20,7 @@
 #undef NTOHS
 
 #include <stdlib.h>
+#include <util.h>
 #include <termios.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -28,7 +29,7 @@
 #include <sys/signal.h>
 #include <sys/types.h>
 
-#if PPP_SUPPORT
+#if PPP_SUPPORT && defined(linux)
 #include <pty.h>
 #endif
 
@@ -295,7 +296,7 @@ sio_status_t * sio_open( int devnum )
 	fifoInit( &siostate->myfifo );
 #endif /* ! PPP_SUPPORT */
 
-	sprintf( dev, "/dev/ttyS%d", devnum );
+	snprintf( dev, sizeof(dev), "/dev/ttyS%d", devnum );
 
 	if ( (devnum == 1) || (devnum == 0) )
 	{

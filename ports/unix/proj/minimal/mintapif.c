@@ -43,14 +43,21 @@
 #include <sys/uio.h>
 #include <sys/socket.h>
 
-#ifdef linux
+#if defined(linux)
 #include <sys/ioctl.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
 #define DEVTAP "/dev/net/tun"
-#else  /* linux */
+#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d"
+
+#elif defined(openbsd)
+#define DEVTAP "/dev/tun0"
+#define IFCONFIG_ARGS "tun0 inet %d.%d.%d.%d link0"
+
+#else /* freebsd, cygwin? */
 #define DEVTAP "/dev/tap0"
-#endif /* linux */
+#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d"
+#endif
 
 #include "lwip/stats.h"
 #include "lwip/mem.h"
@@ -113,7 +120,7 @@ low_level_init(struct netif *netif)
   }
 #endif /* Linux */
 
-  snprintf(buf, sizeof(buf), "ifconfig tap0 inet %d.%d.%d.%d",
+  snprintf(buf, sizeof(buf), "/sbin/ifconfig " IFCONFIG_ARGS,
            ip4_addr1(&(netif->gw)),
            ip4_addr2(&(netif->gw)),
            ip4_addr3(&(netif->gw)),
@@ -263,14 +270,15 @@ mintapif_input(struct netif *netif)
 
     switch (htons(ethhdr->type)) {
     case ETHTYPE_IP:
-      q = etharp_ip_input(netif, p);
+      etharp_ip_input(netif, p);
       pbuf_header(p, -14);
       netif->input(p, netif);
       break;
     case ETHTYPE_ARP:
-      q = etharp_arp_input(netif, mintapif->ethaddr, p);
+      etharp_arp_input(netif, mintapif->ethaddr, p);
       break;
     default:
+      LWIP_ASSERT("p != NULL", p != NULL);
       pbuf_free(p);
       break;
     }
@@ -302,6 +310,8 @@ mintapif_init(struct netif *netif)
   mintapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
   
   low_level_init(netif);
+
+  return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
 enum mintapif_signal

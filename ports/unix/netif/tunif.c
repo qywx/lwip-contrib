@@ -267,9 +267,14 @@ tunif_input(struct netif *netif)
     return;
   }
 
+#if 0
+/* CS: ip_lookup() was removed */
   if (ip_lookup(p->payload, netif)) {
+#endif
     netif->input(p, netif);
+#if 0
   }
+#endif
 }
 /*-----------------------------------------------------------------------------------*/
 /*

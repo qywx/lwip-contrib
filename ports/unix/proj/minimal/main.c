@@ -77,6 +77,8 @@ main(int argc, char **argv)
   
   netif_set_default(&netif);
 
+  netif_set_up(&netif);
+
   echo_init();
   
   printf("Applications started.\n");
@@ -84,8 +86,17 @@ main(int argc, char **argv)
 
   while (1) {
     
-    if (mintapif_wait(&netif, TCP_TMR_INTERVAL) == MINTAPIF_TIMEOUT) {
-      tcp_tmr();
+    if (mintapif_wait(&netif, TCP_FAST_INTERVAL) == MINTAPIF_TIMEOUT) {
+      static u8_t slow_timer = 0;
+
+      tcp_fasttmr();
+
+      if (slow_timer == 4) {
+        slow_timer = 0;
+        tcp_slowtmr();
+      } else {
+        slow_timer++;
+      }
     }
     
   }

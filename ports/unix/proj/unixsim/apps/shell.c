@@ -275,7 +275,7 @@ com_open(struct command *com)
   }
 
   sendstr("Opened connection, connection identifier is ", com->conn);
-  sprintf((char *)buffer, "%d\n", i);
+  snprintf((char *)buffer, sizeof(buffer), "%d\n", i);
   netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
   
   return ESUCCESS;
@@ -337,7 +337,7 @@ com_lstn(struct command *com)
   }
 
   sendstr("Opened connection, connection identifier is ", com->conn);
-  sprintf((char *)buffer, "%d\n", i);
+  snprintf((char *)buffer, sizeof(buffer), "%d\n", i);
   netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
   
   return ESUCCESS;
@@ -417,7 +417,7 @@ com_acpt(struct command *com)
   }
 
   sendstr("Accepted connection, connection identifier for new connection is ", com->conn);
-  sprintf((char *)buffer, "%d\n", j);
+  snprintf((char *)buffer, sizeof(buffer), "%d\n", j);
   netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
 
   return ESUCCESS;
@@ -432,7 +432,7 @@ com_stat(struct command *com)
   u16_t len;
   
   for(i = 0; i < sizeof(struct stats_) / 2; i++) {
-    len = sprintf(buf, "%d", ((u16_t *)&lwip_stats)[i]);
+    len = snprintf(buf, sizeof(buffer), "%d", ((u16_t *)&lwip_stats)[i]);
     sendstr(stat_msgs[i], com->conn);
     netconn_write(com->conn, buf, len, NETCONN_COPY);
     sendstr("\n", com->conn);
@@ -594,7 +594,7 @@ com_udpc(struct command *com)
   }
 
   sendstr("Connection set up, connection identifier is ", com->conn);
-  sprintf((char *)buffer, "%d\n", i);
+  snprintf((char *)buffer, sizeof(buffer), "%d\n", i);
   netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
   
   return ESUCCESS;
@@ -666,7 +666,7 @@ com_udpl(struct command *com)
   }
 
   sendstr("Connection set up, connection identifier is ", com->conn);
-  sprintf((char *)buffer, "%d\n", i);
+  snprintf((char *)buffer, sizeof(buffer), "%d\n", i);
   netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
   
   return ESUCCESS;
@@ -738,7 +738,7 @@ com_udpn(struct command *com)
   }
 
   sendstr("Connection set up, connection identifier is ", com->conn);
-  sprintf((char *)buffer, "%d\n", i);
+  snprintf((char *)buffer, sizeof(buffer), "%d\n", i);
   netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
   
   return ESUCCESS;
@@ -810,7 +810,7 @@ com_udpb(struct command *com)
   }
 
   sendstr("Connection set up, connection identifier is ", com->conn);
-  sprintf((char *)buffer, "%d\n", i);
+  snprintf((char *)buffer, sizeof(buffer), "%d\n", i);
   netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
   
   return ESUCCESS;

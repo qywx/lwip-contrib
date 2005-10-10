@@ -33,6 +33,7 @@ CCDEP=gcc
 CC=gcc
 #To compile for linux: make ARCH=linux
 #To compile for cygwin: make ARCH=cygwin
+#To compile for openbsd: make ARCH=openbsd
 ARCH=unix
 CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -Os -fpack-struct
 ARFLAGS=rs
