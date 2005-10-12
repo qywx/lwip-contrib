@@ -132,7 +132,7 @@ echo_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
   
   es = arg;
 
-  if (p == NULL) {
+  if ((es == NULL) || (p == NULL)) {
     close_conn(pcb, es);
     return ERR_OK;
   }
