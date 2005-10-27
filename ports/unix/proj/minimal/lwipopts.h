@@ -33,7 +33,7 @@
 #define __LWIPOPTS_H__
 
 #define NO_SYS 1
-#define LWIP_EVENT_API 1
+/* #define LWIP_EVENT_API 1 */
 
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
@@ -43,7 +43,7 @@
 
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
-#define MEM_SIZE                3000
+#define MEM_SIZE                6000
 
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this
@@ -82,7 +82,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */
-#define PBUF_POOL_SIZE          8
+#define PBUF_POOL_SIZE          16
 
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
 #define PBUF_POOL_BUFSIZE       128
@@ -152,18 +152,18 @@ a lot of data that needs to be copied, this should be set high. */
 
 
 /* ---------- Statistics options ---------- */
-/*#define LWIP_STATS 1*/
+#define LWIP_STATS 1
 
 #ifdef LWIP_STATS
-#define LINK_STATS 1
-#define IP_STATS 1
-#define ICMP_STATS 1
-#define UDP_STATS 1
-#define TCP_STATS 1
+#define LINK_STATS 0
+#define IP_STATS 0
+#define ICMP_STATS 0
+#define UDP_STATS 0
+#define TCP_STATS 0
 #define MEM_STATS 1
 #define MEMP_STATS 1
 #define PBUF_STATS 1
-#define SYS_STATS 1
+#define SYS_STATS 0
 #else
 #define LINK_STATS 0
 #define IP_STATS 0
@@ -175,5 +175,49 @@ a lot of data that needs to be copied, this should be set high. */
 #define PBUF_STATS 0
 #define SYS_STATS 0
 #endif /* LWIP_STATS */
+
+/** print only debug messages with this level or higher */
+#define DBG_MIN_LEVEL 0
+
+#define DBG_TYPES_ON (DBG_ON | DBG_TRACE | DBG_STATE | DBG_FRESH)
+
+/**
+ * Enable/disable debugging per module
+ */
+#define DEMO_DEBUG       DBG_OFF
+#define ETHARP_DEBUG     DBG_OFF
+#define NETIF_DEBUG      DBG_OFF
+#define PBUF_DEBUG       DBG_ON
+#define DELIF_DEBUG      DBG_OFF
+#define DROPIF_DEBUG     DBG_OFF
+#define TUNIF_DEBUG      DBG_OFF
+#define UNIXIF_DEBUG     DBG_OFF
+#define TAPIF_DEBUG      DBG_OFF
+#define SIO_FIFO_DEBUG   DBG_OFF
+#define PPP_DEBUG        DBG_OFF
+#define API_LIB_DEBUG    DBG_OFF
+#define API_MSG_DEBUG    DBG_OFF
+#define SOCKETS_DEBUG    DBG_OFF
+#define ICMP_DEBUG       DBG_OFF
+#define INET_DEBUG       DBG_OFF
+#define IP_DEBUG         DBG_OFF
+#define IP_REASS_DEBUG   DBG_OFF
+#define MEM_DEBUG        DBG_ON
+#define MEMP_DEBUG       DBG_ON
+#define SYS_DEBUG        DBG_OFF
+#define TCP_DEBUG        DBG_ON
+#define TCP_INPUT_DEBUG  DBG_ON
+#define TCP_FR_DEBUG     DBG_OFF
+#define TCP_RTO_DEBUG    DBG_OFF
+#define TCP_REXMIT_DEBUG DBG_OFF
+#define TCP_CWND_DEBUG   DBG_OFF
+#define TCP_WND_DEBUG    DBG_OFF
+#define TCP_OUTPUT_DEBUG DBG_OFF
+#define TCP_RST_DEBUG    DBG_OFF
+#define TCP_QLEN_DEBUG   DBG_OFF
+#define UDP_DEBUG        DBG_OFF
+#define TCPIP_DEBUG      DBG_OFF
+#define TCPDUMP_DEBUG    DBG_OFF
+#define DHCP_DEBUG       DBG_OFF
 
 #endif /* __LWIPOPTS_H__ */

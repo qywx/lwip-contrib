@@ -34,8 +34,8 @@ CC=gcc
 #To compile for linux: make ARCH=linux
 #To compile for cygwin: make ARCH=cygwin
 #To compile for openbsd: make ARCH=openbsd
-ARCH=unix
-CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -Os -fpack-struct
+ARCH=openbsd
+CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -Os -fpack-struct -DLWIP_DEBUG
 ARFLAGS=rs
 
 CONTRIBDIR=../../../..
@@ -77,11 +77,11 @@ APPOBJS=$(notdir $(APPFILES:.c=.o))
 %.o:
 	$(CC) $(CFLAGS) -c $(<:.o=.c)
 
-all ipv4 compile: minimal
+all ipv4 compile: echo_process
 .PHONY: all
 
 clean:
-	rm -f *.o $(LWIPLIB) $(APPLIB) minimal .depend* *.core core
+	rm -f *.o $(LWIPLIB) $(APPLIB) echo_process .depend* *.core core
 
 depend dep: .depend
 
@@ -96,7 +96,7 @@ $(LWIPLIB): $(LWIPOBJS)
 .depend: main.c $(LWIPFILES) $(APPFILES)
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
 
-minimal: .depend $(LWIPLIB) $(APPLIB) main.o $(APPFILES)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o minimal main.o $(APPLIB) $(LWIPLIB)
+echo_process: .depend $(LWIPLIB) $(APPLIB) main.o $(APPFILES)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o echo_process main.o $(APPLIB) $(LWIPLIB)
 
 
