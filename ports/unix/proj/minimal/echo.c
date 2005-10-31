@@ -1,10 +1,46 @@
+/*
+ * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, 
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission. 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
+ * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * This file is part of and a contribution to the lwIP TCP/IP stack.
+ *
+ * Credits go to Adam Dunkels (and the current maintainers) of this software.
+ *
+ * Christiaan Simons <christiaan.simons@gmail.com> rewrote this file 
+ * to get a more stable echo example.
+ */
+
 /**
  * @file
  * TCP echo server example using raw API.
  *
  * Echos all bytes sent by connecting client,
  * and passively closes when client is done.
+ *
  */
+
 
 #include "lwip/debug.h"
 #include "lwip/stats.h"
@@ -83,7 +119,7 @@ echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
     tcp_arg(newpcb, es);
     tcp_recv(newpcb, echo_recv);
     tcp_err(newpcb, echo_error);
-    tcp_poll(newpcb, echo_poll, 1);
+    tcp_poll(newpcb, echo_poll, 0);
     ret_err = ERR_OK;
   }
   else
@@ -254,6 +290,10 @@ echo_send(struct tcp_pcb *tpcb, struct echo_state *es)
   struct pbuf *ptr;
   err_t wr_err = ERR_OK;
  
+  while ((wr_err == ERR_OK) &&
+         (es->p != NULL) && 
+         (es->p->len <= tcp_sndbuf(tpcb)))
+  {
   ptr = es->p;
 
   /* enqueue data for transmission */
@@ -261,6 +301,7 @@ echo_send(struct tcp_pcb *tpcb, struct echo_state *es)
   if (wr_err == ERR_OK)
   {
      u16_t plen;
+      u8_t freed;
 
      plen = ptr->len;
      /* continue with next pbuf in chain (if any) */
@@ -271,20 +312,25 @@ echo_send(struct tcp_pcb *tpcb, struct echo_state *es)
        pbuf_ref(es->p);
      }
      /* chop first pbuf from chain */
-     pbuf_free(ptr);
-
+      do
+      {
+        /* try hard to free pbuf */
+        freed = pbuf_free(ptr);
+      }
+      while(freed == 0);
      /* we can read more data now */
      tcp_recved(tpcb, plen);
    }
    else if(wr_err == ERR_MEM)
    {
-      /* we are low on memory, try later / harder ? */
+      /* we are low on memory, try later / harder, defer to poll */
      es->p = ptr;
    }
    else
    {
      /* other problem ?? */
    }
+  }
 }
 
 void
