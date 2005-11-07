@@ -23,10 +23,10 @@ const void * const pvNullPointer;
 
 static char pcQueueMemoryPool[MAX_QUEUES * sizeof(TQ_DESCR) ];
 
-struct sys_timeouts lwip_timeouts[LWIP_TASK_MAX];
+struct sys_timeouts lwip_timeouts[LWIP_TASK_MAX+1];
 struct sys_timeouts null_timeouts;
 
-OS_STK LWIP_TASK_STK[LWIP_TASK_MAX][LWIP_STK_SIZE];
+OS_STK LWIP_TASK_STK[LWIP_TASK_MAX+1][LWIP_STK_SIZE];
 
 
 /*-----------------------------------------------------------------------------------*/
@@ -39,7 +39,7 @@ void sys_init(void)
     //init mem used by sys_mbox_t //use ucosII functions
     pQueueMem = OSMemCreate( (void*)pcQueueMemoryPool, MAX_QUEUES, sizeof(TQ_DESCR), &ucErr );
     //init lwip_timeouts for every lwip task
-    for(i=0;i<LWIP_TASK_MAX;i++){
+    for(i=0;i<LWIP_TASK_MAX+1;i++){
     	lwip_timeouts[i].next = NULL;
     }
 }
@@ -186,14 +186,14 @@ sys_timeouts * sys_arch_timeouts(void)
   curr_prio = curr_task_pcb.OSTCBPrio;
   
   offset = curr_prio - LWIP_START_PRIO;
-  
-  //not called by a lwip task ,return timeouts->NULL
-  if(offset < 0 || offset >= LWIP_TASK_MAX)
-  {
-    return &null_timeouts;
-  }
 
-  return &lwip_timeouts[offset];
+  if(curr_prio == TCPIP_THREAD_PRIO) 
+  		return &lwip_timeouts[LWIP_TASK_MAX];
+  else if(offset >= 0 && offset < LWIP_TASK_MAX)
+  		return &lwip_timeouts[offset];
+  else return &null_timeouts;
+  
+  //if not called by a lwip task ,return timeouts->NULL
 }
 
 
@@ -201,10 +201,15 @@ sys_timeouts * sys_arch_timeouts(void)
 sys_thread_t sys_thread_new(void (* thread)(void *arg), void *arg, int prio)
 {
 
-  if(prio - LWIP_START_PRIO  < LWIP_TASK_MAX){  
+  if(prio == TCPIP_THREAD_PRIO){
+	OSTaskCreate(thread, (void *)0x1111, &LWIP_TASK_STK[LWIP_TASK_MAX][LWIP_STK_SIZE-1], prio);
+		return prio;
+  }  
+  else if(prio - LWIP_START_PRIO  < LWIP_TASK_MAX){  
 	OSTaskCreate(thread, (void *)0x1111, &LWIP_TASK_STK[prio - LWIP_START_PRIO][LWIP_STK_SIZE-1], prio);
 		return prio;
-  } else {
+  }
+  else {
 		printf(" lwip task prio out of range ! error! ");
 		return 0;
   }

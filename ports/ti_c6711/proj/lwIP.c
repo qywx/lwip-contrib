@@ -46,7 +46,7 @@
 #include "..\lwIP\src\api\err.c"
 #include "..\lwIP\src\api\sockets.c"
 
-// sample task code (tcp-echo|telnet & http demo)
+// sample task code (http demo)
 #include "sample_http.c"
 
 struct netif ne2kif_if;
@@ -90,7 +90,7 @@ void Task_lwip_init(void * pParam)
   //add ne2k interface
   IP4_ADDR(&gw, 166,111,32,1);
   IP4_ADDR(&ipaddr, 166,111,33,120);
-  IP4_ADDR(&netmask, 255,255,252,0);
+  IP4_ADDR(&netmask, 255,255,254,0);
 
   netif_add(&ne2kif_if, &ipaddr, &netmask, &gw, NULL, ne2k_init, tcpip_input);
   netif_set_default(&ne2kif_if);
@@ -99,12 +99,10 @@ void Task_lwip_init(void * pParam)
   printf("Applications started.\n");
   
   //------------------------------------------------------------
-  //All thread(task) of lwIP must have their PRI between 5 and 9.
-  
-  // http thread, a web page can be browsed
-  sys_thread_new(httpd_init, (void*)"httpd",6);
-  
+  //All thread(task) of lwIP must have their PRI between 10 and 14.
+  //  sys_thread_new(httpd_init, (void*)"httpd",10);
   //------------------------------------------------------------
+  httpd_init();//sample_http
   
   printf("lwIP threads created!\n");
   

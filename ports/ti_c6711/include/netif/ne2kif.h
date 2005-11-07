@@ -14,17 +14,57 @@
 
 #include "lwip/netif.h"
 
-static err_t ne2k_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr);
-static void ne2k_input(struct netif *netif);
-err_t ne2k_init(struct netif *netif);
 
 #define     MIN_PACKET_SIZE 60      	/* smallest legal size packet, no fcs    */
 #define     MAX_PACKET_SIZE 1514		/* largest legal size packet, no fcs     */
 
-/*----------------------------------------
-* Register header for NE2000 chip
-*----------------------------------------*/
 
+#define		DELAY							0x590b2  //0.5s test by ming
+#define		DELAY_2S						0xbf000  //2s test 
+#define     DELAY_MS						0x38F4   //20ms test 
+
+
+/**
+ *  Driver functions.
+ */
+err_t ne2k_init(struct netif *netif);
+static void low_level_init(struct netif * netif);
+static void arp_timer(void *arg);
+
+static err_t ne2k_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr);
+static err_t low_level_output(struct netif * netif,struct pbuf *p);
+u16_t write_AX88796(u8_t * buf, u16_t remote_Addr, u16_t Count);
+
+static void ne2k_input(struct netif *netif);
+static struct pbuf * low_level_input(struct netif *netif);
+u16_t read_AX88796(u8_t * buf, u16_t remote_Addr, u16_t Count);
+
+
+
+/*----------------------------------------
+* Register header of C6x DSP
+*----------------------------------------*/
+#define EMIF_CE2		0x01800010
+
+/* Define QDMA Memory Mapped Registers */
+#define QDMA_OPT		0x02000000	/* Address of QDMA options register     */
+#define QDMA_SRC		0x02000004	/* Address of QDMA SRC address register */
+#define QDMA_CNT		0x02000008	/* Address of QDMA counts register      */
+#define QDMA_DST		0x0200000C	/* Address of QDMA DST address register */
+#define QDMA_IDX		0x02000010	/* Address of QDMA index register       */
+
+/* Define QDMA Pseudo Registers */
+#define QDMA_S_OPT		0x02000020	/* Address of QDMA options register     */
+#define QDMA_S_SRC		0x02000024	/* Address of QDMA SRC address register */
+#define QDMA_S_CNT		0x02000028	/* Address of QDMA counts register      */
+#define QDMA_S_DST		0x0200002C	/* Address of QDMA DST address register */
+#define QDMA_S_IDX		0x02000030	/* Address of QDMA index register       */
+
+
+
+/*----------------------------------------
+* Register header of NE2000 chip
+*----------------------------------------*/
 #define Base_ADDR           0xA0000200 ///CE2 space of DSK is 0xA0000000 
 									 // and ethernet chip is at 0x200 by default
 
@@ -84,14 +124,22 @@ err_t ne2k_init(struct netif *netif);
 #define     EN_PAGE0	    0x00	/*  Select page chip registers           */
 #define     EN_PAGE1	    0x40	/*  using the two high-order bits        */
 
+
+//---------------------------------
 // Values for Ring-Buffer setting
-#define     TX_PAGES	    6       
+//---------------------------------
+
 #define     NE_START_PG	    0x40     	/* First page of TX buffer           */
-#define	    TX_START_PG		NE_START_PG	//0x40
 #define     NE_STOP_PG	    0x80		/* Last page + 1 of RX Ring          */ 
-#define     RX_STOP_PG      NE_STOP_PG  //0x80
+
+#define     TX_PAGES	    6       
+#define	    TX_START_PG		NE_START_PG	//0x40
+
 #define     RX_START_PG	    NE_START_PG + TX_PAGES //0x46
 #define     RX_CURR_PG      RX_START_PG + 1		   //0x47
+#define     RX_STOP_PG      NE_STOP_PG  //0x80
+
+
 
 
 /* Bits in EN0_ISR - Interrupt status register        (RD WR)                */
