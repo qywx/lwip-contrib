@@ -50,6 +50,7 @@
 #include "lwip/def.h"
 #include "lwip/mem.h"
 #include "lwip/pbuf.h"
+#include "netif/list.h"
 #include "netif/unixif.h"
 #include "lwip/sys.h"
 

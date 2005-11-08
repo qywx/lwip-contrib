@@ -55,14 +55,19 @@
 #include "netif/tcpdump.h"
 #endif /* LWIP_DEBUG && LWIP_TCPDUMP */
 
-#ifdef linux
+#if defined(linux)
 #include <sys/ioctl.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
 #define DEVTAP "/dev/net/tun"
-#else  /* linux */
+#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d"
+#elif defined(openbsd)
+#define DEVTAP "/dev/tun0"
+#define IFCONFIG_ARGS "tun0 inet %d.%d.%d.%d link0"
+#else /* others */
 #define DEVTAP "/dev/tap0"
-#endif /* linux */
+#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d"
+#endif
 
 #define IFNAME0 't'
 #define IFNAME1 'p'
@@ -126,7 +131,7 @@ low_level_init(struct netif *netif)
   }
 #endif /* Linux */
 
-  snprintf(buf, sizeof(buf), "ifconfig tap0 inet %d.%d.%d.%d",
+  snprintf(buf, sizeof(buf), "/sbin/ifconfig " IFCONFIG_ARGS,
            ip4_addr1(&(netif->gw)),
            ip4_addr2(&(netif->gw)),
            ip4_addr3(&(netif->gw)),

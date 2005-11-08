@@ -57,9 +57,8 @@
 #if PPP_SUPPORT
 #include "netif/ppp/ppp.h"
 #define PPP_PTY_TEST 1
-#endif
-
 #include <termios.h>
+#endif
 
 #include "lwip/ip_addr.h"
 
@@ -245,7 +244,7 @@ ping_recv(int s, struct ip_addr *addr)
 
   len = lwip_recvfrom(s, buf,sizeof(buf),0,(struct sockaddr*)&from,&fromlen);
 
-  printf("Received %d bytes from %x\n",len,ntohl(from.sin_addr.s_addr));
+  printf("Received %d bytes from %lx\n",len,ntohl(from.sin_addr.s_addr));
 }
 
 static void
@@ -331,6 +330,9 @@ main_thread(void *arg)
   
   netif_set_default(netif_add(&netif,&ipaddr, &netmask, &gw, NULL, tapif_init,
 			      tcpip_input));
+
+  netif_set_up(&netif);
+
 #endif
   /* Only used for testing purposes: */
   /*  IP4_ADDR(&gw, 193,10,66,1);
@@ -369,7 +371,9 @@ main_thread(void *arg)
 #ifdef MEM_PERF
   mem_perf_init("/tmp/memstats.client");
 #endif /* MEM_PERF */
-//	stats_display();
+#if 0
+	stats_display();
+#endif
   /* Block for ever. */
   sem = sys_sem_new(0);
   sys_sem_wait(sem);

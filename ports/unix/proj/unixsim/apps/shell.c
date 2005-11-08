@@ -432,7 +432,7 @@ com_stat(struct command *com)
   u16_t len;
   
   for(i = 0; i < sizeof(struct stats_) / 2; i++) {
-    len = snprintf(buf, sizeof(buffer), "%d", ((u16_t *)&lwip_stats)[i]);
+    len = snprintf(buf, sizeof(buf), "%d", ((u16_t *)&lwip_stats)[i]);
     sendstr(stat_msgs[i], com->conn);
     netconn_write(com->conn, buf, len, NETCONN_COPY);
     sendstr("\n", com->conn);

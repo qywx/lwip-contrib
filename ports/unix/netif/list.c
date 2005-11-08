@@ -33,16 +33,8 @@
 
 
 #include <stdlib.h>
+#include <netif/list.h>
 
-struct list {
-  struct elem *first, *last;
-  int size, elems;
-};
-
-struct elem {
-  struct elem *next;
-  void *data;
-};
 
 /*-----------------------------------------------------------------------------------*/
 struct list *

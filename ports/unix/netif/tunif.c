@@ -85,7 +85,7 @@ low_level_init(struct netif *netif)
     perror("tunif_init");
     exit(1);
   }
-  snprintf(buf, sizeof(buf), "ifconfig tun0 inet %d.%d.%d.%d %d.%d.%d.%d",
+  snprintf(buf, sizeof(buf), "/sbin/ifconfig tun0 inet %d.%d.%d.%d %d.%d.%d.%d",
            ip4_addr1(&(netif->gw)),
            ip4_addr2(&(netif->gw)),
            ip4_addr3(&(netif->gw)),
