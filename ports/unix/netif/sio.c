@@ -20,7 +20,9 @@
 #undef NTOHS
 
 #include <stdlib.h>
+#if defined(openbsd)
 #include <util.h>
+#endif
 #include <termios.h>
 #include <stdio.h>
 #include <unistd.h>
