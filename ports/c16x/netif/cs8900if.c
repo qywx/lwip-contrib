@@ -142,7 +142,7 @@ static const struct eth_addr ethbroadcast = {{0xffU,0xffU,0xffU,0xffU,0xffU,0xff
 static err_t cs8900_output(struct netif *netif, struct pbuf *p);
 static struct pbuf *cs8900_input(struct netif *netif);
 static void cs8900_service(struct netif *netif);
-static u32_t cs8900_chksum(void *dataptr, int len);
+static u32_t cs8900_chksum(void *dataptr, s16_t len);
 static void cs8900_reset(struct netif *netif);
 
 // Define these to match your hardware setup
@@ -320,7 +320,7 @@ static err_t cs8900_init(struct netif *netif)
  */
 static err_t cs8900_output(struct netif *netif, struct pbuf *p)
 {
-  int tries = 0;
+  s16_t tries = 0;
   err_t result;
 
   // exit if link has failed
@@ -352,7 +352,7 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
   // ready to transmit?
   if ((PPDATA & 0x0100U/*Rdy4TxNOW*/) != 0)
   {
-  	unsigned long sent_bytes = 0;
+    u32_t sent_bytes = 0;
     /* q traverses through linked list of pbuf's
      * This list MUST consist of a single packet ONLY */
     struct pbuf *q;
@@ -440,7 +440,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
     event_type = 0;
     // read RxLength
     len = RXTXREG;
-    LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: packet len %u\n", len));
+    LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: packet len %"U16_F"\n", len));
     snmp_add_ifinoctets(len);
     // positive length?
     if (len > 0)
@@ -456,7 +456,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
 
         for (q = p; q != 0; q = q->next)
         {
-	        LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %u len %u\n", q, q->tot_len, q->len));
+	        LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %"U16_F" len %"U16_F"\n", q, q->tot_len, q->len));
 	        ptr = q->payload;
           // TODO: CHECK: what if q->len is odd? we don't use the last byte?
           for (i = 0; i < (q->len + 1) / 2; i++)
@@ -509,9 +509,9 @@ static struct pbuf *cs8900_input(struct netif *netif)
 static void cs8900_service(struct netif *netif)
 {
   /* amount of ISQ's to handle (> 0) in one cs8900_service() call */
-  unsigned char events2service = 1;
+  u8_t events2service = 1;
 #if (CS8900_STATS > 0)
-  unsigned int miss_count = 0, coll_count = 0;
+  u16_t miss_count = 0, coll_count = 0;
 #endif
   // NOTES:
   // static, so only initialized to zero at program start.
@@ -595,10 +595,10 @@ static void cs8900_service(struct netif *netif)
 #if (CS8900_STATS > 0)
   /* copy statistics counters into netif state fields */
   ((struct cs8900if *)netif->state)->missed += miss_count;
-  if (miss_count > 0) LWIP_DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u missed packets due to rx buffer overrun\n", miss_count));
+  if (miss_count > 0) LWIP_DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %"U16_F" missed packets due to rx buffer overrun\n", miss_count));
 
   ((struct cs8900if *)netif->state)->collisions += coll_count;
-  if (coll_count > 0) LWIP_DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %u packet collisions\n", coll_count)); 
+  if (coll_count > 0) LWIP_DEBUGF(NETIF_DEBUG | 1, ("cs8900_input: %"U16_F" packet collisions\n", coll_count)); 
 #endif
 }
 
@@ -776,9 +776,9 @@ err_t cs8900if_init(struct netif *netif)
  * @param p pointer to an array of bytes, at least with length 'len'
  * @param len number of bytes available at the address pointed to by 'p'
  */
-void cs8900_send_debug(unsigned char *p, unsigned int len)
+void cs8900_send_debug(u8_t *p, u16_t len)
 {
-  int tries = 0, i;
+  s16_t tries = 0, i;
 
   // network interface state
   extern struct netif *ethif;
@@ -887,7 +887,7 @@ void cs8900_send_debug(unsigned char *p, unsigned int len)
   }
 }
 
-static u32_t cs8900_chksum(void *dataptr, int len)
+static u32_t cs8900_chksum(void *dataptr, s16_t len)
 {
   u32_t acc = 0;
   u16_t *ptr = (u16_t *)dataptr;

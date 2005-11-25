@@ -320,7 +320,6 @@ main_thread(void *arg)
     netif_add(&netif, &ipaddr, &netmask, &gw, NULL, tapif_init,
 		      tcpip_input);
     netif_set_default(&netif);
-    dhcp_init();
     dhcp_start(&netif);
   }
 #else
