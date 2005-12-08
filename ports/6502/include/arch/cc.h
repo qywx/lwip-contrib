@@ -39,6 +39,13 @@ typedef signed     short   s16_t;
 typedef unsigned   long    u32_t;
 typedef signed     long    s32_t;
 
+#define U16_F "hu"
+#define S16_F "hd"
+#define X16_F "hx"
+#define U32_F "lu"
+#define S32_F "ld"
+#define X32_F "lx"
+
 #define PACK_STRUCT_BEGIN
 #define PACK_STRUCT_STRUCT
 #define PACK_STRUCT_END

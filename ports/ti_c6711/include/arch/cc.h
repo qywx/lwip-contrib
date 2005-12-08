@@ -30,7 +30,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: cc.h,v 1.1 2005/01/29 15:19:21 ming Exp $
+ * $Id: cc.h,v 1.2 2005/12/08 08:20:07 christiaans Exp $
  */
 #ifndef __CC_H__
 #define __CC_H__
@@ -43,6 +43,13 @@ typedef		unsigned int	u32_t;
 typedef		signed int		s32_t;
 
 typedef		u32_t		mem_ptr_t;
+
+#define U16_F "hu"
+#define S16_F "hd"
+#define X16_F "hx"
+#define U32_F "u"
+#define S32_F "d"
+#define X32_F "x"
 
 #define BYTE_ORDER   LITTLE_ENDIAN  
 
