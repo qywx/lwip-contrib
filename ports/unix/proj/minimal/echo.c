@@ -53,7 +53,7 @@ enum echo_states
   ES_NONE = 0,
   ES_ACCEPTED,
   ES_RECEIVED,
-  ES_CLOSING,
+  ES_CLOSING
 };
 
 struct echo_state
