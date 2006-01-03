@@ -459,7 +459,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
 	        LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %"U16_F" len %"U16_F"\n", q, q->tot_len, q->len));
 	        ptr = q->payload;
           // TODO: CHECK: what if q->len is odd? we don't use the last byte?
-          for (i = 0; i < (q->len + 1) / 2; i++)
+          for (i = (q->len + 1) / 2; i > 0; i--)
           {
             *ptr = RXTXREG;
             ptr++;
