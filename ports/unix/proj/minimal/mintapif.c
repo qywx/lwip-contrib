@@ -147,7 +147,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
 {
   struct mintapif *mintapif;
   struct pbuf *q;
-  char buf[1500];
+  char buf[1514];
   char *bufptr;
 
   mintapif = netif->state;
@@ -185,7 +185,7 @@ low_level_input(struct mintapif *mintapif)
 {
   struct pbuf *p, *q;
   u16_t len;
-  char buf[1500];
+  char buf[1514];
   char *bufptr;
 
   /* Obtain the size of the packet and put it into the "len"
