@@ -61,7 +61,7 @@
 #endif
 
 #include "lwip/ip_addr.h"
-
+#include "lwip/ip_frag.h"
 #include "arch/perf.h"
 
 #include "httpd.h"
@@ -75,22 +75,41 @@
 #include "lwip/sockets.h"
 #endif
 
-/*-----------------------------------------------------------------------------------*/
+
 static void
-tcp_timeout(void *data)
+tcp_debug_timeout(void *data)
 {
 #if TCP_DEBUG
   tcp_debug_print_pcbs();
 #endif /* TCP_DEBUG */
-  sys_timeout(5000, tcp_timeout, NULL);
+  sys_timeout(5000, tcp_debug_timeout, NULL);
 }
-/*-----------------------------------------------------------------------------------*/
+
 static void
 tcpip_init_done(void *arg)
 {
   sys_sem_t *sem;
   sem = arg;
   sys_sem_signal(*sem);
+}
+
+static void
+tcpip_timers(void *data)
+{
+  static u8_t cnt = 0;
+
+#if LWIP_TCP
+  /* calls tcp_fasttmr() and tcp_slowtmr() */
+  tcp_tmr();
+#endif
+#if IP_REASSEMBLY
+  if (cnt & 1) {
+    /* call ip_reass_tmr() at half interval */
+    ip_reass_tmr();
+  }
+  cnt++;
+#endif
+  sys_timeout(500, tcpip_timers, NULL);
 }
 
 #if PPP_SUPPORT
@@ -365,7 +384,8 @@ main_thread(void *arg)
 
   printf("Applications started.\n");
 
-  /*  sys_timeout(5000, tcp_timeout, NULL);*/
+  /*  sys_timeout(5000, tcp_debug_timeout, NULL);*/
+  sys_timeout(500, tcpip_timers, NULL);
 
 #ifdef MEM_PERF
   mem_perf_init("/tmp/memstats.client");
