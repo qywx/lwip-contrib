@@ -60,18 +60,21 @@ tcpecho_thread(void *arg)
       u16_t len;
       
       while ((buf = netconn_recv(newconn)) != NULL) {
-	/*printf("Recved\n");*/
-	do {
-	  netbuf_data(buf, &data, &len);
-	  err = netconn_write(newconn, data, len, NETCONN_COPY);
-	  if (err != ERR_OK) {
-	    /*	    printf("tcpecho: netconn_write: error \"%s\"\n", lwip_strerr(err));*/
-	  }
-	} while (netbuf_next(buf) >= 0);
-	netbuf_delete(buf);	
+        /*printf("Recved\n");*/
+        do {
+             netbuf_data(buf, &data, &len);
+             err = netconn_write(newconn, data, len, NETCONN_COPY);
+#if 0
+            if (err != ERR_OK) {    
+              printf("tcpecho: netconn_write: error \"%s\"\n", lwip_strerr(err));
+            }
+#endif
+        } while (netbuf_next(buf) >= 0);
+        netbuf_delete(buf);  
       }
-      /*printf("Got EOF, looping\n");*/
+      /*printf("Got EOF, looping\n");*/ 
       /* Close connection and discard connection identifier. */
+      netconn_close(newconn);
       netconn_delete(newconn);
     }
   }
