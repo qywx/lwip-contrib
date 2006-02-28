@@ -11,6 +11,10 @@ interface is enabled by adding the line "pseudo-device tap" in the
 kernel configuration. See Chapter 9 in the FreeBSD handbook for
 instructions on how to build a custom FreeBSD kernel.
 
+For Linux you might need to create a device node with
+
+  > mknod /dev/net/tun c 10 200
+
 * Compile the code. This must be done by using GNU Make. Under
   FreeBSD, GNU Make can be found in the ports collection under
   /usr/ports/devel/gmake (type "make install distclean" to
