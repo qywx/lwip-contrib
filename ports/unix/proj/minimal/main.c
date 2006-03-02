@@ -39,11 +39,12 @@
 #include "lwip/stats.h"
 
 #include "lwip/ip.h"
-/*#include "lwip/ip_frag.h"*/
+#include "lwip/ip_frag.h"
 #include "lwip/udp.h"
 #include "lwip/tcp.h"
 
 #include "mintapif.h"
+#include "netif/etharp.h"
 
 #include "echo.h"
 
@@ -52,7 +53,9 @@ main(int argc, char **argv)
 {
   struct ip_addr ipaddr, netmask, gw;
   struct netif netif;
-  
+  static u8_t tcp_slow_timer = 0;
+  static u8_t arp_timer = 0;
+        
 #ifdef PERF
   perf_init("/tmp/minimal.perf");
 #endif /* PERF */
@@ -87,16 +90,28 @@ main(int argc, char **argv)
   while (1) {
     
     if (mintapif_wait(&netif, TCP_FAST_INTERVAL) == MINTAPIF_TIMEOUT) {
-      static u8_t slow_timer = 0;
 
       tcp_fasttmr();
 
-      if (slow_timer == 4) {
-        slow_timer = 0;
+      if (tcp_slow_timer == 4) {
+        tcp_slow_timer = 0;
         tcp_slowtmr();
+      /* CSi these timers are unrelated, only happen to have a similar period.
+         TCP will avoid fragmentation. IP reassembly only makes sense for UDP/ICMP. */
+#if IP_REASSEMBLY
+        ip_reass_tmr();
+#endif
       } else {
-        slow_timer++;
+        tcp_slow_timer++;
       }
+      
+      if (arp_timer == 20) {
+        arp_timer = 0;
+        etharp_tmr();
+      } else {
+        arp_timer++;
+      }
+      
     }
     
   }

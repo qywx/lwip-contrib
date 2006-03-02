@@ -82,7 +82,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */
-#define PBUF_POOL_SIZE          16
+#define PBUF_POOL_SIZE          46
 
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
 #define PBUF_POOL_BUFSIZE       128
@@ -131,6 +131,9 @@ a lot of data that needs to be copied, this should be set high. */
 /* If defined to 1, IP options are allowed (but ignored). If
    defined to 0, all packets with IP options are dropped. */
 #define IP_OPTIONS              1
+
+#define IP_REASSEMBLY           1
+#define IP_FRAG                 1
 
 /* ---------- ICMP options ---------- */
 #define ICMP_TTL                255
