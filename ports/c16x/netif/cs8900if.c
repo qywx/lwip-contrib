@@ -364,12 +364,14 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
        * time. The size of the data in each pbuf is kept in the ->len
        * variable.
        */
-      for (i = 0; i < q->len; i += 2)
+      i = 0;
+      while (i < q->len)
       {
         /** TODO: this routine assumes 16-bit boundary pbufs... */
         RXTXREG = *ptr++;
-        sent_bytes += 2;
+        i += 2;
       }
+      sent_bytes += i;
     }
     /* provide any additional padding to comply with minimum Ethernet
      * frame length (RFC10242) */
