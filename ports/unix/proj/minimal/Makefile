@@ -35,7 +35,7 @@ CC=gcc
 #To compile for cygwin: make ARCH=cygwin
 #To compile for openbsd: make ARCH=openbsd
 ARCH=openbsd
-CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -Os -fpack-struct
+CFLAGS=-g -Wall -pedantic -D$(ARCH) -DIPv4 -Os -fpack-struct
 ARFLAGS=rs
 
 CONTRIBDIR=../../../..
