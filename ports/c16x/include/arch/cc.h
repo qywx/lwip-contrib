@@ -34,6 +34,18 @@ typedef u32_t mem_ptr_t;
 #define PACK_STRUCT_END
 #define PACK_STRUCT_FIELD(x) x
 
+#define LWIP_PLATFORM_BYTESWAP 1
+#define LWIP_PLATFORM_HTONS(x) _ror(x,8)
+#define LWIP_PLATFORM_HTONL(x) c16x_htonl(x)
+
+_inline u32_t c16x_htonl(u32_t n)
+{
+  return (n << 24) |
+    ((n & 0xff00) << 8) |
+    ((n & 0xff0000) >> 8) |
+    (n >> 24);
+}
+
 #ifdef LWIP_DEBUG
 
 /* LW: forward declaration */
