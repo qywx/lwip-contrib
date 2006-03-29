@@ -53,6 +53,9 @@
  */
 #define CS8900_STATS 2
 
+/* Number of ISQ events that may be serviced by cs8900_service() (at least 1) */
+#define CS8900_EVTS2SRV 10
+
 struct cs8900if
 {
   //struct eth_addr *ethaddr;

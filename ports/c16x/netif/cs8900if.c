@@ -415,14 +415,19 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
  */
 static struct pbuf *cs8900_input(struct netif *netif)
 {
+  volatile u16_t* rxtx_reg;
+  volatile u16_t rxtx_num = (MEM_BASE + IO_BASE);
+  u16_t* ptr = NULL;
   struct pbuf *p = NULL, *q = NULL;
   u16_t len = 0;
   u16_t event_type;
   u16_t i;
-  u16_t *ptr = NULL;
 
+  /* optimized register mapping for Tasking c166 7.5 (default optimalisation setting)
+     Using RXTXREG drictly produces inefficient code with many const address loads. */
+  rxtx_reg = ((volatile u16_t *)(rxtx_num));
   // read RxStatus
-  event_type = RXTXREG;
+  event_type = *rxtx_reg;
 
   // correctly received frame, either broadcast or individual address?
   // TODO: maybe defer these conditions to cs8900_input()
@@ -441,7 +446,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
 #endif
     event_type = 0;
     // read RxLength
-    len = RXTXREG;
+    len = *rxtx_reg;
     LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: packet len %"U16_F"\n", len));
     snmp_add_ifinoctets(len);
     // positive length?
@@ -455,16 +460,32 @@ static struct pbuf *cs8900_input(struct netif *netif)
         /* drop the padding word */
         pbuf_header(p, -ETH_PAD_SIZE);     /* drop the padding word */
 #endif
-
         for (q = p; q != 0; q = q->next)
         {
 	        LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %"U16_F" len %"U16_F"\n", q, q->tot_len, q->len));
-	        ptr = q->payload;
-          // TODO: CHECK: what if q->len is odd? we don't use the last byte?
-          for (i = (q->len + 1) / 2; i > 0; i--)
+
+          /* read 8 bytes per iteration */
+          ptr = q->payload;
+          i = q->len / 8;
+          while(i > 0)
           {
-            *ptr = RXTXREG;
+            *ptr = *rxtx_reg;
             ptr++;
+            *ptr = *rxtx_reg;
+            ptr++;
+            *ptr = *rxtx_reg;
+            ptr++;
+            *ptr = *rxtx_reg;
+            ptr++;
+            i--;
+          }
+          /* read remainder */
+          i = ((q->len % 8) + 1) / 2;
+          while(i > 0)
+          {
+            *ptr = *rxtx_reg;
+            ptr++;
+            i--;
           }
         }
 #if ETH_PAD_SIZE
@@ -510,8 +531,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
 
 static void cs8900_service(struct netif *netif)
 {
-  /* amount of ISQ's to handle (> 0) in one cs8900_service() call */
-  u8_t events2service = 1;
+  u8_t events2service = CS8900_EVTS2SRV;
 #if (CS8900_STATS > 0)
   u16_t miss_count = 0, coll_count = 0;
 #endif
