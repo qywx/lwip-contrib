@@ -262,7 +262,7 @@ mintapif_input(struct netif *netif)
 
   if (p != NULL) {
 
-#ifdef LINK_STATS
+#if LINK_STATS
     lwip_stats.link.recv++;
 #endif /* LINK_STATS */
 

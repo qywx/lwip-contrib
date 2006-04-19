@@ -153,11 +153,12 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_UDP                1
 #define UDP_TTL                 255
 
+#define LWIP_RAW                0
 
 /* ---------- Statistics options ---------- */
-#define LWIP_STATS 1
+#define LWIP_STATS 0
 
-#ifdef LWIP_STATS
+#if LWIP_STATS
 #define LINK_STATS 0
 #define IP_STATS 0
 #define ICMP_STATS 0
@@ -167,16 +168,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_STATS 1
 #define PBUF_STATS 1
 #define SYS_STATS 0
-#else
-#define LINK_STATS 0
-#define IP_STATS 0
-#define ICMP_STATS 0
-#define UDP_STATS 0
-#define TCP_STATS 0
-#define MEM_STATS 0
-#define MEMP_STATS 0
-#define PBUF_STATS 0
-#define SYS_STATS 0
+
 #endif /* LWIP_STATS */
 
 /** print only debug messages with this level or higher */
