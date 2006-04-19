@@ -32,6 +32,7 @@
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <getopt.h>
 
 #include "lwip/opt.h"
 
@@ -74,6 +75,32 @@
 #include "lwip/sockets.h"
 #endif
 
+/* ping out destination cmd option */
+unsigned char ping_flag;
+struct ip_addr ping_addr;
+
+/* nonstatic debug cmd option, exported in lwipopts.h */
+unsigned char debug_flags;
+
+static struct option longopts[] = {
+  /* turn on debugging output (if build with LWIP_DEBUG) */
+  {"debug", no_argument,       NULL, 'd'},
+  /* ping destination */
+  {"ping",  required_argument, NULL, 'p'},
+  /* new command line options go here! */
+  {NULL,   0,                 NULL,  0}
+};
+#define NUM_OPTS ((sizeof(longopts) / sizeof(struct option)) - 1)
+
+void usage(void)
+{
+  unsigned char i;
+   
+  printf("options:\n");
+  for (i = 0; i < NUM_OPTS; i++) {
+    printf("-%c --%s\n",longopts[i].val, longopts[i].name);
+  }
+}
 
 static void
 tcp_debug_timeout(void *data)
@@ -97,54 +124,54 @@ void
 pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 {
     switch(errCode) {
-	case PPPERR_NONE:               /* No error. */
-	    {
-		struct ppp_addrs *ppp_addrs = arg;
+    case PPPERR_NONE:               /* No error. */
+        {
+        struct ppp_addrs *ppp_addrs = arg;
 
-		printf("pppLinkStatusCallback: PPPERR_NONE");
-		printf(" our_ipaddr=%s", _inet_ntoa(ppp_addrs->our_ipaddr.addr));
-		printf(" his_ipaddr=%s", _inet_ntoa(ppp_addrs->his_ipaddr.addr));
-		printf(" netmask=%s", _inet_ntoa(ppp_addrs->netmask.addr));
-		printf(" dns1=%s", _inet_ntoa(ppp_addrs->dns1.addr));
-		printf(" dns2=%s\n", _inet_ntoa(ppp_addrs->dns2.addr));
-	    }
-	    break;
+        printf("pppLinkStatusCallback: PPPERR_NONE");
+        printf(" our_ipaddr=%s", _inet_ntoa(ppp_addrs->our_ipaddr.addr));
+        printf(" his_ipaddr=%s", _inet_ntoa(ppp_addrs->his_ipaddr.addr));
+        printf(" netmask=%s", _inet_ntoa(ppp_addrs->netmask.addr));
+        printf(" dns1=%s", _inet_ntoa(ppp_addrs->dns1.addr));
+        printf(" dns2=%s\n", _inet_ntoa(ppp_addrs->dns2.addr));
+        }
+        break;
 
-	case PPPERR_PARAM:             /* Invalid parameter. */
-	    printf("pppLinkStatusCallback: PPPERR_PARAM\n");
-	    break;
+    case PPPERR_PARAM:             /* Invalid parameter. */
+        printf("pppLinkStatusCallback: PPPERR_PARAM\n");
+        break;
 
-	case PPPERR_OPEN:              /* Unable to open PPP session. */
-	    printf("pppLinkStatusCallback: PPPERR_OPEN\n");
-	    break;
+    case PPPERR_OPEN:              /* Unable to open PPP session. */
+        printf("pppLinkStatusCallback: PPPERR_OPEN\n");
+        break;
 
-	case PPPERR_DEVICE:            /* Invalid I/O device for PPP. */
-	    printf("pppLinkStatusCallback: PPPERR_DEVICE\n");
-	    break;
+    case PPPERR_DEVICE:            /* Invalid I/O device for PPP. */
+        printf("pppLinkStatusCallback: PPPERR_DEVICE\n");
+        break;
 
-	case PPPERR_ALLOC:             /* Unable to allocate resources. */
-	    printf("pppLinkStatusCallback: PPPERR_ALLOC\n");
-	    break;
+    case PPPERR_ALLOC:             /* Unable to allocate resources. */
+        printf("pppLinkStatusCallback: PPPERR_ALLOC\n");
+        break;
 
-	case PPPERR_USER:              /* User interrupt. */
-	    printf("pppLinkStatusCallback: PPPERR_USER\n");
-	    break;
+    case PPPERR_USER:              /* User interrupt. */
+        printf("pppLinkStatusCallback: PPPERR_USER\n");
+        break;
 
-	case PPPERR_CONNECT:           /* Connection lost. */
-	    printf("pppLinkStatusCallback: PPPERR_CONNECT\n");
-	    break;
+    case PPPERR_CONNECT:           /* Connection lost. */
+        printf("pppLinkStatusCallback: PPPERR_CONNECT\n");
+        break;
 
-	case PPPERR_AUTHFAIL:          /* Failed authentication challenge. */
-	    printf("pppLinkStatusCallback: PPPERR_AUTHFAIL\n");
-	    break;
+    case PPPERR_AUTHFAIL:          /* Failed authentication challenge. */
+        printf("pppLinkStatusCallback: PPPERR_AUTHFAIL\n");
+        break;
 
-	case PPPERR_PROTOCOL:          /* Failed to meet protocol. */
-	    printf("pppLinkStatusCallback: PPPERR_PROTOCOL\n");
-	    break;
+    case PPPERR_PROTOCOL:          /* Failed to meet protocol. */
+        printf("pppLinkStatusCallback: PPPERR_PROTOCOL\n");
+        break;
 
-	default:
-	    printf("pppLinkStatusCallback: unknown errCode %d\n", errCode);
-	    break;
+    default:
+        printf("pppLinkStatusCallback: unknown errCode %d\n", errCode);
+        break;
     }
 }
 #endif
@@ -190,18 +217,15 @@ static void
 ping_thread(void *arg)
 {
   struct raw_pcb *raw;
-  struct ip_addr dest_addr;
 
   if (!(raw = raw_new(IP_PROTO_ICMP))) return;
 
   raw_recv(raw,ping_recv,NULL);
 
-  IP4_ADDR(&dest_addr,192,168,2,1);
-
   while (1)
   {
     printf("ping send\n");
-    ping_send(raw,&dest_addr);
+    ping_send(raw,&ping_addr);
     sleep(1);
   }
   /* Never reaches this */
@@ -250,18 +274,15 @@ static void
 ping_thread(void *arg)
 {
   int s;
-  struct ip_addr dest_addr;
 
   if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
     return;
   }
 
-  IP4_ADDR(&dest_addr,192,168,2,1);
-
   while (1) {
     printf("sending ping\n");
-    ping_send(s,&dest_addr);
-    ping_recv(s,&dest_addr);
+    ping_send(s,&ping_addr);
+    ping_recv(s,&ping_addr);
     sleep(1);
   }
 }
@@ -317,7 +338,7 @@ main_thread(void *arg)
     IP4_ADDR(&netmask, 0,0,0,0);
 
     netif_add(&netif, &ipaddr, &netmask, &gw, NULL, tapif_init,
-		      tcpip_input);
+              tcpip_input);
     netif_set_default(&netif);
     dhcp_start(&netif);
   }
@@ -327,7 +348,7 @@ main_thread(void *arg)
   IP4_ADDR(&netmask, 255,255,255,0);
   
   netif_set_default(netif_add(&netif,&ipaddr, &netmask, &gw, NULL, tapif_init,
-			      tcpip_input));
+                  tcpip_input));
 
   netif_set_up(&netif);
 
@@ -346,7 +367,7 @@ main_thread(void *arg)
   IP4_ADDR(&netmask, 255,0,0,0);
   
   netif_set_default(netif_add(&loopif, &ipaddr, &netmask, &gw, NULL, loopif_init,
-	    tcpip_input));
+        tcpip_input));
 #endif
   
 #if LWIP_TCP  
@@ -359,7 +380,10 @@ main_thread(void *arg)
 #endif  
 
 #if LWIP_RAW
-  sys_thread_new(ping_thread, NULL, DEFAULT_THREAD_PRIO);
+  /* @todo remove dependency on RAW PCB support */
+  if(ping_flag) {
+    sys_thread_new(ping_thread, NULL, DEFAULT_THREAD_PRIO);
+  }
 #endif
 
   printf("Applications started.\n");
@@ -370,7 +394,7 @@ main_thread(void *arg)
   mem_perf_init("/tmp/memstats.client");
 #endif /* MEM_PERF */
 #if 0
-	stats_display();
+    stats_display();
 #endif
   /* Block for ever. */
   sem = sys_sem_new(0);
@@ -380,6 +404,30 @@ main_thread(void *arg)
 int
 main(int argc, char **argv)
 {
+  int ch;
+
+  ping_flag = 0;
+  /* use debug flags defined by debug.h */
+  debug_flags = (DBG_OFF|DBG_TRACE|DBG_STATE|DBG_FRESH|DBG_HALT);
+  
+  while ((ch = getopt_long(argc, argv, "dp:", longopts, NULL)) != -1) {
+    switch (ch) {
+      case 'd':
+        debug_flags |= DBG_ON;
+        break;
+      case 'p':
+        ping_flag = !0;
+        /* which one is used? lwip's or our local inet_aton()? */
+        inet_aton(optarg, &ping_addr);
+        printf("Using %"X32_F" to ping\n",ping_addr.addr);
+        break;
+      default:
+        usage();
+        break;
+    }
+  }
+  argc -= optind;
+  argv += optind;
 #ifdef PERF
   perf_init("/tmp/simhost.perf");
 #endif /* PERF */

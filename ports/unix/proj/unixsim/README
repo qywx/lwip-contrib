@@ -49,3 +49,13 @@ For Linux you might need to create a device node with
   Finally, "simhost" also includes a simple web server; the URL is
   of course http://192.168.0.2/.
 
+* Simhost has some extra features that can be
+  selected with command line options.
+  
+  To enable runtime debug output (project must be build with -DLWIP_DEBUG):
+  
+  # ./simhost -d
+  
+  To ping any host, e.g. the gateway:
+  
+  # ./simhost -p 192.168.0.1

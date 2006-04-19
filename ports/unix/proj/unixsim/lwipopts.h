@@ -65,8 +65,8 @@
 #define TCP_QLEN_DEBUG   DBG_ON
 #define TCP_RST_DEBUG    DBG_ON
 
-#define DBG_TYPES_ON    (DBG_ON|DBG_TRACE|DBG_STATE|DBG_FRESH|DBG_HALT)
-
+extern unsigned char debug_flags;
+#define DBG_TYPES_ON debug_flags
 
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
