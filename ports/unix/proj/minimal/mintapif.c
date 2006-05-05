@@ -270,7 +270,11 @@ mintapif_input(struct netif *netif)
 
     switch (htons(ethhdr->type)) {
     case ETHTYPE_IP:
+#if 0
+/* CSi disabled ARP table update on ingress IP packets.
+   This seems to work but needs thorough testing. */
       etharp_ip_input(netif, p);
+#endif
       pbuf_header(p, -14);
       netif->input(p, netif);
       break;

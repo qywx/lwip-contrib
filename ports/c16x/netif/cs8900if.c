@@ -698,8 +698,12 @@ void cs8900if_input(struct netif *netif)
   switch (htons(ethhdr->type)) {
   /* IP packet? */
   case ETHTYPE_IP:
+#if 0
+/* CSi disabled ARP table update on ingress IP packets.
+   This seems to work but needs thorough testing. */
     /* update ARP table */
     etharp_ip_input(netif, p);
+#endif
     /* skip Ethernet header */
     pbuf_header(p, -(s16_t)sizeof(struct eth_hdr));
     LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: passing packet up to IP\n"));
