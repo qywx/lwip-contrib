@@ -416,7 +416,7 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
 static struct pbuf *cs8900_input(struct netif *netif)
 {
   volatile u16_t* rxtx_reg;
-  volatile u16_t rxtx_num = (MEM_BASE + IO_BASE);
+  volatile u32_t rxtx_num = (MEM_BASE + IO_BASE);
   u16_t* ptr = NULL;
   struct pbuf *p = NULL, *q = NULL;
   u16_t len = 0;
@@ -424,7 +424,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
   u16_t i;
 
   /* optimized register mapping for Tasking c166 7.5 (default optimalisation setting)
-     Using RXTXREG drictly produces inefficient code with many const address loads. */
+     Using RXTXREG directly produces inefficient code with many const address loads. */
   rxtx_reg = ((volatile u16_t *)(rxtx_num));
   // read RxStatus
   event_type = *rxtx_reg;
