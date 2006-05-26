@@ -404,21 +404,23 @@ main_thread(void *arg)
 int
 main(int argc, char **argv)
 {
+  struct in_addr ping_inaddr;
   int ch;
-
+  
   ping_flag = 0;
   /* use debug flags defined by debug.h */
-  debug_flags = (DBG_OFF|DBG_TRACE|DBG_STATE|DBG_FRESH|DBG_HALT);
+  debug_flags = DBG_OFF;
   
   while ((ch = getopt_long(argc, argv, "dp:", longopts, NULL)) != -1) {
     switch (ch) {
       case 'd':
-        debug_flags |= DBG_ON;
+        debug_flags |= (DBG_ON|DBG_TRACE|DBG_STATE|DBG_FRESH|DBG_HALT);
         break;
       case 'p':
         ping_flag = !0;
-        /* which one is used? lwip's or our local inet_aton()? */
-        inet_aton(optarg, &ping_addr);
+        inet_aton(optarg, &ping_inaddr);
+        /* lwip inet.h oddity workaround */
+        ping_addr.addr = ping_inaddr.s_addr; 
         printf("Using %"X32_F" to ping\n",ping_addr.addr);
         break;
       default:
