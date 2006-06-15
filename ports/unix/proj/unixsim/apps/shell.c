@@ -79,7 +79,9 @@ clos [connection #]: closes a TCP or UDP connection.\n\
 stat: prints out lwIP statistics.\n\
 quit: quits.\n";
 
-static char *stat_msgs[] = {
+#define STAT_NUM ((6 * 13) + (6) + (4) + (11 * 4) + (2 * 3))
+
+static char *stat_msgs[STAT_NUM] = {
   "Link level * transmitted ",
   "             retransmitted ",
   "           * received ",
@@ -219,6 +221,329 @@ static char *stat_msgs[] = {
   "           * high water mark ",
   "           * errors "
 };
+
+static char *stat_formats[STAT_NUM] = {
+  U16_F, /* link xmit */
+  U16_F, /* link rexmit */
+  U16_F, /* link recv */
+  U16_F, /* link fw */ 
+  U16_F, /* link drop */
+  U16_F, /* link chkerr */
+  U16_F, /* link lenerr */
+  U16_F, /* link memerr */
+  U16_F, /* link rterr */
+  U16_F, /* link proterr */
+  U16_F, /* link opterr */
+  U16_F, /* link err */
+  U16_F, /* link cachehit */
+
+  U16_F, /* ip_frag xmit */
+  U16_F, /* ip_frag rexmit */
+  U16_F, /* ip_frag recv */
+  U16_F, /* ip_frag fw */ 
+  U16_F, /* ip_frag drop */
+  U16_F, /* ip_frag chkerr */
+  U16_F, /* ip_frag lenerr */
+  U16_F, /* ip_frag memerr */
+  U16_F, /* ip_frag rterr */
+  U16_F, /* ip_frag proterr */
+  U16_F, /* ip_frag opterr */
+  U16_F, /* ip_frag err */
+  U16_F, /* ip_frag cachehit */
+
+  U16_F, /* ip xmit */
+  U16_F, /* ip rexmit */
+  U16_F, /* ip recv */
+  U16_F, /* ip fw */ 
+  U16_F, /* ip drop */
+  U16_F, /* ip chkerr */
+  U16_F, /* ip lenerr */
+  U16_F, /* ip memerr */
+  U16_F, /* ip rterr */
+  U16_F, /* ip proterr */
+  U16_F, /* ip opterr */
+  U16_F, /* ip err */
+  U16_F, /* ip cachehit */
+
+  U16_F, /* icmp xmit */
+  U16_F, /* icmp rexmit */
+  U16_F, /* icmp recv */
+  U16_F, /* icmp fw */ 
+  U16_F, /* icmp drop */
+  U16_F, /* icmp chkerr */
+  U16_F, /* icmp lenerr */
+  U16_F, /* icmp memerr */
+  U16_F, /* icmp rterr */
+  U16_F, /* icmp proterr */
+  U16_F, /* icmp opterr */
+  U16_F, /* icmp err */
+  U16_F, /* icmp cachehit */
+
+  U16_F, /* udp xmit */
+  U16_F, /* udp rexmit */
+  U16_F, /* udp recv */
+  U16_F, /* udp fw */ 
+  U16_F, /* udp drop */
+  U16_F, /* udp chkerr */
+  U16_F, /* udp lenerr */
+  U16_F, /* udp memerr */
+  U16_F, /* udp rterr */
+  U16_F, /* udp proterr */
+  U16_F, /* udp opterr */
+  U16_F, /* udp err */
+  U16_F, /* udp cachehit */  
+
+  U16_F, /* tcp xmit */
+  U16_F, /* tcp exmit */
+  U16_F, /* tcp recv */
+  U16_F, /* tcp fw */ 
+  U16_F, /* tcp drop */
+  U16_F, /* tcp chkerr */
+  U16_F, /* tcp lenerr */
+  U16_F, /* tcp memerr */
+  U16_F, /* tcp rterr */
+  U16_F, /* tcp proterr */
+  U16_F, /* tcp opterr */
+  U16_F, /* tcp err */
+  U16_F, /* tcp cachehit */
+
+  U16_F, /* pbuf avail */
+  U16_F, /* pbuf used */
+  U16_F, /* pbuf max */
+  U16_F, /* pbuf err */
+  U16_F, /* pbuf alloc_locked */
+  U16_F, /* pbuf refresh_locked */
+
+  MEM_SIZE_F, /* mem avail */
+  MEM_SIZE_F, /* mem used */
+  MEM_SIZE_F, /* mem max */
+  MEM_SIZE_F, /* mem err */
+  
+  MEM_SIZE_F, /* memp pbuf avail */
+  MEM_SIZE_F, /* memp pbuf used */
+  MEM_SIZE_F, /* memp pbuf max */
+  MEM_SIZE_F, /* memp pbuf err */
+
+  MEM_SIZE_F, /* memp raw pcb avail */
+  MEM_SIZE_F, /* memp raw pcb used */
+  MEM_SIZE_F, /* memp raw pcb max */
+  MEM_SIZE_F, /* memp raw err */
+
+  MEM_SIZE_F, /* memp udp pcb avail */
+  MEM_SIZE_F, /* memp udp pcb used */
+  MEM_SIZE_F, /* memp udp pcb max */
+  MEM_SIZE_F, /* memp udp pcb err */
+
+  MEM_SIZE_F, /* memp tcp pcb avail */
+  MEM_SIZE_F, /* memp tcp pcb used */
+  MEM_SIZE_F, /* memp tcp pcb max */
+  MEM_SIZE_F, /* memp tcp pcb err */
+
+  MEM_SIZE_F, /* memp tcp lstn pcb avail */
+  MEM_SIZE_F, /* memp tcp lstn pcb used */
+  MEM_SIZE_F, /* memp tcp lstn pcb max */
+  MEM_SIZE_F, /* memp tcp lstn pcb err */
+
+  MEM_SIZE_F, /* memp tcp seg avail */
+  MEM_SIZE_F, /* memp tcp seg used */
+  MEM_SIZE_F, /* memp tcp seg max */
+  MEM_SIZE_F, /* memp tcp seg err */
+
+  MEM_SIZE_F, /* memp netbuf avail */
+  MEM_SIZE_F, /* memp netbuf used */
+  MEM_SIZE_F, /* memp netbuf max */
+  MEM_SIZE_F, /* memp netbuf err */
+
+  MEM_SIZE_F, /* memp netconn avail */
+  MEM_SIZE_F, /* memp netconn used */
+  MEM_SIZE_F, /* memp netconn max */
+  MEM_SIZE_F, /* memp netconn err */
+
+  MEM_SIZE_F, /* memp api msg avail */
+  MEM_SIZE_F, /* memp api msg used */
+  MEM_SIZE_F, /* memp api msg max */
+  MEM_SIZE_F, /* memp api msg err */
+
+  MEM_SIZE_F, /* memp tcpip msg avail */
+  MEM_SIZE_F, /* memp tcpip msg used */
+  MEM_SIZE_F, /* memp tcpip msg max */
+  MEM_SIZE_F, /* memp tcpip msg err */
+
+  MEM_SIZE_F, /* memp sys to avail */
+  MEM_SIZE_F, /* memp sys to used */
+  MEM_SIZE_F, /* memp sys to max */
+  MEM_SIZE_F, /* memp sys to err */
+
+  U16_F, /* sys sem used */
+  U16_F, /* sys sem max */
+  U16_F, /* sys sem err */
+
+  U16_F, /* sys mbox used */
+  U16_F, /* sys mbox max */
+  U16_F, /* sys mbox err */
+};
+
+static void *stat_ptrs[STAT_NUM] = {
+  &lwip_stats.link.xmit,
+  &lwip_stats.link.rexmit,
+  &lwip_stats.link.recv,
+  &lwip_stats.link.fw,
+  &lwip_stats.link.drop,
+  &lwip_stats.link.chkerr,
+  &lwip_stats.link.lenerr,
+  &lwip_stats.link.memerr,
+  &lwip_stats.link.rterr,
+  &lwip_stats.link.proterr,
+  &lwip_stats.link.opterr,
+  &lwip_stats.link.err,
+  &lwip_stats.link.cachehit,
+
+  &lwip_stats.ip_frag.xmit,
+  &lwip_stats.ip_frag.rexmit,
+  &lwip_stats.ip_frag.recv,
+  &lwip_stats.ip_frag.fw,
+  &lwip_stats.ip_frag.drop,
+  &lwip_stats.ip_frag.chkerr,
+  &lwip_stats.ip_frag.lenerr,
+  &lwip_stats.ip_frag.memerr,
+  &lwip_stats.ip_frag.rterr,
+  &lwip_stats.ip_frag.proterr,
+  &lwip_stats.ip_frag.opterr,
+  &lwip_stats.ip_frag.err,
+  &lwip_stats.ip_frag.cachehit,
+
+  &lwip_stats.ip.xmit,
+  &lwip_stats.ip.rexmit,
+  &lwip_stats.ip.recv,
+  &lwip_stats.ip.fw,
+  &lwip_stats.ip.drop,
+  &lwip_stats.ip.chkerr,
+  &lwip_stats.ip.lenerr,
+  &lwip_stats.ip.memerr,
+  &lwip_stats.ip.rterr,
+  &lwip_stats.ip.proterr,
+  &lwip_stats.ip.opterr,
+  &lwip_stats.ip.err,
+  &lwip_stats.ip.cachehit,
+
+  &lwip_stats.icmp.xmit,
+  &lwip_stats.icmp.rexmit,
+  &lwip_stats.icmp.recv,
+  &lwip_stats.icmp.fw,
+  &lwip_stats.icmp.drop,
+  &lwip_stats.icmp.chkerr,
+  &lwip_stats.icmp.lenerr,
+  &lwip_stats.icmp.memerr,
+  &lwip_stats.icmp.rterr,
+  &lwip_stats.icmp.proterr,
+  &lwip_stats.icmp.opterr,
+  &lwip_stats.icmp.err,
+  &lwip_stats.icmp.cachehit,
+
+  &lwip_stats.udp.xmit,
+  &lwip_stats.udp.rexmit,
+  &lwip_stats.udp.recv,
+  &lwip_stats.udp.fw,
+  &lwip_stats.udp.drop,
+  &lwip_stats.udp.chkerr,
+  &lwip_stats.udp.lenerr,
+  &lwip_stats.udp.memerr,
+  &lwip_stats.udp.rterr,
+  &lwip_stats.udp.proterr,
+  &lwip_stats.udp.opterr,
+  &lwip_stats.udp.err,
+  &lwip_stats.udp.cachehit,
+
+  &lwip_stats.tcp.xmit,
+  &lwip_stats.tcp.rexmit,
+  &lwip_stats.tcp.recv,
+  &lwip_stats.tcp.fw,
+  &lwip_stats.tcp.drop,
+  &lwip_stats.tcp.chkerr,
+  &lwip_stats.tcp.lenerr,
+  &lwip_stats.tcp.memerr,
+  &lwip_stats.tcp.rterr,
+  &lwip_stats.tcp.proterr,
+  &lwip_stats.tcp.opterr,
+  &lwip_stats.tcp.err,
+  &lwip_stats.tcp.cachehit,
+
+  &lwip_stats.pbuf.avail,
+  &lwip_stats.pbuf.used,
+  &lwip_stats.pbuf.max,
+  &lwip_stats.pbuf.err,
+  &lwip_stats.pbuf.alloc_locked,
+  &lwip_stats.pbuf.refresh_locked,
+
+  &lwip_stats.mem.avail,
+  &lwip_stats.mem.used,
+  &lwip_stats.mem.max,
+  &lwip_stats.mem.err,
+  
+  &lwip_stats.memp[0].avail,
+  &lwip_stats.memp[0].used,
+  &lwip_stats.memp[0].max,
+  &lwip_stats.memp[0].err,
+
+  &lwip_stats.memp[1].avail,
+  &lwip_stats.memp[1].used,
+  &lwip_stats.memp[1].max,
+  &lwip_stats.memp[1].err,
+
+  &lwip_stats.memp[2].avail,
+  &lwip_stats.memp[2].used,
+  &lwip_stats.memp[2].max,
+  &lwip_stats.memp[2].err,
+
+  &lwip_stats.memp[3].avail,
+  &lwip_stats.memp[3].used,
+  &lwip_stats.memp[3].max,
+  &lwip_stats.memp[3].err,
+
+  &lwip_stats.memp[4].avail,
+  &lwip_stats.memp[4].used,
+  &lwip_stats.memp[4].max,
+  &lwip_stats.memp[4].err,
+
+  &lwip_stats.memp[5].avail,
+  &lwip_stats.memp[5].used,
+  &lwip_stats.memp[5].max,
+  &lwip_stats.memp[5].err,
+
+  &lwip_stats.memp[6].avail,
+  &lwip_stats.memp[6].used,
+  &lwip_stats.memp[6].max,
+  &lwip_stats.memp[6].err,
+
+  &lwip_stats.memp[7].avail,
+  &lwip_stats.memp[7].used,
+  &lwip_stats.memp[7].max,
+  &lwip_stats.memp[7].err,
+
+  &lwip_stats.memp[8].avail,
+  &lwip_stats.memp[8].used,
+  &lwip_stats.memp[8].max,
+  &lwip_stats.memp[8].err,
+
+  &lwip_stats.memp[9].avail,
+  &lwip_stats.memp[9].used,
+  &lwip_stats.memp[9].max,
+  &lwip_stats.memp[9].err,
+
+  &lwip_stats.memp[10].avail,
+  &lwip_stats.memp[10].used,
+  &lwip_stats.memp[10].max,
+  &lwip_stats.memp[10].err,
+
+  &lwip_stats.sys.sem.used,
+  &lwip_stats.sys.sem.max,
+  &lwip_stats.sys.sem.err,
+
+  &lwip_stats.sys.mbox.used,
+  &lwip_stats.sys.mbox.max,
+  &lwip_stats.sys.mbox.err,
+};
+
 /*-----------------------------------------------------------------------------------*/
 static void
 sendstr(const char *str, struct netconn *conn)
@@ -428,17 +753,24 @@ static s8_t
 com_stat(struct command *com)
 {
   int i;
+  char fmt[10] = "%s%";
   char buf[100];
   u16_t len;
   
-  for(i = 0; i < sizeof(struct stats_) / 2; i++) {
-    len = snprintf(buf, sizeof(buf), "%d", ((u16_t *)&lwip_stats)[i]);
-    sendstr(stat_msgs[i], com->conn);
+  for(i = 0; i < STAT_NUM; i++) {
+    snprintf(&fmt[3], sizeof(fmt) - 3,"%s\n", stat_formats[i]);
+    if (strcmp(stat_formats[i], U16_F) == 0) {
+      len = snprintf(buf, sizeof(buf), fmt, stat_msgs[i], *(u16_t*)stat_ptrs[i]);    
+    }
+    else if (strcmp(stat_formats[i], MEM_SIZE_F) == 0) {
+      len = snprintf(buf, sizeof(buf), fmt, stat_msgs[i], *(mem_size_t*)stat_ptrs[i]);
+    }
+    else {
+      len = snprintf(buf, sizeof(buf), "%s %s", stat_msgs[i], "unkown format");
+    }
     netconn_write(com->conn, buf, len, NETCONN_COPY);
-    sendstr("\n", com->conn);
   }
 
-  
   return ESUCCESS;
 }
 #endif
