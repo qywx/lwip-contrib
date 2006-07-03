@@ -110,7 +110,7 @@ introduce_thread(pthread_t id)
   
   thread = malloc(sizeof(struct sys_thread));
     
-  if (thread) {
+  if (thread != NULL) {
     pthread_mutex_lock(&threads_mutex);
     thread->next = threads;
     thread->timeouts.next = NULL;
@@ -181,18 +181,19 @@ sys_mbox_new()
   struct sys_mbox *mbox;
   
   mbox = malloc(sizeof(struct sys_mbox));
-  mbox->first = mbox->last = 0;
-  mbox->mail = sys_sem_new_(0);
-  mbox->mutex = sys_sem_new_(1);
-  mbox->wait_send = 0;
+  if (mbox != NULL) {
+    mbox->first = mbox->last = 0;
+    mbox->mail = sys_sem_new_(0);
+    mbox->mutex = sys_sem_new_(1);
+    mbox->wait_send = 0;
   
 #if SYS_STATS
-  lwip_stats.sys.mbox.used++;
-  if (lwip_stats.sys.mbox.used > lwip_stats.sys.mbox.max) {
-    lwip_stats.sys.mbox.max = lwip_stats.sys.mbox.used;
-  }
+    lwip_stats.sys.mbox.used++;
+    if (lwip_stats.sys.mbox.used > lwip_stats.sys.mbox.max) {
+      lwip_stats.sys.mbox.max = lwip_stats.sys.mbox.used;
+    }
 #endif /* SYS_STATS */
-  
+  }
   return mbox;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -313,11 +314,11 @@ sys_sem_new_(u8_t count)
   struct sys_sem *sem;
   
   sem = malloc(sizeof(struct sys_sem));
-  sem->c = count;
-  
-  pthread_cond_init(&(sem->cond), NULL);
-  pthread_mutex_init(&(sem->mutex), NULL);
-  
+  if (sem != NULL) {
+    sem->c = count;
+    pthread_cond_init(&(sem->cond), NULL);
+    pthread_mutex_init(&(sem->mutex), NULL);
+  }
   return sem;
 }
 
