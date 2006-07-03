@@ -35,6 +35,7 @@
  * @see timer.h
  */
 
+#include <stddef.h>
 #include <signal.h>
 #include <sys/time.h>
 #include "timer.h"
