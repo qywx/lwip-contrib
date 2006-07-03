@@ -75,18 +75,30 @@
 #include "lwip/sockets.h"
 #endif
 
+/* (manual) host IP configuration */
+static struct ip_addr ipaddr, netmask, gw;
+
 /* ping out destination cmd option */
-unsigned char ping_flag;
-struct ip_addr ping_addr;
+static unsigned char ping_flag;
+static struct ip_addr ping_addr;
 
 /* nonstatic debug cmd option, exported in lwipopts.h */
 unsigned char debug_flags;
 
+/** @todo add options for selecting netif, starting DHCP client etc */
 static struct option longopts[] = {
   /* turn on debugging output (if build with LWIP_DEBUG) */
-  {"debug", no_argument,       NULL, 'd'},
+  {"debug", no_argument,        NULL, 'd'},
+  /* help */
+  {"help", no_argument, NULL, 'h'},
+  /* gateway address */
+  {"gateway", required_argument, NULL, 'g'},
+  /* ip address */
+  {"ipaddr", required_argument, NULL, 'i'},
+  /* netmask */
+  {"netmask", required_argument, NULL, 'm'},
   /* ping destination */
-  {"ping",  required_argument, NULL, 'p'},
+  {"ping",   required_argument, NULL, 'p'},
   /* new command line options go here! */
   {NULL,   0,                 NULL,  0}
 };
@@ -298,7 +310,6 @@ struct netif loopif;
 static void
 main_thread(void *arg)
 {
-  struct ip_addr ipaddr, netmask, gw;
   sys_sem_t sem;
 #if PPP_SUPPORT
   sio_fd_t ppp_sio;
@@ -343,23 +354,17 @@ main_thread(void *arg)
     dhcp_start(&netif);
   }
 #else
-  IP4_ADDR(&gw, 192,168,0,1);
-  IP4_ADDR(&ipaddr, 192,168,0,2);
-  IP4_ADDR(&netmask, 255,255,255,0);
   
   netif_set_default(netif_add(&netif,&ipaddr, &netmask, &gw, NULL, tapif_init,
                   tcpip_input));
-
   netif_set_up(&netif);
 
 #endif
+
+#if 0
   /* Only used for testing purposes: */
-  /*  IP4_ADDR(&gw, 193,10,66,1);
-  IP4_ADDR(&ipaddr, 193,10,66,107);
-  IP4_ADDR(&netmask, 255,255,252,0);
-  
-  netif_add(&ipaddr, &netmask, &gw, NULL, pcapif_init,
-  tcpip_input);*/
+  netif_add(&ipaddr, &netmask, &gw, NULL, pcapif_init, tcpip_input);
+#endif
 
 #if LWIP_HAVE_LOOPIF  
   IP4_ADDR(&gw, 127,0,0,1);
@@ -380,7 +385,7 @@ main_thread(void *arg)
 #endif  
 
 #if LWIP_RAW
-  /* @todo remove dependency on RAW PCB support */
+  /** @todo remove dependency on RAW PCB support */
   if(ping_flag) {
     sys_thread_new(ping_thread, NULL, DEFAULT_THREAD_PRIO);
   }
@@ -404,24 +409,47 @@ main_thread(void *arg)
 int
 main(int argc, char **argv)
 {
-  struct in_addr ping_inaddr;
+  struct in_addr inaddr;
   int ch;
+  char ip_str[16] = {0}, nm_str[16] = {0}, gw_str[16] = {0};
+
+  /* startup defaults (may be overridden by one or more opts) */
+  IP4_ADDR(&gw, 192,168,0,1);
+  IP4_ADDR(&netmask, 255,255,255,0);
+  IP4_ADDR(&ipaddr, 192,168,0,2);
   
   ping_flag = 0;
   /* use debug flags defined by debug.h */
   debug_flags = DBG_OFF;
   
-  while ((ch = getopt_long(argc, argv, "dp:", longopts, NULL)) != -1) {
+  while ((ch = getopt_long(argc, argv, "dhg:i:m:p:", longopts, NULL)) != -1) {
     switch (ch) {
       case 'd':
         debug_flags |= (DBG_ON|DBG_TRACE|DBG_STATE|DBG_FRESH|DBG_HALT);
         break;
+      case 'h':
+        usage();
+        exit(0);
+        break;
+      case 'g':
+        inet_aton(optarg, &inaddr);
+        gw.addr = inaddr.s_addr;
+        break;
+      case 'i':
+        inet_aton(optarg, &inaddr);
+        ipaddr.addr = inaddr.s_addr;
+        break;
+      case 'm':
+        inet_aton(optarg, &inaddr);
+        netmask.addr = inaddr.s_addr;
+        break;
       case 'p':
         ping_flag = !0;
-        inet_aton(optarg, &ping_inaddr);
+        inet_aton(optarg, &inaddr);
         /* lwip inet.h oddity workaround */
-        ping_addr.addr = ping_inaddr.s_addr; 
-        printf("Using %"X32_F" to ping\n",ping_addr.addr);
+        ping_addr.addr = inaddr.s_addr; 
+        strncpy(ip_str,inet_ntoa(inaddr),sizeof(ip_str));
+        printf("Using %s to ping\n", ip_str);
         break;
       default:
         usage();
@@ -430,16 +458,25 @@ main(int argc, char **argv)
   }
   argc -= optind;
   argv += optind;
+
+  inaddr.s_addr = ipaddr.addr;
+  strncpy(ip_str,inet_ntoa(inaddr),sizeof(ip_str));
+  inaddr.s_addr = netmask.addr;
+  strncpy(nm_str,inet_ntoa(inaddr),sizeof(nm_str));
+  inaddr.s_addr = gw.addr;
+  strncpy(gw_str,inet_ntoa(inaddr),sizeof(gw_str));
+  printf("Host at %s mask %s gateway %s\n", ip_str, nm_str, gw_str);
+
 #ifdef PERF
   perf_init("/tmp/simhost.perf");
 #endif /* PERF */
 #if LWIP_STATS
   stats_init();
 #endif /* STATS */
-  sys_init();
   mem_init();
   memp_init();
   pbuf_init();
+  sys_init();
 #ifdef LWIP_TCPDUMP
   tcpdump_init();
 #endif
