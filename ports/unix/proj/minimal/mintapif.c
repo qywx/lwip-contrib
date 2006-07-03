@@ -358,3 +358,26 @@ mintapif_wait(struct netif *netif, u16_t time)
   
   return MINTAPIF_PACKET;
 }
+
+int
+mintapif_select(struct netif *netif)
+{
+  fd_set fdset;
+  int ret;
+  struct timeval tv;
+  struct mintapif *mintapif;
+
+  mintapif = netif->state;
+
+  tv.tv_sec = 0;
+  tv.tv_usec = 0; /* usec_to; */
+  
+  FD_ZERO(&fdset);
+  FD_SET(mintapif->fd, &fdset);
+
+  ret = select(mintapif->fd + 1, &fdset, NULL, NULL, &tv);
+  if (ret > 0) {
+    mintapif_input(netif);   
+  }
+  return ret;
+}

@@ -27,7 +27,7 @@
  * This file is part of the lwIP TCP/IP stack.
  * 
  * Author: Adam Dunkels <adam@sics.se>
- *
+ * RT timer modifications by Christiaan Simons
  */
 
 #include "lwip/debug.h"
@@ -46,6 +46,9 @@
 #include "mintapif.h"
 #include "netif/etharp.h"
 
+#include "timer.h"
+#include <signal.h>
+
 #include "echo.h"
 
 int
@@ -53,8 +56,7 @@ main(int argc, char **argv)
 {
   struct ip_addr ipaddr, netmask, gw;
   struct netif netif;
-  static u8_t tcp_slow_timer = 0;
-  static u8_t arp_timer = 0;
+  sigset_t mask, oldmask, empty;
         
 #ifdef PERF
   perf_init("/tmp/minimal.perf");
@@ -84,36 +86,61 @@ main(int argc, char **argv)
 
   echo_init();
   
+  timer_init();
+  timer_set_interval(TIMER_EVT_ETHARPTMR,2000);
+  timer_set_interval(TIMER_EVT_TCPFASTTMR, TCP_FAST_INTERVAL / 10);
+  timer_set_interval(TIMER_EVT_TCPSLOWTMR, TCP_SLOW_INTERVAL / 10);
+#if IP_REASSEMBLY
+  timer_set_interval(TIMER_EVT_IPREASSTMR,100);
+#endif
+  
   printf("Applications started.\n");
     
 
   while (1) {
     
-    if (mintapif_wait(&netif, TCP_FAST_INTERVAL) == MINTAPIF_TIMEOUT) {
+      /* poll for input packet and ensure
+         select() or read() arn't interrupted */
+      sigemptyset(&mask);
+      sigaddset(&mask, SIGALRM);
+      sigprocmask(SIG_BLOCK, &mask, &oldmask);
 
-      tcp_fasttmr();
-
-      if (tcp_slow_timer == 4) {
-        tcp_slow_timer = 0;
-        tcp_slowtmr();
-      /* CSi these timers are unrelated, only happen to have a similar period.
-         TCP will avoid fragmentation. IP reassembly only makes sense for UDP/ICMP. */
-#if IP_REASSEMBLY
-        ip_reass_tmr();
-#endif
-      } else {
-        tcp_slow_timer++;
+      /* start of critical section,
+         poll netif, pass packet to lwIP */
+      if (mintapif_select(&netif) > 0)
+      {
+        /* work, immediatly end critical section 
+           hoping lwIP ended quickly ... */
+        sigprocmask(SIG_SETMASK, &oldmask, NULL);
       }
-      
-      if (arp_timer == 20) {
-        arp_timer = 0;
-        etharp_tmr();
-      } else {
-        arp_timer++;
+      else
+      {
+        /* no work, wait a little (10 msec) for SIGALRM */
+          sigemptyset(&empty);
+          sigsuspend(&empty);
+        /* ... end critical section */
+          sigprocmask(SIG_SETMASK, &oldmask, NULL);
       }
-      
-    }
     
+      if(timer_testclr_evt(TIMER_EVT_TCPFASTTMR))
+      {
+        tcp_fasttmr();
+      }
+      if(timer_testclr_evt(TIMER_EVT_TCPSLOWTMR))
+      {
+        tcp_slowtmr();
+      }      
+#if IP_REASSEMBLY
+      if(timer_testclr_evt(TIMER_EVT_IPREASSTMR))
+      {
+        ip_reass_tmr();
+      }
+#endif
+      if(timer_testclr_evt(TIMER_EVT_ETHARPTMR))
+      {
+        etharp_tmr();
+      }
+      
   }
   
   return 0;
