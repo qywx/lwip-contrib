@@ -385,12 +385,12 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
     ((struct cs8900if *)netif->state)->sentpackets++;
     ((struct cs8900if *)netif->state)->sentbytes += sent_bytes;
 #endif
-    snmp_add_ifoutoctets(sent_bytes);
+    snmp_add_ifoutoctets(netif,sent_bytes);
   }
   else
   {
     // { not ready to transmit!? }
-    snmp_inc_ifoutdiscards();
+    snmp_inc_ifoutdiscards(netif);
     /* return not connected */
     result = ERR_IF;
   }
@@ -437,18 +437,18 @@ static struct pbuf *cs8900_input(struct netif *netif)
     // update number of received MAC-unicast and non-MAC-unicast packets
     if (event_type & 0x0400U/*Individual*/)
     {
-      snmp_inc_ifinucastpkts();
+      snmp_inc_ifinucastpkts(netif);
     }
     else
     {
-      snmp_inc_ifinnucastpkts();
+      snmp_inc_ifinnucastpkts(netif);
     }
 #endif
     event_type = 0;
     // read RxLength
     len = *rxtx_reg;
     LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: packet len %"U16_F"\n", len));
-    snmp_add_ifinoctets(len);
+    snmp_add_ifinoctets(netif,len);
     // positive length?
     if (len > 0)
     {
@@ -503,7 +503,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
 #if (CS8900_STATS > 0)
         ((struct cs8900if *)netif->state)->dropped++;
 #endif
-        snmp_inc_ifindiscards();
+        snmp_inc_ifindiscards(netif);
         len = 0;
       }
     }
@@ -755,14 +755,30 @@ err_t cs8900if_init(struct netif *netif)
     LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: out of memory for cs8900if\n"));
     return ERR_MEM;
   }
-  // initialize lwip network interface
+  /* initialize lwip network interface ... */
+#if LWIP_SNMP
+  /* ifType ethernetCsmacd(6) */
+  netif->link_type = 6;
+  netif->link_speed = 10000000;
+  netif->ifinoctets = 0;
+  netif->ifinucastpkts = 0;
+  netif->ifinnucastpkts = 0;
+  netif->ifindiscards = 0;
+  netif->ifoutoctets = 0;
+  netif->ifoutucastpkts = 0;
+  netif->ifoutnucastpkts = 0;
+  netif->ifoutdiscards = 0;
+#endif
+
+  /* administrative details */
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
+
   /* downward functions */
   netif->output = cs8900if_output;
   netif->linkoutput = cs8900_output;
 
-  // initialize cs8900 specific interface state data pointer
+  /* initialize cs8900 specific interface state data pointer */
   netif->state = cs8900if;
 
   /* maximum transfer unit */
@@ -774,13 +790,13 @@ err_t cs8900if_init(struct netif *netif)
   /* hardware address length */
   netif->hwaddr_len = 6;
 
-  // initially assume no ISQ event
+  /* initially assume no ISQ event */
   cs8900if->needs_service = 0;
-  // set to 1 if polling method is used
+  /* set to 1 if polling method is used */
   cs8900if->use_polling = 0;
 
 #if (CS8900_STATS > 0)
-  // number of interrupt service routine calls
+  /* number of interrupt service routine calls */
   cs8900if->interrupts = 0;
   cs8900if->missed = 0;
   cs8900if->dropped = 0;
@@ -788,7 +804,7 @@ err_t cs8900if_init(struct netif *netif)
   cs8900if->sentbytes = 0;
 #endif
 
-  // intialize the cs8900a chip
+  /* intialize the cs8900a chip */
   return cs8900_init(netif);
 }
 
