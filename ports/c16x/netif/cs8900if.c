@@ -760,6 +760,7 @@ err_t cs8900if_init(struct netif *netif)
   /* ifType ethernetCsmacd(6) */
   netif->link_type = 6;
   netif->link_speed = 10000000;
+  netif->ts = 0;
   netif->ifinoctets = 0;
   netif->ifinucastpkts = 0;
   netif->ifinnucastpkts = 0;
