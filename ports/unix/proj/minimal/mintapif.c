@@ -60,6 +60,7 @@
 #endif
 
 #include "lwip/stats.h"
+#include "lwip/snmp.h"
 #include "lwip/mem.h"
 #include "netif/etharp.h"
 
@@ -149,6 +150,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
   struct pbuf *q;
   char buf[1514];
   char *bufptr;
+  int written;
 
   mintapif = netif->state;
   
@@ -166,8 +168,13 @@ low_level_output(struct netif *netif, struct pbuf *p)
   }
 
   /* signal that packet should be sent(); */
-  if (write(mintapif->fd, buf, p->tot_len) == -1) {
+  written = write(mintapif->fd, buf, p->tot_len);
+  if (written == -1) {
+    snmp_inc_ifoutdiscards(netif);
     perror("tapif: write");
+  }
+  else {
+    snmp_add_ifoutoctets(netif, written);
   }
   return ERR_OK;
 }
@@ -181,22 +188,25 @@ low_level_output(struct netif *netif, struct pbuf *p)
  */
 /*-----------------------------------------------------------------------------------*/
 static struct pbuf *
-low_level_input(struct mintapif *mintapif)
+low_level_input(struct netif *netif)
 {
   struct pbuf *p, *q;
   u16_t len;
   char buf[1514];
   char *bufptr;
+  struct mintapif *mintapif;
+
+  mintapif = netif->state;
 
   /* Obtain the size of the packet and put it into the "len"
      variable. */
   len = read(mintapif->fd, buf, sizeof(buf));
+  snmp_add_ifinoctets(netif,len);
 
   /*  if (((double)rand()/(double)RAND_MAX) < 0.1) {
     printf("drop\n");
     return NULL;
     }*/
-
   
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
@@ -216,6 +226,7 @@ low_level_input(struct mintapif *mintapif)
     /* acknowledge that packet has been read(); */
   } else {
     /* drop packet(); */
+    snmp_inc_ifindiscards(netif);
     printf("Could not allocate pbufs\n");
   }
 
@@ -258,7 +269,7 @@ mintapif_input(struct netif *netif)
 
   mintapif = netif->state;
   
-  p = low_level_input(mintapif);
+  p = low_level_input(netif);
 
   if (p != NULL) {
 
@@ -304,7 +315,29 @@ mintapif_init(struct netif *netif)
   struct mintapif *mintapif;
     
   mintapif = mem_malloc(sizeof(struct mintapif));
+  if (mintapif == NULL)
+  {
+    LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_init: out of memory for mintapif\n"));
+    return ERR_MEM;
+  }
   netif->state = mintapif;
+#if LWIP_SNMP
+  /* ifType is other(1), there doesn't seem
+     to be a proper type for the tunnel if */
+  netif->link_type = 1;
+  /* @todo get this from struct tunif? */
+  netif->link_speed = 0;
+  netif->ts = 0;
+  netif->ifinoctets = 0;
+  netif->ifinucastpkts = 0;
+  netif->ifinnucastpkts = 0;
+  netif->ifindiscards = 0;
+  netif->ifoutoctets = 0;
+  netif->ifoutucastpkts = 0;
+  netif->ifoutnucastpkts = 0;
+  netif->ifoutdiscards = 0;
+#endif
+
   netif->hwaddr_len = 6;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;

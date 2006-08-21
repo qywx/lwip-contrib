@@ -39,6 +39,7 @@
 #include <signal.h>
 #include <sys/time.h>
 #include "timer.h"
+#include "lwip/snmp.h"
 
 static struct itimerval tmr;
 
@@ -135,6 +136,8 @@ sigalarm_handler(int sig)
 {
   unsigned char i;
   struct itmr *tp;
+
+  snmp_inc_sysuptime();
 
   tp = &timers[TIMER_NUM-1];
   for(i = TIMER_NUM; i > 0; i--)

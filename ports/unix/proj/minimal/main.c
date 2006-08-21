@@ -41,6 +41,7 @@
 #include "lwip/ip.h"
 #include "lwip/ip_frag.h"
 #include "lwip/udp.h"
+#include "lwip/snmp_msg.h"
 #include "lwip/tcp.h"
 
 #include "mintapif.h"
@@ -71,6 +72,7 @@ main(int argc, char **argv)
   netif_init();
   ip_init();
   udp_init();
+  snmp_init();
   tcp_init();
   printf("TCP/IP initialized.\n");
   

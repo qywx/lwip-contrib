@@ -59,11 +59,16 @@ CORE4FILES=$(LWIPDIR)/core/ipv4/icmp.c $(LWIPDIR)/core/ipv4/ip.c \
 	$(LWIPDIR)/core/inet.c $(LWIPDIR)/core/ipv4/ip_addr.c \
 	$(LWIPDIR)/core/ipv4/ip_frag.c
 
+# SNMPFILES: Extra SNMPv1 agent
+SNMPFILES=$(LWIPDIR)/core/snmp/asn1_dec.c $(LWIPDIR)/core/snmp/asn1_enc.c \
+	$(LWIPDIR)/core/snmp/mib2.c $(LWIPDIR)/core/snmp/mib_structs.c \
+	$(LWIPDIR)/core/snmp/msg_in.c $(LWIPDIR)/core/snmp/msg_out.c
+
 # NETIFFILES: Files implementing various generic network interface functions.'
 NETIFFILES=$(LWIPDIR)/netif/etharp.c mintapif.c
 
 # LWIPFILES: All the above.
-LWIPFILES=$(COREFILES) $(CORE4FILES) $(NETIFFILES)
+LWIPFILES=$(COREFILES) $(CORE4FILES) $(SNMPFILES) $(NETIFFILES)
 LWIPFILESW=$(wildcard $(LWIPFILES))
 LWIPOBJS=$(notdir $(LWIPFILESW:.c=.o))
 
