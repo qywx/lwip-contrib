@@ -193,7 +193,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define DEMO_DEBUG       DBG_OFF
 #define ETHARP_DEBUG     DBG_OFF
 #define NETIF_DEBUG      DBG_OFF
-#define PBUF_DEBUG       DBG_ON
+#define PBUF_DEBUG       DBG_OFF
 #define DELIF_DEBUG      DBG_OFF
 #define DROPIF_DEBUG     DBG_OFF
 #define TUNIF_DEBUG      DBG_OFF
@@ -208,11 +208,11 @@ a lot of data that needs to be copied, this should be set high. */
 #define INET_DEBUG       DBG_OFF
 #define IP_DEBUG         DBG_OFF
 #define IP_REASS_DEBUG   DBG_OFF
-#define MEM_DEBUG        DBG_ON
-#define MEMP_DEBUG       DBG_ON
+#define MEM_DEBUG        DBG_OFF
+#define MEMP_DEBUG       DBG_OFF
 #define SYS_DEBUG        DBG_OFF
-#define TCP_DEBUG        DBG_ON
-#define TCP_INPUT_DEBUG  DBG_ON
+#define TCP_DEBUG        DBG_OFF
+#define TCP_INPUT_DEBUG  DBG_OFF
 #define TCP_FR_DEBUG     DBG_OFF
 #define TCP_RTO_DEBUG    DBG_OFF
 #define TCP_REXMIT_DEBUG DBG_OFF
@@ -225,5 +225,8 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCPIP_DEBUG      DBG_OFF
 #define TCPDUMP_DEBUG    DBG_OFF
 #define DHCP_DEBUG       DBG_OFF
+#define SNMP_MSG_DEBUG   DBG_ON
+#define SNMP_MIB_DEBUG   DBG_ON
+
 
 #endif /* __LWIPOPTS_H__ */
