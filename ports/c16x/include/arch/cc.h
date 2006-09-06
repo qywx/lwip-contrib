@@ -40,10 +40,14 @@ typedef u32_t mem_ptr_t;
 
 _inline u32_t c16x_htonl(u32_t n)
 {
-  return (n << 24) |
-    ((n & 0xff00) << 8) |
-    ((n & 0xff0000) >> 8) |
-    (n >> 24);
+  u16_t msw, lsw;
+
+  msw = n >> 16;
+  msw = _ror(msw,8);
+  lsw = n;
+  lsw = _ror(lsw,8);
+  n = ((u32_t)lsw << 16) | (u32_t)msw;
+  return n;
 }
 
 #ifdef LWIP_DEBUG
