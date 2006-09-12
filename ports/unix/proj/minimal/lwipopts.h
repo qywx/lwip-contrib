@@ -120,6 +120,8 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- ARP options ---------- */
 #define ARP_TABLE_SIZE 10
+/* CSi: disabled because of some TCP issues?
+  need to enable for coldstart trap. @todo fixme */
 #define ARP_QUEUEING 0
 
 /* ---------- IP options ---------- */
@@ -152,13 +154,10 @@ a lot of data that needs to be copied, this should be set high. */
 /* ---------- SNMP options ---------- */
 /** @todo SNMP isn't functional yet. 
     @note UDP must be available for SNMP transport */
-#ifndef LWIP_SNMP
-#define LWIP_SNMP               1
-#endif
 
-#ifndef SNMP_PRIVATE_MIB
+#define LWIP_SNMP               1
+#define SNMP_TRAP_DESTINATIONS  1
 #define SNMP_PRIVATE_MIB        0
-#endif
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1
@@ -185,7 +184,15 @@ a lot of data that needs to be copied, this should be set high. */
 /** print only debug messages with this level or higher */
 #define DBG_MIN_LEVEL 0
 
+#if 0
+/** compiletime debug output selection */
 #define DBG_TYPES_ON (DBG_ON | DBG_TRACE | DBG_STATE | DBG_FRESH)
+#else
+/** runtime debug output selection
+    debug_flags exported from main.c()*/
+extern unsigned char debug_flags;
+#define DBG_TYPES_ON debug_flags
+#endif
 
 /**
  * Enable/disable debugging per module
