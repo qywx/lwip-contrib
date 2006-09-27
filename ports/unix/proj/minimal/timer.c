@@ -26,7 +26,7 @@
  *
  * This file is part of and a contribution to the lwIP TCP/IP stack.
  *
- * Author: Christiaan Simons <christiaan.simons@gmail.com>
+ * Author: Christiaan Simons <christiaan.simons@axon.tv>
  */
  
 /** 
