@@ -43,7 +43,7 @@
 
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
-#define MEM_SIZE                6000
+#define MEM_SIZE                16000
 
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this
@@ -157,7 +157,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 #define LWIP_SNMP               1
 #define SNMP_TRAP_DESTINATIONS  1
-#define SNMP_PRIVATE_MIB        0
+#define SNMP_PRIVATE_MIB        1
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1

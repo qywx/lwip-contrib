@@ -52,7 +52,7 @@
 #include <signal.h>
 
 #include "echo.h"
-
+#include "private_mib.h"
 
 /* (manual) host IP configuration */
 static struct ip_addr ipaddr, netmask, gw;
@@ -188,6 +188,11 @@ main(int argc, char **argv)
   netif_set_default(&netif);
   netif_set_up(&netif);
 
+
+#if SNMP_PRIVATE_MIB != 0
+  /* initialize our private example MIB */
+  lwip_privmib_init();
+#endif
   snmp_trap_dst_ip_set(0,&trap_addr);
   snmp_trap_dst_enable(0,trap_flag);
   snmp_set_syscontact(syscontact_str,&syscontact_len);
