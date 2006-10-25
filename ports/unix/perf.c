@@ -41,11 +41,12 @@ perf_print(unsigned long c1l, unsigned long c1h,
 	   unsigned long c2l, unsigned long c2h,
 	   char *key)
 {
-  unsigned long long start, end;
-
-  start = (unsigned long long)c2h << 32 | c2l;
-  end = (unsigned long long)c1h << 32 | c1l;
-  fprintf(f, "%s: %llu\n", key, start - end);
+  unsigned long sub_ms, sub_ls;
+  
+  sub_ms = c2h - c1h;
+  sub_ls = c2l - c1l;
+  if (c2l < c1l) sub_ms--;
+  fprintf(f, "%s: %.8lu%.8lu\n", key, sub_ms, sub_ls);
   fflush(NULL);
 }
 
