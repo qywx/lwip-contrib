@@ -57,7 +57,7 @@ void debug_printf(char *format, ...);
 void page_printf(char *format, ...);
 
 /* Plaform specific diagnostic output */
-#define LWIP_PLATFORM_DIAG(x)	{ debug_printf x; }
+#define LWIP_PLATFORM_DIAG(x) { debug_printf x; }
 #define LWIP_PLATFORM_ASSERT(x) { debug_printf("\fline %d in %s\n", __LINE__, __FILE__);  while(1); }
 
 #endif/* LWIP_DEBUG */

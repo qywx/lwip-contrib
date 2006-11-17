@@ -462,7 +462,7 @@ static struct pbuf *cs8900_input(struct netif *netif)
 #endif
         for (q = p; q != 0; q = q->next)
         {
-	        LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %"U16_F" len %"U16_F"\n", q, q->tot_len, q->len));
+          LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_input: pbuf @%p tot_len %"U16_F" len %"U16_F"\n", q, q->tot_len, q->len));
 
           /* read 8 bytes per iteration */
           ptr = q->payload;
