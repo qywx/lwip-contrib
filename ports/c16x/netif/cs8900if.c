@@ -801,6 +801,7 @@ err_t cs8900if_init(struct netif *netif)
   cs8900if->interrupts = 0;
   cs8900if->missed = 0;
   cs8900if->dropped = 0;
+  cs8900if->collisions = 0;
   cs8900if->sentpackets = 0;
   cs8900if->sentbytes = 0;
 #endif
