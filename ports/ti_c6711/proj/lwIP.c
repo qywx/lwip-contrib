@@ -71,6 +71,7 @@ void Task_lwip_init(void * pParam)
   memp_init();
   pbuf_init();
   netif_init(); 
+  lwip_socket_init();
 
   printf("TCP/IP initializing...\n");  
   sem = sys_sem_new(0);

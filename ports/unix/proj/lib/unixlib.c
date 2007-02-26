@@ -26,7 +26,7 @@
  * 
  * Author: Kieran Mansley <kjm25@cam.ac.uk>
  *
- * $Id: unixlib.c,v 1.4 2003/11/24 08:58:08 jani Exp $
+ * $Id: unixlib.c,v 1.5 2007/02/26 20:09:23 jifl Exp $
  */
 
 /*-----------------------------------------------------------------------------------*/
@@ -49,6 +49,7 @@
 #include "lwip/tcpip.h"
 #include "lwip/netif.h"
 #include "lwip/stats.h"
+#include "lwip/sockets.h"
 
 #include "netif/tapif.h"
 
@@ -71,6 +72,7 @@ void _init(void){
   mem_init();
   memp_init();
   pbuf_init();
+  lwip_socket_init();
   
   sem = sys_sem_new(0);
   tcpip_init(tcpip_init_done, &sem);

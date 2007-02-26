@@ -47,6 +47,7 @@
 #include "lwip/tcp.h"
 #include "mintapif.h"
 #include "netif/etharp.h"
+#include "lwip/sockets.h"
 
 #include "timer.h"
 #include <signal.h>
@@ -182,6 +183,7 @@ main(int argc, char **argv)
   ip_init();
   udp_init();
   tcp_init();
+  lwip_socket_init();
   printf("TCP/IP initialized.\n");
   
   netif_add(&netif, &ipaddr, &netmask, &gw, NULL, mintapif_init, ip_input);  

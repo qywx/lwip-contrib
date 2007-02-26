@@ -44,6 +44,7 @@
 
 
 #include "lwip/tcpip.h"
+#include "lwip/sockets.h"
 
 #include "netif/tapif.h"
 #include "netif/tunif.h"
@@ -72,7 +73,6 @@
 #if LWIP_RAW
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
-#include "lwip/sockets.h"
 #endif
 
 /* (manual) host IP configuration */
@@ -480,6 +480,7 @@ main(int argc, char **argv)
 #ifdef LWIP_TCPDUMP
   tcpdump_init();
 #endif
+  lwip_socket_init();
   
   printf("System initialized.\n");
     
