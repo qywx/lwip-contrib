@@ -420,12 +420,12 @@ main(int argc, char **argv)
   
   ping_flag = 0;
   /* use debug flags defined by debug.h */
-  debug_flags = DBG_OFF;
+  debug_flags = LWIP_DBG_OFF;
   
   while ((ch = getopt_long(argc, argv, "dhg:i:m:p:", longopts, NULL)) != -1) {
     switch (ch) {
       case 'd':
-        debug_flags |= (DBG_ON|DBG_TRACE|DBG_STATE|DBG_FRESH|DBG_HALT);
+        debug_flags |= (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT);
         break;
       case 'h':
         usage();

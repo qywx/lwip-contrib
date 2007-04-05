@@ -31,43 +31,43 @@
  */
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
-#define DBG_MIN_LEVEL 0
+#define LWIP_DBG_MIN_LEVEL 0
 #define LWIP_COMPAT_SOCKETS 1
-#define TAPIF_DEBUG DBG_ON
-#define TUNIF_DEBUG DBG_OFF
-#define UNIXIF_DEBUG DBG_OFF
-#define DELIF_DEBUG DBG_OFF
-#define SIO_FIFO_DEBUG DBG_OFF
-#define TCPDUMP_DEBUG DBG_ON
+#define TAPIF_DEBUG LWIP_DBG_ON
+#define TUNIF_DEBUG LWIP_DBG_OFF
+#define UNIXIF_DEBUG LWIP_DBG_OFF
+#define DELIF_DEBUG LWIP_DBG_OFF
+#define SIO_FIFO_DEBUG LWIP_DBG_OFF
+#define TCPDUMP_DEBUG LWIP_DBG_ON
 
-#define PPP_DEBUG               DBG_ON
+#define PPP_DEBUG               LWIP_DBG_ON
 
 #ifdef LWIP_DEBUG
-/*#define MEM_DEBUG               DBG_ON
-#define MEMP_DEBUG              DBG_ON
-#define PBUF_DEBUG              DBG_ON
-#define API_LIB_DEBUG   DBG_ON
-#define API_MSG_DEBUG   DBG_ON */
-#define TCPIP_DEBUG             DBG_ON
-#define NETIF_DEBUG             DBG_ON
-#define SOCKETS_DEBUG   DBG_ON
-#define DEMO_DEBUG              DBG_ON
-#define IP_DEBUG                DBG_ON
-#define IP_REASS_DEBUG  DBG_ON
-#define ICMP_DEBUG              DBG_ON
-#define UDP_DEBUG               DBG_ON
-//#define TCP_DEBUG               DBG_ON
-#define TCP_INPUT_DEBUG         DBG_ON
-#define TCP_OUTPUT_DEBUG        DBG_ON
-/*#define TCP_RTO_DEBUG   DBG_ON
-#define TCP_CWND_DEBUG  DBG_ON
-#define TCP_WND_DEBUG   DBG_ON
-#define TCP_FR_DEBUG    DBG_ON
-#define TCP_QLEN_DEBUG  DBG_ON
-#define TCP_RST_DEBUG   DBG_ON*/
+/*#define MEM_DEBUG               LWIP_DBG_ON
+#define MEMP_DEBUG              LWIP_DBG_ON
+#define PBUF_DEBUG              LWIP_DBG_ON
+#define API_LIB_DEBUG   LWIP_DBG_ON
+#define API_MSG_DEBUG   LWIP_DBG_ON */
+#define TCPIP_DEBUG             LWIP_DBG_ON
+#define NETIF_DEBUG             LWIP_DBG_ON
+#define SOCKETS_DEBUG   LWIP_DBG_ON
+#define DEMO_DEBUG              LWIP_DBG_ON
+#define IP_DEBUG                LWIP_DBG_ON
+#define IP_REASS_DEBUG  LWIP_DBG_ON
+#define ICMP_DEBUG              LWIP_DBG_ON
+#define UDP_DEBUG               LWIP_DBG_ON
+//#define TCP_DEBUG               LWIP_DBG_ON
+#define TCP_INPUT_DEBUG         LWIP_DBG_ON
+#define TCP_OUTPUT_DEBUG        LWIP_DBG_ON
+/*#define TCP_RTO_DEBUG   LWIP_DBG_ON
+#define TCP_CWND_DEBUG  LWIP_DBG_ON
+#define TCP_WND_DEBUG   LWIP_DBG_ON
+#define TCP_FR_DEBUG    LWIP_DBG_ON
+#define TCP_QLEN_DEBUG  LWIP_DBG_ON
+#define TCP_RST_DEBUG   LWIP_DBG_ON*/
 #endif
 
-#define DBG_TYPES_ON    (DBG_ON|DBG_TRACE|DBG_STATE|DBG_FRESH|DBG_HALT)
+#define LWIP_DBG_TYPES_ON    (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT)
 
 #define NO_SYS 1
 

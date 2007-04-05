@@ -30,7 +30,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: lwipopts.h,v 1.2 2005/11/07 00:50:50 ming Exp $
+ * $Id: lwipopts.h,v 1.3 2007/04/05 09:21:13 fbernon Exp $
  */
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
@@ -265,43 +265,43 @@ a lot of data that needs to be copied, this should be set high. */
 /*
 define LWIP_DEBUG in compiler    and following...
 */
-#define DBG_MIN_LEVEL					DBG_LEVEL_SERIOUS
-//DBG_LEVEL_WARNING DBG_LEVEL_SERIOUS DBG_LEVEL_SEVERE
+#define LWIP_DBG_MIN_LEVEL					LWIP_DBG_LEVEL_SERIOUS
+//LWIP_DBG_LEVEL_WARNING LWIP_DBG_LEVEL_SERIOUS LWIP_DBG_LEVEL_SEVERE
 
-#define DBG_TYPES_ON					0//DBG_TRACE | DBG_STATE |DBG_FRESH | DBG_HALT
+#define LWIP_DBG_TYPES_ON					0//LWIP_DBG_TRACE | LWIP_DBG_STATE |LWIP_DBG_FRESH | LWIP_DBG_HALT
 /*
 Then, define debug class in opt.h
 * --------------------------------------------------*/
 
-#define ETHARP_DEBUG                    DBG_OFF
-#define NETIF_DEBUG                     DBG_OFF
-#define PBUF_DEBUG                      DBG_OFF
-#define API_LIB_DEBUG                   DBG_OFF
-#define API_MSG_DEBUG                   DBG_OFF
-#define SOCKETS_DEBUG                   DBG_OFF
-#define ICMP_DEBUG                      DBG_OFF
-#define INET_DEBUG                      DBG_OFF
-#define IP_DEBUG                        DBG_OFF
-#define IP_REASS_DEBUG                  DBG_OFF
-#define RAW_DEBUG                       DBG_OFF
-#define MEM_DEBUG                       DBG_OFF
-#define MEMP_DEBUG                      DBG_OFF
-#define SYS_DEBUG                       DBG_OFF
-#define TCP_DEBUG                       DBG_OFF
-#define TCP_INPUT_DEBUG                 DBG_OFF
-#define TCP_FR_DEBUG                    DBG_OFF
-#define TCP_RTO_DEBUG                   DBG_OFF
-#define TCP_REXMIT_DEBUG                DBG_OFF
-#define TCP_CWND_DEBUG                  DBG_OFF
-#define TCP_WND_DEBUG                   DBG_OFF
-#define TCP_OUTPUT_DEBUG                DBG_OFF
-#define TCP_RST_DEBUG                   DBG_OFF
-#define TCP_QLEN_DEBUG                  DBG_OFF
-#define UDP_DEBUG                       DBG_OFF
-#define TCPIP_DEBUG                     DBG_OFF
-#define PPP_DEBUG                       DBG_OFF
-#define SLIP_DEBUG                      DBG_OFF
-#define DHCP_DEBUG                      DBG_OFF
+#define ETHARP_DEBUG                    LWIP_DBG_OFF
+#define NETIF_DEBUG                     LWIP_DBG_OFF
+#define PBUF_DEBUG                      LWIP_DBG_OFF
+#define API_LIB_DEBUG                   LWIP_DBG_OFF
+#define API_MSG_DEBUG                   LWIP_DBG_OFF
+#define SOCKETS_DEBUG                   LWIP_DBG_OFF
+#define ICMP_DEBUG                      LWIP_DBG_OFF
+#define INET_DEBUG                      LWIP_DBG_OFF
+#define IP_DEBUG                        LWIP_DBG_OFF
+#define IP_REASS_DEBUG                  LWIP_DBG_OFF
+#define RAW_DEBUG                       LWIP_DBG_OFF
+#define MEM_DEBUG                       LWIP_DBG_OFF
+#define MEMP_DEBUG                      LWIP_DBG_OFF
+#define SYS_DEBUG                       LWIP_DBG_OFF
+#define TCP_DEBUG                       LWIP_DBG_OFF
+#define TCP_INPUT_DEBUG                 LWIP_DBG_OFF
+#define TCP_FR_DEBUG                    LWIP_DBG_OFF
+#define TCP_RTO_DEBUG                   LWIP_DBG_OFF
+#define TCP_REXMIT_DEBUG                LWIP_DBG_OFF
+#define TCP_CWND_DEBUG                  LWIP_DBG_OFF
+#define TCP_WND_DEBUG                   LWIP_DBG_OFF
+#define TCP_OUTPUT_DEBUG                LWIP_DBG_OFF
+#define TCP_RST_DEBUG                   LWIP_DBG_OFF
+#define TCP_QLEN_DEBUG                  LWIP_DBG_OFF
+#define UDP_DEBUG                       LWIP_DBG_OFF
+#define TCPIP_DEBUG                     LWIP_DBG_OFF
+#define PPP_DEBUG                       LWIP_DBG_OFF
+#define SLIP_DEBUG                      LWIP_DBG_OFF
+#define DHCP_DEBUG                      LWIP_DBG_OFF
 
 
 #endif /* __LWIPOPTS_H__ */

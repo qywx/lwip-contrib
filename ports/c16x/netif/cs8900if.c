@@ -112,7 +112,7 @@
 
 #if 0
 // include some debugging help
-#  define DBG_LEVEL 1
+#  define LWIP_DBG_LEVEL 1
 #  include "leds.h"
 #  include "display.h"
 //#  include "page.h"
