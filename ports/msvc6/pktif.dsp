@@ -89,6 +89,10 @@ SOURCE="$(LWIP_SRC)\netif\etharp.c"
 # End Source File
 # Begin Source File
 
+SOURCE="$(LWIP_SRC)\netif\loopif.c"
+# End Source File
+# Begin Source File
+
 SOURCE=.\pktdrv.c
 # End Source File
 # Begin Source File
@@ -102,6 +106,10 @@ SOURCE=.\pktif.c
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\include\netif\etharp.h"
+# End Source File
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\include\netif\loopif.h"
 # End Source File
 # End Group
 # End Target

@@ -42,7 +42,7 @@
 
 struct http_state {
   char *file;
-  u32_t left;
+  u16_t left;
   u8_t retries;
 };
 

@@ -78,7 +78,7 @@ int cur_length;
 unsigned char ethaddr[6];
 
 /*-----------------------------------------------------------------------------------*/
-int init_adapter(int adapter_num)
+int init_adapter(int adapter_num, char* mac_addr)
 {
   #define Max_Num_Adapter 10
 
@@ -89,8 +89,8 @@ int init_adapter(int adapter_num)
 	DWORD dwWindowsMajorVersion;
 
 	//unicode strings (winnt)
-	wchar_t 	AdapterName[8192]; // string that contains a list of the network adapters
-	wchar_t 	*temp,*temp1;
+	char 	AdapterName[8192]; // string that contains a list of the network adapters
+	char 	*temp,*temp1;
 
 	//ascii strings (win95)
 	char		AdapterNamea[8192]; // string that contains a list of the network adapters
@@ -105,6 +105,8 @@ int init_adapter(int adapter_num)
 	AdapterLength=4096;
 
   memset(AdapterList,0,sizeof(AdapterList));
+  memset(AdapterName,0,sizeof(AdapterName));
+  memset(AdapterNamea,0,sizeof(AdapterNamea));
 
   i=0;
 
@@ -134,7 +136,7 @@ int init_adapter(int adapter_num)
 
 		AdapterNum=i;
 		for (i=0; i<AdapterNum; i++)
-			wprintf(L"%2i: %s\n", i, AdapterList[i]);
+			printf("%2i: %s\n", i, AdapterList[i]);
 	}
 
 	else	//windows 95
@@ -179,7 +181,8 @@ int init_adapter(int adapter_num)
 		return -1;
   memcpy(&ethaddr,ppacket_oid_data->Data,6);
   free(ppacket_oid_data);
-  printf("MAC: %2X%2X%2X%2X%2X%2X\n", ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
+  memcpy(mac_addr, ethaddr, 6);
+  printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
 	PacketSetBuff(lpAdapter,512000);
 	PacketSetReadTimeout(lpAdapter,1);
 	PacketSetHwFilter(lpAdapter,NDIS_PACKET_TYPE_ALL_LOCAL);

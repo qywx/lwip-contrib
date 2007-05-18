@@ -37,6 +37,8 @@
 #include <string.h>
 #include <conio.h>
 
+#include "lwip/opt.h"
+
 #include "lwip/debug.h"
 #include "lwip/mem.h"
 #include "lwip/memp.h"
@@ -54,8 +56,11 @@
 //#include "ftpd.h"
 //#include "fs.h"
 
-void ethernetif_init(struct netif *netif);
-int init_adapter(int adapter_num);
+/* index of the network adapter to use for lwIP */
+#define PACKET_LIB_ADAPTER_NR   4
+
+err_t ethernetif_init(struct netif *netif);
+int init_adapter(int adapter_num, char *macaddr_out);
 void shutdown_adapter(void);
 void update_adapter(void);
 
@@ -70,6 +75,7 @@ int dbg_printf(const char *fmt, ...)
 	return r;
 }
 
+#if LWIP_TCP
 static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
 	if (err == ERR_OK && p != NULL)
@@ -108,26 +114,40 @@ void netio_init(void)
 	pcb = tcp_listen(pcb);
 	tcp_accept(pcb, netio_accept);
 }
+#endif /* LWIP_TCP */
 
 struct netif netif;
 
 void main_loop()
 {
 	struct ip_addr ipaddr, netmask, gw;
+#if NO_SYS
 	int last_time;
 	int timer1;
 	int timer2;
-	int done;
-	
-	IP4_ADDR(&gw, 192,168,0,1);
-	IP4_ADDR(&ipaddr, 192,168,0,200);
-	IP4_ADDR(&netmask, 255,255,255,0);
-	
-	if (init_adapter(0) != 0)
-		return;
+#endif /* NO_SYS */
+  int done;
+	char mac_addr[6];
 
-	netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init,
-		ip_input));
+	IP4_ADDR(&gw, 192,168,1,1);
+	IP4_ADDR(&ipaddr, 192,168,1,200);
+	IP4_ADDR(&netmask, 255,255,255,0);
+	printf("Starting lwIP, local interface IP is %s\n", inet_ntoa(*(struct in_addr*)&ipaddr));
+	
+  if (init_adapter(PACKET_LIB_ADAPTER_NR, mac_addr) != 0) {
+    printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
+		return;
+  }
+
+	memcpy(&netif.hwaddr, mac_addr, 6);
+	/* increase the last octet so that lwIP netif has a similar but different MAC addr */
+	netif.hwaddr[5]++;
+#if NO_SYS
+	netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ip_input));
+#else /* NO_SYS */
+	netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_ethinput));
+#endif /* NO_SYS */
+	netif_set_up(&netif);
 
 	/*
 	IP4_ADDR(&gw, 127,0,0,1);
@@ -138,21 +158,28 @@ void main_loop()
 		ip_input);
 	*/
 
+#if NO_SYS
 	tcp_init();
 	udp_init();
 	ip_init();
+#else /* NO_SYS */
+  tcpip_init(0,0);
+#endif /* NO_SYS */
 
 	httpd_init();
 	netio_init();
 	//ftpd_init();
 
+#if NO_SYS
 	last_time=clock();
 	timer1=0;
 	timer2=0;
 	done=0;
-	
+#endif /* NO_SYS */
+
 	while (!done)
 	{
+#if NO_SYS
 		int cur_time;
 		int time_diff;
 
@@ -177,6 +204,7 @@ void main_loop()
 			timer2=0;
 			done=_kbhit();
 		}
+#endif /* NO_SYS */
 
 		update_adapter();
 	}
@@ -207,6 +235,9 @@ int main(void)
 	mem_init();
 	memp_init();
 	pbuf_init();
+#if !NO_SYS
+	lwip_socket_init();
+#endif /* !NO_SYS */
 
 	//tcpdump_init();
 
