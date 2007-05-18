@@ -84,12 +84,7 @@
 #define IFNAME0 'p'
 #define IFNAME1 'k'
 
-struct ethernetif {
-	struct eth_addr *ethaddr;
-	/* Add whatever per-interface state that is needed here. */
-};
-
-static const struct eth_addr ethbroadcast = {{0xff,0xff,0xff,0xff,0xff,0xff}};
+static struct eth_addr broadcastaddr = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 /* Forward declarations. */
 static void  ethernetif_input(struct netif *netif);
@@ -107,14 +102,8 @@ extern int packet_send(void *buffer, int len);
 static void
 low_level_init(struct netif *netif)
 {
-	struct ethernetif *ethernetif;
-
-	ethernetif = netif->state;
-
-	memcpy(&ethaddr,ethernetif->ethaddr,6);
-
 #ifdef NETIF_DEBUG
-	LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",ethernetif->ethaddr->addr[0],ethernetif->ethaddr->addr[1],ethernetif->ethaddr->addr[2],ethernetif->ethaddr->addr[3],ethernetif->ethaddr->addr[4],ethernetif->ethaddr->addr[5]));
+	LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
 #endif /* NETIF_DEBUG */
 	/* Do whatever else is needed to initialize interface. */
 
@@ -174,16 +163,25 @@ low_level_output(struct netif *ethernetif, struct pbuf *p)
  */
 /*-----------------------------------------------------------------------------------*/
 static struct pbuf *
-low_level_input(struct netif *ethernetif)
+low_level_input(struct netif *netif)
 {
   struct pbuf *p, *q;
   int start, length;
+  struct eth_hdr *ethhdr;
 
   /* Obtain the size of the packet and put it into the "len"
      variable. */
   length = cur_length;
 	if (length<=0)
 		return NULL;
+
+  ethhdr = (struct eth_hdr*)cur_packet;
+  /* MAC filter: only let my MAC or broadcast through */
+  if((memcmp(&ethhdr->dest, &netif->hwaddr, 6)) && (memcmp(&ethhdr->dest, &broadcastaddr, 6))) {
+    /* acknowledge that packet has been read(); */
+    cur_length=0;
+    return NULL;
+  }
 
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_LINK, (u16_t)length, PBUF_POOL);
@@ -266,13 +264,20 @@ ethernetif_input(struct netif *netif)
 
   if (p != NULL) {
 
-#ifdef LINK_STATS
+#if LINK_STATS
     lwip_stats.link.recv++;
 #endif /* LINK_STATS */
 
     ethhdr = p->payload;
     
     switch (htons(ethhdr->type)) {
+#if ETHARP_TCPIP_INPUT
+    /* IP or ARP packet? */
+    case ETHTYPE_IP:
+    case ETHTYPE_ARP:
+      netif->input(p, netif);
+      break;                 
+#else
     case ETHTYPE_IP:
       etharp_ip_input(netif, p);
       pbuf_header(p, -14);
@@ -281,18 +286,12 @@ ethernetif_input(struct netif *netif)
     case ETHTYPE_ARP:
       etharp_arp_input(netif, ethernetif->ethaddr, p);
       break;
+#endif
     default:
       pbuf_free(p);
       break;
     }
   }
-}
-/*-----------------------------------------------------------------------------------*/
-static void
-arp_timer(void *arg)
-{
-  etharp_tmr();
-  sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler)arp_timer, NULL);
 }
 /*-----------------------------------------------------------------------------------*/
 /*
@@ -307,10 +306,6 @@ arp_timer(void *arg)
 err_t
 ethernetif_init(struct netif *netif)
 {
-  struct ethernetif *ethernetif;
-
-  ethernetif = mem_malloc(sizeof(struct ethernetif));
-  netif->state = ethernetif;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
   netif->linkoutput = low_level_output;
@@ -319,12 +314,8 @@ ethernetif_init(struct netif *netif)
   netif->mtu = 1500;
   netif->flags = NETIF_FLAG_BROADCAST;
   netif->hwaddr_len = 6;
-  ethernetif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
 
   low_level_init(netif);
-  etharp_init();
-
-  sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler)arp_timer, NULL);
   
   return ERR_OK;
 }

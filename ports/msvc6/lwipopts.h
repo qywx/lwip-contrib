@@ -31,6 +31,9 @@
  */
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
+
+#define LWIP_HAVE_LOOPIF 1
+
 #define LWIP_DBG_MIN_LEVEL 0
 #define LWIP_COMPAT_SOCKETS 1
 #define TAPIF_DEBUG LWIP_DBG_ON
@@ -69,7 +72,8 @@
 
 #define LWIP_DBG_TYPES_ON    (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT)
 
-#define NO_SYS 1
+#define NO_SYS 0
+#define LWIP_PROVIDE_ERRNO
 
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
@@ -133,7 +137,7 @@ a lot of data that needs to be copied, this should be set high. */
  * for certain critical regions during buffer allocation, deallocation and memory
  * allocation and deallocation.
  */
-/*#define SYS_LIGHTWEIGHT_PROT           1*/
+#define SYS_LIGHTWEIGHT_PROT           1
 
 /* ---------- TCP options ---------- */
 #define LWIP_TCP                1

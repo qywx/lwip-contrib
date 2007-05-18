@@ -43,6 +43,8 @@
 #include "lwip/mem.h"
 #include "lwip/memp.h"
 #include "lwip/sys.h"
+#include "lwip/sockets.h"
+#include "netif/etharp.h"
 
 #include "lwip/stats.h"
 
@@ -66,150 +68,153 @@ void update_adapter(void);
 
 int dbg_printf(const char *fmt, ...)
 {
-	va_list v;
-	int r;
+  va_list v;
+  int r;
 
-	va_start(v, fmt);
-	r = vfprintf(stderr,fmt, v);
-	va_end(v);
-	return r;
+  va_start(v, fmt);
+  r = vfprintf(stderr,fmt, v);
+  va_end(v);
+  return r;
 }
 
 #if LWIP_TCP
 static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
-	if (err == ERR_OK && p != NULL)
-	{
-		tcp_recved(pcb, p->tot_len);
-		pbuf_free(p);
-	}
-	else
-		pbuf_free(p);
+  if (err == ERR_OK && p != NULL) {
+    tcp_recved(pcb, p->tot_len);
+    pbuf_free(p);
+  } else {
+    pbuf_free(p);
+  }
 
-	if (err == ERR_OK && p == NULL)
-	{
-		tcp_arg(pcb, NULL);
-		tcp_sent(pcb, NULL);
-		tcp_recv(pcb, NULL);
-		tcp_close(pcb);
-	}
+  if (err == ERR_OK && p == NULL) {
+    tcp_arg(pcb, NULL);
+    tcp_sent(pcb, NULL);
+    tcp_recv(pcb, NULL);
+    tcp_close(pcb);
+  }
 
-	return ERR_OK;
+  return ERR_OK;
 }
 
 static err_t netio_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 {
-	tcp_arg(pcb, NULL);
-	tcp_sent(pcb, NULL);
-	tcp_recv(pcb, netio_recv);
-	return ERR_OK;
+  tcp_arg(pcb, NULL);
+  tcp_sent(pcb, NULL);
+  tcp_recv(pcb, netio_recv);
+  return ERR_OK;
 }
 
 void netio_init(void)
 {
-	struct tcp_pcb *pcb;
+  struct tcp_pcb *pcb;
 
-	pcb = tcp_new();
-	tcp_bind(pcb, IP_ADDR_ANY, 18767);
-	pcb = tcp_listen(pcb);
-	tcp_accept(pcb, netio_accept);
+  pcb = tcp_new();
+  tcp_bind(pcb, IP_ADDR_ANY, 18767);
+  pcb = tcp_listen(pcb);
+  tcp_accept(pcb, netio_accept);
 }
 #endif /* LWIP_TCP */
 
 struct netif netif;
+struct netif loop_netif;
 
 void main_loop()
 {
-	struct ip_addr ipaddr, netmask, gw;
+  struct ip_addr ipaddr, netmask, gw;
+#if LWIP_HAVE_LOOPIF
+  struct ip_addr loop_ipaddr, loop_netmask, loop_gw;
+#endif
 #if NO_SYS
-	int last_time;
-	int timer1;
-	int timer2;
+  int last_time;
+  int timer1;
+  int timer2;
 #endif /* NO_SYS */
   int done;
-	char mac_addr[6];
+  char mac_addr[6];
 
-	IP4_ADDR(&gw, 192,168,1,1);
-	IP4_ADDR(&ipaddr, 192,168,1,200);
-	IP4_ADDR(&netmask, 255,255,255,0);
-	printf("Starting lwIP, local interface IP is %s\n", inet_ntoa(*(struct in_addr*)&ipaddr));
-	
+  IP4_ADDR(&gw, 192,168,1,1);
+  IP4_ADDR(&ipaddr, 192,168,1,200);
+  IP4_ADDR(&netmask, 255,255,255,0);
+  printf("Starting lwIP, local interface IP is %s\n", inet_ntoa(*(struct in_addr*)&ipaddr));
+
   if (init_adapter(PACKET_LIB_ADAPTER_NR, mac_addr) != 0) {
     printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
-		return;
+    return;
   }
 
-	memcpy(&netif.hwaddr, mac_addr, 6);
-	/* increase the last octet so that lwIP netif has a similar but different MAC addr */
-	netif.hwaddr[5]++;
+  memcpy(&netif.hwaddr, mac_addr, 6);
+  /* increase the last octet so that lwIP netif has a similar but different MAC addr */
+  netif.hwaddr[5]++;
 #if NO_SYS
-	netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ip_input));
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ip_input));
 #else /* NO_SYS */
-	netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_ethinput));
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_ethinput));
 #endif /* NO_SYS */
-	netif_set_up(&netif);
+  netif_set_up(&netif);
 
-	/*
-	IP4_ADDR(&gw, 127,0,0,1);
-	IP4_ADDR(&ipaddr, 127,0,0,1);
-	IP4_ADDR(&netmask, 255,0,0,0);
-	
-	netif_add(&ipaddr, &netmask, &gw, loopif_init,
-		ip_input);
-	*/
+#if LWIP_HAVE_LOOPIF
+  IP4_ADDR(&loop_gw, 127,0,0,1);
+  IP4_ADDR(&loop_ipaddr, 127,0,0,1);
+  IP4_ADDR(&loop_netmask, 255,0,0,0);
+#if NO_SYS
+  netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, ip_input);
+#else /* NO_SYS */
+  netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, tcpip_ethinput);
+#endif /* NO_SYS */
+#endif
+  /*
+  
+  */
 
 #if NO_SYS
-	tcp_init();
-	udp_init();
-	ip_init();
+  tcp_init();
+  udp_init();
+  ip_init();
 #else /* NO_SYS */
   tcpip_init(0,0);
 #endif /* NO_SYS */
 
-	httpd_init();
-	netio_init();
-	//ftpd_init();
+  httpd_init();
+  netio_init();
+  //ftpd_init();
 
 #if NO_SYS
-	last_time=clock();
-	timer1=0;
-	timer2=0;
-	done=0;
+  last_time=clock();
+  timer1=0;
+  timer2=0;
 #endif /* NO_SYS */
+  done=0;
 
-	while (!done)
-	{
+  while (!done) {
 #if NO_SYS
-		int cur_time;
-		int time_diff;
+    int cur_time;
+    int time_diff;
+    
+    cur_time=clock();
+    time_diff=cur_time-last_time;
+    if (time_diff>0) {
+      last_time=cur_time;
+      timer1+=time_diff;
+      timer2+=time_diff;
+    }
 
-		cur_time=clock();
-		time_diff=cur_time-last_time;
-		if (time_diff>0)
-		{
-			last_time=cur_time;
-			timer1+=time_diff;
-			timer2+=time_diff;
-		}
+    if (timer1>10) {
+      tcp_fasttmr();
+      timer1=0;
+    }
 
-		if (timer1>10)
-		{
-			tcp_fasttmr();
-			timer1=0;
-		}
-
-		if (timer2>45)
-		{
-			tcp_slowtmr();
-			timer2=0;
-			done=_kbhit();
-		}
+    if (timer2>45) {
+      tcp_slowtmr();
+      timer2=0;
+      done=_kbhit();
+    }
 #endif /* NO_SYS */
 
-		update_adapter();
-	}
+    update_adapter();
+  }
 
-	shutdown_adapter();
+  shutdown_adapter();
 }
 
 void bcopy(const void *src, void *dest, int len)
@@ -224,27 +229,28 @@ void bzero(void *data, int n)
 
 int main(void)
 {
-	setvbuf(stdout,NULL,_IONBF,0);
+  setvbuf(stdout,NULL,_IONBF,0);
 #ifdef PERF
-	perf_init("/tmp/lwip.perf");
+  perf_init("/tmp/lwip.perf");
 #endif /* PERF */
 #ifdef STATS
-	stats_init();
+  stats_init();
 #endif /* STATS */
-	sys_init();
-	mem_init();
-	memp_init();
-	pbuf_init();
+  sys_init();
+  mem_init();
+  memp_init();
+  pbuf_init();
+  etharp_init();
 #if !NO_SYS
-	lwip_socket_init();
+  lwip_socket_init();
 #endif /* !NO_SYS */
 
-	//tcpdump_init();
+  //tcpdump_init();
 
-	printf("System initialized.\n");
+  printf("System initialized.\n");
 
-	main_loop();
+  main_loop();
 
-	return 0;
+  return 0;
 }
 
