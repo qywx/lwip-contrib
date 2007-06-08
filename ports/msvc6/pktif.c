@@ -315,6 +315,8 @@ ethernetif_init(struct netif *netif)
   netif->flags = NETIF_FLAG_BROADCAST;
   netif->hwaddr_len = 6;
 
+  NETIF_INIT_SNMP(netif, 6, 100000000);
+
   low_level_init(netif);
   
   return ERR_OK;
