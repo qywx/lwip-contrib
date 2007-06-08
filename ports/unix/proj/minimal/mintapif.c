@@ -81,8 +81,6 @@ static const struct eth_addr ethbroadcast = {{0xff,0xff,0xff,0xff,0xff,0xff}};
 
 /* Forward declarations. */
 static void  mintapif_input(struct netif *netif);
-static err_t mintapif_output(struct netif *netif, struct pbuf *p,
-			       struct ip_addr *ipaddr);
 
 /*-----------------------------------------------------------------------------------*/
 static void
@@ -234,22 +232,6 @@ low_level_input(struct netif *netif)
 }
 /*-----------------------------------------------------------------------------------*/
 /*
- * mintapif_output():
- *
- * This function is called by the TCP/IP stack when an IP packet
- * should be sent. It calls the function called low_level_output() to
- * do the actuall transmission of the packet.
- *
- */
-/*-----------------------------------------------------------------------------------*/
-static err_t
-mintapif_output(struct netif *netif, struct pbuf *p,
-		  struct ip_addr *ipaddr)
-{
-  return etharp_output(netif, ipaddr, p);
-}
-/*-----------------------------------------------------------------------------------*/
-/*
  * mintapif_input():
  *
  * This function should be called when a packet is ready to be read
@@ -341,7 +323,7 @@ mintapif_init(struct netif *netif)
   netif->hwaddr_len = 6;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
-  netif->output = mintapif_output;
+  netif->output = etharp_output;
   netif->linkoutput = low_level_output;
   netif->mtu = 1500;
   

@@ -82,8 +82,6 @@ struct tapif {
 
 /* Forward declarations. */
 static void  tapif_input(struct netif *netif);
-static err_t tapif_output(struct netif *netif, struct pbuf *p,
-			       struct ip_addr *ipaddr);
 
 static void tapif_thread(void *data);
 
@@ -265,22 +263,6 @@ tapif_thread(void *arg)
 }
 /*-----------------------------------------------------------------------------------*/
 /*
- * tapif_output():
- *
- * This function is called by the TCP/IP stack when an IP packet
- * should be sent. It calls the function called low_level_output() to
- * do the actuall transmission of the packet.
- *
- */
-/*-----------------------------------------------------------------------------------*/
-static err_t
-tapif_output(struct netif *netif, struct pbuf *p,
-		  struct ip_addr *ipaddr)
-{
-  return etharp_output(netif, ipaddr, p);
-}
-/*-----------------------------------------------------------------------------------*/
-/*
  * tapif_input():
  *
  * This function should be called when a packet is ready to be read
@@ -359,7 +341,7 @@ tapif_init(struct netif *netif)
   netif->state = tapif;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
-  netif->output = tapif_output;
+  netif->output = etharp_output;
   netif->linkoutput = low_level_output;
   netif->mtu = 1500; 	 
   /* hardware address length */

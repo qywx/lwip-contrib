@@ -31,7 +31,6 @@ err_t ne2k_init(struct netif *netif);
 static void low_level_init(struct netif * netif);
 static void arp_timer(void *arg);
 
-static err_t ne2k_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr);
 static err_t low_level_output(struct netif * netif,struct pbuf *p);
 u16_t write_AX88796(u8_t * buf, u16_t remote_Addr, u16_t Count);
 

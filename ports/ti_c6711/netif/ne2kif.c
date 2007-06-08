@@ -60,7 +60,7 @@ err_t ne2k_init(struct netif *netif)
   netif->state = ne2k_if;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
-  netif->output = ne2k_output;
+  netif->output = etharp_output;
   netif->linkoutput = low_level_output;
   
   ne2k_if->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
@@ -178,22 +178,6 @@ static void low_level_init(struct netif * netif)
 /*----------------------------------------------------------------------------------------
   ****************************************************************************************
   ----------------------------------------------------------------------------------------*/
-
-/*
- * ethernetif_output():
- *
- * This function is called by the TCP/IP stack when an IP packet
- * should be sent. It calls the function called low_level_output() to
- * do the actual transmission of the packet.
- *
- */
-static err_t 
-ne2k_output(struct netif *netif, struct pbuf *p,
-		  struct ip_addr *ipaddr)
-{
-	/* resolve hardware address, then send (or queue) packet */
-	return etharp_output(netif, ipaddr, p);
-}
 
 /*
  * low_level_output():

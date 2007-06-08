@@ -85,12 +85,6 @@ static const struct eth_addr ethbroadcast = {{0xff,0xff,0xff,0xff,0xff,0xff}};
 extern XEmacIf_Config XEmacIf_ConfigTable[];
 
 /*---------------------------------------------------------------------------*/
-/* Forward declarations                                                      */
-/*---------------------------------------------------------------------------*/
-static err_t xemacif_output(struct netif *netif, struct pbuf *p,
-                struct ip_addr *ipaddr);
-
-/*---------------------------------------------------------------------------*/
 /* low_level_init function                                                   */
 /*    - hooks up the data structures and sets the mac options and mac        */
 /*---------------------------------------------------------------------------*/
@@ -290,22 +284,6 @@ static struct pbuf * low_level_input(XEmacIf_Config *xemacif_ptr)
 }
 
 /*---------------------------------------------------------------------------*/
-/* xemacif_output():                                                         */
-/*                                                                           */
-/* This function is called by the TCP/IP stack when an IP packet             */
-/* should be sent. It calls the function called low_level_output() to        */
-/* do the actuall transmission of the packet.                                */
-/*---------------------------------------------------------------------------*/
-static err_t xemacif_output(struct netif *netif_ptr,
-                            struct pbuf *p,
-                            struct ip_addr *ipaddr)
-{
-   XEmacIf_Config *xemacif_ptr = xemacif_ptr = netif_ptr->state;
-
-   return etharp_output(netif_ptr, ipaddr, p);
-}
-
-/*---------------------------------------------------------------------------*/
 /* xemacif_input():                                                          */
 /*                                                                           */
 /* This function should be called when a packet is ready to be read          */
@@ -396,7 +374,7 @@ err_t xemacif_init(struct netif *netif_ptr)
    netif_ptr->hwaddr[5] = xemacif_ptr->ethaddr.addr[5];
    netif_ptr->name[0] = IFNAME0;
    netif_ptr->name[1] = IFNAME1;
-   netif_ptr->output = xemacif_output;
+   netif_ptr->output = etharp_output;
    netif_ptr->linkoutput = low_level_output;
 
    /* removed this statement because the ethaddr in the XEmacIf_Config

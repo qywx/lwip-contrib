@@ -76,7 +76,6 @@ void cs8900if_reset(struct netif *netif);
 err_t cs8900if_init(struct netif *);
 void cs8900if_service(struct netif *);
 void cs8900if_input(struct netif *netif);
-err_t cs8900if_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr);
 
 void cs8900_send_debug(u8_t *p, u16_t len);
 

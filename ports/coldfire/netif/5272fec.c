@@ -411,21 +411,6 @@ low_level_output(struct netif *netif, struct pbuf *p)
 }
 
 /*-----------------------------------------------------------------------------------*/
-/*
- * This function is called by the TCP/IP stack when an IP packet
- * should be sent. It calls the function called low_level_output() to
- * do the actuall transmission of the packet.
- *
- */
-/*-----------------------------------------------------------------------------------*/
-static err_t
-mcf5272fecif_output(struct netif *netif, struct pbuf *p,
-                    struct ip_addr *ipaddr)
-{
-    return etharp_output(netif, ipaddr, p);
-}
-            
-/*-----------------------------------------------------------------------------------*/
 static void
 eth_input(struct pbuf *p, struct netif *netif)
 {
@@ -770,7 +755,7 @@ mcf5272fecif_init(struct netif *netif)
         mcf5272if->netif = netif;
         netif->name[0] = IFNAME0;
         netif->name[1] = IFNAME1;
-        netif->output = mcf5272fecif_output;
+        netif->output = etharp_output;
         netif->linkoutput = low_level_output;
         netif->mtu = MTU_FEC - 18;      // mtu without ethernet header and crc
         mcf5272if->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);

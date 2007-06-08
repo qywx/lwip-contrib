@@ -88,8 +88,6 @@ static struct eth_addr broadcastaddr = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 /* Forward declarations. */
 static void  ethernetif_input(struct netif *netif);
-static err_t ethernetif_output(struct netif *netif, struct pbuf *p,
-			       struct ip_addr *ipaddr);
 
 static struct netif *pktif_netif;
 
@@ -223,22 +221,7 @@ low_level_input(struct netif *netif)
 
   return p;
 }
-/*-----------------------------------------------------------------------------------*/
-/*
- * ethernetif_output():
- *
- * This function is called by the TCP/IP stack when an IP packet
- * should be sent. It calls the function called low_level_output() to
- * do the actuall transmission of the packet.
- *
- */
-/*-----------------------------------------------------------------------------------*/
-static err_t
-ethernetif_output(struct netif *netif, struct pbuf *p,
-		  struct ip_addr *ipaddr)
-{
-  return etharp_output(netif, ipaddr, p);
-}
+
 /*-----------------------------------------------------------------------------------*/
 /*
  * ethernetif_input():
@@ -309,7 +292,7 @@ ethernetif_init(struct netif *netif)
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
   netif->linkoutput = low_level_output;
-  netif->output = ethernetif_output;
+  netif->output = etharp_output;
 
   netif->mtu = 1500;
   netif->flags = NETIF_FLAG_BROADCAST;
