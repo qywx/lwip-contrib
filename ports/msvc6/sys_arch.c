@@ -182,9 +182,10 @@ u32_t sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
 void sys_sem_signal(sys_sem_t sem)
 {
   DWORD ret;
+  LONG prev=-1;
   LWIP_ASSERT("sem != NULL", sem != NULL);
   LWIP_ASSERT("sem != INVALID_HANDLE_VALUE", sem != INVALID_HANDLE_VALUE);
-  ret = ReleaseSemaphore(sem, 1, NULL);
+  ret = ReleaseSemaphore(sem, 1, &prev);
   LWIP_ASSERT("Error releasing mutex", ret != 0);
 }
 
