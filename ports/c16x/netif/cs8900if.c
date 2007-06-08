@@ -68,7 +68,7 @@
  * Function is called from cs8900if_input().
  *
  * cs8900_output() transfers a packet to the chip for transmission.
- * Function is called from cs8900if_output().
+ * Function is called as netif->linkoutput from etharp_output().
  *
  * cs8900if_init() initializes the lwIP network interface, and
  * calls cs8900_init() to initialize the hardware.
@@ -82,8 +82,8 @@
  * and then forwards the packet to protocol(s) handler(s).
  * Function is called from cs8900_service().
  *
- * cs8900if_output() resolves the hardware address, then
- * calls cs8900_output() to transfer the packet.
+ * netif->output() resolves the hardware address, then
+ * calls cs8900_output() (as netif->linkoutput()) to transfer the packet.
  * Function is called from lwIP.
  *
  * Future development:
@@ -644,29 +644,6 @@ void cs8900if_service(struct netif *netif)
 }
 
 /**
- * Writing an IP packet (to be transmitted) to the CS8900.
- *
- * Before writing a frame to the CS8900, the ARP module is asked to resolve the
- * Ethernet MAC address. The ARP module might undertake actions to resolve the
- * address first, and queue this packet for later transmission.
- *
- * @param netif The lwIP network interface data structure belonging to this device.
- * @param p pbuf to be transmitted (or the first pbuf of a chained list of pbufs).
- * @param ipaddr destination IP address.
- *
- * @return ERR_OK if the packet was sent or queued. There is no way to
- * find out if a packet really makes it onto the network link.
- * 
- * @internal It uses the function cs8900_input() that should handle the actual
- * reception of bytes from the network interface.
- *
- */
-err_t cs8900if_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
-{
-  /* resolve the link destination hardware address */
-  return etharp_output(netif, ipaddr, p);
-}
-/**
  * Read a received packet from the CS8900.
  *
  * This function should be called when a packet is received by the CS8900
@@ -776,7 +753,7 @@ err_t cs8900if_init(struct netif *netif)
   netif->name[1] = IFNAME1;
 
   /* downward functions */
-  netif->output = cs8900if_output;
+  netif->output = etharp_output;
   netif->linkoutput = cs8900_output;
 
   /* initialize cs8900 specific interface state data pointer */
