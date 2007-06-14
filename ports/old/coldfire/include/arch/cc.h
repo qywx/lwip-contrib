@@ -30,7 +30,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: cc.h,v 1.6 2003/04/09 20:34:51 davidhaas Exp $
+ * $Id: cc.h,v 1.1 2007/06/14 12:34:00 kieranm Exp $
  */
 #ifndef __CC_H__
 #define __CC_H__

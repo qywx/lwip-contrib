@@ -30,44 +30,41 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: lib.c,v 1.1 2003/01/18 18:21:57 jani Exp $
+ * $Id: cc.h,v 1.1 2007/06/14 12:34:09 kieranm Exp $
  */
+#ifndef __CC_H__
+#define __CC_H__
 
-/* These are generic implementations of various library functions used
- * throughout the lwIP code. When porting, those should be optimized
- * for the particular processor architecture, preferably coded in
- * assembler.
- */
+typedef		unsigned char	u8_t;
+typedef		signed char		s8_t;
+typedef		unsigned short	u16_t;
+typedef		signed short 	s16_t;
+typedef		unsigned int	u32_t;
+typedef		signed int		s32_t;
 
-#include "lwip/arch.h"
+typedef		u32_t		mem_ptr_t;
 
-#if BYTE_ORDER == LITTLE_ENDIAN
-/*-----------------------------------------------------------------------------------*/
-u16_t
-htons(u16_t n)
-{
-  return ((n & 0xff) << 8) | ((n & 0xff00) >> 8);
-}
-/*-----------------------------------------------------------------------------------*/
-u16_t
-ntohs(u16_t n)
-{
-  return htons(n);
-}
-/*-----------------------------------------------------------------------------------*/
-u32_t
-htonl(u32_t n)
-{
-  return ((n & 0xff) << 24) |
-    ((n & 0xff00) << 8) |
-    ((n & 0xff0000) >> 8) |
-    ((n & 0xff000000) >> 24);
-}
-/*-----------------------------------------------------------------------------------*/
-u32_t
-ntohl(u32_t n)
-{
-  return htonl(n);
-}
-/*-----------------------------------------------------------------------------------*/
-#endif /* BYTE_ORDER == LITTLE_ENDIAN */
+#define U16_F "hu"
+#define S16_F "hd"
+#define X16_F "hx"
+#define U32_F "u"
+#define S32_F "d"
+#define X32_F "x"
+
+#define BYTE_ORDER   LITTLE_ENDIAN  
+
+#define PACK_STRUCT_FIELD(x) x//; #pragma STRUCT_ALIGN(x,1)
+#define PACK_STRUCT_STRUCT
+#define PACK_STRUCT_BEGIN
+#define PACK_STRUCT_END
+
+#ifndef LWIP_PLATFORM_DIAG
+#define LWIP_PLATFORM_DIAG(x)	do {printf x;} while(0)
+#endif
+
+#ifndef LWIP_PLATFORM_ASSERT
+#define LWIP_PLATFORM_ASSERT(x) do {printf("Assertion \"%s\" failed at line %d in %s\n", x, __LINE__, __FILE__); fflush(NULL); abort();} while(0)
+#endif
+
+#endif /* __CC_H__ */
+

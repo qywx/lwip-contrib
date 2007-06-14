@@ -30,41 +30,12 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: cc.h,v 1.2 2005/12/08 08:20:07 christiaans Exp $
+ * $Id: perf.h,v 1.1 2007/06/14 12:34:09 kieranm Exp $
  */
-#ifndef __CC_H__
-#define __CC_H__
+#ifndef __PERF_H__
+#define __PERF_H__
 
-typedef		unsigned char	u8_t;
-typedef		signed char		s8_t;
-typedef		unsigned short	u16_t;
-typedef		signed short 	s16_t;
-typedef		unsigned int	u32_t;
-typedef		signed int		s32_t;
+#define PERF_START    /* null definition */
+#define PERF_STOP(x)  /* null definition */
 
-typedef		u32_t		mem_ptr_t;
-
-#define U16_F "hu"
-#define S16_F "hd"
-#define X16_F "hx"
-#define U32_F "u"
-#define S32_F "d"
-#define X32_F "x"
-
-#define BYTE_ORDER   LITTLE_ENDIAN  
-
-#define PACK_STRUCT_FIELD(x) x//; #pragma STRUCT_ALIGN(x,1)
-#define PACK_STRUCT_STRUCT
-#define PACK_STRUCT_BEGIN
-#define PACK_STRUCT_END
-
-#ifndef LWIP_PLATFORM_DIAG
-#define LWIP_PLATFORM_DIAG(x)	do {printf x;} while(0)
-#endif
-
-#ifndef LWIP_PLATFORM_ASSERT
-#define LWIP_PLATFORM_ASSERT(x) do {printf("Assertion \"%s\" failed at line %d in %s\n", x, __LINE__, __FILE__); fflush(NULL); abort();} while(0)
-#endif
-
-#endif /* __CC_H__ */
-
+#endif /* __PERF_H__ */

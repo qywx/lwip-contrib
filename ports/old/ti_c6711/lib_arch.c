@@ -30,10 +30,45 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: lib.h,v 1.1 2003/01/18 18:21:57 jani Exp $
+ * $Id: lib_arch.c,v 1.1 2007/06/14 12:34:09 kieranm Exp $
  */
-#ifndef __LIB_H__
-#define __LIB_H__
+
+/* These are generic implementations of various library functions used
+ * throughout the lwIP code. When porting, those should be optimized
+ * for the particular processor architecture, preferably coded in
+ * assembler.
+ */
+ 
+ 
+//yangye 2003-1-22
+#include "lwip/arch.h"
+
+/*u16_t
+htons(u16_t n)
+{
+  return ((n & 0xff) << 8) | ((n & 0xff00) >> 8);
+}
+
+u16_t
+ntohs(u16_t n)
+{
+  return htons(n);
+}
 
 
-#endif /* __LIB_H__ */
+u32_t
+htonl(u32_t n)
+{
+  return ((n & 0xff) << 24) |
+    ((n & 0xff00) << 8) |
+    ((n & 0xff0000) >> 8) |
+    ((n & 0xff000000) >> 24);
+}
+
+
+u32_t
+ntohl(u32_t n)
+{
+  return htonl(n);
+}*/
+/*-----------------------------------------------------------------------------------*/

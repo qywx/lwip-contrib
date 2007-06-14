@@ -30,12 +30,16 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: perf.h,v 1.1 2003/01/18 18:21:57 jani Exp $
+ * $Id: lib.h,v 1.1 2007/06/14 12:34:09 kieranm Exp $
  */
-#ifndef __PERF_H__
-#define __PERF_H__
+#ifndef __LIB_H__
+#define __LIB_H__
 
-#define PERF_START    /* null definition */
-#define PERF_STOP(x)  /* null definition */
+#include "arch/cc.h"
 
-#endif /* __PERF_H__ */
+u16_t htons(u16_t n);
+u16_t ntohs(u16_t n);
+u32_t htonl(u32_t n);
+u32_t ntohl(u32_t n);
+
+#endif /* __LIB_H__ */

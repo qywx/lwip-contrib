@@ -30,45 +30,15 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: lib_arch.c,v 1.1 2005/01/29 15:19:21 ming Exp $
+ * $Id: init.h,v 1.1 2007/06/14 12:34:09 kieranm Exp $
  */
+#ifndef __ARCH_INIT_H__
+#define __ARCH_INIT_H__
 
-/* These are generic implementations of various library functions used
- * throughout the lwIP code. When porting, those should be optimized
- * for the particular processor architecture, preferably coded in
- * assembler.
- */
- 
- 
-//yangye 2003-1-22
-#include "lwip/arch.h"
+#define TCPIP_INIT_DONE(arg) sys_sem_signal(*(sys_sem_t *)arg)
 
-/*u16_t
-htons(u16_t n)
-{
-  return ((n & 0xff) << 8) | ((n & 0xff00) >> 8);
-}
-
-u16_t
-ntohs(u16_t n)
-{
-  return htons(n);
-}
+#endif /* __ARCH_INIT_H__ */
 
 
-u32_t
-htonl(u32_t n)
-{
-  return ((n & 0xff) << 24) |
-    ((n & 0xff00) << 8) |
-    ((n & 0xff0000) >> 8) |
-    ((n & 0xff000000) >> 24);
-}
 
 
-u32_t
-ntohl(u32_t n)
-{
-  return htonl(n);
-}*/
-/*-----------------------------------------------------------------------------------*/

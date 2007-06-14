@@ -30,16 +30,13 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: lib.h,v 1.1 2005/01/29 15:19:21 ming Exp $
+ * $Id: perf.c,v 1.1 2007/06/14 12:33:57 kieranm Exp $
  */
-#ifndef __LIB_H__
-#define __LIB_H__
 
-#include "arch/cc.h"
+#include "arch/perf.h"
 
-u16_t htons(u16_t n);
-u16_t ntohs(u16_t n);
-u32_t htonl(u32_t n);
-u32_t ntohl(u32_t n);
-
-#endif /* __LIB_H__ */
+void
+perf_init(char *fname)
+{
+  if (fname); // LEON: prevent warning
+}

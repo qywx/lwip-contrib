@@ -30,13 +30,44 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: perf.c,v 1.1 2003/01/18 18:21:57 jani Exp $
+ * $Id: lib.c,v 1.1 2007/06/14 12:33:57 kieranm Exp $
  */
 
-#include "arch/perf.h"
+/* These are generic implementations of various library functions used
+ * throughout the lwIP code. When porting, those should be optimized
+ * for the particular processor architecture, preferably coded in
+ * assembler.
+ */
 
-void
-perf_init(char *fname)
+#include "lwip/arch.h"
+
+#if BYTE_ORDER == LITTLE_ENDIAN
+/*-----------------------------------------------------------------------------------*/
+u16_t
+htons(u16_t n)
 {
-  if (fname); // LEON: prevent warning
+  return ((n & 0xff) << 8) | ((n & 0xff00) >> 8);
 }
+/*-----------------------------------------------------------------------------------*/
+u16_t
+ntohs(u16_t n)
+{
+  return htons(n);
+}
+/*-----------------------------------------------------------------------------------*/
+u32_t
+htonl(u32_t n)
+{
+  return ((n & 0xff) << 24) |
+    ((n & 0xff00) << 8) |
+    ((n & 0xff0000) >> 8) |
+    ((n & 0xff000000) >> 24);
+}
+/*-----------------------------------------------------------------------------------*/
+u32_t
+ntohl(u32_t n)
+{
+  return htonl(n);
+}
+/*-----------------------------------------------------------------------------------*/
+#endif /* BYTE_ORDER == LITTLE_ENDIAN */

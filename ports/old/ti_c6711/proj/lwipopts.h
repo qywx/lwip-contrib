@@ -30,7 +30,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: lwipopts.h,v 1.3 2007/04/05 09:21:13 fbernon Exp $
+ * $Id: lwipopts.h,v 1.1 2007/06/14 12:34:10 kieranm Exp $
  */
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__

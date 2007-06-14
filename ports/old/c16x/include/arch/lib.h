@@ -30,15 +30,10 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: init.h,v 1.1 2005/01/29 15:19:21 ming Exp $
+ * $Id: lib.h,v 1.1 2007/06/14 12:33:57 kieranm Exp $
  */
-#ifndef __ARCH_INIT_H__
-#define __ARCH_INIT_H__
-
-#define TCPIP_INIT_DONE(arg) sys_sem_signal(*(sys_sem_t *)arg)
-
-#endif /* __ARCH_INIT_H__ */
+#ifndef __LIB_H__
+#define __LIB_H__
 
 
-
-
+#endif /* __LIB_H__ */
