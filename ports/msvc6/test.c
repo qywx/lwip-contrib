@@ -162,10 +162,8 @@ void main_loop()
 #else /* NO_SYS */
   netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, tcpip_ethinput);
 #endif /* NO_SYS */
+  netif_set_up(&loop_netif);
 #endif
-  /*
-  
-  */
 
 #if NO_SYS
   tcp_init();
@@ -175,8 +173,10 @@ void main_loop()
   tcpip_init(0,0);
 #endif /* NO_SYS */
 
+#if LWIP_TCP
   httpd_init();
   netio_init();
+#endif
   //ftpd_init();
 
 #if NO_SYS
