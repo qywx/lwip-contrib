@@ -112,7 +112,6 @@ typedef struct mcf5272if mcf5272if_t;
 #define DEC_TX_BD_INDEX(idx) do { if (idx-- == 0) idx = NUM_TXBDS-1; } while (0)
 
 static mcf5272if_t *mcf5272if;
-static const struct eth_addr ethbroadcast = {{0xff,0xff,0xff,0xff,0xff,0xff}};
 static sys_sem_t tx_sem;
 
 u32_t phy;

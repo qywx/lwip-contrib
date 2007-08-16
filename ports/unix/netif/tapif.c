@@ -72,8 +72,6 @@
 #define IFNAME0 't'
 #define IFNAME1 'p'
 
-static const struct eth_addr ethbroadcast = {{0xff,0xff,0xff,0xff,0xff,0xff}};
-
 struct tapif {
   struct eth_addr *ethaddr;
   /* Add whatever per-interface state that is needed here. */

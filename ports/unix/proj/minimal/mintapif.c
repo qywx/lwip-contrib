@@ -77,8 +77,6 @@ struct mintapif {
   int fd;
 };
 
-static const struct eth_addr ethbroadcast = {{0xff,0xff,0xff,0xff,0xff,0xff}};
-
 /* Forward declarations. */
 static void  mintapif_input(struct netif *netif);
 

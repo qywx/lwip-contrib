@@ -81,7 +81,6 @@
 /*---------------------------------------------------------------------------*/
 #define XEM_MAX_FRAME_SIZE_IN_WORDS ((XEM_MAX_FRAME_SIZE/sizeof(Xuint32))+1)
 
-static const struct eth_addr ethbroadcast = {{0xff,0xff,0xff,0xff,0xff,0xff}};
 extern XEmacIf_Config XEmacIf_ConfigTable[];
 
 /*---------------------------------------------------------------------------*/

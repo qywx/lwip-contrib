@@ -136,8 +136,6 @@
 #define IFNAME0 'e'
 #define IFNAME1 'n'
 
-static const struct eth_addr ethbroadcast = {{0xffU,0xffU,0xffU,0xffU,0xffU,0xffU}};
-
 // Forward declarations
 static err_t cs8900_output(struct netif *netif, struct pbuf *p);
 static struct pbuf *cs8900_input(struct netif *netif);
