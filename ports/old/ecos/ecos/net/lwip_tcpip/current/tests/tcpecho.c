@@ -111,7 +111,7 @@ void
 tmain(cyg_addrword_t p)
 {
   lwip_init();	
-  sys_thread_new(tcpecho_thread, (void*)"tcpecho",7);  
+  sys_thread_new("tcpecho", tcpecho_thread, (void*)"tcpecho", DEFAULT_THREAD_STACKSIZE, 7);
 }
 
 #define STACK_SIZE 0x1000

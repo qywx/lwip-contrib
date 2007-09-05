@@ -97,7 +97,7 @@ low_level_init(struct netif *netif)
   
   LWIP_DEBUGF(TUNIF_DEBUG, ("tunif_init: system(\"%s\");\n", buf));
   system(buf);
-  sys_thread_new(tunif_thread, netif, DEFAULT_THREAD_PRIO);
+  sys_thread_new("tunif_thread", tunif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 
 }
 /*-----------------------------------------------------------------------------------*/

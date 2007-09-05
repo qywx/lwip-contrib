@@ -223,7 +223,7 @@ struct sys_timeouts *sys_arch_timeouts(void)
   return 0;
 }
 
-sys_thread_t sys_thread_new(void (* function)(void *arg), void *arg, int prio) 
+sys_thread_t sys_thread_new(char *name, void (* function)(void *arg), void *arg, int stacksize, int prio)
 {
   struct threadlist *new_thread;
   HANDLE h;

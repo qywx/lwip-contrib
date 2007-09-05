@@ -101,7 +101,7 @@ void Task_lwip_init(void * pParam)
   
   //------------------------------------------------------------
   //All thread(task) of lwIP must have their PRI between 10 and 14.
-  //  sys_thread_new(httpd_init, (void*)"httpd",10);
+  //  sys_thread_new("httpd_init", httpd_init, (void*)"httpd", DEFAULT_THREAD_STACKSIZE, 10);
   //------------------------------------------------------------
   httpd_init();//sample_http
   

@@ -314,7 +314,7 @@ delif_init_thread(struct netif *netif)
   del->netif->netmask = netif->netmask;
   del->input = netif->input;
   del->netif->input = delif_input;
-  sys_thread_new(delif_thread, netif, DEFAULT_THREAD_PRIO);
+  sys_thread_new("delif_thread", delif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   return ERR_OK;
 }
 

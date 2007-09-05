@@ -118,13 +118,15 @@ introduce_thread(NU_TASK *id, void (*function)(void *arg), void *arg)
 /* We use Nucleus task as thread. Create one with a standard size stack at a standard
  * priority. */
 sys_thread_t
-sys_thread_new(void (*function)(void *arg), void *arg, int prio)
+sys_thread_new(char *name, void (* function)(void *arg), void *arg, int stacksize, int prio)
 {
     NU_TASK *p_thread;
     u8_t *p_stack;
     STATUS status;
     char thread_name[8] = "        ";
     struct sys_thread *st;
+    
+    /** @todo Replace SYS_STACK_SIZE by "stacksize" parameter, perhaps use "name" if it is prefered */
     
     p_stack = (u8_t *) malloc(SYS_STACK_SIZE);
     if (p_stack)

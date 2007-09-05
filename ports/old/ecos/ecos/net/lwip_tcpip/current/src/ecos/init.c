@@ -251,7 +251,7 @@ ecosglue_init(void)
 {
   cyg_semaphore_init(&delivery, 0);
   init_hw_drivers();
-  sys_thread_new(input_thread, (void*)0, CYGPKG_LWIP_ETH_THREAD_PRIORITY);
+  sys_thread_new("input_thread", input_thread, (void*)0, DEFAULT_THREAD_STACKSIZE, CYGPKG_LWIP_ETH_THREAD_PRIORITY);
   etharp_init();
   sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler) arp_timer, NULL);
 }

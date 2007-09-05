@@ -279,7 +279,7 @@ void
 tmain(cyg_addrword_t p)
 {
   lwip_init();	
-  sys_thread_new(httpd_init, (void*)"httpd",7);  
+  sys_thread_new("httpd", httpd_init, (void*)"httpd", DEFAULT_THREAD_STACKSIZE, 7);
 }
 
 #define STACK_SIZE 0x1000

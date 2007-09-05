@@ -164,7 +164,7 @@ sioslipif_init(struct netif *netif)
   netif->output = sioslipif_output;
 
   netif_pass = netif;
-  sys_thread_new((void *)sioslipif_loop, NULL, DEFAULT_THREAD_PRIO);
+  sys_thread_new("sioslipif_loop", (void *)sioslipif_loop, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   /* Do some magic to make it possible to receive data from the serial I/O device. */
 }
 /*-----------------------------------------------------------------------------------*/

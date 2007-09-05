@@ -242,12 +242,13 @@ void sys_sem_free(sys_sem_t sem)
 /*
  * Create new thread 
  */
-sys_thread_t sys_thread_new(void (*function) (void *arg), void *arg,int prio)
+sys_thread_t sys_thread_new(char *name, void (* function)(void *arg), void *arg, int stacksize, int prio)
 {
 	struct lwip_thread * nt;
 	void * stack;
 	static int thread_count = 0;
 	nt = (struct lwip_thread *)cyg_mempool_var_alloc(var_mempool_h, sizeof(struct lwip_thread));
+/** @todo name is already used but "stacksize" parameter is unused */
 
 	nt->next = threads;
 	nt->to.next = NULL;
@@ -256,7 +257,7 @@ sys_thread_t sys_thread_new(void (*function) (void *arg), void *arg,int prio)
 
 	stack = (void *)(memfix+CYGNUM_LWIP_THREAD_STACK_SIZE*thread_count++);
 	cyg_thread_create(prio, (cyg_thread_entry_t *)function, (cyg_addrword_t)arg,
-			(char *)arg , stack, CYGNUM_LWIP_THREAD_STACK_SIZE, &(nt->th), &(nt->t) );
+			name, stack, CYGNUM_LWIP_THREAD_STACK_SIZE, &(nt->th), &(nt->t) );
 
 	cyg_thread_resume(nt->th);
 	return NULL;

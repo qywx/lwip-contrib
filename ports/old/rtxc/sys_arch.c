@@ -242,11 +242,12 @@ sys_thread(void)
 }
 /*-----------------------------------------------------------------------------------*/
 sys_thread_t
-sys_thread_new(void (* function)(void *arg), void *arg, int prio) 
+sys_thread_new(char *name, void (* function)(void *arg), void *arg, int istacksize, int prio)
 {
   TASK newtask;
   PRIORITY pri = prio;       /* This may have to be changed. */
   char *stack;
+  /** @todo Replace this local constant by the "istacksize" parameter */
   int stacksize = 512;   /* This may have to be changed. */
   struct sys_thread_arg threadarg;
   

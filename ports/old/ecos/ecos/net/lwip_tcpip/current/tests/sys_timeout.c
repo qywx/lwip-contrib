@@ -69,7 +69,7 @@ void
 tmain(cyg_addrword_t p)
 {
   lwip_init();	
-  sys_thread_new(timeout_thread, (void*)"timeout",7);
+  sys_thread_new("timeout", timeout_thread, (void*)"timeout", DEFAULT_THREAD_STACKSIZE, 7);
 }
 
 #define STACK_SIZE 0x1000

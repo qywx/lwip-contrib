@@ -453,8 +453,8 @@ unixif_init_server(struct netif *netif)
 
   unixif->fd = fd2;
   unixif->sem = sys_sem_new(0);
-  sys_thread_new(unixif_thread, netif, DEFAULT_THREAD_PRIO);
-  sys_thread_new(unixif_thread2, netif, DEFAULT_THREAD_PRIO);
+  sys_thread_new("unixif_thread", unixif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
+  sys_thread_new("unixif_thread2", unixif_thread2, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -477,8 +477,8 @@ unixif_init_client(struct netif *netif)
   }
   unixif->q = list_new(UNIXIF_QUEUELEN);
   unixif->sem = sys_sem_new(0);
-  sys_thread_new(unixif_thread, netif, DEFAULT_THREAD_PRIO);
-  sys_thread_new(unixif_thread2, netif, DEFAULT_THREAD_PRIO);
+  sys_thread_new("unixif_thread", unixif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
+  sys_thread_new("unixif_thread2", unixif_thread2, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/

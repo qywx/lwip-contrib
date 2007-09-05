@@ -387,7 +387,7 @@ main_thread(void *arg)
 #if LWIP_RAW
   /** @todo remove dependency on RAW PCB support */
   if(ping_flag) {
-    sys_thread_new(ping_thread, NULL, DEFAULT_THREAD_PRIO);
+    sys_thread_new("ping_thread", ping_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   }
 #endif
 
@@ -484,7 +484,7 @@ main(int argc, char **argv)
   
   printf("System initialized.\n");
     
-  sys_thread_new(main_thread, NULL, DEFAULT_THREAD_PRIO);
+  sys_thread_new("main_thread", main_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   pause();
   return 0;
 }

@@ -742,7 +742,7 @@ void
 tmain(cyg_addrword_t p)
 {
   lwip_init();
-  sys_thread_new(net_test, 0, MAIN_THREAD_PRIORITY);
+  sys_thread_new("net_test", net_test, 0, DEFAULT_THREAD_STACKSIZE, MAIN_THREAD_PRIORITY);
 }
 
 static char stack[STACK_SIZE];

@@ -198,9 +198,9 @@ sys_timeouts * sys_arch_timeouts(void)
 
 
 /*------------------------------------------------------------------------*/
-sys_thread_t sys_thread_new(void (* thread)(void *arg), void *arg, int prio)
+sys_thread_t sys_thread_new(char *name, void (* thread)(void *arg), void *arg, int stacksize, int prio)
 {
-
+  /** @todo Replace LWIP_TASK_STK by the use of "stacksize" parameter */
   if(prio == TCPIP_THREAD_PRIO){
 	OSTaskCreate(thread, (void *)0x1111, &LWIP_TASK_STK[LWIP_TASK_MAX][LWIP_STK_SIZE-1], prio);
 		return prio;

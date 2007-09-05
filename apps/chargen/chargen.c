@@ -51,10 +51,12 @@
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
 
-#define MAX_SERV 5      /* Maximum number of chargen services. Don't need too many */
-#define CHARGEN_PRIORITY 254            /* Really low priority */
-#define SEND_SIZE TCP_SNDLOWAT          /* If we only send this much, then when select
-                                           says we can send, we know we won't block */
+#define MAX_SERV                 5         /* Maximum number of chargen services. Don't need too many */
+#define CHARGEN_THREAD_NAME      "chargen"
+#define CHARGEN_PRIORITY         254       /* Really low priority */
+#define CHARGEN_THREAD_STACKSIZE 0
+#define SEND_SIZE TCP_SNDLOWAT             /* If we only send this much, then when select
+                                              says we can send, we know we won't block */
 struct charcb 
 {
     struct charcb *next;
@@ -253,7 +255,7 @@ static int do_read(struct charcb *p_charcb)
  **************************************************************/
 void chargen_init(void)
 {
-    sys_thread_new( "chargen", chargen_thread, 0, 0, CHARGEN_PRIORITY);
+    sys_thread_new( CHARGEN_THREAD_NAME, chargen_thread, 0, CHARGEN_THREAD_STACKSIZE, CHARGEN_PRIORITY);
     
 }
 

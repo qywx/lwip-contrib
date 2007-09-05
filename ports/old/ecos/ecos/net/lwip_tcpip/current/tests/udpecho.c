@@ -94,7 +94,7 @@ udpecho_thread(void *arg)
 void tmain(cyg_addrword_t p)
 {
   lwip_init();	
-  sys_thread_new(udpecho_thread, (void*)"udpecho",7);
+  sys_thread_new("udp_echo", udpecho_thread, (void*)"udpecho", DEFAULT_THREAD_STACKSIZE, 7);
 }
 
 #define STACK_SIZE 0x1000
