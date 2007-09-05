@@ -253,7 +253,7 @@ static int do_read(struct charcb *p_charcb)
  **************************************************************/
 void chargen_init(void)
 {
-    sys_thread_new(chargen_thread, 0, CHARGEN_PRIORITY);
+    sys_thread_new( "chargen", chargen_thread, 0, 0, CHARGEN_PRIORITY);
     
 }
 
