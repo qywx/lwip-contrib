@@ -350,26 +350,40 @@ static err_t cs8900_output(struct netif *netif, struct pbuf *p)
   // ready to transmit?
   if ((PPDATA & 0x0100U/*Rdy4TxNOW*/) != 0)
   {
-    u32_t sent_bytes = 0;
+    u16_t sent_bytes = 0;
     /* q traverses through linked list of pbuf's
      * This list MUST consist of a single packet ONLY */
     struct pbuf *q;
-    for (q = p; q != NULL; q = q->next)
+    u16_t pbuf_index = 0;
+    u8_t word_index = 0;
+    u8_t word[2];
+    q = p;
+    /* Write data into CS8900, two bytes at a time
+     * Handling pbuf's with odd number of bytes correctly 
+     * No attempt to optimize for speed has been made */
+    while (q)
     {
-      u16_t i;
-      u16_t *ptr = (u16_t *)q->payload;
-      /* Send the data from the pbuf to the interface, one pbuf at a
-       * time. The size of the data in each pbuf is kept in the ->len
-       * variable.
-       */
-      i = 0;
-      while (i < q->len)
+      if (pbuf_index < q->len)
       {
-        /** TODO: this routine assumes 16-bit boundary pbufs... */
-        RXTXREG = *ptr++;
-        i += 2;
+        word[word_index++] = ((u8_t*)q->payload)[pbuf_index++];
+        if (word_index == 2)
+        {
+          RXTXREG = (word[1] << 8) | word[0];
+          word_index = 0;
+          sent_bytes += 2;
+        }
       }
-      sent_bytes += i;
+      else
+      {
+        q = q->next;
+        pbuf_index = 0;
+      }
+    }
+    /* One byte could still be unsent */
+    if (word_index == 1)
+    {
+      RXTXREG = word[0];
+      sent_bytes += 2;
     }
     /* provide any additional padding to comply with minimum Ethernet
      * frame length (RFC10242) */
