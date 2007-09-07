@@ -30,7 +30,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: lwipopts.h,v 1.1 2007/06/14 12:34:10 kieranm Exp $
+ * $Id: lwipopts.h,v 1.2 2007/09/07 23:28:54 fbernon Exp $
  */
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
@@ -102,15 +102,11 @@ a lot of data that needs to be copied, this should be set high. */
 /* MEMP_NUM_NETCONN: the number of struct netconns. */
 #define MEMP_NUM_NETCONN        32
 
-/* MEMP_NUM_APIMSG: the number of struct api_msg, used for
-   communication between the TCP/IP stack and the sequential
-   programs. */
-#define MEMP_NUM_API_MSG        32
-
-/* MEMP_NUM_TCPIPMSG: the number of struct tcpip_msg, which is used
+/* MEMP_NUM_TCPIP_MSG: the number of struct tcpip_msg, which is used
    for sequential API communication and incoming packets. Used in
    src/api/tcpip.c. */
-#define MEMP_NUM_TCPIP_MSG      32
+#define MEMP_NUM_TCPIP_MSG_API   32
+#define MEMP_NUM_TCPIP_MSG_INPKT 32
 
 //----------------------------------------------------------------------
 /* ---------- Pbuf options ---------- */
@@ -255,7 +251,6 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_STATS			1
 #define PBUF_STATS			1
 #define SYS_STATS			1
-#define RAW_STATS			1
 #endif /* STATS */
 
 
@@ -291,7 +286,6 @@ Then, define debug class in opt.h
 #define TCP_INPUT_DEBUG                 LWIP_DBG_OFF
 #define TCP_FR_DEBUG                    LWIP_DBG_OFF
 #define TCP_RTO_DEBUG                   LWIP_DBG_OFF
-#define TCP_REXMIT_DEBUG                LWIP_DBG_OFF
 #define TCP_CWND_DEBUG                  LWIP_DBG_OFF
 #define TCP_WND_DEBUG                   LWIP_DBG_OFF
 #define TCP_OUTPUT_DEBUG                LWIP_DBG_OFF

@@ -104,14 +104,11 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_NETBUF         CYGPKG_LWIP_MEMP_NUM_NETBUF
 /* MEMP_NUM_NETCONN: the number of struct netconns. */
 #define MEMP_NUM_NETCONN        CYGPKG_LWIP_MEMP_NUM_NETCONN
-/* MEMP_NUM_APIMSG: the number of struct api_msg, used for
-   communication between the TCP/IP stack and the sequential
-   programs. */
-#define MEMP_NUM_API_MSG        CYGPKG_LWIP_MEMP_NUM_APIMSG
-/* MEMP_NUM_TCPIPMSG: the number of struct tcpip_msg, which is used
+/* MEMP_NUM_TCPIP_MSG: the number of struct tcpip_msg, which is used
    for sequential API communication and incoming packets. Used in
    src/api/tcpip.c. */
-#define MEMP_NUM_TCPIP_MSG      CYGPKG_LWIP_MEMP_NUM_TCPIP_MSG
+#define MEMP_NUM_TCPIP_MSG_API   CYGPKG_LWIP_MEMP_NUM_TCPIP_MSG
+#define MEMP_NUM_TCPIP_MSG_INPKT CYGPKG_LWIP_MEMP_NUM_TCPIP_MSG
 
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */

@@ -69,14 +69,11 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_NETBUF         2
 /* MEMP_NUM_NETCONN: the number of struct netconns. */
 #define MEMP_NUM_NETCONN        4
-/* MEMP_NUM_APIMSG: the number of struct api_msg, used for
-   communication between the TCP/IP stack and the sequential
-   programs. */
-#define MEMP_NUM_API_MSG        8
-/* MEMP_NUM_TCPIPMSG: the number of struct tcpip_msg, which is used
+/* MEMP_NUM_TCPIP_MSG: the number of struct tcpip_msg, which is used
    for sequential API communication and incoming packets. Used in
    src/api/tcpip.c. */
-#define MEMP_NUM_TCPIP_MSG      8
+#define MEMP_NUM_TCPIP_MSG_API   8
+#define MEMP_NUM_TCPIP_MSG_INPKT 8
 
 /* These two control is reclaimer functions should be compiled
    in. Should always be turned on (1). */

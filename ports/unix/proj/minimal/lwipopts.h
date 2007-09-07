@@ -68,14 +68,11 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_NETBUF         0
 /* MEMP_NUM_NETCONN: the number of struct netconns. */
 #define MEMP_NUM_NETCONN        0
-/* MEMP_NUM_APIMSG: the number of struct api_msg, used for
-   communication between the TCP/IP stack and the sequential
-   programs. */
-#define MEMP_NUM_API_MSG        0
-/* MEMP_NUM_TCPIPMSG: the number of struct tcpip_msg, which is used
+/* MEMP_NUM_TCPIP_MSG: the number of struct tcpip_msg, which is used
    for sequential API communication and incoming packets. Used in
    src/api/tcpip.c. */
-#define MEMP_NUM_TCPIP_MSG      0
+#define MEMP_NUM_TCPIP_MSG_API   0
+#define MEMP_NUM_TCPIP_MSG_INPKT 0
 /* MEMP_NUM_SYS_TIMEOUT: the number of simultaneously active
    timeouts. */
 #define MEMP_NUM_SYS_TIMEOUT    0
@@ -222,7 +219,6 @@ extern unsigned char debug_flags;
 #define TCP_INPUT_DEBUG  LWIP_DBG_OFF
 #define TCP_FR_DEBUG     LWIP_DBG_OFF
 #define TCP_RTO_DEBUG    LWIP_DBG_OFF
-#define TCP_REXMIT_DEBUG LWIP_DBG_OFF
 #define TCP_CWND_DEBUG   LWIP_DBG_OFF
 #define TCP_WND_DEBUG    LWIP_DBG_OFF
 #define TCP_OUTPUT_DEBUG LWIP_DBG_OFF

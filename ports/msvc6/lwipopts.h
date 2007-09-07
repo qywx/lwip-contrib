@@ -111,14 +111,11 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_NETBUF         2
 /* MEMP_NUM_NETCONN: the number of struct netconns. */
 #define MEMP_NUM_NETCONN        10
-/* MEMP_NUM_APIMSG: the number of struct api_msg, used for
-   communication between the TCP/IP stack and the sequential
-   programs. */
-#define MEMP_NUM_API_MSG        16
 /* MEMP_NUM_TCPIPMSG: the number of struct tcpip_msg, which is used
    for sequential API communication and incoming packets. Used in
    src/api/tcpip.c. */
-#define MEMP_NUM_TCPIP_MSG      16
+#define MEMP_NUM_TCPIP_MSG_API   16
+#define MEMP_NUM_TCPIP_MSG_INPKT 16
 
 
 /* ---------- Pbuf options ---------- */
