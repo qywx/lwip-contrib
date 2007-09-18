@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "$(LWIP_SRC)\include" /I "$(LWIP_SRC)\include\ipv4" /I ".\include" /I ".\\" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I "$(LWIP_SRC)\include" /I "$(LWIP_SRC)\include\ipv4" /I ".\include" /I ".\\" /I "$(PLATFORMSDK_DIR)\include" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
 # ADD RSC /l 0x407 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "$(LWIP_SRC)\include" /I "$(LWIP_SRC)\include\ipv4" /I ".\include" /I ".\\" /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "LWIP_DEBUG" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "$(LWIP_SRC)\include" /I "$(LWIP_SRC)\include\ipv4" /I ".\include" /I ".\\" /I "$(PLATFORMSDK_DIR)\include" /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "LWIP_DEBUG" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
 # ADD RSC /l 0x407 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -80,9 +80,16 @@ LIB32=link.exe -lib
 
 # Name "lwip4 - Win32 Release"
 # Name "lwip4 - Win32 Debug"
-# Begin Group "Quellcodedateien"
+# Begin Group "source"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Group "arch"
+# Begin Source File
+
+SOURCE=".\sys_arch.c"
+# End Source File
+# End Group
+# Begin Group "api"
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\api\api_lib.c"
@@ -97,6 +104,10 @@ SOURCE="$(LWIP_SRC)\api\err.c"
 # End Source File
 # Begin Source File
 
+SOURCE="$(LWIP_SRC)\api\netbuf.c"
+# End Source File
+# Begin Source File
+
 SOURCE="$(LWIP_SRC)\api\netifapi.c"
 # End Source File
 # Begin Source File
@@ -107,6 +118,13 @@ SOURCE="$(LWIP_SRC)\api\sockets.c"
 
 SOURCE="$(LWIP_SRC)\api\tcpip.c"
 # End Source File
+# End Group
+# Begin Group "core"
+# Begin Group "ipv4"
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\core\ipv4\autoip.c"
+# End Source File
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\core\ipv4\icmp.c"
@@ -114,10 +132,6 @@ SOURCE="$(LWIP_SRC)\core\ipv4\icmp.c"
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\core\ipv4\igmp.c"
-# End Source File
-# Begin Source File
-
-SOURCE="$(LWIP_SRC)\core\inet.c"
 # End Source File
 # Begin Source File
 
@@ -131,6 +145,8 @@ SOURCE="$(LWIP_SRC)\core\ipv4\ip_addr.c"
 
 SOURCE="$(LWIP_SRC)\core\ipv4\ip_frag.c"
 # End Source File
+# End Group
+# Begin Group "snmp"
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\core\snmp\asn1_dec.c"
@@ -155,9 +171,18 @@ SOURCE="$(LWIP_SRC)\core\snmp\msg_in.c"
 
 SOURCE="$(LWIP_SRC)\core\snmp\msg_out.c"
 # End Source File
+# End Group
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\core\dhcp.c"
+# End Source File
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\core\inet.c"
+# End Source File
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\core\init.c"
 # End Source File
 # Begin Source File
 
@@ -204,9 +229,15 @@ SOURCE="$(LWIP_SRC)\core\tcp_out.c"
 SOURCE="$(LWIP_SRC)\core\udp.c"
 # End Source File
 # End Group
-# Begin Group "Header-Dateien"
+# End Group
+# Begin Group "header"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Group "ipv4"
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\include\ipv4\lwip\autoip.h"
+# End Source File
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\include\ipv4\lwip\icmp.h"
@@ -231,6 +262,7 @@ SOURCE="$(LWIP_SRC)\include\ipv4\lwip\ip_addr.h"
 
 SOURCE="$(LWIP_SRC)\include\ipv4\lwip\ip_frag.h"
 # End Source File
+# End Group
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\include\lwip\api.h"
@@ -261,11 +293,23 @@ SOURCE="$(LWIP_SRC)\include\lwip\err.h"
 # End Source File
 # Begin Source File
 
+SOURCE="$(LWIP_SRC)\include\lwip\init.h"
+# End Source File
+# Begin Source File
+
 SOURCE="$(LWIP_SRC)\include\lwip\mem.h"
 # End Source File
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\include\lwip\memp.h"
+# End Source File
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\include\lwip\memp_std.h"
+# End Source File
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\include\lwip\netbuf.h"
 # End Source File
 # Begin Source File
 
@@ -289,6 +333,10 @@ SOURCE="$(LWIP_SRC)\include\lwip\raw.h"
 # End Source File
 # Begin Source File
 
+SOURCE="$(LWIP_SRC)\include\lwip\sio.h"
+# End Source File
+# Begin Source File
+
 SOURCE="$(LWIP_SRC)\include\lwip\snmp.h"
 # End Source File
 # Begin Source File
@@ -306,6 +354,10 @@ SOURCE="$(LWIP_SRC)\include\lwip\snmp_structs.h"
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\include\lwip\sockets.h"
+# End Source File
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\include\lwip\stats.h"
 # End Source File
 # Begin Source File
 

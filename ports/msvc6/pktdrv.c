@@ -84,25 +84,25 @@ int init_adapter(int adapter_num, char* mac_addr)
 
   void *AdapterList[Max_Num_Adapter];
 
-	int i;
-	DWORD dwVersion;
-	DWORD dwWindowsMajorVersion;
+  int i;
+  DWORD dwVersion;
+  DWORD dwWindowsMajorVersion;
 
-	//unicode strings (winnt)
-	char 	AdapterName[8192]; // string that contains a list of the network adapters
-	char 	*temp,*temp1;
+  //unicode strings (winnt)
+  char   AdapterName[8192]; // string that contains a list of the network adapters
+  char   *temp,*temp1;
 
-	//ascii strings (win95)
-	char		AdapterNamea[8192]; // string that contains a list of the network adapters
-	char		*tempa,*temp1a;
+  //ascii strings (win95)
+  char    AdapterNamea[8192]; // string that contains a list of the network adapters
+  char    *tempa,*temp1a;
 
-	int			AdapterNum=0;
-	ULONG		AdapterLength;
+  int      AdapterNum=0;
+  ULONG    AdapterLength;
 
   PPACKET_OID_DATA ppacket_oid_data;
 
-	// obtain the name of the adapters installed on this machine
-	AdapterLength=4096;
+  // obtain the name of the adapters installed on this machine
+  AdapterLength=4096;
 
   memset(AdapterList,0,sizeof(AdapterList));
   memset(AdapterName,0,sizeof(AdapterName));
@@ -110,151 +110,156 @@ int init_adapter(int adapter_num, char* mac_addr)
 
   i=0;
 
-	// the data returned by PacketGetAdapterNames is different in Win95 and in WinNT.
-	// We have to check the os on which we are running
-	dwVersion=GetVersion();
-	dwWindowsMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
-	if (!(dwVersion >= 0x80000000 && dwWindowsMajorVersion >= 4))
-	{  // Windows NT
-		if (PacketGetAdapterNames((char *)AdapterName,&AdapterLength)==FALSE){
-			printf("Unable to retrieve the list of the adapters!\n");
-			return -1;
-		}
-		temp=AdapterName;
-		temp1=AdapterName;
-		while ((*temp!='\0')||(*(temp-1)!='\0'))
-		{
-			if (*temp=='\0')
-			{
-				AdapterList[i] = temp1;
-				temp1=temp+1;
-				i++;
-		}
+  // the data returned by PacketGetAdapterNames is different in Win95 and in WinNT.
+  // We have to check the os on which we are running
+  dwVersion=GetVersion();
+  dwWindowsMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
+  if (!(dwVersion >= 0x80000000 && dwWindowsMajorVersion >= 4)) {
+    // Windows NT
+    if (PacketGetAdapterNames((char *)AdapterName,&AdapterLength)==FALSE){
+      printf("Unable to retrieve the list of the adapters!\n");
+      return -1;
+    }
+    temp=AdapterName;
+    temp1=AdapterName;
+    while ((*temp!='\0')||(*(temp-1)!='\0')) {
+      if (*temp=='\0') {
+        AdapterList[i] = temp1;
+        temp1=temp+1;
+        i++;
+      }
 
-		temp++;
-		}
+      temp++;
+    }
 
-		AdapterNum=i;
-		for (i=0; i<AdapterNum; i++)
-			printf("%2i: %s\n", i, AdapterList[i]);
-	}
+    AdapterNum=i;
+    for (i=0; i<AdapterNum; i++) {
+      printf("%2i: %s\n", i, AdapterList[i]);
+    }
+  } else {
+    //windows 95 
+    if (PacketGetAdapterNames(AdapterNamea,&AdapterLength)==FALSE) {
+      printf("Unable to retrieve the list of the adapters!\n");
+      return -1;
+    }
+    tempa = AdapterNamea;
+    temp1a = AdapterNamea;
 
-	else	//windows 95
-	{
-		if (PacketGetAdapterNames(AdapterNamea,&AdapterLength)==FALSE){
-			printf("Unable to retrieve the list of the adapters!\n");
-			return -1;
-		}
-		tempa=AdapterNamea;
-		temp1a=AdapterNamea;
+    while ((*tempa!='\0')||(*(tempa-1)!='\0')) {
+      if (*tempa=='\0') {
+        AdapterList[i] = temp1a;
+        temp1a=tempa+1;
+        i++;
+      }
+      tempa++;
+    }
 
-		while ((*tempa!='\0')||(*(tempa-1)!='\0'))
-		{
-			if (*tempa=='\0')
-			{
-				AdapterList[i] = temp1a;
-				temp1a=tempa+1;
-				i++;
-			}
-			tempa++;
-		}
+    AdapterNum=i;
+    AdapterNum=i;
+    for (i=0; i<AdapterNum; i++) {
+      printf("%2i: %s", i, AdapterList[i]);
+    }
+  }
 
-		AdapterNum=i;
-		AdapterNum=i;
-		for (i=0; i<AdapterNum; i++)
-			printf("%2i: %s", i, AdapterList[i]);
-	}
-
-  if (AdapterNum<=0)
+  if (AdapterNum<=0) {
     return -1;
-  if (adapter_num < 0)
-	  return -1;
-  if (adapter_num >= AdapterNum)
-	  return -1;
+  }
+  if (adapter_num < 0) {
+    return -1;
+  }
+  if (adapter_num >= AdapterNum) {
+    return -1;
+  }
   ppacket_oid_data=malloc(sizeof(PACKET_OID_DATA)+6);
   lpAdapter=PacketOpenAdapter(AdapterList[adapter_num]);
-	if (!lpAdapter || (lpAdapter->hFile == INVALID_HANDLE_VALUE))
-	  return -1;
+  if (!lpAdapter || (lpAdapter->hFile == INVALID_HANDLE_VALUE)) {
+    return -1;
+  }
   ppacket_oid_data->Oid=OID_802_3_PERMANENT_ADDRESS;
   ppacket_oid_data->Length=6;
-  if (!PacketRequest(lpAdapter,FALSE,ppacket_oid_data))
-		return -1;
+  if (!PacketRequest(lpAdapter,FALSE,ppacket_oid_data)) {
+    return -1;
+  }
   memcpy(&ethaddr,ppacket_oid_data->Data,6);
   free(ppacket_oid_data);
   memcpy(mac_addr, ethaddr, 6);
   printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
-	PacketSetBuff(lpAdapter,512000);
-	PacketSetReadTimeout(lpAdapter,1);
-	PacketSetHwFilter(lpAdapter,NDIS_PACKET_TYPE_ALL_LOCAL);
-	if ((lpPacket = PacketAllocatePacket())==NULL){
-		return (-1);
-	}
-	PacketInitPacket(lpPacket,(char*)buffer,256000);
+  PacketSetBuff(lpAdapter,512000);
+  PacketSetReadTimeout(lpAdapter,1);
+  PacketSetHwFilter(lpAdapter,NDIS_PACKET_TYPE_ALL_LOCAL);
+  if ((lpPacket = PacketAllocatePacket())==NULL) {
+    return (-1);
+  }
+  PacketInitPacket(lpPacket,(char*)buffer,256000);
 
-	return 0;
+  return 0;
 }
 
 void shutdown_adapter(void)
 {
-	PacketFreePacket(lpPacket);
-	PacketCloseAdapter(lpAdapter);
+  PacketFreePacket(lpPacket);
+  PacketCloseAdapter(lpAdapter);
 }
 
 int packet_send(void *buffer, int len)
 {
-	LPPACKET lpPacket;
+  LPPACKET lpPacket;
 
-	if ((lpPacket = PacketAllocatePacket())==NULL)
- 		return -1;
-	PacketInitPacket(lpPacket,buffer,len);
-	if (!PacketSendPacket(lpAdapter,lpPacket,TRUE))
-		return -1;
-	PacketFreePacket(lpPacket);
+  if ((lpPacket = PacketAllocatePacket())==NULL) {
+    return -1;
+  }
+  PacketInitPacket(lpPacket,buffer,len);
+  if (!PacketSendPacket(lpAdapter,lpPacket,TRUE)) {
+    return -1;
+  }
+  PacketFreePacket(lpPacket);
 
-	return 0;
+  return 0;
 }
 
 extern void process_input(void);
 
 static void ProcessPackets(LPPACKET lpPacket)
 {
-	ULONG	ulLines, ulBytesReceived;
-	char	*base;
-	char	*buf;
-	u_int off=0;
-	u_int tlen,tlen1;
-	struct bpf_hdr *hdr;
+  ULONG  ulLines, ulBytesReceived;
+  char  *base;
+  char  *buf;
+  u_int off=0;
+  u_int tlen,tlen1;
+  struct bpf_hdr *hdr;
 
-	ulBytesReceived = lpPacket->ulBytesReceived;
+  ulBytesReceived = lpPacket->ulBytesReceived;
 
-	buf = lpPacket->Buffer;
+  buf = lpPacket->Buffer;
 
-	off=0;
+  off=0;
 
-	while (off<ulBytesReceived)
-  {	
-		//if (kbhit())return;
-		hdr=(struct bpf_hdr *)(buf+off);
-		tlen1=hdr->bh_datalen;
-		cur_length=tlen1;
-		tlen=hdr->bh_caplen;
-		off+=hdr->bh_hdrlen;
+  while (off<ulBytesReceived) {
+    //if (kbhit())return;
+    hdr=(struct bpf_hdr *)(buf+off);
+    tlen1=hdr->bh_datalen;
+    cur_length=tlen1;
+    tlen=hdr->bh_caplen;
+    off+=hdr->bh_hdrlen;
 
-		ulLines = (tlen + 15) / 16;
-		if (ulLines > 5) ulLines=5;
+    ulLines = (tlen + 15) / 16;
+    if (ulLines > 5) {
+      ulLines=5;
+    }
 
-		base =(char*)(buf+off);
-		cur_packet=base;
-		off=Packet_WORDALIGN(off+tlen);
+    base =(char*)(buf + off);
+    cur_packet = base;
+    off = Packet_WORDALIGN(off + tlen);
 
-		process_input();
-	}
+    process_input();
+  }
 }
 
 void update_adapter(void)
 {
-  if (PacketReceivePacket(lpAdapter,lpPacket,TRUE)==TRUE)
+  if (PacketReceivePacket(lpAdapter,lpPacket,TRUE)==TRUE) {
     ProcessPackets(lpPacket);
+  }
   cur_length=0;
   cur_packet=NULL;
 }

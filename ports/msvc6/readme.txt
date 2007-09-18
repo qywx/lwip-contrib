@@ -10,6 +10,15 @@ Win32/MSVC.
 To get this compiling, you have to set the LWIP_SRC environment variable to
 point to the src subdirectory in the main lwip tree.
 
+>>>NEW>>>
+
+Note that you also have to set the PCAP_DIR environment variable to point
+to the WinPcap Developer's Packs (containing 'include' and 'lib'), as well
+as the PLATFORMSDK_DIR environment variable to point to Microsoft's Platform
+SDK (or any other place containing 'include/windows.h').
+
+<<<NEW<<<
+
 Due to the nature of the lwip library you have to copy this whole project
 into a new subdir in proj and modify lwipopts.h to your needs. If you move
 it to another directory besides proj, you have to update the include paths

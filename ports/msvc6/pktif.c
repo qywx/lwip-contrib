@@ -78,11 +78,15 @@
 
 #include "netif/etharp.h"
 
-#undef NETIF_DEBUG
+#undef  NETIF_DEBUG
+#define NETIF_DEBUG 0
 
 /* Define those to better describe your network interface. */
 #define IFNAME0 'p'
 #define IFNAME1 'k'
+
+/* index of the network adapter to use for lwIP */
+#define PACKET_LIB_ADAPTER_NR   1
 
 static struct eth_addr broadcastaddr = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
@@ -94,18 +98,28 @@ static struct netif *pktif_netif;
 extern unsigned char ethaddr[6];
 extern unsigned char *cur_packet;
 extern int cur_length;
+extern int init_adapter(int adapter_num, char* mac_addr);
 extern int packet_send(void *buffer, int len);
 
 /*-----------------------------------------------------------------------------------*/
 static void
 low_level_init(struct netif *netif)
 {
-#ifdef NETIF_DEBUG
-	LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
-#endif /* NETIF_DEBUG */
-	/* Do whatever else is needed to initialize interface. */
+  char mac_addr[6];
 
-	pktif_netif=netif;
+  LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
+
+  /* Do whatever else is needed to initialize interface. */
+  if (init_adapter(PACKET_LIB_ADAPTER_NR, mac_addr) != 0) {
+    printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
+    return;
+  }
+
+  /* Prepare MAC addr: increase the last octet so that lwIP netif has a similar but different MAC addr */
+  memcpy(&netif->hwaddr, mac_addr, 6);
+  netif->hwaddr[5]++;
+
+  pktif_netif=netif;
 }
 /*-----------------------------------------------------------------------------------*/
 /*
@@ -123,28 +137,27 @@ low_level_output(struct netif *ethernetif, struct pbuf *p)
 {
   struct pbuf *q;
   unsigned char buffer[1600];
-	unsigned char *ptr;
+  unsigned char *ptr;
 
   /* initiate transfer(); */
-  if (p->tot_len>=1600)
- 		return ERR_BUF;
-	ptr=buffer;
+  if (p->tot_len >= sizeof(buffer)) {
+    return ERR_BUF;
+  }
+  ptr = buffer;
   for(q = p; q != NULL; q = q->next) {
     /* Send the data from the pbuf to the interface, one pbuf at a
        time. The size of the data in each pbuf is kept in the ->len
        variable. */
     /* send data from(q->payload, q->len); */
-#ifdef NETIF_DEBUG
-		LWIP_DEBUGF(NETIF_DEBUG, ("netif: send ptr %p q->payload %p q->len %i q->next %p\n", ptr, q->payload, (int)q->len, q->next));
-#endif
-		memcpy(ptr,q->payload,q->len);
-		ptr+=q->len;
+    LWIP_DEBUGF(NETIF_DEBUG, ("netif: send ptr %p q->payload %p q->len %i q->next %p\n", ptr, q->payload, (int)q->len, q->next));
+    memcpy(ptr, q->payload, q->len);
+    ptr += q->len;
   }
 
   /* signal that packet should be sent(); */
-
-  if (packet_send(buffer, p->tot_len) < 0)
-	  return ERR_BUF;
+  if (packet_send(buffer, p->tot_len) < 0) {
+    return ERR_BUF;
+  }
 
 #ifdef LINK_STATS
   lwip_stats.link.xmit++;
@@ -167,15 +180,15 @@ low_level_input(struct netif *netif)
   int start, length;
   struct eth_hdr *ethhdr;
 
-  /* Obtain the size of the packet and put it into the "len"
-     variable. */
+  /* Obtain the size of the packet and put it into the "len" variable. */
   length = cur_length;
-	if (length<=0)
-		return NULL;
+  if (length<=0) {
+    return NULL;
+  }
 
   ethhdr = (struct eth_hdr*)cur_packet;
   /* MAC filter: only let my MAC or broadcast through */
-  if((memcmp(&ethhdr->dest, &netif->hwaddr, 6)) && (memcmp(&ethhdr->dest, &broadcastaddr, 6))) {
+  if ((memcmp(&ethhdr->dest, &netif->hwaddr, 6)) && (memcmp(&ethhdr->dest, &broadcastaddr, 6))) {
     /* acknowledge that packet has been read(); */
     cur_length=0;
     return NULL;
@@ -183,36 +196,33 @@ low_level_input(struct netif *netif)
 
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_LINK, (u16_t)length, PBUF_POOL);
-#ifdef NETIF_DEBUG
-	LWIP_DEBUGF(NETIF_DEBUG, ("netif: recv length %i p->tot_len %i\n", length, (int)p->tot_len));
-#endif
-	
+  LWIP_DEBUGF(NETIF_DEBUG, ("netif: recv length %i p->tot_len %i\n", length, (int)p->tot_len));
+  
   if (p != NULL) {
     /* We iterate over the pbuf chain until we have read the entire
        packet into the pbuf. */
-		start=0;
-    for(q = p; q != NULL; q = q->next) {
+    start=0;
+    for (q = p; q != NULL; q = q->next) {
       /* Read enough bytes to fill this pbuf in the chain. The
          available data in the pbuf is given by the q->len
          variable. */
       /* read data into(q->payload, q->len); */
-#ifdef NETIF_DEBUG
-			LWIP_DEBUGF(NETIF_DEBUG, ("netif: recv start %i length %i q->payload %p q->len %i q->next %p\n", start, length, q->payload, (int)q->len, q->next));
-#endif
-      memcpy(q->payload,&cur_packet[start],q->len);
-			start+=q->len;
-			length-=q->len;
-			if (length<=0)
-				break;
+      LWIP_DEBUGF(NETIF_DEBUG, ("netif: recv start %i length %i q->payload %p q->len %i q->next %p\n", start, length, q->payload, (int)q->len, q->next));
+      memcpy(q->payload, &cur_packet[start], q->len);
+      start += q->len;
+      length -= q->len;
+      if (length<=0) {
+        break;
+      }
     }
     /* acknowledge that packet has been read(); */
-    cur_length=0;
+    cur_length = 0;
 #ifdef LINK_STATS
     lwip_stats.link.recv++;
 #endif /* LINK_STATS */
   } else {
     /* drop packet(); */
-    cur_length=0;
+    cur_length = 0;
 #ifdef LINK_STATS
     lwip_stats.link.memerr++;
     lwip_stats.link.drop++;
@@ -240,40 +250,38 @@ ethernetif_input(struct netif *netif)
   struct eth_hdr *ethhdr;
   struct pbuf *p;
 
-
   ethernetif = netif->state;
 
+  /* move received packet into a new pbuf */
   p = low_level_input(netif);
+  /* no packet could be read, silently ignore this */
+  if (p == NULL) {
+    return;
+  }
+  /* points to packet payload, which starts with an Ethernet header */
+  ethhdr = p->payload;
 
-  if (p != NULL) {
-
-#if LINK_STATS
-    lwip_stats.link.recv++;
-#endif /* LINK_STATS */
-
-    ethhdr = p->payload;
-    
-    switch (htons(ethhdr->type)) {
-#if ETHARP_TCPIP_INPUT
-    /* IP or ARP packet? */
-    case ETHTYPE_IP:
-    case ETHTYPE_ARP:
-      netif->input(p, netif);
-      break;                 
-#else
-    case ETHTYPE_IP:
-      etharp_ip_input(netif, p);
-      pbuf_header(p, -14);
-      netif->input(p, netif);
-      break;
-    case ETHTYPE_ARP:
-      etharp_arp_input(netif, ethernetif->ethaddr, p);
-      break;
-#endif
-    default:
+  switch (htons(ethhdr->type)) {
+  /* IP or ARP packet? */
+  case ETHTYPE_IP:
+  case ETHTYPE_ARP:
+#if PPPOE_SUPPORT
+  /* PPPoE packet? */
+  case ETHTYPE_PPPOEDISC:
+  case ETHTYPE_PPPOE:
+#endif /* PPPOE_SUPPORT */
+    /* full packet send to tcpip_thread to process */
+    if (netif->input(p, netif)!=ERR_OK) {
+      LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
       pbuf_free(p);
-      break;
+      p = NULL;
     }
+    break;
+
+  default:
+    pbuf_free(p);
+    p = NULL;
+    break;
   }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -295,7 +303,7 @@ ethernetif_init(struct netif *netif)
   netif->output = etharp_output;
 
   netif->mtu = 1500;
-  netif->flags = NETIF_FLAG_BROADCAST;
+  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;;
   netif->hwaddr_len = 6;
 
   NETIF_INIT_SNMP(netif, 6, 100000000);
@@ -316,5 +324,3 @@ void process_input(void)
 {
   ethernetif_input(pktif_netif);
 }
-
-

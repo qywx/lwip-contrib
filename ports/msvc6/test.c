@@ -149,7 +149,7 @@ void main_loop()
 #if NO_SYS
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ip_input));
 #else /* NO_SYS */
-  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_ethinput));
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_input));
 #endif /* NO_SYS */
   netif_set_up(&netif);
 
@@ -160,7 +160,7 @@ void main_loop()
 #if NO_SYS
   netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, ip_input);
 #else /* NO_SYS */
-  netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, tcpip_ethinput);
+  netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, tcpip_input);
 #endif /* NO_SYS */
   netif_set_up(&loop_netif);
 #endif

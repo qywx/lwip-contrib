@@ -32,48 +32,55 @@
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 
-#define LWIP_HAVE_LOOPIF 1
+#include "arch/cc.h"
 
-#define LWIP_DBG_MIN_LEVEL 0
-#define LWIP_COMPAT_SOCKETS 1
-#define TAPIF_DEBUG LWIP_DBG_ON
-#define TUNIF_DEBUG LWIP_DBG_OFF
-#define UNIXIF_DEBUG LWIP_DBG_OFF
-#define DELIF_DEBUG LWIP_DBG_OFF
-#define SIO_FIFO_DEBUG LWIP_DBG_OFF
-#define TCPDUMP_DEBUG LWIP_DBG_ON
+#define NO_SYS                  0
+#define LWIP_SOCKET             1
 
-#define PPP_DEBUG               LWIP_DBG_ON
+#define LWIP_HAVE_LOOPIF        1
+
+#define LWIP_COMPAT_SOCKETS     1
+
+#define LWIP_TCPIP_CORE_LOCKING 0
+
+#define LWIP_NETIF_LINK_CALLBACK 1
+#define LWIP_NETIF_STATUS_CALLBACK 1
 
 #ifdef LWIP_DEBUG
-/*#define MEM_DEBUG               LWIP_DBG_ON
-#define MEMP_DEBUG              LWIP_DBG_ON
-#define PBUF_DEBUG              LWIP_DBG_ON
-#define API_LIB_DEBUG   LWIP_DBG_ON
-#define API_MSG_DEBUG   LWIP_DBG_ON */
-#define TCPIP_DEBUG             LWIP_DBG_ON
-#define NETIF_DEBUG             LWIP_DBG_ON
-#define SOCKETS_DEBUG   LWIP_DBG_ON
-#define DEMO_DEBUG              LWIP_DBG_ON
-#define IP_DEBUG                LWIP_DBG_ON
-#define IP_REASS_DEBUG  LWIP_DBG_ON
-#define ICMP_DEBUG              LWIP_DBG_ON
-#define UDP_DEBUG               LWIP_DBG_ON
-//#define TCP_DEBUG               LWIP_DBG_ON
-#define TCP_INPUT_DEBUG         LWIP_DBG_ON
-#define TCP_OUTPUT_DEBUG        LWIP_DBG_ON
-/*#define TCP_RTO_DEBUG   LWIP_DBG_ON
-#define TCP_CWND_DEBUG  LWIP_DBG_ON
-#define TCP_WND_DEBUG   LWIP_DBG_ON
-#define TCP_FR_DEBUG    LWIP_DBG_ON
-#define TCP_QLEN_DEBUG  LWIP_DBG_ON
-#define TCP_RST_DEBUG   LWIP_DBG_ON*/
+
+#define LWIP_DBG_MIN_LEVEL      0
+#define TAPIF_DEBUG             LWIP_DBG_OFF
+#define TUNIF_DEBUG             LWIP_DBG_OFF
+#define UNIXIF_DEBUG            LWIP_DBG_OFF
+#define DELIF_DEBUG             LWIP_DBG_OFF
+#define SIO_FIFO_DEBUG          LWIP_DBG_OFF
+#define TCPDUMP_DEBUG           LWIP_DBG_OFF
+#define PPP_DEBUG               LWIP_DBG_OFF
+#define MEM_DEBUG               LWIP_DBG_OFF
+#define MEMP_DEBUG              LWIP_DBG_OFF
+#define PBUF_DEBUG              LWIP_DBG_OFF
+#define API_LIB_DEBUG           LWIP_DBG_OFF
+#define API_MSG_DEBUG           LWIP_DBG_OFF
+#define TCPIP_DEBUG             LWIP_DBG_OFF
+#define NETIF_DEBUG             LWIP_DBG_OFF
+#define SOCKETS_DEBUG           LWIP_DBG_OFF
+#define DEMO_DEBUG              LWIP_DBG_OFF
+#define IP_DEBUG                LWIP_DBG_OFF
+#define IP_REASS_DEBUG          LWIP_DBG_OFF
+#define ICMP_DEBUG              LWIP_DBG_OFF
+#define UDP_DEBUG               LWIP_DBG_OFF
+#define TCP_DEBUG               LWIP_DBG_OFF
+#define TCP_INPUT_DEBUG         LWIP_DBG_OFF
+#define TCP_OUTPUT_DEBUG        LWIP_DBG_OFF
+#define TCP_RTO_DEBUG           LWIP_DBG_OFF
+#define TCP_CWND_DEBUG          LWIP_DBG_OFF
+#define TCP_WND_DEBUG           LWIP_DBG_OFF
+#define TCP_FR_DEBUG            LWIP_DBG_OFF
+#define TCP_QLEN_DEBUG          LWIP_DBG_OFF
+#define TCP_RST_DEBUG           LWIP_DBG_OFF
 #endif
 
-#define LWIP_DBG_TYPES_ON    (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT)
-
-#define NO_SYS 0
-#define LWIP_PROVIDE_ERRNO
+#define LWIP_DBG_TYPES_ON      (LWIP_DBG_OFF|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT)
 
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
@@ -134,7 +141,7 @@ a lot of data that needs to be copied, this should be set high. */
  * for certain critical regions during buffer allocation, deallocation and memory
  * allocation and deallocation.
  */
-#define SYS_LIGHTWEIGHT_PROT           1
+#define SYS_LIGHTWEIGHT_PROT    1
 
 /* ---------- TCP options ---------- */
 #define LWIP_TCP                1
@@ -152,12 +159,12 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* TCP sender buffer space (pbufs). This must be at least = 2 *
    TCP_SND_BUF/TCP_MSS for things to work. */
-#define TCP_SND_QUEUELEN        4 * TCP_SND_BUF/TCP_MSS
+#define TCP_SND_QUEUELEN       (4 * TCP_SND_BUF/TCP_MSS)
 
 /* TCP writable space (bytes). This must be less than or equal
    to TCP_SND_BUF. It is the amount of space which must be
    available in the tcp snd_buf for select to return writable */
-#define TCP_SNDLOWAT		(TCP_SND_BUF/2)
+#define TCP_SNDLOWAT           (TCP_SND_BUF/2)
 
 /* TCP receive window. */
 #define TCP_WND                 8096
@@ -169,8 +176,8 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_SYNMAXRTX           4
 
 /* ---------- ARP options ---------- */
-#define ARP_TABLE_SIZE 10
-#define ARP_QUEUEING 1
+#define ARP_TABLE_SIZE          10
+#define ARP_QUEUEING            1
 
 /* ---------- IP options ---------- */
 /* Define IP_FORWARD to 1 if you wish to have the ability to forward
@@ -181,8 +188,8 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* IP reassembly and segmentation.These are orthogonal even
  * if they both deal with IP fragments */
-#define IP_REASSEMBLY     1
-#define IP_FRAG           1
+#define IP_REASSEMBLY           1
+#define IP_FRAG                 1
 
 /* ---------- ICMP options ---------- */
 #define ICMP_TTL                255
@@ -195,10 +202,13 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* 1 if you want to do an ARP check on the offered address
    (recommended). */
+#if LWIP_DHCP
 #define DHCP_DOES_ARP_CHECK     1
+#endif
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1
+#define LWIP_UDPLITE            1
 #define UDP_TTL                 255
 
 
