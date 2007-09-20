@@ -75,6 +75,7 @@
 #include "lwip/stats.h"
 #include "lwip/sys.h"
 #include "lwip/ip.h"
+#include "lwip/snmp.h"
 
 #include "netif/etharp.h"
 
@@ -86,7 +87,7 @@
 #define IFNAME1 'k'
 
 /* index of the network adapter to use for lwIP */
-#define PACKET_LIB_ADAPTER_NR   1
+#define PACKET_LIB_ADAPTER_NR   3
 
 static struct eth_addr broadcastaddr = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
@@ -95,7 +96,7 @@ static void  ethernetif_input(struct netif *netif);
 
 static struct netif *pktif_netif;
 
-extern unsigned char ethaddr[6];
+extern unsigned char ethaddr[ETHARP_HWADDR_LEN];
 extern unsigned char *cur_packet;
 extern int cur_length;
 extern int init_adapter(int adapter_num, char* mac_addr);
@@ -105,7 +106,7 @@ extern int packet_send(void *buffer, int len);
 static void
 low_level_init(struct netif *netif)
 {
-  char mac_addr[6];
+  char mac_addr[ETHARP_HWADDR_LEN];
 
   LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
 
@@ -116,8 +117,8 @@ low_level_init(struct netif *netif)
   }
 
   /* Prepare MAC addr: increase the last octet so that lwIP netif has a similar but different MAC addr */
-  memcpy(&netif->hwaddr, mac_addr, 6);
-  netif->hwaddr[5]++;
+  memcpy(&netif->hwaddr, mac_addr, ETHARP_HWADDR_LEN);
+  netif->hwaddr[ETHARP_HWADDR_LEN - 1]++;
 
   pktif_netif=netif;
 }
@@ -159,7 +160,7 @@ low_level_output(struct netif *ethernetif, struct pbuf *p)
     return ERR_BUF;
   }
 
-#ifdef LINK_STATS
+#if LINK_STATS
   lwip_stats.link.xmit++;
 #endif /* LINK_STATS */
   return ERR_OK;
@@ -188,7 +189,8 @@ low_level_input(struct netif *netif)
 
   ethhdr = (struct eth_hdr*)cur_packet;
   /* MAC filter: only let my MAC or broadcast through */
-  if ((memcmp(&ethhdr->dest, &netif->hwaddr, 6)) && (memcmp(&ethhdr->dest, &broadcastaddr, 6))) {
+  if ((memcmp(&ethhdr->dest, &netif->hwaddr, ETHARP_HWADDR_LEN)) &&
+      (memcmp(&ethhdr->dest, &broadcastaddr, ETHARP_HWADDR_LEN))) {
     /* acknowledge that packet has been read(); */
     cur_length=0;
     return NULL;
@@ -217,13 +219,13 @@ low_level_input(struct netif *netif)
     }
     /* acknowledge that packet has been read(); */
     cur_length = 0;
-#ifdef LINK_STATS
+#if LINK_STATS
     lwip_stats.link.recv++;
 #endif /* LINK_STATS */
   } else {
     /* drop packet(); */
     cur_length = 0;
-#ifdef LINK_STATS
+#if LINK_STATS
     lwip_stats.link.memerr++;
     lwip_stats.link.drop++;
 #endif /* LINK_STATS */
@@ -303,10 +305,10 @@ ethernetif_init(struct netif *netif)
   netif->output = etharp_output;
 
   netif->mtu = 1500;
-  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;;
-  netif->hwaddr_len = 6;
+  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
+  netif->hwaddr_len = ETHARP_HWADDR_LEN;
 
-  NETIF_INIT_SNMP(netif, 6, 100000000);
+  NETIF_INIT_SNMP(netif, snmp_ifType_ethernet_csmacd, 100000000);
 
   low_level_init(netif);
   

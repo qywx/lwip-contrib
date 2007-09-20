@@ -27,19 +27,9 @@
  * This file is part of the lwIP TCP/IP stack.
  * 
  * Author: Adam Dunkels <adam@sics.se>
+ *         Simon Goldschmidt
  *
  */
-
-/*
-*********************************************************************************************************
-*                                               UCOS-II Port
-*
-*                 Target           : Any processor
-*                 Put together by  : Michael Anburaj
-*                 URL              : http://geocities.com/michaelanburaj/    Email : michaelanburaj@hotmail.com
-*
-*********************************************************************************************************
-*/
 
 #include <stdlib.h>
 #include <stdio.h> // sprintf() for task names
@@ -84,6 +74,7 @@ u32_t sys_arch_protect()
 }
 void sys_arch_unprotect(u32_t pval)
 {
+  LWIP_UNUSED_ARG(pval);
   LeaveCriticalSection(&critSec);
 }
 void do_sleep(int ms)
@@ -228,6 +219,10 @@ sys_thread_t sys_thread_new(char *name, void (* function)(void *arg), void *arg,
   struct threadlist *new_thread;
   HANDLE h;
   SYS_ARCH_DECL_PROTECT(lev);
+
+  LWIP_UNUSED_ARG(name);
+  LWIP_UNUSED_ARG(stacksize);
+  LWIP_UNUSED_ARG(prio);
 
   new_thread = (struct threadlist*)malloc(sizeof(struct threadlist));
   LWIP_ASSERT("new_thread != NULL", new_thread != NULL);

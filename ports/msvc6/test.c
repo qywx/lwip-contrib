@@ -52,14 +52,10 @@
 
 #include "netif/loopif.h"
 
-#include "arch/perf.h"
-
 #include "httpd.h"
-//#include "ftpd.h"
-//#include "fs.h"
 
 /* index of the network adapter to use for lwIP */
-#define PACKET_LIB_ADAPTER_NR   4
+#define PACKET_LIB_ADAPTER_NR   3
 
 err_t ethernetif_init(struct netif *netif);
 int init_adapter(int adapter_num, char *macaddr_out);
@@ -116,36 +112,57 @@ void netio_init(void)
 }
 #endif /* LWIP_TCP */
 
+#if LWIP_UDP && LWIP_IGMP
+void mcast_init(void)
+{
+  struct udp_pcb *pcb;
+  struct pbuf* p;
+  struct ip_addr remote_addr;
+  char data[1024]={0};
+  int size = sizeof(data);
+  err_t err;
+
+  pcb = udp_new();
+  udp_bind(pcb, IP_ADDR_ANY, 10000);
+  
+  pcb->multicast_ip.addr = inet_addr("192.168.5.5");
+  
+  p = pbuf_alloc(PBUF_TRANSPORT, 0, PBUF_REF);
+  if (p == NULL) {
+    err = ERR_MEM;
+  } else {
+    p->payload = (void*)data;
+    p->len = p->tot_len = size;
+    
+    remote_addr.addr = inet_addr("232.0.0.0");
+    
+    LOCK_TCPIP_CORE();
+    err = udp_sendto(pcb, p, &remote_addr, ntohs(20000));
+    UNLOCK_TCPIP_CORE();
+    
+    pbuf_free(p);
+  }
+  udp_remove(pcb);
+}
+#else
+#define mcast_init()
+#endif /* LWIP_UDP && LWIP_IGMP*/
+
 struct netif netif;
 struct netif loop_netif;
 
-void main_loop()
+void my_netif_init()
 {
   struct ip_addr ipaddr, netmask, gw;
 #if LWIP_HAVE_LOOPIF
   struct ip_addr loop_ipaddr, loop_netmask, loop_gw;
-#endif
-#if NO_SYS
-  int last_time;
-  int timer1;
-  int timer2;
-#endif /* NO_SYS */
-  int done;
-  char mac_addr[6];
+#endif /* LWIP_HAVE_LOOPIF */
 
   IP4_ADDR(&gw, 192,168,1,1);
   IP4_ADDR(&ipaddr, 192,168,1,200);
   IP4_ADDR(&netmask, 255,255,255,0);
   printf("Starting lwIP, local interface IP is %s\n", inet_ntoa(*(struct in_addr*)&ipaddr));
 
-  if (init_adapter(PACKET_LIB_ADAPTER_NR, mac_addr) != 0) {
-    printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
-    return;
-  }
-
-  memcpy(&netif.hwaddr, mac_addr, 6);
-  /* increase the last octet so that lwIP netif has a similar but different MAC addr */
-  netif.hwaddr[5]++;
 #if NO_SYS
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ip_input));
 #else /* NO_SYS */
@@ -157,27 +174,42 @@ void main_loop()
   IP4_ADDR(&loop_gw, 127,0,0,1);
   IP4_ADDR(&loop_ipaddr, 127,0,0,1);
   IP4_ADDR(&loop_netmask, 255,0,0,0);
+
+  printf("Starting lwIP, loopback interface IP is %s\n", inet_ntoa(*(struct in_addr*)&loop_ipaddr));
 #if NO_SYS
   netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, ip_input);
 #else /* NO_SYS */
   netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, tcpip_input);
 #endif /* NO_SYS */
   netif_set_up(&loop_netif);
-#endif
+#endif /* LWIP_HAVE_LOOPIF */
+}
+
+void main_loop()
+{
+#if NO_SYS
+  int last_time;
+  int timer1;
+  int timer2;
+#endif /* NO_SYS */
+  int done;
 
 #if NO_SYS
-  tcp_init();
-  udp_init();
-  ip_init();
+  lwip_init();
 #else /* NO_SYS */
   tcpip_init(0,0);
+  my_netif_init();
 #endif /* NO_SYS */
+
+#if LWIP_UDP
+  mcast_init();
+#endif /* LWIP_UDP */
 
 #if LWIP_TCP
   httpd_init();
   netio_init();
-#endif
-  //ftpd_init();
+#endif /* LWIP_TCP */
+
 
 #if NO_SYS
   last_time=clock();
@@ -217,40 +249,11 @@ void main_loop()
   shutdown_adapter();
 }
 
-void bcopy(const void *src, void *dest, int len)
-{
-  memcpy(dest,src,len);
-}
-
-void bzero(void *data, int n)
-{
-  memset(data,0,n);
-}
-
 int main(void)
 {
-  setvbuf(stdout,NULL,_IONBF,0);
-#ifdef PERF
-  perf_init("/tmp/lwip.perf");
-#endif /* PERF */
-#ifdef STATS
-  stats_init();
-#endif /* STATS */
-  sys_init();
-  mem_init();
-  memp_init();
-  pbuf_init();
-  etharp_init();
-#if !NO_SYS
-  lwip_socket_init();
-#endif /* !NO_SYS */
-
-  //tcpdump_init();
-
-  printf("System initialized.\n");
+  setvbuf(stdout, NULL,_IONBF, 0);
 
   main_loop();
 
   return 0;
 }
-
