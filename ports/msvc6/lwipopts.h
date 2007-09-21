@@ -144,7 +144,7 @@ a lot of data that needs to be copied, this should be set high. */
  * for certain critical regions during buffer allocation, deallocation and memory
  * allocation and deallocation.
  */
-#define SYS_LIGHTWEIGHT_PROT    1
+#define SYS_LIGHTWEIGHT_PROT    (NO_SYS==0)
 
 /* ---------- TCP options ---------- */
 #define LWIP_TCP                1
@@ -237,7 +237,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- PPP options ---------- */
 
-#define PPP_SUPPORT      1      /* Set > 0 for PPP */
+#define PPP_SUPPORT      0      /* Set > 0 for PPP */
 
 #if PPP_SUPPORT > 0
 

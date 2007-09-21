@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * test.c - This file is part of lwIPtest
+ * test.c - This file is part of lwIP test
  *
  */
 
@@ -41,8 +41,11 @@
 
 #include "lwip/debug.h"
 #include "lwip/stats.h"
-#include "lwip/sockets.h"
+#include "lwip/init.h"
 #include "lwip/tcpip.h"
+
+#include "lwip/tcp.h"
+#include "lwip/udp.h"
 
 #include "netif/loopif.h"
 
@@ -115,9 +118,7 @@ void mcast_init(void)
     
     remote_addr.addr = inet_addr("232.0.0.0");
     
-    LOCK_TCPIP_CORE();
     err = udp_sendto(pcb, p, &remote_addr, ntohs(20000));
-    UNLOCK_TCPIP_CORE();
     
     pbuf_free(p);
   }
