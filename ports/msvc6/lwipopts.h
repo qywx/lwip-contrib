@@ -32,10 +32,13 @@
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 
-#include "arch/cc.h"
-
 #define NO_SYS                  0
 #define LWIP_SOCKET             1
+#define LWIP_NETCONN            1
+
+#define LWIP_IGMP               1
+#define LWIP_ICMP               1
+#define LWIP_SNMP               1
 
 #define LWIP_HAVE_LOOPIF        1
 
@@ -110,7 +113,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_TCP_SEG        16
 /* MEMP_NUM_SYS_TIMEOUT: the number of simulateously active
    timeouts. */
-#define MEMP_NUM_SYS_TIMEOUT    3
+#define MEMP_NUM_SYS_TIMEOUT    8
 
 /* The following four are used only with the sequential API and can be
    set to 0 if the application only will use the raw API. */
@@ -176,6 +179,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_SYNMAXRTX           4
 
 /* ---------- ARP options ---------- */
+#define LWIP_ARP                1
 #define ARP_TABLE_SIZE          10
 #define ARP_QUEUEING            1
 
@@ -214,16 +218,21 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- Statistics options ---------- */
 
-#ifdef LWIP_STATS
-#define LINK_STATS
-#define IP_STATS
-#define ICMP_STATS
-#define UDP_STATS
-#define TCP_STATS
-#define MEM_STATS
-#define MEMP_STATS
-#define PBUF_STATS
-#define SYS_STATS
+#define LWIP_STATS              1
+#define LWIP_STATS_DISPLAY      1
+
+#if LWIP_STATS
+#define LINK_STATS              1
+#define IP_STATS                1
+#define ICMP_STATS              1
+#define IGMP_STATS              1
+#define IPFRAG_STATS            1
+#define UDP_STATS               1
+#define TCP_STATS               1
+#define MEM_STATS               1
+#define MEMP_STATS              1
+#define PBUF_STATS              1
+#define SYS_STATS               1
 #endif /* LWIP_STATS */
 
 /* ---------- PPP options ---------- */

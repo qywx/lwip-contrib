@@ -87,7 +87,9 @@
 #define IFNAME1 'k'
 
 /* index of the network adapter to use for lwIP */
-#define PACKET_LIB_ADAPTER_NR   3
+#ifndef PACKET_LIB_ADAPTER_NR
+#define PACKET_LIB_ADAPTER_NR   0
+#endif
 
 static struct eth_addr broadcastaddr = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 

@@ -40,38 +40,17 @@
 #include "lwip/opt.h"
 
 #include "lwip/debug.h"
-#include "lwip/mem.h"
-#include "lwip/memp.h"
-#include "lwip/sys.h"
-#include "lwip/sockets.h"
-#include "netif/etharp.h"
-
 #include "lwip/stats.h"
-
+#include "lwip/sockets.h"
 #include "lwip/tcpip.h"
 
 #include "netif/loopif.h"
 
 #include "httpd.h"
 
-/* index of the network adapter to use for lwIP */
-#define PACKET_LIB_ADAPTER_NR   3
-
 err_t ethernetif_init(struct netif *netif);
-int init_adapter(int adapter_num, char *macaddr_out);
 void shutdown_adapter(void);
 void update_adapter(void);
-
-int dbg_printf(const char *fmt, ...)
-{
-  va_list v;
-  int r;
-
-  va_start(v, fmt);
-  r = vfprintf(stderr,fmt, v);
-  va_end(v);
-  return r;
-}
 
 #if LWIP_TCP
 static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)

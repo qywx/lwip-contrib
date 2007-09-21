@@ -70,12 +70,15 @@
 #include <packet32.h>
 #include <ntddndis.h>
 
+/** @todo use the lwip header file */
+#define ETHARP_HWADDR_LEN 6
+
 LPADAPTER  lpAdapter;
 LPPACKET   lpPacket;
 char buffer[256000];  // buffer to hold the data coming from the driver
 unsigned char *cur_packet;
 int cur_length;
-unsigned char ethaddr[6];
+unsigned char ethaddr[ETHARP_HWADDR_LEN];
 
 /*-----------------------------------------------------------------------------------*/
 int init_adapter(int adapter_num, char* mac_addr)
@@ -170,19 +173,19 @@ int init_adapter(int adapter_num, char* mac_addr)
   if (adapter_num >= AdapterNum) {
     return -1;
   }
-  ppacket_oid_data=malloc(sizeof(PACKET_OID_DATA)+6);
+  ppacket_oid_data=malloc(sizeof(PACKET_OID_DATA)+ETHARP_HWADDR_LEN);
   lpAdapter=PacketOpenAdapter(AdapterList[adapter_num]);
   if (!lpAdapter || (lpAdapter->hFile == INVALID_HANDLE_VALUE)) {
     return -1;
   }
   ppacket_oid_data->Oid=OID_802_3_PERMANENT_ADDRESS;
-  ppacket_oid_data->Length=6;
+  ppacket_oid_data->Length=ETHARP_HWADDR_LEN;
   if (!PacketRequest(lpAdapter,FALSE,ppacket_oid_data)) {
     return -1;
   }
-  memcpy(&ethaddr,ppacket_oid_data->Data,6);
+  memcpy(&ethaddr,ppacket_oid_data->Data,ETHARP_HWADDR_LEN);
   free(ppacket_oid_data);
-  memcpy(mac_addr, ethaddr, 6);
+  memcpy(mac_addr, ethaddr, ETHARP_HWADDR_LEN);
   printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
   PacketSetBuff(lpAdapter,512000);
   PacketSetReadTimeout(lpAdapter,1);
