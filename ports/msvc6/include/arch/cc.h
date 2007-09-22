@@ -38,6 +38,9 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
+/** @todo fix SNMP warnings */
+#pragma warning (disable: 4244)
+
 #define LWIP_PROVIDE_ERRNO
 
 /* Define platform endianness */
