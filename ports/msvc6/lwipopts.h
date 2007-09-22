@@ -83,7 +83,7 @@
 #define TCP_RST_DEBUG           LWIP_DBG_OFF
 #endif
 
-#define LWIP_DBG_TYPES_ON      (LWIP_DBG_OFF|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT)
+#define LWIP_DBG_TYPES_ON      (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT)
 
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
