@@ -1,3 +1,9 @@
+#include "lwip/opt.h"
+#include "lwip/arch.h"
+#include "lwip/api.h"
+
+#if LWIP_NETCONN
+
 const static char http_html_hdr[] = "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
 const static char http_index_html[] = "<html><head><title>Congrats!</title></head><body><h1>Welcome to our lwIP HTTP server!</h1><p>This is a small test page.</body></html>";
 
@@ -60,3 +66,5 @@ int http_server() {
   }
   return 0;
 }
+
+#endif /* LWIP_NETCONN*/
