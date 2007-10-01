@@ -204,6 +204,8 @@ a lot of data that needs to be copied, this should be set high. */
    turning this on does currently not work. */
 #define LWIP_DHCP               0
 
+#define LWIP_AUTOIP             0
+
 /* 1 if you want to do an ARP check on the offered address
    (recommended). */
 #if LWIP_DHCP

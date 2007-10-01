@@ -79,6 +79,9 @@
 
 #include "netif/etharp.h"
 
+/* include the port-dependent configuration */
+#include "lwipcfg_msvc.h"
+
 #undef  NETIF_DEBUG
 #define NETIF_DEBUG 0
 

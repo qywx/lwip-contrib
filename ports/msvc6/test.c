@@ -49,51 +49,96 @@
 
 #include "netif/loopif.h"
 
-#include "httpd.h"
+#include "httpserver_raw/httpd.h"
+#include "netio/netio.h"
 
+#if NO_SYS
+/* ... then we need information about the timer intervals: */
+#include "netif/etharp.h"
+#include "lwip/ip_frag.h"
+#include "lwip/igmp.h"
+#include "lwip/dhcp.h"
+#include "lwip/autoip.h"
+#endif
+
+/* include the port-dependent configuration */
+#include "lwipcfg_msvc.h"
+
+
+/* some forward function definitions... */
 err_t ethernetif_init(struct netif *netif);
 void shutdown_adapter(void);
 void update_adapter(void);
+#if NO_SYS
+/* functions used for timer execution */
+void sys_init_timing();
+u32_t sys_get_ms();
+#endif
 
-#if LWIP_TCP
-static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
+
+/* THE ethernet interface */
+struct netif netif;
+#if LWIP_HAVE_LOOPIF
+/* THE loopback interface */
+struct netif loop_netif;
+#endif /* LWIP_HAVE_LOOPIF */
+
+
+/* my own input filtering function if using NO_SYS:
+ * this is 'stolen' from tcpip.c and might be used from there... */
+#if LWIP_ARP
+err_t
+my_ethernet_input(struct pbuf *p, struct netif *netif)
 {
-  if (err == ERR_OK && p != NULL) {
-    tcp_recved(pcb, p->tot_len);
-    pbuf_free(p);
-  } else {
-    pbuf_free(p);
+  struct eth_hdr* ethhdr;
+
+  /* points to packet payload, which starts with an Ethernet header */
+  ethhdr = p->payload;
+  
+  switch (htons(ethhdr->type)) {
+    /* IP packet? */
+    case ETHTYPE_IP:
+#if ETHARP_TRUST_IP_MAC
+      /* update ARP table */
+      etharp_ip_input( netif, p);
+#endif /* ETHARP_TRUST_IP_MAC */
+      /* skip Ethernet header */
+      if(pbuf_header(p, -(s16_t)sizeof(struct eth_hdr))) {
+        LWIP_ASSERT("Can't move over header in packet", 0);
+        pbuf_free(p);
+        p = NULL;
+      } else {
+        /* pass to IP layer */
+        ip_input(p, netif);
+      }
+      break;
+      
+    case ETHTYPE_ARP:
+      /* pass p to ARP module */
+      etharp_arp_input(netif, (struct eth_addr*)(netif->hwaddr), p);
+      break;
+
+#if PPPOE_SUPPORT
+    case ETHTYPE_PPPOEDISC: /* PPP Over Ethernet Discovery Stage */
+      pppoe_disc_input(netif, p);
+      break;
+
+    case ETHTYPE_PPPOE: /* PPP Over Ethernet Session Stage */
+      pppoe_data_input(netif, p);
+      break;
+#endif /* PPPOE_SUPPORT */
+
+    default:
+      pbuf_free(p);
+      p = NULL;
+      break;
   }
 
-  if (err == ERR_OK && p == NULL) {
-    tcp_arg(pcb, NULL);
-    tcp_sent(pcb, NULL);
-    tcp_recv(pcb, NULL);
-    tcp_close(pcb);
-  }
-
-  return ERR_OK;
+  return ERR_OK; /* return value ignored */
 }
+#endif /* LWIP_ARP */
 
-static err_t netio_accept(void *arg, struct tcp_pcb *pcb, err_t err)
-{
-  tcp_arg(pcb, NULL);
-  tcp_sent(pcb, NULL);
-  tcp_recv(pcb, netio_recv);
-  return ERR_OK;
-}
-
-void netio_init(void)
-{
-  struct tcp_pcb *pcb;
-
-  pcb = tcp_new();
-  tcp_bind(pcb, IP_ADDR_ANY, 18767);
-  pcb = tcp_listen(pcb);
-  tcp_accept(pcb, netio_accept);
-}
-#endif /* LWIP_TCP */
-
+/* a sipmle multicast test */
 #if LWIP_UDP && LWIP_IGMP
 void mcast_init(void)
 {
@@ -128,9 +173,7 @@ void mcast_init(void)
 #define mcast_init()
 #endif /* LWIP_UDP && LWIP_IGMP*/
 
-struct netif netif;
-struct netif loop_netif;
-
+/* This function initializes all network interfaces */
 void my_netif_init()
 {
   struct ip_addr ipaddr, netmask, gw;
@@ -138,13 +181,17 @@ void my_netif_init()
   struct ip_addr loop_ipaddr, loop_netmask, loop_gw;
 #endif /* LWIP_HAVE_LOOPIF */
 
-  IP4_ADDR(&gw, 192,168,1,1);
-  IP4_ADDR(&ipaddr, 192,168,1,200);
-  IP4_ADDR(&netmask, 255,255,255,0);
+  LWIP_PORT_INIT_GW(&gw);
+  LWIP_PORT_INIT_IPADDR(&ipaddr);
+  LWIP_PORT_INIT_NETMASK(&netmask);
   printf("Starting lwIP, local interface IP is %s\n", inet_ntoa(*(struct in_addr*)&ipaddr));
 
 #if NO_SYS
+#if LWIP_ARP
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, my_ethernet_input));
+#else /* LWIP_ARP */
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ip_input));
+#endif /* LWIP_ARP */
 #else /* NO_SYS */
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_input));
 #endif /* NO_SYS */
@@ -165,21 +212,27 @@ void my_netif_init()
 #endif /* LWIP_HAVE_LOOPIF */
 }
 
+/* This is somewhat different to other ports: we have a main loop here:
+ * a dedicated task that waits for packets to arrive. This would normally be
+ * done from interrupt context with embedded hardware, but we don't get an
+ * interrupt in windows for that :-) */
 void main_loop()
 {
 #if NO_SYS
   int last_time;
-  int timer1;
-  int timer2;
+  int timerTcpFast, timerTcpSlow, timerArp;
+  int timerDhcpFine, timerDhcpCoarse, timerIpReass;
+  int timerAutoIP, timerIgmp;
 #endif /* NO_SYS */
   int done;
 
 #if NO_SYS
   lwip_init();
+  sys_init_timing();
 #else /* NO_SYS */
   tcpip_init(0,0);
-  my_netif_init();
 #endif /* NO_SYS */
+  my_netif_init();
 
 #if LWIP_UDP
   mcast_init();
@@ -192,45 +245,105 @@ void main_loop()
 
 
 #if NO_SYS
-  last_time=clock();
-  timer1=0;
-  timer2=0;
+  last_time = clock();
+  timerTcpFast = 0;
+  timerTcpSlow = 0;
+  timerArp = 0;
+  timerDhcpFine = 0;
+  timerDhcpCoarse = 0;
+  timerIpReass = 0;
+  timerAutoIP = 0;
+  timerIgmp = 0;
 #endif /* NO_SYS */
-  done=0;
+  done = 0;
 
   while (!done) {
 #if NO_SYS
     int cur_time;
     int time_diff;
     
-    cur_time=clock();
-    time_diff=cur_time-last_time;
-    if (time_diff>0) {
-      last_time=cur_time;
-      timer1+=time_diff;
-      timer2+=time_diff;
+    cur_time = sys_get_ms();
+    time_diff = cur_time - last_time;
+    /* the '> 0' is an easy wrap-around check: the big gap at
+     * the wraparound step is simply ignored... */
+    if (time_diff > 0) {
+      last_time = cur_time;
+      timerTcpFast += time_diff;
+      timerTcpSlow += time_diff;
+      timerArp += time_diff;
+      timerDhcpFine += time_diff;
+      timerDhcpCoarse += time_diff;
+      timerIpReass += time_diff;
+      timerAutoIP += time_diff;
+      timerIgmp += time_diff;
     }
-
-    if (timer1>10) {
+#if LWIP_TCP
+    /* execute TCP fast timer every 250 ms */
+    if (timerTcpFast > TCP_TMR_INTERVAL) {
       tcp_fasttmr();
-      timer1=0;
+      timerTcpFast = 0;
     }
-
-    if (timer2>45) {
+    /* execute TCP slow timer every 500 ms */
+    if (timerTcpSlow > ((TCP_TMR_INTERVAL)*2)) {
       tcp_slowtmr();
-      timer2=0;
-      done=_kbhit();
+      timerTcpSlow = 0;
+      done = _kbhit();
     }
+#endif /* LWIP_TCP */
+#if LWIP_ARP
+    /* execute ARP timer */
+    if (timerArp > ARP_TMR_INTERVAL) {
+      etharp_tmr();
+      timerArp = 0;
+    }
+#endif /* LWIP_ARP */
+#if LWIP_DHCP
+    /* execute DHCP fine timer */
+    if (timerDhcpFine > DHCP_FINE_TIMER_MSECS) {
+      dhcp_fine_tmr();
+      timerDhcpFine = 0;
+    }
+    /* execute DHCP coarse timer */
+    if (timerDhcpCoarse > DHCP_COARSE_TIMER_SECS*1000) {
+      dhcp_coarse_tmr();
+      timerDhcpCoarse = 0;
+    }
+#endif /* LWIP_DHCP */
+#if IP_REASSEMBLY
+    /* execute IP reassembly timer */
+    if (timerIpReass > IP_TMR_INTERVAL) {
+      ip_reass_tmr();
+      timerIpReass = 0;
+    }
+#endif /* IP_REASSEMBLY*/
+#if LWIP_AUTOIP
+    /* execute AUTOIP timer */
+    if (timerAutoIP > AUTOIP_TMR_INTERVAL) {
+      autoip_tmr();
+      timerAutoIP = 0;
+    }
+#endif /* LWIP_AUTOIP */
+#if LWIP_IGMP
+    /* execute IGP timer */
+    if (timerIgmp > IGMP_TMR_INTERVAL) {
+      igmp_tmr();
+      timerIgmp = 0;
+    }
+#endif /* LWIP_IGMP */
+    /* TODO: execute other timers... */
 #endif /* NO_SYS */
 
+    /* check for packets */
     update_adapter();
   }
 
+  /* release the pcap library... */
   shutdown_adapter();
 }
 
 int main(void)
 {
+  /* no stdio-buffering, please! */
   setvbuf(stdout, NULL,_IONBF, 0);
 
   main_loop();

@@ -42,6 +42,29 @@
 #include <lwip/debug.h>
 #include <lwip/sys.h>
 
+/* These functions are used from NO_SYS also, for precise timer triggering */
+LARGE_INTEGER freq, sys_start_time;
+
+void sys_init_timing()
+{
+  QueryPerformanceFrequency(&freq);
+  QueryPerformanceCounter(&sys_start_time);
+}
+
+static LONGLONG sys_get_ms_longlong()
+{
+  LONGLONG ret;
+  LARGE_INTEGER now;
+  QueryPerformanceCounter(&now);
+  ret = now.QuadPart-sys_start_time.QuadPart;
+  return (u32_t)(((ret)*1000)/freq.QuadPart);
+}
+
+u32_t sys_get_ms()
+{
+  return sys_get_ms_longlong();
+}
+
 #if !NO_SYS
 
 #define MAX_QUEUE_ENTRIES 100
@@ -59,7 +82,6 @@ struct lwip_mbox {
 };
 
 struct threadlist *lwip_win32_threads = NULL;
-LARGE_INTEGER freq, sys_start_time;
 CRITICAL_SECTION critSec;
 
 void InitSysArchProtect()
@@ -83,18 +105,8 @@ void do_sleep(int ms)
 
 void sys_init(void)
 {
-  QueryPerformanceFrequency(&freq);
-  QueryPerformanceCounter(&sys_start_time);
+  sys_init_timing();
   InitSysArchProtect();
-}
-
-static LONGLONG sys_get_ms()
-{
-  LONGLONG ret;
-  LARGE_INTEGER now;
-  QueryPerformanceCounter(&now);
-  ret = now.QuadPart-sys_start_time.QuadPart;
-  return (u32_t)(((ret)*1000)/freq.QuadPart);
 }
 
 sys_sem_t sys_sem_new(u8_t count)
@@ -142,22 +154,22 @@ u32_t sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
   if(!timeout)
   {
     // wait infinite
-    starttime = sys_get_ms();
+    starttime = sys_get_ms_longlong();
     ret = WaitForSingleObject(sem, INFINITE);
     LWIP_ASSERT("Error waiting for mutex", ret == WAIT_OBJECT_0);
-    endtime = sys_get_ms();
+    endtime = sys_get_ms_longlong();
     // return the time we waited for the sem
     return (u32_t)(endtime - starttime);
   }
   else
   {
     int ret;
-    starttime = sys_get_ms();
+    starttime = sys_get_ms_longlong();
     ret = WaitForSingleObject(sem, timeout);
     LWIP_ASSERT("Error waiting for mutex", (ret == WAIT_OBJECT_0) || (ret == WAIT_TIMEOUT));
     if(ret == WAIT_OBJECT_0)
     {
-      endtime = sys_get_ms();
+      endtime = sys_get_ms_longlong();
       // return the time we waited for the sem
       return (u32_t)(endtime - starttime);
     }
@@ -330,7 +342,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t q, void **msg, u32_t timeout)
   if (timeout == 0) {
     timeout = INFINITE;
   }
-  starttime = sys_get_ms();
+  starttime = sys_get_ms_longlong();
   if ((ret = WaitForSingleObject(q->sem, timeout)) == WAIT_OBJECT_0) {
     SYS_ARCH_PROTECT(lev);
     if(msg != NULL) {
@@ -342,7 +354,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t q, void **msg, u32_t timeout)
       q->tail = 0;
     }
     SYS_ARCH_UNPROTECT(lev);
-    endtime = sys_get_ms();
+    endtime = sys_get_ms_longlong();
     return (u32_t)(endtime - starttime);
   }
   else
