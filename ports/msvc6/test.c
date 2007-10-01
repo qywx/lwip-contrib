@@ -51,10 +51,10 @@
 
 #include "httpserver_raw/httpd.h"
 #include "netio/netio.h"
+#include "netif/etharp.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
-#include "netif/etharp.h"
 #include "lwip/ip_frag.h"
 #include "lwip/igmp.h"
 #include "lwip/dhcp.h"
