@@ -47,9 +47,11 @@
  * embedded system where you might not have fork().
  */
 
-#include "lwipopts.h"
+#include "lwip/opt.h"
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
+
+#if LWIP_SOCKET
 
 #define MAX_SERV                 5         /* Maximum number of chargen services. Don't need too many */
 #define CHARGEN_THREAD_NAME      "chargen"
@@ -259,5 +261,4 @@ void chargen_init(void)
     
 }
 
-
-
+#endif /* LWIP_SOCKET */
