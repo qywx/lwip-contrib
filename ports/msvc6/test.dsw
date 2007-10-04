@@ -15,6 +15,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "apps"=.\apps.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "pktif"=.\pktif.dsp - Package Owner=<4>
 
 Package=<5>
@@ -37,6 +49,9 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name lwip4
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name apps
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name pktif

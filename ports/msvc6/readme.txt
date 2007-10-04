@@ -9,7 +9,6 @@ Win32/MSVC.
 
 To get this compiling, you have to set a couple of environment variables:
 - LWIP_SRC: points to the src subdirectory in the main lwip tree
-- CONTRIB_APPS: points to the apps subdirectory of the contrib module
 - PCAP_DIR: points to the WinPcap Developer's Packs (containing 'include' and 'lib')
 
 You also will have to copy the file 'lwipcfg_msvc.h.example' to

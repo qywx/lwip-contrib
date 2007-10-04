@@ -48,10 +48,10 @@
 #include "lwip/udp.h"
 
 #include "netif/loopif.h"
-
-#include "httpserver_raw/httpd.h"
-#include "netio/netio.h"
 #include "netif/etharp.h"
+
+#include "../../apps/httpserver_raw/httpd.h"
+#include "../../apps/netio/netio.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
