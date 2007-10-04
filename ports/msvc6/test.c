@@ -281,12 +281,12 @@ void main_loop()
     /* execute TCP fast timer every 250 ms */
     if (timerTcpFast > TCP_TMR_INTERVAL) {
       tcp_fasttmr();
-      timerTcpFast = 0;
+      timerTcpFast -= TCP_TMR_INTERVAL;
     }
     /* execute TCP slow timer every 500 ms */
     if (timerTcpSlow > ((TCP_TMR_INTERVAL)*2)) {
       tcp_slowtmr();
-      timerTcpSlow = 0;
+      timerTcpSlow -= (TCP_TMR_INTERVAL)*2;
       done = _kbhit();
     }
 #endif /* LWIP_TCP */
@@ -294,43 +294,43 @@ void main_loop()
     /* execute ARP timer */
     if (timerArp > ARP_TMR_INTERVAL) {
       etharp_tmr();
-      timerArp = 0;
+      timerArp -= ARP_TMR_INTERVAL;
     }
 #endif /* LWIP_ARP */
 #if LWIP_DHCP
     /* execute DHCP fine timer */
     if (timerDhcpFine > DHCP_FINE_TIMER_MSECS) {
       dhcp_fine_tmr();
-      timerDhcpFine = 0;
+      timerDhcpFine -= DHCP_FINE_TIMER_MSECS;
     }
     /* execute DHCP coarse timer */
-    if (timerDhcpCoarse > DHCP_COARSE_TIMER_SECS*1000) {
+    if (timerDhcpCoarse > ((DHCP_COARSE_TIMER_SECS)*1000)) {
       dhcp_coarse_tmr();
-      timerDhcpCoarse = 0;
+      timerDhcpCoarse -= DHCP_COARSE_TIMER_SECS*1000;
     }
 #endif /* LWIP_DHCP */
 #if IP_REASSEMBLY
     /* execute IP reassembly timer */
     if (timerIpReass > IP_TMR_INTERVAL) {
       ip_reass_tmr();
-      timerIpReass = 0;
+      timerIpReass -= IP_TMR_INTERVAL;
     }
 #endif /* IP_REASSEMBLY*/
 #if LWIP_AUTOIP
     /* execute AUTOIP timer */
     if (timerAutoIP > AUTOIP_TMR_INTERVAL) {
       autoip_tmr();
-      timerAutoIP = 0;
+      timerAutoIP -= AUTOIP_TMR_INTERVAL;
     }
 #endif /* LWIP_AUTOIP */
 #if LWIP_IGMP
     /* execute IGP timer */
     if (timerIgmp > IGMP_TMR_INTERVAL) {
       igmp_tmr();
-      timerIgmp = 0;
+      timerIgmp -= IGMP_TMR_INTERVAL;
     }
 #endif /* LWIP_IGMP */
-    /* TODO: execute other timers... */
+
 #endif /* NO_SYS */
 
     /* check for packets */
