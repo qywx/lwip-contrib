@@ -194,9 +194,7 @@ mcast_init(void)
     LWIP_PORT_INIT_IPADDR(&pcb->multicast_ip);
     
     p = pbuf_alloc(PBUF_TRANSPORT, 0, PBUF_REF);
-    if (p == NULL) {
-      err = ERR_MEM;
-    } else {
+    if (p != NULL) {
       p->payload = (void*)data;
       p->len = p->tot_len = size;
       
@@ -259,7 +257,7 @@ void main_loop()
 {
 #if NO_SYS
   nosys_init();
-#else  /* NO_SYS */
+#else/ * NO_SYS */
   tcpip_init(0,0);
 #endif /* NO_SYS */
 
