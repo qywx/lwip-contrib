@@ -89,11 +89,13 @@
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
    lwIP is compiled. 4 byte alignment -> define MEM_ALIGNMENT to 4, 2
    byte alignment -> define MEM_ALIGNMENT to 2. */
-#define MEM_ALIGNMENT           1
+/* MSVC port: intel processors don't need 4-byte alignment,
+   but are faster that way! */
+#define MEM_ALIGNMENT           4
 
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
-#define MEM_SIZE               10240 
+#define MEM_SIZE               10240
 
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this
@@ -137,7 +139,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* PBUF_LINK_HLEN: the number of bytes that should be allocated for a
    link level header. */
-#define PBUF_LINK_HLEN          16 
+#define PBUF_LINK_HLEN          16
 
 /** SYS_LIGHTWEIGHT_PROT
  * define SYS_LIGHTWEIGHT_PROT in lwipopts.h if you want inter-task protection
@@ -193,6 +195,8 @@ a lot of data that needs to be copied, this should be set high. */
 /* IP reassembly and segmentation.These are orthogonal even
  * if they both deal with IP fragments */
 #define IP_REASSEMBLY           1
+#define IP_REASS_MAX_PBUFS      3
+#define MEMP_NUM_REASSDATA      10
 #define IP_FRAG                 1
 
 /* ---------- ICMP options ---------- */
@@ -239,53 +243,53 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- PPP options ---------- */
 
-#define PPP_SUPPORT      0      /* Set > 0 for PPP */
+#define PPP_SUPPORT             0      /* Set > 0 for PPP */
 
-#if PPP_SUPPORT > 0
+#if PPP_SUPPORT
 
-#define NUM_PPP 1           /* Max PPP sessions. */
+#define NUM_PPP                 1           /* Max PPP sessions. */
 
 
 /* Select modules to enable.  Ideally these would be set in the makefile but
  * we're limited by the command line length so you need to modify the settings
  * in this file.
  */
-#define PAP_SUPPORT      1      /* Set > 0 for PAP. */
-#define CHAP_SUPPORT     1      /* Set > 0 for CHAP. */
-#define MSCHAP_SUPPORT   0      /* Set > 0 for MSCHAP (NOT FUNCTIONAL!) */
-#define CBCP_SUPPORT     0      /* Set > 0 for CBCP (NOT FUNCTIONAL!) */
-#define CCP_SUPPORT      0      /* Set > 0 for CCP (NOT FUNCTIONAL!) */
-#define VJ_SUPPORT       1      /* Set > 0 for VJ header compression. */
-#define MD5_SUPPORT      1      /* Set > 0 for MD5 (see also CHAP) */
+#define PAP_SUPPORT             1      /* Set > 0 for PAP. */
+#define CHAP_SUPPORT            1      /* Set > 0 for CHAP. */
+#define MSCHAP_SUPPORT          0      /* Set > 0 for MSCHAP (NOT FUNCTIONAL!) */
+#define CBCP_SUPPORT            0      /* Set > 0 for CBCP (NOT FUNCTIONAL!) */
+#define CCP_SUPPORT             0      /* Set > 0 for CCP (NOT FUNCTIONAL!) */
+#define VJ_SUPPORT              1      /* Set > 0 for VJ header compression. */
+#define MD5_SUPPORT             1      /* Set > 0 for MD5 (see also CHAP) */
 
 
 /*
  * Timeouts.
  */
-#define FSM_DEFTIMEOUT		6	/* Timeout time in seconds */
-#define FSM_DEFMAXTERMREQS	2	/* Maximum Terminate-Request transmissions */
-#define FSM_DEFMAXCONFREQS	10	/* Maximum Configure-Request transmissions */
-#define FSM_DEFMAXNAKLOOPS	5	/* Maximum number of nak loops */
+#define FSM_DEFTIMEOUT          6     /* Timeout time in seconds */
+#define FSM_DEFMAXTERMREQS      2     /* Maximum Terminate-Request transmissions */
+#define FSM_DEFMAXCONFREQS      10    /* Maximum Configure-Request transmissions */
+#define FSM_DEFMAXNAKLOOPS      5     /* Maximum number of nak loops */
 
-#define UPAP_DEFTIMEOUT		6	/* Timeout (seconds) for retransmitting req */
-#define UPAP_DEFREQTIME		30	/* Time to wait for auth-req from peer */
+#define UPAP_DEFTIMEOUT         6     /* Timeout (seconds) for retransmitting req */
+#define UPAP_DEFREQTIME         30    /* Time to wait for auth-req from peer */
 
-#define CHAP_DEFTIMEOUT		6	/* Timeout time in seconds */
-#define CHAP_DEFTRANSMITS	10	/* max # times to send challenge */
+#define CHAP_DEFTIMEOUT         6     /* Timeout time in seconds */
+#define CHAP_DEFTRANSMITS       10    /* max # times to send challenge */
 
 
 /* Interval in seconds between keepalive echo requests, 0 to disable. */
 #if 1
-#define LCP_ECHOINTERVAL 0
+#define LCP_ECHOINTERVAL        0
 #else
-#define LCP_ECHOINTERVAL 10
+#define LCP_ECHOINTERVAL        10
 #endif
 
 /* Number of unanswered echo requests before failure. */
-#define LCP_MAXECHOFAILS 3
+#define LCP_MAXECHOFAILS        3
 
 /* Max Xmit idle time (in jiffies) before resend flag char. */
-#define PPP_MAXIDLEFLAG 100
+#define PPP_MAXIDLEFLAG         100
 
 /*
  * Packet sizes
@@ -295,22 +299,22 @@ a lot of data that needs to be copied, this should be set high. */
  * (XXX - these constants should simply be shared by lcp.c instead
  *    of living in lcp.h)
  */
-#define PPP_MTU     1500     /* Default MTU (size of Info field) */
+#define PPP_MTU                 1500  /* Default MTU (size of Info field) */
 #if 0
-#define PPP_MAXMTU  65535 - (PPP_HDRLEN + PPP_FCSLEN)
+#define PPP_MAXMTU              65535 - (PPP_HDRLEN + PPP_FCSLEN)
 #else
-#define PPP_MAXMTU  1500 /* Largest MTU we allow */
+#define PPP_MAXMTU              1500  /* Largest MTU we allow */
 #endif
-#define PPP_MINMTU  64
-#define PPP_MRU     1500     /* default MRU = max length of info field */
-#define PPP_MAXMRU  1500     /* Largest MRU we allow */
-#define PPP_DEFMRU	296		/* Try for this */
-#define PPP_MINMRU	128		/* No MRUs below this */
+#define PPP_MINMTU              64
+#define PPP_MRU                 1500  /* default MRU = max length of info field */
+#define PPP_MAXMRU              1500  /* Largest MRU we allow */
+#define PPP_DEFMRU              296   /* Try for this */
+#define PPP_MINMRU              128   /* No MRUs below this */
 
 
-#define MAXNAMELEN      256     /* max length of hostname or name for auth */
-#define MAXSECRETLEN    256     /* max length of password or secret */
+#define MAXNAMELEN              256   /* max length of hostname or name for auth */
+#define MAXSECRETLEN            256   /* max length of password or secret */
 
-#endif /* PPP_SUPPORT > 0 */
+#endif /* PPP_SUPPORT */
 
 #endif /* __LWIPOPTS_H__ */
