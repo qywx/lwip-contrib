@@ -70,31 +70,39 @@ void shutdown_adapter(void);
 void update_adapter(void);
 
 #if NO_SYS
-/* functions used for timer execution */
+/* port-defined functions used for timer execution */
 void sys_init_timing();
 u32_t sys_get_ms();
+#endif /* NO_SYS*/
 
-/* globales variables for timer execution */
-int last_time;
-int timerTcpFast, timerTcpSlow, timerArp;
-int timerDhcpFine, timerDhcpCoarse, timerIpReass;
-int timerAutoIP, timerIgmp;
+/* globales variables for netifs */
+/* THE ethernet interface */
+struct netif netif;
+#if LWIP_HAVE_LOOPIF
+/* THE loopback interface */
+struct netif loop_netif;
+#endif /* LWIP_HAVE_LOOPIF */
 
-void timers_init()
+
+#if NO_SYS
+/* special functions used for NO_SYS=1 only */
+static void
+nosys_init()
 {
-  last_time = clock();
-  timerTcpFast = 0;
-  timerTcpSlow = 0;
-  timerArp = 0;
-  timerDhcpFine = 0;
-  timerDhcpCoarse = 0;
-  timerIpReass = 0;
-  timerAutoIP = 0;
-  timerIgmp = 0;
+  sys_init_timing();
+  lwip_init();
 }
 
-void timers_update()
+/* get the current time and see if any timer has expired */
+static void
+timers_update()
 {
+  /* static variables for timer execution, initialized to zero! */
+  static int last_time,
+    timerTcpFast, timerTcpSlow, timerArp,
+    timerDhcpFine, timerDhcpCoarse, timerIpReass,
+    timerAutoIP, timerIgmp;
+
   int cur_time;
   int time_diff;
 
@@ -166,29 +174,12 @@ void timers_update()
   }
 #endif /* LWIP_IGMP */
 }
-
-void nosys_init()
-{
-  lwip_init();
-  sys_init_timing();
-  timers_init();
-}
-#else  /* NO_SYS */
-#define timers_init()
-#define timers_update()
-#define nosys_init()
 #endif /* NO_SYS */
-
-/* THE ethernet interface */
-struct netif netif;
-#if LWIP_HAVE_LOOPIF
-/* THE loopback interface */
-struct netif loop_netif;
-#endif /* LWIP_HAVE_LOOPIF */
 
 /* a simple multicast test */
 #if LWIP_UDP && LWIP_IGMP
-void mcast_init(void)
+static void
+mcast_init(void)
 {
   struct udp_pcb *pcb;
   struct pbuf* p;
@@ -220,7 +211,8 @@ void mcast_init(void)
 #endif /* LWIP_UDP && LWIP_IGMP*/
 
 /* This function initializes all network interfaces */
-void my_netif_init()
+static void
+msvc_netif_init()
 {
   struct ip_addr ipaddr, netmask, gw;
 #if LWIP_HAVE_LOOPIF
@@ -270,7 +262,7 @@ void main_loop()
   tcpip_init(0,0);
 #endif /* NO_SYS */
 
-  my_netif_init();
+  msvc_netif_init();
 
 #if LWIP_UDP && LWIP_IGMP
   mcast_init();
@@ -282,8 +274,10 @@ void main_loop()
 #endif /* LWIP_TCP */
 
   while (!_kbhit()) {
+#if NO_SYS
     /* handle timers with NO_SYS=1 */
     timers_update();
+#endif /* NO_SYS */
 
     /* check for packets */
     update_adapter();
