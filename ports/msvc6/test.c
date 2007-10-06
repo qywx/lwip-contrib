@@ -186,27 +186,28 @@ mcast_init(void)
   struct ip_addr remote_addr;
   char data[1024]={0};
   int size = sizeof(data);
-  err_t err;
 
   pcb = udp_new();
-  udp_bind(pcb, IP_ADDR_ANY, 0);
-  
-  LWIP_PORT_INIT_IPADDR(&pcb->multicast_ip);
-  
-  p = pbuf_alloc(PBUF_TRANSPORT, 0, PBUF_REF);
-  if (p == NULL) {
-    err = ERR_MEM;
-  } else {
-    p->payload = (void*)data;
-    p->len = p->tot_len = size;
+  if (pcb != NULL) {
+    udp_bind(pcb, IP_ADDR_ANY, 10000);
     
-    remote_addr.addr = inet_addr("232.0.0.0");
+    LWIP_PORT_INIT_IPADDR(&pcb->multicast_ip);
     
-    err = udp_sendto(pcb, p, &remote_addr, ntohs(20000));
-    
-    pbuf_free(p);
+    p = pbuf_alloc(PBUF_TRANSPORT, 0, PBUF_REF);
+    if (p == NULL) {
+      err = ERR_MEM;
+    } else {
+      p->payload = (void*)data;
+      p->len = p->tot_len = size;
+      
+      remote_addr.addr = inet_addr("232.0.0.0");
+      
+      udp_sendto(pcb, p, &remote_addr, 20000);
+      
+      pbuf_free(p);
+    }
+    udp_remove(pcb);
   }
-  udp_remove(pcb);
 }
 #endif /* LWIP_UDP && LWIP_IGMP*/
 
@@ -230,7 +231,7 @@ msvc_netif_init()
 #else /* LWIP_ARP */
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ip_input));
 #endif /* LWIP_ARP */
-#else /* NO_SYS */
+#else  /* NO_SYS */
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_input));
 #endif /* NO_SYS */
   netif_set_up(&netif);
@@ -243,7 +244,7 @@ msvc_netif_init()
   printf("Starting lwIP, loopback interface IP is %s\n", inet_ntoa(*(struct in_addr*)&loop_ipaddr));
 #if NO_SYS
   netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, ip_input);
-#else /* NO_SYS */
+#else  /* NO_SYS */
   netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, tcpip_input);
 #endif /* NO_SYS */
   netif_set_up(&loop_netif);
@@ -258,7 +259,7 @@ void main_loop()
 {
 #if NO_SYS
   nosys_init();
-#else /* NO_SYS */
+#else  /* NO_SYS */
   tcpip_init(0,0);
 #endif /* NO_SYS */
 
