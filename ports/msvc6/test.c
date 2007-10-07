@@ -122,12 +122,12 @@ timers_update()
     timerIgmp += time_diff;
   }
 #if LWIP_TCP
-  /* execute TCP fast timer every 250 ms */
+  /* execute TCP fast timer */
   if (timerTcpFast > TCP_TMR_INTERVAL) {
     tcp_fasttmr();
     timerTcpFast -= TCP_TMR_INTERVAL;
   }
-  /* execute TCP slow timer every 500 ms */
+  /* execute TCP slow timer */
   if (timerTcpSlow > ((TCP_TMR_INTERVAL)*2)) {
     tcp_slowtmr();
     timerTcpSlow -= (TCP_TMR_INTERVAL)*2;
@@ -238,8 +238,8 @@ msvc_netif_init()
   IP4_ADDR(&loop_gw, 127,0,0,1);
   IP4_ADDR(&loop_ipaddr, 127,0,0,1);
   IP4_ADDR(&loop_netmask, 255,0,0,0);
-
   printf("Starting lwIP, loopback interface IP is %s\n", inet_ntoa(*(struct in_addr*)&loop_ipaddr));
+
 #if NO_SYS
   netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, ip_input);
 #else  /* NO_SYS */
@@ -274,7 +274,7 @@ void main_loop()
 
   while (!_kbhit()) {
 #if NO_SYS
-    /* handle timers with NO_SYS=1 */
+    /* handle timers (done in tcpip_thread when NO_SYS=0) */
     timers_update();
 #endif /* NO_SYS */
 
