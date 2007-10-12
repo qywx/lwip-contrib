@@ -86,6 +86,35 @@ struct netif loop_netif;
 
 #if NO_SYS
 /* special functions used for NO_SYS=1 only */
+typedef struct _timers_infos {
+  int timer;
+  int timer_interval;
+  void (*timer_func)(void);
+}timers_infos;
+
+static timers_infos timers_table[] = {
+#if LWIP_TCP
+  { 0, TCP_FAST_INTERVAL,                tcp_fasttmr},
+  { 0, TCP_SLOW_INTERVAL,                tcp_slowtmr},
+#endif /* LWIP_TCP */
+#if LWIP_ARP
+  { 0, ARP_TMR_INTERVAL,                 etharp_tmr},
+#endif /* LWIP_ARP */
+#if LWIP_DHCP
+  { 0, DHCP_FINE_TIMER_MSECS,            dhcp_fine_tmr},
+  { 0, ((DHCP_COARSE_TIMER_SECS)*1000)), dhcp_coarse_tmr},
+#endif /* LWIP_DHCP */
+#if IP_REASSEMBLY
+  { 0, IP_TMR_INTERVAL,                  ip_reass_tmr},
+#endif /* IP_REASSEMBLY*/
+#if LWIP_AUTOIP
+  { 0, AUTOIP_TMR_INTERVAL,              autoip_tmr},
+#endif /* LWIP_AUTOIP */
+#if LWIP_IGMP
+  { 0, IGMP_TMR_INTERVAL,                igmp_tmr},
+#endif /* LWIP_IGMP */
+};
+
 static void
 nosys_init()
 {
@@ -98,81 +127,26 @@ static void
 timers_update()
 {
   /* static variables for timer execution, initialized to zero! */
-  static int last_time,
-    timerTcpFast, timerTcpSlow, timerArp,
-    timerDhcpFine, timerDhcpCoarse, timerIpReass,
-    timerAutoIP, timerIgmp;
+  static int last_time;
 
-  int cur_time;
-  int time_diff;
+  int cur_time, time_diff, idxtimer;
 
   cur_time = sys_get_ms();
   time_diff = cur_time - last_time;
+
   /* the '> 0' is an easy wrap-around check: the big gap at
    * the wraparound step is simply ignored... */
   if (time_diff > 0) {
     last_time = cur_time;
-    timerTcpFast += time_diff;
-    timerTcpSlow += time_diff;
-    timerArp += time_diff;
-    timerDhcpFine += time_diff;
-    timerDhcpCoarse += time_diff;
-    timerIpReass += time_diff;
-    timerAutoIP += time_diff;
-    timerIgmp += time_diff;
+    for( idxtimer=0; idxtimer<(sizeof(timers_table)/sizeof(timers_infos)); idxtimer++) {
+      timers_table[idxtimer].timer += time_diff;
+
+      if (timers_table[idxtimer].timer > timers_table[idxtimer].timer_interval) {
+        timers_table[idxtimer].timer_func();
+        timers_table[idxtimer].timer -= timers_table[idxtimer].timer_interval;
+      }
+    }
   }
-#if LWIP_TCP
-  /* execute TCP fast timer */
-  if (timerTcpFast > TCP_TMR_INTERVAL) {
-    tcp_fasttmr();
-    timerTcpFast -= TCP_TMR_INTERVAL;
-  }
-  /* execute TCP slow timer */
-  if (timerTcpSlow > ((TCP_TMR_INTERVAL)*2)) {
-    tcp_slowtmr();
-    timerTcpSlow -= (TCP_TMR_INTERVAL)*2;
-  }
-#endif /* LWIP_TCP */
-#if LWIP_ARP
-  /* execute ARP timer */
-  if (timerArp > ARP_TMR_INTERVAL) {
-    etharp_tmr();
-    timerArp -= ARP_TMR_INTERVAL;
-  }
-#endif /* LWIP_ARP */
-#if LWIP_DHCP
-  /* execute DHCP fine timer */
-  if (timerDhcpFine > DHCP_FINE_TIMER_MSECS) {
-    dhcp_fine_tmr();
-    timerDhcpFine -= DHCP_FINE_TIMER_MSECS;
-  }
-  /* execute DHCP coarse timer */
-  if (timerDhcpCoarse > ((DHCP_COARSE_TIMER_SECS)*1000)) {
-    dhcp_coarse_tmr();
-    timerDhcpCoarse -= DHCP_COARSE_TIMER_SECS*1000;
-  }
-#endif /* LWIP_DHCP */
-#if IP_REASSEMBLY
-  /* execute IP reassembly timer */
-  if (timerIpReass > IP_TMR_INTERVAL) {
-    ip_reass_tmr();
-    timerIpReass -= IP_TMR_INTERVAL;
-  }
-#endif /* IP_REASSEMBLY*/
-#if LWIP_AUTOIP
-  /* execute AUTOIP timer */
-  if (timerAutoIP > AUTOIP_TMR_INTERVAL) {
-    autoip_tmr();
-    timerAutoIP -= AUTOIP_TMR_INTERVAL;
-  }
-#endif /* LWIP_AUTOIP */
-#if LWIP_IGMP
-  /* execute IGP timer */
-  if (timerIgmp > IGMP_TMR_INTERVAL) {
-    igmp_tmr();
-    timerIgmp -= IGMP_TMR_INTERVAL;
-  }
-#endif /* LWIP_IGMP */
 }
 #endif /* NO_SYS */
 
