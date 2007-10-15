@@ -94,24 +94,24 @@ typedef struct _timers_infos {
 
 static timers_infos timers_table[] = {
 #if LWIP_TCP
-  { 0, TCP_FAST_INTERVAL,                tcp_fasttmr},
-  { 0, TCP_SLOW_INTERVAL,                tcp_slowtmr},
+  { 0, TCP_FAST_INTERVAL,       tcp_fasttmr},
+  { 0, TCP_SLOW_INTERVAL,       tcp_slowtmr},
 #endif /* LWIP_TCP */
 #if LWIP_ARP
-  { 0, ARP_TMR_INTERVAL,                 etharp_tmr},
+  { 0, ARP_TMR_INTERVAL,        etharp_tmr},
 #endif /* LWIP_ARP */
 #if LWIP_DHCP
-  { 0, DHCP_FINE_TIMER_MSECS,            dhcp_fine_tmr},
-  { 0, ((DHCP_COARSE_TIMER_SECS)*1000)), dhcp_coarse_tmr},
+  { 0, DHCP_FINE_TIMER_MSECS,   dhcp_fine_tmr},
+  { 0, DHCP_COARSE_TIMER_MSECS, dhcp_coarse_tmr},
 #endif /* LWIP_DHCP */
 #if IP_REASSEMBLY
-  { 0, IP_TMR_INTERVAL,                  ip_reass_tmr},
+  { 0, IP_TMR_INTERVAL,         ip_reass_tmr},
 #endif /* IP_REASSEMBLY*/
 #if LWIP_AUTOIP
-  { 0, AUTOIP_TMR_INTERVAL,              autoip_tmr},
+  { 0, AUTOIP_TMR_INTERVAL,     autoip_tmr},
 #endif /* LWIP_AUTOIP */
 #if LWIP_IGMP
-  { 0, IGMP_TMR_INTERVAL,                igmp_tmr},
+  { 0, IGMP_TMR_INTERVAL,       igmp_tmr},
 #endif /* LWIP_IGMP */
 };
 
