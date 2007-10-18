@@ -52,6 +52,7 @@
 
 #include "../../apps/httpserver_raw/httpd.h"
 #include "../../apps/netio/netio.h"
+#include "../../apps/netbios/netbios.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
@@ -237,9 +238,12 @@ void main_loop()
 
   msvc_netif_init();
 
-#if LWIP_UDP && LWIP_IGMP
+#if LWIP_UDP
+  netbios_init();
+#if LWIP_IGMP
   mcast_init();
-#endif /* LWIP_UDP && LWIP_IGMP */
+#endif /* LWIP_IGMP */
+#endif /* LWIP_UDP */
 
 #if LWIP_TCP
   httpd_init();
