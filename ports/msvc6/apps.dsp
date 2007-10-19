@@ -111,6 +111,12 @@ SOURCE="..\..\apps\httpserver_raw\httpd.c"
 SOURCE="..\..\apps\netio\netio.c"
 # End Source File
 # End Group
+# Begin Group "netbios"
+# Begin Source File
+
+SOURCE="..\..\apps\netbios\netbios.c"
+# End Source File
+# End Group
 # End Group
 # Begin Group "header"
 
@@ -133,6 +139,12 @@ SOURCE="..\..\apps\httpserver_raw\httpd.h"
 # Begin Source File
 
 SOURCE="..\..\apps\netio\netio.h"
+# End Source File
+# End Group
+# Begin Group "netbios"
+# Begin Source File
+
+SOURCE="..\..\apps\netbios\netbios.h"
 # End Source File
 # End Group
 # End Group
