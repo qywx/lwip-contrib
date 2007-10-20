@@ -31,12 +31,14 @@
  *
  */
 
+/* C runtime includes */
 #include <stdio.h>
 #include <stdarg.h>
 #include <time.h>
 #include <string.h>
 #include <conio.h>
 
+/* lwIP core includes */
 #include "lwip/opt.h"
 
 #include "lwip/debug.h"
@@ -47,9 +49,11 @@
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
 
+/* lwIP netif includes */
 #include "netif/loopif.h"
 #include "netif/etharp.h"
 
+/* applications includes */
 #include "../../apps/httpserver_raw/httpd.h"
 #include "../../apps/netio/netio.h"
 #include "../../apps/netbios/netbios.h"
@@ -116,6 +120,7 @@ static timers_infos timers_table[] = {
 #endif /* LWIP_IGMP */
 };
 
+/* initialize stack when NO_SYS=1 */
 static void
 nosys_init()
 {
@@ -150,39 +155,6 @@ timers_update()
   }
 }
 #endif /* NO_SYS */
-
-/* a simple multicast test */
-#if LWIP_UDP && LWIP_IGMP
-static void
-mcast_init(void)
-{
-  struct udp_pcb *pcb;
-  struct pbuf* p;
-  struct ip_addr remote_addr;
-  char data[1024]={0};
-  int size = sizeof(data);
-
-  pcb = udp_new();
-  if (pcb != NULL) {
-    udp_bind(pcb, IP_ADDR_ANY, 10000);
-    
-    LWIP_PORT_INIT_IPADDR(&pcb->multicast_ip);
-    
-    p = pbuf_alloc(PBUF_TRANSPORT, 0, PBUF_REF);
-    if (p != NULL) {
-      p->payload = (void*)data;
-      p->len = p->tot_len = size;
-      
-      remote_addr.addr = inet_addr("232.0.0.0");
-      
-      udp_sendto(pcb, p, &remote_addr, 20000);
-      
-      pbuf_free(p);
-    }
-    udp_remove(pcb);
-  }
-}
-#endif /* LWIP_UDP && LWIP_IGMP*/
 
 /* This function initializes all network interfaces */
 static void
@@ -224,35 +196,53 @@ msvc_netif_init()
 #endif /* LWIP_HAVE_LOOPIF */
 }
 
-/* This is somewhat different to other ports: we have a main loop here:
- * a dedicated task that waits for packets to arrive. This would normally be
- * done from interrupt context with embedded hardware, but we don't get an
- * interrupt in windows for that :-) */
-void main_loop()
+/* This function initializes applications */
+static void
+apps_init()
 {
-#if NO_SYS
-  nosys_init();
-#else/ * NO_SYS */
-  tcpip_init(0,0);
-#endif /* NO_SYS */
-
-  msvc_netif_init();
-
 #if LWIP_UDP
   netbios_init();
-#if LWIP_IGMP
-  mcast_init();
-#endif /* LWIP_IGMP */
 #endif /* LWIP_UDP */
 
 #if LWIP_TCP
   httpd_init();
   netio_init();
 #endif /* LWIP_TCP */
+}
 
+/* This function initializes this lwIP test. When NO_SYS=1, this is done in
+ * the main_loop context (there is no other one), when NO_SYS=0, this is done
+ * in the tcpip_thread context */
+static void
+test_init(void * arg)
+{ /* remove compiler warning */
+  LWIP_UNUSED_ARG(arg);
+
+  /* init network interfaces */
+  msvc_netif_init();
+  
+  /* init apps */
+  apps_init();
+}
+
+/* This is somewhat different to other ports: we have a main loop here:
+ * a dedicated task that waits for packets to arrive. This would normally be
+ * done from interrupt context with embedded hardware, but we don't get an
+ * interrupt in windows for that :-) */
+void main_loop()
+{
+  /* initialize lwIP stack, network interfaces and applications */
+#if NO_SYS
+  nosys_init();
+  test_init (NULL);
+#else/ * NO_SYS */
+  tcpip_init( test_init, NULL);
+#endif /* NO_SYS */
+
+  /* MAIN LOOP for driver update (and timers if NO_SYS) */
   while (!_kbhit()) {
 #if NO_SYS
-    /* handle timers (done in tcpip_thread when NO_SYS=0) */
+    /* handle timers (already done in tcpip.c when NO_SYS=0) */
     timers_update();
 #endif /* NO_SYS */
 
