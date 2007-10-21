@@ -14,14 +14,16 @@
 
 #if LWIP_UDP
 
+/** NetBIOS name of LWIP device */
+#ifndef NETBIOS_LWIP_NAME
+#define NETBIOS_LWIP_NAME "NETBIOSLWIPDEV"
+#endif
+
 /** default port number for "NetBIOS Name service */
 #define NETBIOS_PORT     137
 
 /** size of a NetBIOS name */
 #define NETBIOS_NAME_LEN 16
-
-/** NetBIOS name of LWIP device */
-#define NETBIOS_LWIP_NAME "NETBIOSLWIPDEV"
 
 /** The Time-To-Live for NetBIOS name responds (in seconds)
  * Default is 300000 seconds (3 days, 11 hours, 20 minutes) */
