@@ -214,6 +214,7 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
         netbios_resp.resp_hdr.trans_id      = netbios_hdr->trans_id;
         netbios_resp.resp_hdr.flags         = htons(NETB_HFLAG_RESPONSE |
                                                     NETB_HFLAG_OPCODE_NAME_QUERY |
+                                                    NETB_HFLAG_AUTHORATIVE |
                                                     NETB_HFLAG_RECURS_DESIRED);
         netbios_resp.resp_hdr.questions     = 0;
         netbios_resp.resp_hdr.answerRRs     = htons(1);
