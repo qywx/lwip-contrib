@@ -85,6 +85,13 @@ PACK_STRUCT_END
 #  include "arch/epstruct.h"
 #endif
 
+/* @todo: does this have to be packed, too? */
+struct netbios_resp
+{
+  struct netbios_hdr      resp_hdr;
+  struct netbios_name_hdr resp_name;
+};
+
 /** NetBIOS decoding name */
 static int
 netbios_name_decoding( char *name_enc, char *name_dec, int name_dec_len)
@@ -205,39 +212,33 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
       /* if the packet is for us */
       if (strcmp( netbios_name, NETBIOS_LWIP_NAME)==0) {
         struct pbuf *q;
-        struct {
-          struct netbios_hdr      resp_hdr;
-          struct netbios_name_hdr resp_name;
-        }netbios_resp;
+        struct netbios_resp *resp;
 
-        /* prepare NetBIOS header response */
-        netbios_resp.resp_hdr.trans_id      = netbios_hdr->trans_id;
-        netbios_resp.resp_hdr.flags         = htons(NETB_HFLAG_RESPONSE |
-                                                    NETB_HFLAG_OPCODE_NAME_QUERY |
-                                                    NETB_HFLAG_AUTHORATIVE |
-                                                    NETB_HFLAG_RECURS_DESIRED);
-        netbios_resp.resp_hdr.questions     = 0;
-        netbios_resp.resp_hdr.answerRRs     = htons(1);
-        netbios_resp.resp_hdr.authorityRRs  = 0;
-        netbios_resp.resp_hdr.additionalRRs = 0;
-
-        /* prepare NetBIOS header datas */
-        memcpy( netbios_resp.resp_name.encname, netbios_name_hdr->encname, sizeof(netbios_name_hdr->encname));
-        netbios_resp.resp_name.nametype = netbios_name_hdr->nametype;
-        netbios_resp.resp_name.type     = netbios_name_hdr->type;
-        netbios_resp.resp_name.class    = netbios_name_hdr->class;
-        netbios_resp.resp_name.ttl      = htonl(NETBIOS_TTL);
-        netbios_resp.resp_name.datalen  = htons(sizeof(netbios_resp.resp_name.flags)+sizeof(netbios_resp.resp_name.addr));
-        netbios_resp.resp_name.flags    = htons(NETB_NFLAG_NODETYPE_BNODE);
-        netbios_resp.resp_name.addr     = netif_default->ip_addr.addr;
-
-        /* alloc a "reference" pbuf */
-        q = pbuf_alloc(PBUF_TRANSPORT, 0, PBUF_REF);
+        q = pbuf_alloc(PBUF_TRANSPORT, sizeof(struct netbios_resp), PBUF_RAM);
         if (q != NULL) {
-          /* initialize the "reference" pbuf on the NetBIOS response */
-          q->payload = (void*)(&netbios_resp);
-          q->len = q->tot_len = sizeof(netbios_resp);
-          
+          resp = (struct netbios_resp*)q->payload;
+
+          /* prepare NetBIOS header response */
+          resp->resp_hdr.trans_id      = netbios_hdr->trans_id;
+          resp->resp_hdr.flags         = htons(NETB_HFLAG_RESPONSE |
+                                               NETB_HFLAG_OPCODE_NAME_QUERY |
+                                               NETB_HFLAG_AUTHORATIVE |
+                                               NETB_HFLAG_RECURS_DESIRED);
+          resp->resp_hdr.questions     = 0;
+          resp->resp_hdr.answerRRs     = htons(1);
+          resp->resp_hdr.authorityRRs  = 0;
+          resp->resp_hdr.additionalRRs = 0;
+
+          /* prepare NetBIOS header datas */
+          memcpy( resp->resp_name.encname, netbios_name_hdr->encname, sizeof(netbios_name_hdr->encname));
+          resp->resp_name.nametype = netbios_name_hdr->nametype;
+          resp->resp_name.type     = netbios_name_hdr->type;
+          resp->resp_name.class    = netbios_name_hdr->class;
+          resp->resp_name.ttl      = htonl(NETBIOS_TTL);
+          resp->resp_name.datalen  = htons(sizeof(resp->resp_name.flags)+sizeof(resp->resp_name.addr));
+          resp->resp_name.flags    = htons(NETB_NFLAG_NODETYPE_BNODE);
+          resp->resp_name.addr     = netif_default->ip_addr.addr;
+
           /* send the NetBIOS response */
           udp_sendto(upcb, q, addr, port);
           
@@ -246,7 +247,7 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
         }
       }
     }
-   /* free the pbuf */
+    /* free the pbuf */
     pbuf_free(p);
   }
 }
