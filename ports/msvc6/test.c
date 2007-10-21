@@ -216,13 +216,23 @@ apps_init()
 static void
 test_init(void * arg)
 { /* remove compiler warning */
+#if NO_SYS
   LWIP_UNUSED_ARG(arg);
+#else /* NO_SYS */
+  sys_sem_t init_sem;
+  LWIP_ASSERT("arg != NULL", arg != NULL);
+  init_sem = (sys_sem_t)arg;
+#endif /* NO_SYS */
 
   /* init network interfaces */
   msvc_netif_init();
   
   /* init apps */
   apps_init();
+
+#if !NO_SYS
+  sys_sem_signal(init_sem);
+#endif /* NO_SYS */
 }
 
 /* This is somewhat different to other ports: we have a main loop here:
@@ -231,12 +241,21 @@ test_init(void * arg)
  * interrupt in windows for that :-) */
 void main_loop()
 {
+#if !NO_SYS
+  sys_sem_t init_sem;
+#endif /* NO_SYS */
+
   /* initialize lwIP stack, network interfaces and applications */
 #if NO_SYS
   nosys_init();
-  test_init (NULL);
-#else/ * NO_SYS */
-  tcpip_init( test_init, NULL);
+  test_init(NULL);
+#else /* NO_SYS */
+  init_sem = sys_sem_new(0);
+  tcpip_init(test_init, init_sem);
+  /* we have to wait for initialization to finish before
+   * calling update_adapter()! */
+  sys_sem_wait(init_sem);
+  sys_sem_free(init_sem);
 #endif /* NO_SYS */
 
   /* MAIN LOOP for driver update (and timers if NO_SYS) */
