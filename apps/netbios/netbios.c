@@ -4,6 +4,14 @@
 #include "lwip/udp.h"
 #include "lwip/netif.h"
 
+/** This is an example implementation of a NetBIOS name server.
+ * It responds to name queries for a configurable name.
+ * Name resolving is not supported.
+ *
+ * Note that the device doesn't broadcast it's own name so can't
+ * detect duplicate names!
+ */
+
 #if LWIP_UDP
 
 /** default port number for "NetBIOS Name service */
@@ -14,6 +22,30 @@
 
 /** NetBIOS name of LWIP device */
 #define NETBIOS_LWIP_NAME "NETBIOSLWIPDEV"
+
+/** The Time-To-Live for NetBIOS name responds (in seconds)
+ * Default is 300000 seconds (3 days, 11 hours, 20 minutes) */
+#define NETBIOS_TTL 300000
+
+/** NetBIOS header flags */
+#define NETB_HFLAG_RESPONSE           0x8000
+#define NETB_HFLAG_OPCODE             0x7800
+#define NETB_HFLAG_OPCODE_NAME_QUERY  0x0000
+#define NETB_HFLAG_AUTHORATIVE        0x0400
+#define NETB_HFLAG_TRUNCATED          0x0200
+#define NETB_HFLAG_RECURS_DESIRED     0x0100
+#define NETB_HFLAG_RECURS_AVAILABLE   0x0080
+#define NETB_HFLAG_BROADCAST          0x0010
+#define NETB_HFLAG_REPLYCODE          0x0008
+#define NETB_HFLAG_REPLYCODE_NOERROR  0x0000
+
+/** NetBIOS name flags */
+#define NETB_NFLAG_UNIQUE             0x8000
+#define NETB_NFLAG_NODETYPE           0x6000
+#define NETB_NFLAG_NODETYPE_HNODE     0x6000
+#define NETB_NFLAG_NODETYPE_MNODE     0x4000
+#define NETB_NFLAG_NODETYPE_PNODE     0x2000
+#define NETB_NFLAG_NODETYPE_BNODE     0x0000
 
 /** NetBIOS message header */
 #ifdef PACK_STRUCT_USE_INCLUDES
@@ -163,8 +195,11 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
     struct netbios_hdr*      netbios_hdr      = p->payload;
     struct netbios_name_hdr* netbios_name_hdr = (struct netbios_name_hdr*)(netbios_hdr+1);
     
-    /* if the packet is a NetBIOS question */
-    if (((ntohs(netbios_hdr->flags) & 0x8000/** @todo */)==0) && (ntohs(netbios_hdr->questions)==1)) {
+    /* @todo: do we need to check answerRRs/authorityRRs/additionalRRs? */
+    /* if the packet is a NetBIOS name query question */
+    if (((ntohs(netbios_hdr->flags) & NETB_HFLAG_OPCODE) == NETB_HFLAG_OPCODE_NAME_QUERY) &&
+        ((ntohs(netbios_hdr->flags) & NETB_HFLAG_RESPONSE) == 0) &&
+        (ntohs(netbios_hdr->questions) == 1)) {
       /* decode the NetBIOS name */
       netbios_name_decoding( netbios_name_hdr->encname, netbios_name, sizeof(netbios_name));
       /* if the packet is for us */
@@ -177,7 +212,9 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
 
         /* prepare NetBIOS header response */
         netbios_resp.resp_hdr.trans_id      = netbios_hdr->trans_id;
-        netbios_resp.resp_hdr.flags         = htons(0x8500);/** @todo */
+        netbios_resp.resp_hdr.flags         = htons(NETB_HFLAG_RESPONSE |
+                                                    NETB_HFLAG_OPCODE_NAME_QUERY |
+                                                    NETB_HFLAG_RECURS_DESIRED);
         netbios_resp.resp_hdr.questions     = 0;
         netbios_resp.resp_hdr.answerRRs     = htons(1);
         netbios_resp.resp_hdr.authorityRRs  = 0;
@@ -188,14 +225,14 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
         netbios_resp.resp_name.nametype = netbios_name_hdr->nametype;
         netbios_resp.resp_name.type     = netbios_name_hdr->type;
         netbios_resp.resp_name.class    = netbios_name_hdr->class;
-        netbios_resp.resp_name.ttl      = 0xe0930400; /** @todo */
+        netbios_resp.resp_name.ttl      = htonl(NETBIOS_TTL);
         netbios_resp.resp_name.datalen  = htons(sizeof(netbios_resp.resp_name.flags)+sizeof(netbios_resp.resp_name.addr));
-        netbios_resp.resp_name.flags    = 0x0060;/** @todo */
+        netbios_resp.resp_name.flags    = htons(NETB_NFLAG_NODETYPE_BNODE);
         netbios_resp.resp_name.addr     = netif_default->ip_addr.addr;
 
         /* alloc a "reference" pbuf */
         q = pbuf_alloc(PBUF_TRANSPORT, 0, PBUF_REF);
-        if (p != NULL) {
+        if (q != NULL) {
           /* initialize the "reference" pbuf on the NetBIOS response */
           q->payload = (void*)(&netbios_resp);
           q->len = q->tot_len = sizeof(netbios_resp);
@@ -216,6 +253,8 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
 void netbios_init(void)
 {
   struct udp_pcb *pcb;
+
+  LWIP_ASSERT("NetBIOS name is too long!", strlen(NETBIOS_LWIP_NAME) < NETBIOS_NAME_LEN);
 
   pcb = udp_new();
   if (pcb != NULL) {
