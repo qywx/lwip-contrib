@@ -69,6 +69,7 @@ typedef u32_t mem_ptr_t;
 
 /* Compiler hints for packing structures */
 #define PACK_STRUCT_STRUCT
+#define PACK_STRUCT_USE_INCLUDES
 
 /* Plaform specific diagnostic output */
 #define LWIP_PLATFORM_DIAG(x)   do {printf x;} while(0)
