@@ -16,7 +16,7 @@ void http_server_serve(struct netconn *conn) {
    We assume the request (the part we care about) is in one netbuf */
   inbuf = netconn_recv(conn);
   
-  if (conn->err == ERR_OK) {
+  if (netconn_err(conn) == ERR_OK) {
     netbuf_data(inbuf, &buf, &buflen);
     
     /* Is this an HTTP GET command? (only check the first 5 chars, since
