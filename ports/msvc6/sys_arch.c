@@ -60,7 +60,7 @@ static LONGLONG sys_get_ms_longlong()
   return (u32_t)(((ret)*1000)/freq.QuadPart);
 }
 
-u32_t sys_get_ms()
+u32_t sys_now()
 {
   return sys_get_ms_longlong();
 }

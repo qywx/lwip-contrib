@@ -189,7 +189,7 @@ int init_adapter(int adapter_num, char* mac_addr)
   printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
   PacketSetBuff(lpAdapter,512000);
   PacketSetReadTimeout(lpAdapter,1);
-  PacketSetHwFilter(lpAdapter,NDIS_PACKET_TYPE_ALL_LOCAL);
+  PacketSetHwFilter(lpAdapter,NDIS_PACKET_TYPE_ALL_LOCAL | NDIS_PACKET_TYPE_PROMISCUOUS);
   if ((lpPacket = PacketAllocatePacket())==NULL) {
     return (-1);
   }

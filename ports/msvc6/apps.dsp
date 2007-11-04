@@ -117,6 +117,12 @@ SOURCE="..\..\apps\netio\netio.c"
 SOURCE="..\..\apps\netbios\netbios.c"
 # End Source File
 # End Group
+# Begin Group "ping"
+# Begin Source File
+
+SOURCE="..\..\apps\ping\ping.c"
+# End Source File
+# End Group
 # End Group
 # Begin Group "header"
 
@@ -145,6 +151,12 @@ SOURCE="..\..\apps\netio\netio.h"
 # Begin Source File
 
 SOURCE="..\..\apps\netbios\netbios.h"
+# End Source File
+# End Group
+# Begin Group "ping"
+# Begin Source File
+
+SOURCE="..\..\apps\ping\ping.h"
 # End Source File
 # End Group
 # End Group

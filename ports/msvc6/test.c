@@ -57,6 +57,7 @@
 #include "../../apps/httpserver_raw/httpd.h"
 #include "../../apps/netio/netio.h"
 #include "../../apps/netbios/netbios.h"
+#include "../../apps/ping/ping.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
@@ -77,8 +78,8 @@ void update_adapter(void);
 #if NO_SYS
 /* port-defined functions used for timer execution */
 void sys_init_timing();
-u32_t sys_get_ms();
-#endif /* NO_SYS*/
+u32_t sys_now();
+#endif /* NO_SYS */
 
 /* globales variables for netifs */
 /* THE ethernet interface */
@@ -111,7 +112,7 @@ static timers_infos timers_table[] = {
 #endif /* LWIP_DHCP */
 #if IP_REASSEMBLY
   { 0, IP_TMR_INTERVAL,         ip_reass_tmr},
-#endif /* IP_REASSEMBLY*/
+#endif /* IP_REASSEMBLY */
 #if LWIP_AUTOIP
   { 0, AUTOIP_TMR_INTERVAL,     autoip_tmr},
 #endif /* LWIP_AUTOIP */
@@ -137,7 +138,7 @@ timers_update()
 
   int cur_time, time_diff, idxtimer;
 
-  cur_time = sys_get_ms();
+  cur_time = sys_now();
   time_diff = cur_time - last_time;
 
   /* the '> 0' is an easy wrap-around check: the big gap at
@@ -200,6 +201,10 @@ msvc_netif_init()
 static void
 apps_init()
 {
+#if LWIP_RAW
+  ping_init();
+#endif /* LWIP_RAW */
+
 #if LWIP_UDP
   netbios_init();
 #endif /* LWIP_UDP */

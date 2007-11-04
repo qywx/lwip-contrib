@@ -43,6 +43,8 @@
 #define LWIP_HAVE_LOOPIF           1
 
 #define LWIP_COMPAT_SOCKETS        1
+#define LWIP_SO_RCVTIMEO           1
+#define LWIP_SO_RCVBUF             1
 
 #define LWIP_TCPIP_CORE_LOCKING    0
 
