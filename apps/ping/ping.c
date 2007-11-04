@@ -9,6 +9,11 @@
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
 
+/** This is an example of a "ping" sender (with raw API and socket API).
+ *  It can be used as a start point to maintain opened a network connection, or
+ *  like a network "watchdog" for your device.
+ */
+
 #if LWIP_RAW
 
 /* lwIP ping identifier */
