@@ -123,6 +123,12 @@ SOURCE="..\..\apps\netbios\netbios.c"
 SOURCE="..\..\apps\ping\ping.c"
 # End Source File
 # End Group
+# Begin Group "sntp"
+# Begin Source File
+
+SOURCE="..\..\apps\sntp\sntp.c"
+# End Source File
+# End Group
 # End Group
 # Begin Group "header"
 
@@ -156,7 +162,13 @@ SOURCE="..\..\apps\netbios\netbios.h"
 # Begin Group "ping"
 # Begin Source File
 
-SOURCE="..\..\apps\ping\ping.h"
+SOURCE="..\..\apps\sntp\sntp.h"
+# End Source File
+# End Group
+# Begin Group "sntp"
+# Begin Source File
+
+SOURCE="..\..\apps\sntp\sntp.h"
 # End Source File
 # End Group
 # End Group

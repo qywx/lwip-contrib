@@ -58,6 +58,7 @@
 #include "../../apps/netio/netio.h"
 #include "../../apps/netbios/netbios.h"
 #include "../../apps/ping/ping.h"
+#include "../../apps/sntp/sntp.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
@@ -213,6 +214,10 @@ apps_init()
   httpd_init();
   netio_init();
 #endif /* LWIP_TCP */
+
+#if LWIP_SOCKET
+  sntp_init();
+#endif /* LWIP_SOCKET */
 }
 
 /* This function initializes this lwIP test. When NO_SYS=1, this is done in
