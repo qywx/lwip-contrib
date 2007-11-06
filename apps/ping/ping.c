@@ -64,14 +64,15 @@ ping_recv(int s, struct ip_addr *addr)
   struct sockaddr_in from;
   struct icmp_echo_hdr *iecho;
 
-  len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, &fromlen);
-
-  if (len >= sizeof(struct icmp_echo_hdr)) {
-    iecho = (struct icmp_echo_hdr *)buf;
-    if ((iecho->id == LWIP_PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
+  while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, &fromlen)) > 0) {
+    if (len >= sizeof(struct icmp_echo_hdr)) {
       LWIP_DEBUGF( LWIP_DBG_ON, ("ping recv "));
       ip_addr_debug_print(LWIP_DBG_ON, (struct ip_addr *)&(from.sin_addr));
       LWIP_DEBUGF( LWIP_DBG_ON, (" %lu ms\n", (sys_now()-ping_time)));
+      iecho = (struct icmp_echo_hdr *)buf;
+      if ((iecho->id == LWIP_PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
+        return;
+      }
     }
   }
 }
@@ -80,10 +81,13 @@ static void
 ping_thread(void *arg)
 {
   int s;
+  int timeout=1000;
 
   if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
     return;
   }
+
+  lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
   while (1) {
     LWIP_DEBUGF( LWIP_DBG_ON, ("ping send "));
