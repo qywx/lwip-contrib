@@ -1,7 +1,47 @@
-#include "ping.h"
+/**
+ * @file
+ * Ping sender module
+ *
+ */
 
-/* lwIP core includes */
+/*
+ * Redistribution and use in source and binary forms, with or without modification, 
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission. 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
+ * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * This file is part of the lwIP TCP/IP stack.
+ * 
+ */
+
+/** 
+ * This is an example of a "ping" sender (with raw API and socket API).
+ * It can be used as a start point to maintain opened a network connection, or
+ * like a network "watchdog" for your device.
+ *
+ */
+
 #include "lwip/opt.h"
+
+#if LWIP_RAW && LWIP_ICMP
+
 #include "lwip/mem.h"
 #include "lwip/raw.h"
 #include "lwip/icmp.h"
@@ -9,18 +49,40 @@
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
 
-/** This is an example of a "ping" sender (with raw API and socket API).
- *  It can be used as a start point to maintain opened a network connection, or
- *  like a network "watchdog" for your device.
+/**
+ * PING_DEBUG: Enable debugging for PING.
  */
+#ifndef PING_DEBUG
+#define PING_DEBUG     LWIP_DBG_ON
+#endif
 
-#if LWIP_RAW
+/** ping target - should be a "struct ip_addr" */
+#ifndef PING_TARGET
+#define PING_TARGET   (netif_default->gw)
+#endif
 
-/* lwIP ping identifier */
-#define LWIP_PING_ID 0xAFAF
+/** ping receive timeout - in milliseconds */
+#ifndef PING_RCV_TIMEO
+#define PING_RCV_TIMEO 1000
+#endif
+
+/** ping delay - in milliseconds */
+#ifndef PING_DELAY
+#define PING_DELAY     1000
+#endif
+
+/** ping identifier - must fit on a u16_t */
+#ifndef PING_ID
+#define PING_ID        0xAFAF
+#endif
+
+/** ping result action - no default action */
+#ifndef PING_RESULT
+#define PING_RESULT(ping_ok)
+#endif
 
 /* ping variables */
-static int   ping_seq_num;
+static u16_t ping_seq_num;
 static u32_t ping_time;
 
 #if NO_SYS
@@ -29,7 +91,19 @@ void sys_msleep(u32_t ms);
 u32_t sys_now();
 #endif /* NO_SYS */
 
+/** Prepare a echo ICMP request */
+static void
+ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
+{ 
+  ICMPH_TYPE_SET(iecho,ICMP_ECHO);
+  iecho->chksum = 0;
+  iecho->id     = PING_ID;
+  iecho->seqno  = htons(++ping_seq_num);
+  iecho->chksum = inet_chksum(iecho, len);
+}
+
 #if LWIP_SOCKET
+
 /* Ping using the socket ip */
 static void
 ping_send(int s, struct ip_addr *addr)
@@ -41,11 +115,7 @@ ping_send(int s, struct ip_addr *addr)
     return;
   }
 
-  ICMPH_TYPE_SET(iecho,ICMP_ECHO);
-  iecho->chksum = 0;
-  iecho->id     = LWIP_PING_ID;
-  iecho->seqno  = htons(++ping_seq_num);
-  iecho->chksum = inet_chksum(iecho, sizeof(*iecho));
+  ping_prepare_echo( iecho, sizeof(struct icmp_echo_hdr));
 
   to.sin_len = sizeof(to);
   to.sin_family = AF_INET;
@@ -57,31 +127,37 @@ ping_send(int s, struct ip_addr *addr)
 }
 
 static void
-ping_recv(int s, struct ip_addr *addr)
+ping_recv(int s)
 {
-  char buf[256];
+  char buf[64];
   int fromlen, len;
   struct sockaddr_in from;
   struct icmp_echo_hdr *iecho;
 
   while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, &fromlen)) > 0) {
     if (len >= sizeof(struct icmp_echo_hdr)) {
-      LWIP_DEBUGF( LWIP_DBG_ON, ("ping recv "));
-      ip_addr_debug_print(LWIP_DBG_ON, (struct ip_addr *)&(from.sin_addr));
-      LWIP_DEBUGF( LWIP_DBG_ON, (" %lu ms\n", (sys_now()-ping_time)));
+      LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
+      ip_addr_debug_print(PING_DEBUG, (struct ip_addr *)&(from.sin_addr));
+      LWIP_DEBUGF( PING_DEBUG, (" %lu ms\n", (sys_now()-ping_time)));
+
       iecho = (struct icmp_echo_hdr *)buf;
-      if ((iecho->id == LWIP_PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
+      if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
+        /* do some ping result processing */
+        PING_RESULT(1);
         return;
       }
     }
   }
+
+  /* do some ping result processing */
+  PING_RESULT(0);
 }
 
 static void
 ping_thread(void *arg)
 {
   int s;
-  int timeout=1000;
+  int timeout=PING_RCV_TIMEO;
 
   if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
     return;
@@ -90,13 +166,14 @@ ping_thread(void *arg)
   lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
   while (1) {
-    LWIP_DEBUGF( LWIP_DBG_ON, ("ping send "));
-    ip_addr_debug_print(LWIP_DBG_ON, &(netif_default->gw));
-    LWIP_DEBUGF( LWIP_DBG_ON, ("\n"));
-    ping_send(s, &(netif_default->gw));
+    LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
+    ip_addr_debug_print(PING_DEBUG, &PING_TARGET);
+    LWIP_DEBUGF( PING_DEBUG, ("\n"));
+
+    ping_send(s, &PING_TARGET);
     ping_time = sys_now();
-    ping_recv(s, &(netif_default->gw));
-    sys_msleep(1000);
+    ping_recv(s);
+    sys_msleep(PING_DELAY);
   }
 }
 
@@ -111,10 +188,13 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *addr)
   if (pbuf_header( p, -PBUF_IP_HLEN)==0) {
     iecho = p->payload;
 
-    if ((iecho->id == LWIP_PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
-      LWIP_DEBUGF( LWIP_DBG_ON, ("ping recv "));
-      ip_addr_debug_print(LWIP_DBG_ON, addr);
-      LWIP_DEBUGF( LWIP_DBG_ON, (" %lu ms\n", (sys_now()-ping_time)));
+    if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
+      LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
+      ip_addr_debug_print(PING_DEBUG, addr);
+      LWIP_DEBUGF( PING_DEBUG, (" %lu ms\n", (sys_now()-ping_time)));
+
+      /* do some ping result processing */
+      PING_RESULT(1);
     }
   }
 
@@ -132,15 +212,11 @@ ping_send(struct raw_pcb *raw, struct ip_addr *addr)
   }
 
   iecho = p->payload;
-  ICMPH_TYPE_SET(iecho,ICMP_ECHO);
-  iecho->chksum = 0;
-  iecho->id     = LWIP_PING_ID;
-  iecho->seqno  = htons(++ping_seq_num);
-  iecho->chksum = inet_chksum(iecho, p->len);
 
-  ping_time     = sys_now();
+  ping_prepare_echo( iecho, p->len);
 
   raw_sendto(raw,p,addr);
+  ping_time = sys_now();
 
   pbuf_free(p);
 }
@@ -148,25 +224,26 @@ ping_send(struct raw_pcb *raw, struct ip_addr *addr)
 static void
 ping_thread(void *arg)
 {
-  struct raw_pcb *raw;
+  struct raw_pcb *pcb;
 
-  if (!(raw = raw_new(IP_PROTO_ICMP))) {
+  if (!(pcb = raw_new(IP_PROTO_ICMP))) {
     return;
   }
 
-  raw_recv(raw,ping_recv,NULL);
-  raw_bind(raw, IP_ADDR_ANY);
+  raw_recv(pcb, ping_recv, NULL);
+  raw_bind(pcb, IP_ADDR_ANY);
 
   while (1) {
-    LWIP_DEBUGF( LWIP_DBG_ON, ("ping send "));
-    ip_addr_debug_print(LWIP_DBG_ON, &(netif_default->gw));
-    LWIP_DEBUGF( LWIP_DBG_ON, ("\n"));
-    ping_send(raw, &(netif_default->gw));
-    sys_msleep(1000);
+    LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
+    ip_addr_debug_print(PING_DEBUG, &PING_TARGET);
+    LWIP_DEBUGF( PING_DEBUG, ("\n"));
+
+    ping_send(pcb, &PING_TARGET);
+    sys_msleep(PING_DELAY);
   }
 
-  /* Never reaches this */
-  raw_remove(raw);
+  /* Should never reaches this */
+  raw_remove(pcb);
 }
 
 #endif /* LWIP_SOCKET */
@@ -176,4 +253,4 @@ ping_init(void)
 { sys_thread_new("ping_thread", ping_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 }
 
-#endif /* LWIP_RAW */
+#endif /* LWIP_RAW && LWIP_ICMP */
