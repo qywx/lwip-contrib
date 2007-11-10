@@ -7,6 +7,10 @@ The current CVS code of this port isn't much tested.
 This is a quickly hacked port and example project of the lwIP library to
 Win32/MSVC.
 
+It doesn't (yet?) include support for slipif, ppp or pppoe. This is simply
+because none of the active developers using this port are using these interfaces
+right now.
+
 To get this compiling, you have to set a couple of environment variables:
 - LWIP_SRC: points to the src subdirectory in the main lwip tree
 - PCAP_DIR: points to the WinPcap Developer's Packs (containing 'include' and 'lib')
