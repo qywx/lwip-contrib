@@ -233,6 +233,7 @@ SOURCE="$(LWIP_SRC)\core\udp.c"
 # Begin Group "header"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Group "core"
 # Begin Group "ipv4"
 # Begin Source File
 
@@ -375,10 +376,42 @@ SOURCE="$(LWIP_SRC)\include\lwip\tcpip.h"
 
 SOURCE="$(LWIP_SRC)\include\lwip\udp.h"
 # End Source File
+# End Group
+
+# Begin Group "arch"
+# Begin Source File
+
+SOURCE=.\include\arch\bpstruct.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\arch\cc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\arch\epstruct.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\arch\perf.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\arch\sys_arch.h
+# End Source File
+# End Group
+
+# Begin Group "port"
 # Begin Source File
 
 SOURCE=.\lwipopts.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\lwipcfg_msvc.h
+# End Source File
+# End Group
+
 # End Group
 # End Target
 # End Project
