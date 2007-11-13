@@ -1,6 +1,40 @@
-#include "netbios.h"
+/**
+ * @file
+ * NetBIOS name service sample
+ *
+ */
+
+/*
+ * Redistribution and use in source and binary forms, with or without modification, 
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission. 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
+ * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
+ * OF SUCH DAMAGE.
+ *
+ * This file is part of the lwIP TCP/IP stack.
+ * 
+ */
 
 #include "lwip/opt.h"
+
+#if LWIP_UDP  /* don't build if not configured for use in lwipopts.h */
+
 #include "lwip/udp.h"
 #include "lwip/netif.h"
 
@@ -11,8 +45,6 @@
  * Note that the device doesn't broadcast it's own name so can't
  * detect duplicate names!
  */
-
-#if LWIP_UDP
 
 /** NetBIOS name of LWIP device */
 #ifndef NETBIOS_LWIP_NAME
@@ -27,7 +59,7 @@
 
 /** The Time-To-Live for NetBIOS name responds (in seconds)
  * Default is 300000 seconds (3 days, 11 hours, 20 minutes) */
-#define NETBIOS_TTL 300000
+#define NETBIOS_NAME_TTL 300000
 
 /** NetBIOS header flags */
 #define NETB_HFLAG_RESPONSE           0x8000
@@ -87,12 +119,20 @@ PACK_STRUCT_END
 #  include "arch/epstruct.h"
 #endif
 
-/* @todo: does this have to be packed, too? */
+/** NetBIOS message */
+#ifdef PACK_STRUCT_USE_INCLUDES
+#  include "arch/bpstruct.h"
+#endif
+PACK_STRUCT_BEGIN
 struct netbios_resp
 {
   struct netbios_hdr      resp_hdr;
   struct netbios_name_hdr resp_name;
-};
+} PACK_STRUCT_STRUCT;
+PACK_STRUCT_END
+#ifdef PACK_STRUCT_USE_INCLUDES
+#  include "arch/epstruct.h"
+#endif
 
 /** NetBIOS decoding name */
 static int
@@ -208,7 +248,7 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
     /* if the packet is a NetBIOS name query question */
     if (((ntohs(netbios_hdr->flags) & NETB_HFLAG_OPCODE) == NETB_HFLAG_OPCODE_NAME_QUERY) &&
         ((ntohs(netbios_hdr->flags) & NETB_HFLAG_RESPONSE) == 0) &&
-        (ntohs(netbios_hdr->questions) == 1)) {
+         (ntohs(netbios_hdr->questions) == 1)) {
       /* decode the NetBIOS name */
       netbios_name_decoding( netbios_name_hdr->encname, netbios_name, sizeof(netbios_name));
       /* if the packet is for us */
@@ -233,13 +273,13 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
 
           /* prepare NetBIOS header datas */
           memcpy( resp->resp_name.encname, netbios_name_hdr->encname, sizeof(netbios_name_hdr->encname));
-          resp->resp_name.nametype = netbios_name_hdr->nametype;
-          resp->resp_name.type     = netbios_name_hdr->type;
-          resp->resp_name.class    = netbios_name_hdr->class;
-          resp->resp_name.ttl      = htonl(NETBIOS_TTL);
-          resp->resp_name.datalen  = htons(sizeof(resp->resp_name.flags)+sizeof(resp->resp_name.addr));
-          resp->resp_name.flags    = htons(NETB_NFLAG_NODETYPE_BNODE);
-          resp->resp_name.addr     = netif_default->ip_addr.addr;
+          resp->resp_name.nametype     = netbios_name_hdr->nametype;
+          resp->resp_name.type         = netbios_name_hdr->type;
+          resp->resp_name.class        = netbios_name_hdr->class;
+          resp->resp_name.ttl          = htonl(NETBIOS_NAME_TTL);
+          resp->resp_name.datalen      = htons(sizeof(resp->resp_name.flags)+sizeof(resp->resp_name.addr));
+          resp->resp_name.flags        = htons(NETB_NFLAG_NODETYPE_BNODE);
+          resp->resp_name.addr         = netif_default->ip_addr.addr;
 
           /* send the NetBIOS response */
           udp_sendto(upcb, q, addr, port);

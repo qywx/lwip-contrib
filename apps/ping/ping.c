@@ -40,7 +40,7 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_RAW && LWIP_ICMP
+#if LWIP_RAW && LWIP_ICMP /* don't build if not configured for use in lwipopts.h */
 
 #include "lwip/mem.h"
 #include "lwip/raw.h"
