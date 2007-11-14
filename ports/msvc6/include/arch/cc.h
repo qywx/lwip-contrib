@@ -38,8 +38,9 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
-/** @todo fix SNMP warnings */
+/** @todo fix some warnings */
 #pragma warning (disable: 4244)
+#pragma warning (disable: 4996)
 
 #define LWIP_PROVIDE_ERRNO
 

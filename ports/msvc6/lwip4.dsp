@@ -178,6 +178,10 @@ SOURCE="$(LWIP_SRC)\core\dhcp.c"
 # End Source File
 # Begin Source File
 
+SOURCE="$(LWIP_SRC)\core\dns.c"
+# End Source File
+# Begin Source File
+
 SOURCE="$(LWIP_SRC)\core\inet.c"
 # End Source File
 # Begin Source File
@@ -287,6 +291,10 @@ SOURCE="$(LWIP_SRC)\include\lwip\def.h"
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\include\lwip\dhcp.h"
+# End Source File
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\include\lwip\dns.h"
 # End Source File
 # Begin Source File
 

@@ -40,6 +40,8 @@
 #define LWIP_ICMP                  1
 #define LWIP_SNMP                  1
 
+#define LWIP_DNS                   1
+
 #define LWIP_HAVE_LOOPIF           1
 
 #define LWIP_COMPAT_SOCKETS        1
@@ -54,12 +56,6 @@
 #ifdef LWIP_DEBUG
 
 #define LWIP_DBG_MIN_LEVEL         0
-#define TAPIF_DEBUG                LWIP_DBG_OFF
-#define TUNIF_DEBUG                LWIP_DBG_OFF
-#define UNIXIF_DEBUG               LWIP_DBG_OFF
-#define DELIF_DEBUG                LWIP_DBG_OFF
-#define SIO_FIFO_DEBUG             LWIP_DBG_OFF
-#define TCPDUMP_DEBUG              LWIP_DBG_OFF
 #define PPP_DEBUG                  LWIP_DBG_OFF
 #define MEM_DEBUG                  LWIP_DBG_OFF
 #define MEMP_DEBUG                 LWIP_DBG_OFF
@@ -69,10 +65,11 @@
 #define TCPIP_DEBUG                LWIP_DBG_OFF
 #define NETIF_DEBUG                LWIP_DBG_OFF
 #define SOCKETS_DEBUG              LWIP_DBG_OFF
-#define DEMO_DEBUG                 LWIP_DBG_OFF
+#define DNS_DEBUG                  LWIP_DBG_OFF
 #define IP_DEBUG                   LWIP_DBG_OFF
 #define IP_REASS_DEBUG             LWIP_DBG_OFF
 #define ICMP_DEBUG                 LWIP_DBG_OFF
+#define IGMP_DEBUG                 LWIP_DBG_OFF
 #define UDP_DEBUG                  LWIP_DBG_OFF
 #define TCP_DEBUG                  LWIP_DBG_OFF
 #define TCP_INPUT_DEBUG            LWIP_DBG_OFF
@@ -86,6 +83,7 @@
 #endif
 
 #define LWIP_DBG_TYPES_ON         (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT)
+
 
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
@@ -117,7 +115,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_TCP_SEG        16
 /* MEMP_NUM_SYS_TIMEOUT: the number of simulateously active
    timeouts. */
-#define MEMP_NUM_SYS_TIMEOUT    8
+#define MEMP_NUM_SYS_TIMEOUT    10
 
 /* The following four are used only with the sequential API and can be
    set to 0 if the application only will use the raw API. */
@@ -149,6 +147,7 @@ a lot of data that needs to be copied, this should be set high. */
  * allocation and deallocation.
  */
 #define SYS_LIGHTWEIGHT_PROT    (NO_SYS==0)
+
 
 /* ---------- TCP options ---------- */
 #define LWIP_TCP                1
@@ -182,17 +181,18 @@ a lot of data that needs to be copied, this should be set high. */
 /* Maximum number of retransmissions of SYN segments. */
 #define TCP_SYNMAXRTX           4
 
+
 /* ---------- ARP options ---------- */
 #define LWIP_ARP                1
 #define ARP_TABLE_SIZE          10
 #define ARP_QUEUEING            1
+
 
 /* ---------- IP options ---------- */
 /* Define IP_FORWARD to 1 if you wish to have the ability to forward
    IP packets across network interfaces. If you are going to run lwIP
    on a device with only one network interface, define this to 0. */
 #define IP_FORWARD              1
-
 
 /* IP reassembly and segmentation.These are orthogonal even
  * if they both deal with IP fragments */
@@ -201,8 +201,10 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_REASSDATA      10
 #define IP_FRAG                 1
 
+
 /* ---------- ICMP options ---------- */
 #define ICMP_TTL                255
+
 
 /* ---------- DHCP options ---------- */
 /* Define LWIP_DHCP to 1 if you want DHCP configuration of
@@ -210,13 +212,16 @@ a lot of data that needs to be copied, this should be set high. */
    turning this on does currently not work. */
 #define LWIP_DHCP               0
 
-#define LWIP_AUTOIP             0
-
 /* 1 if you want to do an ARP check on the offered address
    (recommended). */
 #if LWIP_DHCP
 #define DHCP_DOES_ARP_CHECK     1
 #endif
+
+
+/* ---------- AUTOIP options ------- */
+#define LWIP_AUTOIP             0
+
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1
@@ -242,6 +247,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define PBUF_STATS              1
 #define SYS_STATS               1
 #endif /* LWIP_STATS */
+
 
 /* ---------- PPP options ---------- */
 

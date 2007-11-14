@@ -48,6 +48,7 @@
 
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
+#include "lwip/dns.h"
 
 /* lwIP netif includes */
 #include "netif/loopif.h"
@@ -120,6 +121,9 @@ static timers_infos timers_table[] = {
 #if LWIP_IGMP
   { 0, IGMP_TMR_INTERVAL,       igmp_tmr},
 #endif /* LWIP_IGMP */
+#if LWIP_DNS
+  { 0, DNS_TMR_INTERVAL,        dns_tmr},
+#endif /* LWIP_DNS */
 };
 
 /* initialize stack when NO_SYS=1 */
@@ -198,10 +202,22 @@ msvc_netif_init()
 #endif /* LWIP_HAVE_LOOPIF */
 }
 
+void dns_found(char *name, struct ip_addr *addr, void *arg)
+{ printf("%s: %s\n", name, addr?inet_ntoa(*(struct in_addr*)addr):"<not found>");
+}
+
 /* This function initializes applications */
 static void
 apps_init()
 {
+#if LWIP_DNS
+  char*          dnsname="3com.com";
+  struct ip_addr dnsresp;
+  if (dns_gethostbyname(dnsname, &dnsresp, dns_found, 0) == DNS_COMPLETE) {
+    dns_found(dnsname, &dnsresp, 0);
+  }
+#endif /* LWIP_DNS */
+
 #if LWIP_RAW
   ping_init();
 #endif /* LWIP_RAW */
