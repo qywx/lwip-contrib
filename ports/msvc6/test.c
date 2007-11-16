@@ -202,7 +202,7 @@ msvc_netif_init()
 #endif /* LWIP_HAVE_LOOPIF */
 }
 
-void dns_found(char *name, struct ip_addr *addr, void *arg)
+void dns_found(const char *name, struct ip_addr *addr, void *arg)
 { printf("%s: %s\n", name, addr?inet_ntoa(*(struct in_addr*)addr):"<not found>");
 }
 
