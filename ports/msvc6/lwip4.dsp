@@ -139,6 +139,14 @@ SOURCE="$(LWIP_SRC)\core\ipv4\ip.c"
 # End Source File
 # Begin Source File
 
+SOURCE="$(LWIP_SRC)\core\ipv4\inet.c"
+# End Source File
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\core\ipv4\inet_chksum.c"
+# End Source File
+# Begin Source File
+
 SOURCE="$(LWIP_SRC)\core\ipv4\ip_addr.c"
 # End Source File
 # Begin Source File
@@ -179,10 +187,6 @@ SOURCE="$(LWIP_SRC)\core\dhcp.c"
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\core\dns.c"
-# End Source File
-# Begin Source File
-
-SOURCE="$(LWIP_SRC)\core\inet.c"
 # End Source File
 # Begin Source File
 
@@ -254,6 +258,10 @@ SOURCE="$(LWIP_SRC)\include\ipv4\lwip\igmp.h"
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\include\ipv4\lwip\inet.h"
+# End Source File
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\include\ipv4\lwip\inet_chksum.h"
 # End Source File
 # Begin Source File
 
