@@ -48,6 +48,8 @@
 #include "lwip/netif.h"
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
+#include "lwip/inet.h"
+#include "lwip/inet_chksum.h"
 
 /**
  * PING_DEBUG: Enable debugging for PING.
