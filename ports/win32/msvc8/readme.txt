@@ -22,7 +22,7 @@ into a new subdir in proj and modify lwipopts.h to your needs. If you move
 it to another directory besides proj, you have to update the include paths
 in the project settings.
 
-Included in the ..\msvc6 directory is the network interface driver using
+Included in the ..\win32 directory is the network interface driver using
 the winpcap library.
 
 There is no more documentation yet. Try to figure it out yourself.

@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\msvc6\include,..\msvc6,.\;$(PCAP_DIR)\Include"
+				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\include,..,.\;$(PCAP_DIR)\Include"
 				PreprocessorDefinitions="_LIB;WIN32;_DEBUG;LWIP_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -114,10 +114,11 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\msvc6\include,..\msvc6,.\;$(PCAP_DIR)\Include"
+				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\include,..,.\;$(PCAP_DIR)\Include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
+				StructMemberAlignment="1"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(IntDir)/$(TargetName).pch"
@@ -167,7 +168,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\msvc6\pktdrv.c"
+				RelativePath="..\pktdrv.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -192,7 +193,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\msvc6\pktif.c"
+				RelativePath="..\pktif.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"

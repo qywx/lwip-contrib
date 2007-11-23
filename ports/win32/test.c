@@ -211,15 +211,15 @@ static void
 apps_init()
 {
 #if LWIP_DNS
-  /*char*          dnsname="3com.com";
+  char*          dnsname="3com.com";
   struct ip_addr dnsresp;
   if (dns_gethostbyname(dnsname, &dnsresp, dns_found, 0) == DNS_COMPLETE) {
     dns_found(dnsname, &dnsresp, 0);
-  }*/
+  }
 #endif /* LWIP_DNS */
 
 #if LWIP_RAW
-  //ping_init();
+  ping_init();
 #endif /* LWIP_RAW */
 
 #if LWIP_UDP
@@ -261,18 +261,6 @@ test_init(void * arg)
 #endif /* NO_SYS */
 }
 
-static void
-dns_thread(void *arg)
-{ struct ip_addr addr;
-  err_t err;
-  if ((err = netconn_gethostbyname((char*)(arg), &(addr))) == ERR_OK) {
-    printf("netconn_gethostbyname(%s)==", (char*)(arg));
-    ip_addr_debug_print(LWIP_DBG_ON, (&addr));
-    printf("\n");
-  } else {
-    printf("netconn_gethostbyname(%s)==%i\n", (char*)(arg), (int)(err));
-  }
-}
 /* This is somewhat different to other ports: we have a main loop here:
  * a dedicated task that waits for packets to arrive. This would normally be
  * done from interrupt context with embedded hardware, but we don't get an
@@ -295,13 +283,6 @@ void main_loop()
   sys_sem_wait(init_sem);
   sys_sem_free(init_sem);
 #endif /* NO_SYS */
-
-  sys_thread_new("dns_thread", dns_thread, (void*)("yoda.hymatom.fr"),   DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
-  sys_thread_new("dns_thread", dns_thread, (void*)("solo.hymatom.fr"),   DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
-  sys_thread_new("dns_thread", dns_thread, (void*)("wedge.hymatom.fr"),  DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
-  sys_thread_new("dns_thread", dns_thread, (void*)("mickey.hymatom.fr"), DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
-  sys_thread_new("dns_thread", dns_thread, (void*)("soleil.hymatom.fr"), DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
-  sys_thread_new("dns_thread", dns_thread, (void*)("jarjar.hymatom.fr"), DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 
   /* MAIN LOOP for driver update (and timers if NO_SYS) */
   while (!_kbhit()) {

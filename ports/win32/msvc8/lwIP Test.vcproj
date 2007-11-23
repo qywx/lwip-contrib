@@ -45,10 +45,11 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\msvc6\include,..\msvc6,..\..\apps"
+				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\include,..,..\..\..\apps"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
+				StructMemberAlignment="1"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile="$(IntDir)/$(TargetName).pch"
@@ -134,7 +135,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\msvc6\include,..\msvc6,..\..\apps"
+				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\include,..,..\..\..\apps"
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG;LWIP_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -203,7 +204,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\msvc6\test.c"
+				RelativePath="..\test.c"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -231,11 +232,11 @@
 				Name="apps"
 				>
 				<File
-					RelativePath="..\..\apps\httpserver_raw\fs.c"
+					RelativePath="..\..\..\apps\httpserver_raw\fs.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\apps\httpserver_raw\fsdata.c"
+					RelativePath="..\..\..\apps\httpserver_raw\fsdata.c"
 					>
 					<FileConfiguration
 						Name="Release|Win32"
@@ -255,23 +256,23 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\apps\httpserver_raw\httpd.c"
+					RelativePath="..\..\..\apps\httpserver_raw\httpd.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\apps\netbios\netbios.c"
+					RelativePath="..\..\..\apps\netbios\netbios.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\apps\netio\netio.c"
+					RelativePath="..\..\..\apps\netio\netio.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\apps\ping\ping.c"
+					RelativePath="..\..\..\apps\ping\ping.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\apps\sntp\sntp.c"
+					RelativePath="..\..\..\apps\sntp\sntp.c"
 					>
 				</File>
 			</Filter>

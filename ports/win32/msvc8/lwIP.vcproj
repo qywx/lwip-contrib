@@ -42,10 +42,11 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\msvc6\include,..\msvc6"
+				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\include,.."
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
+				StructMemberAlignment="1"
 				EnableFunctionLevelLinking="true"
 				ProgramDataBaseFileName="$(IntDir)/$(ProjectName).pdb"
 				WarningLevel="3"
@@ -112,7 +113,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\msvc6\include,..\msvc6"
+				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\include,.."
 				PreprocessorDefinitions="_LIB;WIN32;_DEBUG;LWIP_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -449,94 +450,94 @@
 				Name="core"
 				>
 				<File
-					RelativePath="..\..\..\lwip\src\core\dhcp.c"
+					RelativePath="$(LWIP_DIR)\src\core\dhcp.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\dns.c"
+					RelativePath="$(LWIP_DIR)\src\core\dns.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\init.c"
+					RelativePath="$(LWIP_DIR)\src\core\init.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\mem.c"
+					RelativePath="$(LWIP_DIR)\src\core\mem.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\memp.c"
+					RelativePath="$(LWIP_DIR)\src\core\memp.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\netif.c"
+					RelativePath="$(LWIP_DIR)\src\core\netif.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\pbuf.c"
+					RelativePath="$(LWIP_DIR)\src\core\pbuf.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\raw.c"
+					RelativePath="$(LWIP_DIR)\src\core\raw.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\stats.c"
+					RelativePath="$(LWIP_DIR)\src\core\stats.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\sys.c"
+					RelativePath="$(LWIP_DIR)\src\core\sys.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\tcp.c"
+					RelativePath="$(LWIP_DIR)\src\core\tcp.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\tcp_in.c"
+					RelativePath="$(LWIP_DIR)\src\core\tcp_in.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\tcp_out.c"
+					RelativePath="$(LWIP_DIR)\src\core\tcp_out.c"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lwip\src\core\udp.c"
+					RelativePath="$(LWIP_DIR)\src\core\udp.c"
 					>
 				</File>
 				<Filter
 					Name="ipv4"
 					>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv4\autoip.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv4\autoip.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv4\icmp.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv4\icmp.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv4\igmp.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv4\igmp.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv4\inet.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv4\inet.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv4\inet_chksum.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv4\inet_chksum.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv4\ip.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv4\ip.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv4\ip_addr.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv4\ip_addr.c"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv4\ip_frag.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv4\ip_frag.c"
 						>
 					</File>
 				</Filter>
@@ -544,7 +545,7 @@
 					Name="ipv6"
 					>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv6\icmp6.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv6\icmp6.c"
 						>
 						<FileConfiguration
 							Name="Release|Win32"
@@ -564,7 +565,7 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv6\inet6.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv6\inet6.c"
 						>
 						<FileConfiguration
 							Name="Release|Win32"
@@ -584,7 +585,7 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv6\ip6.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv6\ip6.c"
 						>
 						<FileConfiguration
 							Name="Release|Win32"
@@ -604,7 +605,7 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv6\ip6_addr.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv6\ip6_addr.c"
 						>
 						<FileConfiguration
 							Name="Release|Win32"
@@ -624,7 +625,7 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\core\ipv6\README"
+						RelativePath="$(LWIP_DIR)\src\core\ipv6\README"
 						>
 						<FileConfiguration
 							Name="Release|Win32"
@@ -809,35 +810,35 @@
 						Name="lwip"
 						>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv4\lwip\autoip.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\autoip.h"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv4\lwip\icmp.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\icmp.h"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv4\lwip\igmp.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\igmp.h"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv4\lwip\inet.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\inet.h"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv4\lwip\inet_chksum.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\inet_chksum.h"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv4\lwip\ip.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\ip.h"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv4\lwip\ip_addr.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\ip_addr.h"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv4\lwip\ip_frag.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\ip_frag.h"
 							>
 						</File>
 					</Filter>
@@ -849,7 +850,7 @@
 						Name="lwip"
 						>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv6\lwip\icmp.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\icmp.h"
 							>
 							<FileConfiguration
 								Name="Release|Win32"
@@ -869,7 +870,7 @@
 							</FileConfiguration>
 						</File>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv6\lwip\inet.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\inet.h"
 							>
 							<FileConfiguration
 								Name="Release|Win32"
@@ -889,7 +890,7 @@
 							</FileConfiguration>
 						</File>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv6\lwip\ip.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ip.h"
 							>
 							<FileConfiguration
 								Name="Release|Win32"
@@ -909,7 +910,7 @@
 							</FileConfiguration>
 						</File>
 						<File
-							RelativePath="..\..\..\lwip\src\include\ipv6\lwip\ip_addr.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ip_addr.h"
 							>
 							<FileConfiguration
 								Name="Release|Win32"
@@ -934,119 +935,119 @@
 					Name="lwip"
 					>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\api.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\api.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\api_msg.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\api_msg.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\arch.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\arch.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\debug.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\debug.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\def.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\def.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\dhcp.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\dhcp.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\dns.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\dns.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\err.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\err.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\init.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\init.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\mem.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\mem.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\memp.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\memp.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\memp_std.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\memp_std.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\netbuf.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\netbuf.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\netif.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\netif.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\netifapi.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\netifapi.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\opt.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\opt.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\pbuf.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\pbuf.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\raw.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\raw.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\sio.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\sio.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\snmp.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\snmp.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\snmp_asn1.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\snmp_asn1.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\snmp_msg.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\snmp_msg.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\snmp_structs.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\snmp_structs.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\sockets.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\sockets.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\stats.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\stats.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\sys.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\sys.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\tcp.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\tcp.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\tcpip.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\tcpip.h"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\lwip\src\include\lwip\udp.h"
+						RelativePath="$(LWIP_DIR)\src\include\lwip\udp.h"
 						>
 					</File>
 				</Filter>
@@ -1684,35 +1685,55 @@
 			Name="arch"
 			>
 			<File
-				RelativePath="..\msvc6\include\arch\bpstruct.h"
+				RelativePath="..\include\arch\bpstruct.h"
 				>
 			</File>
 			<File
-				RelativePath="..\msvc6\include\arch\cc.h"
+				RelativePath="..\include\arch\cc.h"
 				>
 			</File>
 			<File
-				RelativePath="..\msvc6\include\arch\epstruct.h"
+				RelativePath="..\include\arch\epstruct.h"
 				>
 			</File>
 			<File
-				RelativePath="..\msvc6\lwipcfg_msvc.h"
+				RelativePath="..\lwipcfg_msvc.h"
 				>
 			</File>
 			<File
-				RelativePath="..\msvc6\lwipopts.h"
+				RelativePath="..\lwipcfg_msvc.h.example"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\lwipopts.h"
 				>
 			</File>
 			<File
-				RelativePath="..\msvc6\include\arch\perf.h"
+				RelativePath="..\include\arch\perf.h"
 				>
 			</File>
 			<File
-				RelativePath="..\msvc6\sys_arch.c"
+				RelativePath="..\sys_arch.c"
 				>
 			</File>
 			<File
-				RelativePath="..\msvc6\include\arch\sys_arch.h"
+				RelativePath="..\include\arch\sys_arch.h"
 				>
 			</File>
 		</Filter>
