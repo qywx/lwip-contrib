@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "$(LWIP_SRC)\include" /I "$(LWIP_SRC)\include\ipv4" /I ".\include" /I ".\\" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I "$(LWIP_SRC)\include" /I "$(LWIP_SRC)\include\ipv4" /I "..\include" /I "..\\" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
 # ADD RSC /l 0x407 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "$(LWIP_SRC)\include" /I "$(LWIP_SRC)\include\ipv4" /I ".\include" /I ".\\" /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "LWIP_DEBUG" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "$(LWIP_SRC)\include" /I "$(LWIP_SRC)\include\ipv4" /I "..\include" /I "..\\" /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "LWIP_DEBUG" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
 # ADD RSC /l 0x407 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -86,7 +86,7 @@ LIB32=link.exe -lib
 # Begin Group "arch"
 # Begin Source File
 
-SOURCE=".\sys_arch.c"
+SOURCE="..\sys_arch.c"
 # End Source File
 # End Group
 # Begin Group "api"
@@ -397,34 +397,34 @@ SOURCE="$(LWIP_SRC)\include\lwip\udp.h"
 # Begin Group "arch"
 # Begin Source File
 
-SOURCE=.\include\arch\bpstruct.h
+SOURCE=..\include\arch\bpstruct.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\arch\cc.h
+SOURCE=..\include\arch\cc.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\arch\epstruct.h
+SOURCE=..\include\arch\epstruct.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\arch\perf.h
+SOURCE=..\include\arch\perf.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\include\arch\sys_arch.h
+SOURCE=..\include\arch\sys_arch.h
 # End Source File
 # End Group
 
 # Begin Group "port"
 # Begin Source File
 
-SOURCE=.\lwipopts.h
+SOURCE=..\lwipopts.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\lwipcfg_msvc.h
+SOURCE=..\lwipcfg_msvc.h
 # End Source File
 # End Group
 

@@ -55,11 +55,11 @@
 #include "netif/etharp.h"
 
 /* applications includes */
-#include "../../apps/httpserver_raw/httpd.h"
-#include "../../apps/netio/netio.h"
-#include "../../apps/netbios/netbios.h"
-#include "../../apps/ping/ping.h"
-#include "../../apps/sntp/sntp.h"
+#include "apps/httpserver_raw/httpd.h"
+#include "apps/netio/netio.h"
+#include "apps/netbios/netbios.h"
+#include "apps/ping/ping.h"
+#include "apps/sntp/sntp.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
