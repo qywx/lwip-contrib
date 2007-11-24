@@ -371,6 +371,10 @@
 					>
 				</File>
 				<File
+					RelativePath="$(LWIP_DIR)\src\api\netdb.c"
+					>
+				</File>
+				<File
 					RelativePath="$(LWIP_DIR)\src\api\netifapi.c"
 					>
 					<FileConfiguration
@@ -984,6 +988,10 @@
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\include\lwip\netbuf.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\netdb.h"
 						>
 					</File>
 					<File

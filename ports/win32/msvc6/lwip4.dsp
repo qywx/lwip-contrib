@@ -108,6 +108,10 @@ SOURCE="$(LWIP_SRC)\api\netbuf.c"
 # End Source File
 # Begin Source File
 
+SOURCE="$(LWIP_SRC)\api\netdb.c"
+# End Source File
+# Begin Source File
+
 SOURCE="$(LWIP_SRC)\api\netifapi.c"
 # End Source File
 # Begin Source File
@@ -327,6 +331,10 @@ SOURCE="$(LWIP_SRC)\include\lwip\memp_std.h"
 # Begin Source File
 
 SOURCE="$(LWIP_SRC)\include\lwip\netbuf.h"
+# End Source File
+# Begin Source File
+
+SOURCE="$(LWIP_SRC)\include\lwip\netdb.h"
 # End Source File
 # Begin Source File
 
