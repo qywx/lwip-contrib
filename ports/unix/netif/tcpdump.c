@@ -37,6 +37,7 @@
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
 #include "lwip/inet.h"
+#include "lwip/inet_chksum.h"
 
 static FILE *file = NULL;
 

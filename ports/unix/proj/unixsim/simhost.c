@@ -42,6 +42,8 @@
 
 #include "lwip/stats.h"
 
+#include "lwip/tcp.h"
+#include "lwip/inet_chksum.h"
 
 #include "lwip/tcpip.h"
 #include "lwip/sockets.h"
@@ -274,7 +276,8 @@ static void
 ping_recv(int s, struct ip_addr *addr)
 {
   char buf[200];
-  int fromlen,len;
+  socklen_t fromlen;
+  int len;
   struct sockaddr_in from;
 
   len = lwip_recvfrom(s, buf,sizeof(buf),0,(struct sockaddr*)&from,&fromlen);

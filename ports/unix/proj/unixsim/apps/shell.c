@@ -38,6 +38,7 @@
 #include "lwip/def.h"
 #include "lwip/api.h"
 #include "lwip/stats.h"
+#include "lwip/inet.h"
 
 static unsigned char buffer[1024];
 
@@ -307,6 +308,7 @@ static char *stat_formats[STAT_NUM] = {
   U16_F, /* tcp err */
   U16_F, /* tcp cachehit */
 
+  /* FIXME: pbuf stats have moved to memp stats */
   U16_F, /* pbuf avail */
   U16_F, /* pbuf used */
   U16_F, /* pbuf max */
@@ -314,6 +316,7 @@ static char *stat_formats[STAT_NUM] = {
   U16_F, /* pbuf alloc_locked */
   U16_F, /* pbuf refresh_locked */
 
+  /* FIXME: always using 11 memp pools is wrong! */
   MEM_SIZE_F, /* mem avail */
   MEM_SIZE_F, /* mem used */
   MEM_SIZE_F, /* mem max */
@@ -468,18 +471,21 @@ static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.tcp.err,
   &lwip_stats.tcp.cachehit,
 
-  &lwip_stats.pbuf.avail,
+  /* FIXME: pbuf stats have moved to memp stats */
+  NULL, NULL, NULL, NULL, NULL, NULL,
+  /*&lwip_stats.pbuf.avail,
   &lwip_stats.pbuf.used,
   &lwip_stats.pbuf.max,
   &lwip_stats.pbuf.err,
   &lwip_stats.pbuf.alloc_locked,
-  &lwip_stats.pbuf.refresh_locked,
+  &lwip_stats.pbuf.refresh_locked,*/
 
   &lwip_stats.mem.avail,
   &lwip_stats.mem.used,
   &lwip_stats.mem.max,
   &lwip_stats.mem.err,
-  
+
+  /* FIXME: always using 11 memp pools is wrong! */
   &lwip_stats.memp[0].avail,
   &lwip_stats.memp[0].used,
   &lwip_stats.memp[0].max,

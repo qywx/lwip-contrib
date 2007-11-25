@@ -68,11 +68,18 @@
 extern unsigned char debug_flags;
 #define LWIP_DBG_TYPES_ON debug_flags
 
+#define NO_SYS                     0
+#define LWIP_SOCKET                (NO_SYS==0)
+#define LWIP_NETCONN               (NO_SYS==0)
+
+
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
    lwIP is compiled. 4 byte alignment -> define MEM_ALIGNMENT to 4, 2
    byte alignment -> define MEM_ALIGNMENT to 2. */
-#define MEM_ALIGNMENT           1
+/* MSVC port: intel processors don't need 4-byte alignment,
+   but are faster that way! */
+#define MEM_ALIGNMENT           4
 
 /* MEM_SIZE: the size of the heap memory. If the application will send
 a lot of data that needs to be copied, this should be set high. */
@@ -107,7 +114,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_NETBUF         2
 /* MEMP_NUM_NETCONN: the number of struct netconns. */
 #define MEMP_NUM_NETCONN        10
-/* MEMP_NUM_TCPIP_MSG: the number of struct tcpip_msg, which is used
+/* MEMP_NUM_TCPIP_MSG_*: the number of struct tcpip_msg, which is used
    for sequential API communication and incoming packets. Used in
    src/api/tcpip.c. */
 #define MEMP_NUM_TCPIP_MSG_API   16
@@ -129,7 +136,7 @@ a lot of data that needs to be copied, this should be set high. */
  * for certain critical regions during buffer allocation, deallocation and memory
  * allocation and deallocation.
  */
-/*#define SYS_LIGHTWEIGHT_PROT           1*/
+#define SYS_LIGHTWEIGHT_PROT           1
 
 /* ---------- TCP options ---------- */
 #define LWIP_TCP                1
@@ -147,7 +154,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* TCP sender buffer space (pbufs). This must be at least = 2 *
    TCP_SND_BUF/TCP_MSS for things to work. */
-#define TCP_SND_QUEUELEN        4 * TCP_SND_BUF/TCP_MSS
+#define TCP_SND_QUEUELEN        (4 * TCP_SND_BUF/TCP_MSS)
 
 /* TCP writable space (bytes). This must be less than or equal
    to TCP_SND_BUF. It is the amount of space which must be
@@ -164,8 +171,9 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_SYNMAXRTX           4
 
 /* ---------- ARP options ---------- */
-#define ARP_TABLE_SIZE 10
-#define ARP_QUEUEING 1
+#define LWIP_ARP                1
+#define ARP_TABLE_SIZE          10
+#define ARP_QUEUEING            1
 
 /* ---------- IP options ---------- */
 /* Define IP_FORWARD to 1 if you wish to have the ability to forward
@@ -177,6 +185,8 @@ a lot of data that needs to be copied, this should be set high. */
 /* IP reassembly and segmentation.These are orthogonal even
  * if they both deal with IP fragments */
 #define IP_REASSEMBLY     1
+#define IP_REASS_MAX_PBUFS      10
+#define MEMP_NUM_REASSDATA      10
 #define IP_FRAG           1
 
 /* ---------- ICMP options ---------- */
@@ -190,6 +200,9 @@ a lot of data that needs to be copied, this should be set high. */
 /* 1 if you want to do an ARP check on the offered address
    (recommended). */
 #define DHCP_DOES_ARP_CHECK     1
+
+/* ---------- AUTOIP options ------- */
+#define LWIP_AUTOIP             0
 
 /* ---------- SNMP options ---------- */
 /** @todo SNMP is experimental for now
