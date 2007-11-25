@@ -78,14 +78,14 @@
 #define PING_ID        0xAFAF
 #endif
 
-/** ping result action - no default action */
-#ifndef PING_RESULT
-#define PING_RESULT(ping_ok)
-#endif
-
 /** ping additional data size to include in the packet */
 #ifndef PING_DATA_SIZE
 #define PING_DATA_SIZE 32
+#endif
+
+/** ping result action - no default action */
+#ifndef PING_RESULT
+#define PING_RESULT(ping_ok)
 #endif
 
 /* ping variables */
@@ -101,13 +101,20 @@ u32_t sys_now();
 /** Prepare a echo ICMP request */
 static void
 ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
-{ 
+{
+  int i;
+
   ICMPH_TYPE_SET(iecho,ICMP_ECHO);
   ICMPH_CODE_SET(iecho, 0);
   iecho->chksum = 0;
   iecho->id     = PING_ID;
   iecho->seqno  = htons(++ping_seq_num);
   iecho->chksum = inet_chksum(iecho, len);
+
+  /* fill the additional data buffer with some data */
+  for(i = 0; i < PING_DATA_SIZE; i++) {
+    ((char*)iecho)[sizeof(struct icmp_echo_hdr) + i] = i;
+  }
 }
 
 #if LWIP_SOCKET
@@ -118,16 +125,10 @@ ping_send(int s, struct ip_addr *addr)
 {
   struct icmp_echo_hdr *iecho;
   struct sockaddr_in to;
-  int i;
   size_t ping_size = sizeof(struct icmp_echo_hdr) + PING_DATA_SIZE;
 
   if (!(iecho = mem_malloc(ping_size))) {
     return;
-  }
-
-  /* fill the additional data buffer with some data */
-  for(i = 0; i < PING_DATA_SIZE; i++) {
-    ((char*)iecho)[sizeof(struct icmp_echo_hdr) + i] = i;
   }
 
   ping_prepare_echo(iecho, ping_size);
@@ -221,7 +222,6 @@ ping_send(struct raw_pcb *raw, struct ip_addr *addr)
 {
   struct pbuf *p;
   struct icmp_echo_hdr *iecho;
-  int i;
   size_t ping_size = sizeof(struct icmp_echo_hdr) + PING_DATA_SIZE;
 
   if (!(p = pbuf_alloc(PBUF_IP, ping_size, PBUF_RAM))) {
@@ -229,11 +229,6 @@ ping_send(struct raw_pcb *raw, struct ip_addr *addr)
   }
   if ((p->len == p->tot_len) && (p->next == NULL)) {
     iecho = p->payload;
-    
-    /* fill the additional data buffer with some data */
-    for(i = 0; i < PING_DATA_SIZE; i++) {
-      ((char*)iecho)[sizeof(struct icmp_echo_hdr) + i] = i;
-    }
 
     ping_prepare_echo(iecho, ping_size);
 
@@ -258,6 +253,20 @@ ping_timeout(void *arg)
   sys_timeout(PING_DELAY, ping_timeout, pcb);
 }
 
+static void
+ping_raw_init(void)
+{
+  struct raw_pcb *pcb;
+
+  if (!(pcb = raw_new(IP_PROTO_ICMP))) {
+    return;
+  }
+
+  raw_recv(pcb, ping_recv, NULL);
+  raw_bind(pcb, IP_ADDR_ANY);
+  sys_timeout(PING_DELAY, ping_timeout, pcb);
+}
+
 #endif /* LWIP_SOCKET */
 
 void
@@ -266,13 +275,7 @@ ping_init(void)
 #if LWIP_SOCKET
   sys_thread_new("ping_thread", ping_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 #else /* LWIP_SOCKET */
-  struct raw_pcb *pcb;
-  if (!(pcb = raw_new(IP_PROTO_ICMP))) {
-    return;
-  }
-  raw_recv(pcb, ping_recv, NULL);
-  raw_bind(pcb, IP_ADDR_ANY);
-  sys_timeout(PING_DELAY, ping_timeout, pcb);
+  ping_raw_init();
 #endif /* LWIP_SOCKET */
 }
 
