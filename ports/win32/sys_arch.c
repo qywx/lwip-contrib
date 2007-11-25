@@ -32,7 +32,7 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h> // sprintf() for task names
+#include <stdio.h> /* sprintf() for task names */
 
 #include <windows.h>
 #include <time.h>
@@ -121,20 +121,20 @@ sys_sem_t sys_sem_new(u8_t count)
     if (lwip_stats.sys.sem.used > lwip_stats.sys.sem.max) {
       lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
     }
-#endif // LWIP_STATS
+#endif /* LWIP_STATS */
     return new_sem;
   }
    
-  // failed to allocate memory...
+  /* failed to allocate memory... */
 #if LWIP_STATS
   lwip_stats.sys.sem.err++;
-#endif // LWIP_STATS
+#endif /* LWIP_STATS */
   return SYS_SEM_NULL;
 }
 
 void sys_sem_free(sys_sem_t sem)
 {
-  // parameter check
+  /* parameter check */
   LWIP_ASSERT("sem != NULL", sem != NULL);
   LWIP_ASSERT("sem != INVALID_HANDLE_VALUE", sem != INVALID_HANDLE_VALUE);
   CloseHandle(sem);
@@ -142,7 +142,7 @@ void sys_sem_free(sys_sem_t sem)
 #if LWIP_STATS
   lwip_stats.sys.sem.used--;
   LWIP_ASSERT("sys_sem_free() closed more than created", lwip_stats.sys.sem.used != (u16_t)-1);
-#endif // LWIP_STATS
+#endif /* LWIP_STATS */
 }
 
 u32_t sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
@@ -153,12 +153,12 @@ u32_t sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
   LWIP_ASSERT("sem != INVALID_HANDLE_VALUE", sem != INVALID_HANDLE_VALUE);
   if(!timeout)
   {
-    // wait infinite
+    /* wait infinite */
     starttime = sys_get_ms_longlong();
     ret = WaitForSingleObject(sem, INFINITE);
     LWIP_ASSERT("Error waiting for mutex", ret == WAIT_OBJECT_0);
     endtime = sys_get_ms_longlong();
-    // return the time we waited for the sem
+    /* return the time we waited for the sem */
     return (u32_t)(endtime - starttime);
   }
   else
@@ -170,12 +170,12 @@ u32_t sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
     if(ret == WAIT_OBJECT_0)
     {
       endtime = sys_get_ms_longlong();
-      // return the time we waited for the sem
+      /* return the time we waited for the sem */
       return (u32_t)(endtime - starttime);
     }
     else
     {
-      // timeout
+      /* timeout */
       return SYS_ARCH_TIMEOUT;
     }
   }
@@ -261,7 +261,7 @@ sys_mbox_t sys_mbox_new()
   if(new_mbox == NULL) {
 #if LWIP_STATS
     lwip_stats.sys.mbox.err++;
-#endif // LWIP_STATS
+#endif /* LWIP_STATS */
     return SYS_SEM_NULL;
   }
   new_mbox->sem = CreateSemaphore(0, 0, MAX_QUEUE_ENTRIES, 0);
@@ -269,7 +269,7 @@ sys_mbox_t sys_mbox_new()
   if(new_mbox->sem == NULL) {
 #if LWIP_STATS
     lwip_stats.sys.mbox.err++;
-#endif // LWIP_STATS
+#endif /* LWIP_STATS */
     free(new_mbox);
     new_mbox = NULL;
     return SYS_SEM_NULL;
@@ -283,13 +283,13 @@ sys_mbox_t sys_mbox_new()
   if (lwip_stats.sys.mbox.used > lwip_stats.sys.mbox.max) {
     lwip_stats.sys.mbox.max = lwip_stats.sys.mbox.used;
   }
-#endif // LWIP_STATS
+#endif /* LWIP_STATS */
   return new_mbox;
 }
 
 void sys_mbox_free(sys_mbox_t mbox)
 {
-  // parameter check
+  /* parameter check */
   LWIP_ASSERT("sys_mbox_free ", mbox != SYS_MBOX_NULL );
   LWIP_ASSERT("mbox->sem != NULL", mbox->sem != NULL);
   LWIP_ASSERT("mbox->sem != INVALID_HANDLE_VALUE", mbox->sem != INVALID_HANDLE_VALUE);
@@ -300,7 +300,7 @@ void sys_mbox_free(sys_mbox_t mbox)
 #if LWIP_STATS
    lwip_stats.sys.mbox.used--;
    LWIP_ASSERT( "sys_mbox_free() ", lwip_stats.sys.mbox.used!= (u16_t)-1 );
-#endif // LWIP_STATS
+#endif /* LWIP_STATS */
 }
 
 void sys_mbox_post(sys_mbox_t q, void *msg)
@@ -308,12 +308,10 @@ void sys_mbox_post(sys_mbox_t q, void *msg)
   DWORD ret;
   SYS_ARCH_DECL_PROTECT(lev);
 
-  // parameter check
+  /* parameter check */
   LWIP_ASSERT("sys_mbox_free ", q != SYS_MBOX_NULL );
   LWIP_ASSERT("q->sem != NULL", q->sem != NULL);
   LWIP_ASSERT("q->sem != INVALID_HANDLE_VALUE", q->sem != INVALID_HANDLE_VALUE);
-
-  //printf("sys_mbox_post(%p %p)\n", q, msg);
 
   SYS_ARCH_PROTECT(lev);
   q->q_mem[q->head] = msg;
@@ -334,7 +332,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t q, void **msg, u32_t timeout)
   LONGLONG starttime, endtime;
   SYS_ARCH_DECL_PROTECT(lev);
 
-  // parameter check
+  /* parameter check */
   LWIP_ASSERT("sys_mbox_free ", q != SYS_MBOX_NULL );
   LWIP_ASSERT("q->sem != NULL", q->sem != NULL);
   LWIP_ASSERT("q->sem != INVALID_HANDLE_VALUE", q->sem != INVALID_HANDLE_VALUE);
@@ -348,7 +346,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t q, void **msg, u32_t timeout)
     if(msg != NULL) {
       *msg  = q->q_mem[q->tail];
     }
-    //printf("sys_arch_mbox_fetch(%p) -> %p\n", q, msg?*msg:0);
+
     (q->tail)++;
     if (q->tail >= MAX_QUEUE_ENTRIES) {
       q->tail = 0;
@@ -363,7 +361,7 @@ u32_t sys_arch_mbox_fetch(sys_mbox_t q, void **msg, u32_t timeout)
     if(msg != NULL) {
       *msg  = NULL;
     }
-    //printf("sys_arch_mbox_fetch(%p) -> timeout\n", q);
+
     return SYS_ARCH_TIMEOUT;
   }
 }
@@ -373,7 +371,7 @@ u32_t sys_arch_mbox_tryfetch(sys_mbox_t q, void **msg)
   DWORD ret;
   SYS_ARCH_DECL_PROTECT(lev);
 
-  // parameter check
+  /* parameter check */
   LWIP_ASSERT("sys_mbox_free ", q != SYS_MBOX_NULL );
   LWIP_ASSERT("q->sem != NULL", q->sem != NULL);
   LWIP_ASSERT("q->sem != INVALID_HANDLE_VALUE", q->sem != INVALID_HANDLE_VALUE);
@@ -383,7 +381,7 @@ u32_t sys_arch_mbox_tryfetch(sys_mbox_t q, void **msg)
     if(msg != NULL) {
       *msg  = q->q_mem[q->tail];
     }
-    //printf("sys_arch_mbox_tryfetch(%p) -> %p\n", q, msg?*msg:0);
+
     (q->tail)++;
     if (q->tail >= MAX_QUEUE_ENTRIES) {
       q->tail = 0;
@@ -397,7 +395,7 @@ u32_t sys_arch_mbox_tryfetch(sys_mbox_t q, void **msg)
     if(msg != NULL) {
       *msg  = NULL;
     }
-    //printf("sys_arch_mbox_tryfetch(%p) -> timeout\n", q);
+
     return SYS_ARCH_TIMEOUT;
   }
 }

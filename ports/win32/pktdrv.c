@@ -75,7 +75,7 @@
 
 LPADAPTER  lpAdapter;
 LPPACKET   lpPacket;
-char buffer[256000];  // buffer to hold the data coming from the driver
+char buffer[256000];  /* buffer to hold the data coming from the driver */
 unsigned char *cur_packet;
 int cur_length;
 unsigned char ethaddr[ETHARP_HWADDR_LEN];
@@ -91,12 +91,12 @@ int init_adapter(int adapter_num, char* mac_addr)
   DWORD dwVersion;
   DWORD dwWindowsMajorVersion;
 
-  //unicode strings (winnt)
-  char   AdapterName[8192]; // string that contains a list of the network adapters
+  /* unicode strings (winnt) */
+  char   AdapterName[8192]; /* string that contains a list of the network adapters */
   char   *temp,*temp1;
 
-  //ascii strings (win95)
-  char    AdapterNamea[8192]; // string that contains a list of the network adapters
+  /* ascii strings (win95) */
+  char    AdapterNamea[8192]; /* string that contains a list of the network adapters */
   char    *tempa,*temp1a;
 
   int      AdapterNum=0;
@@ -104,7 +104,7 @@ int init_adapter(int adapter_num, char* mac_addr)
 
   PPACKET_OID_DATA ppacket_oid_data;
 
-  // obtain the name of the adapters installed on this machine
+  /* obtain the name of the adapters installed on this machine */
   AdapterLength=4096;
 
   memset(AdapterList,0,sizeof(AdapterList));
@@ -113,12 +113,12 @@ int init_adapter(int adapter_num, char* mac_addr)
 
   i=0;
 
-  // the data returned by PacketGetAdapterNames is different in Win95 and in WinNT.
-  // We have to check the os on which we are running
+  /* the data returned by PacketGetAdapterNames is different in Win95 and in WinNT.
+   * We have to check the os on which we are running */
   dwVersion=GetVersion();
   dwWindowsMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
   if (!(dwVersion >= 0x80000000 && dwWindowsMajorVersion >= 4)) {
-    // Windows NT
+    /* Windows NT */
     if (PacketGetAdapterNames((char *)AdapterName,&AdapterLength)==FALSE){
       printf("Unable to retrieve the list of the adapters!\n");
       return -1;
@@ -140,7 +140,7 @@ int init_adapter(int adapter_num, char* mac_addr)
       printf("%2i: %s\n", i, AdapterList[i]);
     }
   } else {
-    //windows 95 
+    /* Windows 95 */
     if (PacketGetAdapterNames(AdapterNamea,&AdapterLength)==FALSE) {
       printf("Unable to retrieve the list of the adapters!\n");
       return -1;
@@ -238,7 +238,6 @@ static void ProcessPackets(LPPACKET lpPacket)
   off=0;
 
   while (off<ulBytesReceived) {
-    //if (kbhit())return;
     hdr=(struct bpf_hdr *)(buf+off);
     tlen1=hdr->bh_datalen;
     cur_length=tlen1;
