@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /I "$(LWIP_SRC)\include" /I "$(LWIP_SRC)\include\ipv4" /I "..\include" /I "..\\" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I "$(LWIP_DIR)\src\include" /I "$(LWIP_DIR)\src\include\ipv4" /I "..\include" /I "..\\" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x407 /d "NDEBUG"
 # ADD RSC /l 0x407 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "$(LWIP_SRC)\include" /I "$(LWIP_SRC)\include\ipv4" /I "..\include" /I "..\\" /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "LWIP_DEBUG" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "$(LWIP_DIR)\src\include" /I "$(LWIP_DIR)\src\include\ipv4" /I "..\include" /I "..\\" /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "LWIP_DEBUG" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x407 /d "_DEBUG"
 # ADD RSC /l 0x407 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -92,153 +92,153 @@ SOURCE="..\sys_arch.c"
 # Begin Group "api"
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\api\api_lib.c"
+SOURCE="$(LWIP_DIR)\src\api\api_lib.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\api\api_msg.c"
+SOURCE="$(LWIP_DIR)\src\api\api_msg.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\api\err.c"
+SOURCE="$(LWIP_DIR)\src\api\err.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\api\netbuf.c"
+SOURCE="$(LWIP_DIR)\src\api\netbuf.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\api\netdb.c"
+SOURCE="$(LWIP_DIR)\src\api\netdb.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\api\netifapi.c"
+SOURCE="$(LWIP_DIR)\src\api\netifapi.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\api\sockets.c"
+SOURCE="$(LWIP_DIR)\src\api\sockets.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\api\tcpip.c"
+SOURCE="$(LWIP_DIR)\src\api\tcpip.c"
 # End Source File
 # End Group
 # Begin Group "core"
 # Begin Group "ipv4"
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\ipv4\autoip.c"
+SOURCE="$(LWIP_DIR)\src\core\ipv4\autoip.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\ipv4\icmp.c"
+SOURCE="$(LWIP_DIR)\src\core\ipv4\icmp.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\ipv4\igmp.c"
+SOURCE="$(LWIP_DIR)\src\core\ipv4\igmp.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\ipv4\ip.c"
+SOURCE="$(LWIP_DIR)\src\core\ipv4\ip.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\ipv4\inet.c"
+SOURCE="$(LWIP_DIR)\src\core\ipv4\inet.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\ipv4\inet_chksum.c"
+SOURCE="$(LWIP_DIR)\src\core\ipv4\inet_chksum.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\ipv4\ip_addr.c"
+SOURCE="$(LWIP_DIR)\src\core\ipv4\ip_addr.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\ipv4\ip_frag.c"
+SOURCE="$(LWIP_DIR)\src\core\ipv4\ip_frag.c"
 # End Source File
 # End Group
 # Begin Group "snmp"
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\snmp\asn1_dec.c"
+SOURCE="$(LWIP_DIR)\src\core\snmp\asn1_dec.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\snmp\asn1_enc.c"
+SOURCE="$(LWIP_DIR)\src\core\snmp\asn1_enc.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\snmp\mib_structs.c"
+SOURCE="$(LWIP_DIR)\src\core\snmp\mib_structs.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\snmp\mib2.c"
+SOURCE="$(LWIP_DIR)\src\core\snmp\mib2.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\snmp\msg_in.c"
+SOURCE="$(LWIP_DIR)\src\core\snmp\msg_in.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\snmp\msg_out.c"
+SOURCE="$(LWIP_DIR)\src\core\snmp\msg_out.c"
 # End Source File
 # End Group
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\dhcp.c"
+SOURCE="$(LWIP_DIR)\src\core\dhcp.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\dns.c"
+SOURCE="$(LWIP_DIR)\src\core\dns.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\init.c"
+SOURCE="$(LWIP_DIR)\src\core\init.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\mem.c"
+SOURCE="$(LWIP_DIR)\src\core\mem.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\memp.c"
+SOURCE="$(LWIP_DIR)\src\core\memp.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\netif.c"
+SOURCE="$(LWIP_DIR)\src\core\netif.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\pbuf.c"
+SOURCE="$(LWIP_DIR)\src\core\pbuf.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\raw.c"
+SOURCE="$(LWIP_DIR)\src\core\raw.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\stats.c"
+SOURCE="$(LWIP_DIR)\src\core\stats.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\sys.c"
+SOURCE="$(LWIP_DIR)\src\core\sys.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\tcp.c"
+SOURCE="$(LWIP_DIR)\src\core\tcp.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\tcp_in.c"
+SOURCE="$(LWIP_DIR)\src\core\tcp_in.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\tcp_out.c"
+SOURCE="$(LWIP_DIR)\src\core\tcp_out.c"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\core\udp.c"
+SOURCE="$(LWIP_DIR)\src\core\udp.c"
 # End Source File
 # End Group
 # End Group
@@ -249,156 +249,156 @@ SOURCE="$(LWIP_SRC)\core\udp.c"
 # Begin Group "ipv4"
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\ipv4\lwip\autoip.h"
+SOURCE="$(LWIP_DIR)\src\include\ipv4\lwip\autoip.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\ipv4\lwip\icmp.h"
+SOURCE="$(LWIP_DIR)\src\include\ipv4\lwip\icmp.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\ipv4\lwip\igmp.h"
+SOURCE="$(LWIP_DIR)\src\include\ipv4\lwip\igmp.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\ipv4\lwip\inet.h"
+SOURCE="$(LWIP_DIR)\src\include\ipv4\lwip\inet.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\ipv4\lwip\inet_chksum.h"
+SOURCE="$(LWIP_DIR)\src\include\ipv4\lwip\inet_chksum.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\ipv4\lwip\ip.h"
+SOURCE="$(LWIP_DIR)\src\include\ipv4\lwip\ip.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\ipv4\lwip\ip_addr.h"
+SOURCE="$(LWIP_DIR)\src\include\ipv4\lwip\ip_addr.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\ipv4\lwip\ip_frag.h"
+SOURCE="$(LWIP_DIR)\src\include\ipv4\lwip\ip_frag.h"
 # End Source File
 # End Group
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\api.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\api.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\api_msg.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\api_msg.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\arch.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\arch.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\debug.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\debug.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\def.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\def.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\dhcp.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\dhcp.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\dns.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\dns.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\err.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\err.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\init.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\init.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\mem.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\mem.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\memp.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\memp.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\memp_std.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\memp_std.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\netbuf.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\netbuf.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\netdb.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\netdb.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\netif.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\netif.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\netifapi.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\netifapi.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\opt.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\opt.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\pbuf.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\pbuf.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\raw.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\raw.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\sio.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\sio.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\snmp.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\snmp.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\snmp_asn1.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\snmp_asn1.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\snmp_msg.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\snmp_msg.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\snmp_structs.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\snmp_structs.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\sockets.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\sockets.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\stats.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\stats.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\sys.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\sys.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\tcp.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\tcp.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\tcpip.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\tcpip.h"
 # End Source File
 # Begin Source File
 
-SOURCE="$(LWIP_SRC)\include\lwip\udp.h"
+SOURCE="$(LWIP_DIR)\src\include\lwip\udp.h"
 # End Source File
 # End Group
 
