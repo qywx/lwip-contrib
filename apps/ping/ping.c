@@ -60,7 +60,7 @@
 
 /** ping target - should be a "struct ip_addr" */
 #ifndef PING_TARGET
-#define PING_TARGET   (netif_default->gw)
+#define PING_TARGET   (netif_default?netif_default->gw:ip_addr_any)
 #endif
 
 /** ping receive timeout - in milliseconds */
@@ -173,7 +173,8 @@ static void
 ping_thread(void *arg)
 {
   int s;
-  int timeout=PING_RCV_TIMEO;
+  int timeout = PING_RCV_TIMEO;
+  struct ip_addr ping_target = PING_TARGET;
 
   if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
     return;
@@ -183,10 +184,10 @@ ping_thread(void *arg)
 
   while (1) {
     LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
-    ip_addr_debug_print(PING_DEBUG, &PING_TARGET);
+    ip_addr_debug_print(PING_DEBUG, &ping_target);
     LWIP_DEBUGF( PING_DEBUG, ("\n"));
 
-    ping_send(s, &PING_TARGET);
+    ping_send(s, &ping_target);
     ping_time = sys_now();
     ping_recv(s);
     sys_msleep(PING_DELAY);
@@ -242,13 +243,15 @@ static void
 ping_timeout(void *arg)
 {
   struct raw_pcb *pcb = (struct raw_pcb*)arg;
+  struct ip_addr ping_target = PING_TARGET;
+  
   LWIP_ASSERT("ping_timeout: no pcb given!", pcb != NULL);
 
   LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
-  ip_addr_debug_print(PING_DEBUG, &PING_TARGET);
+  ip_addr_debug_print(PING_DEBUG, &ping_target);
   LWIP_DEBUGF( PING_DEBUG, ("\n"));
 
-  ping_send(pcb, &PING_TARGET);
+  ping_send(pcb, &ping_target);
 
   sys_timeout(PING_DELAY, ping_timeout, pcb);
 }
