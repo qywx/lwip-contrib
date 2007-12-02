@@ -32,6 +32,9 @@
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
 
+/* <sys/time.h> is included in cc.h! */
+#define LWIP_TIMEVAL_PRIVATE 0
+
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
    lwIP is compiled. 4 byte alignment -> define MEM_ALIGNMENT to 4, 2

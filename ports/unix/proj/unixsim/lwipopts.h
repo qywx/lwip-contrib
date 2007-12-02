@@ -31,6 +31,10 @@
  */
 #ifndef __LWIPOPTS_H__
 #define __LWIPOPTS_H__
+
+/* <sys/time.h> is included in cc.h! */
+#define LWIP_TIMEVAL_PRIVATE 0
+
 #define LWIP_DBG_MIN_LEVEL 0
 #define LWIP_COMPAT_SOCKETS 1
 #define TAPIF_DEBUG LWIP_DBG_ON
