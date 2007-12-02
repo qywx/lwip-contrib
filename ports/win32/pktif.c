@@ -165,9 +165,7 @@ low_level_output(struct netif *ethernetif, struct pbuf *p)
     return ERR_BUF;
   }
 
-#if LINK_STATS
-  lwip_stats.link.xmit++;
-#endif /* LINK_STATS */
+  LINK_STATS_INC(link.xmit);
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -193,9 +191,11 @@ low_level_input(struct netif *netif)
   }
 
   ethhdr = (struct eth_hdr*)cur_packet;
-  /* MAC filter: only let my MAC or broadcast through */
-  if ((memcmp(&ethhdr->dest, &netif->hwaddr, ETHARP_HWADDR_LEN)) &&
-      (memcmp(&ethhdr->dest, &broadcastaddr, ETHARP_HWADDR_LEN))) {
+  /* MAC filter: only let my MAC or non-unicast through */
+  if (((memcmp(&ethhdr->dest, &netif->hwaddr, ETHARP_HWADDR_LEN)) &&
+      ((ethhdr->dest.addr[0] & 1) == 0)) ||
+      /* and don't let feedback packets through (limitaion in winpcap?) */
+       !memcmp(&ethhdr->src, netif->hwaddr, 6)) {
     /* acknowledge that packet has been read(); */
     cur_length=0;
     return NULL;
@@ -224,16 +224,12 @@ low_level_input(struct netif *netif)
     }
     /* acknowledge that packet has been read(); */
     cur_length = 0;
-#if LINK_STATS
-    lwip_stats.link.recv++;
-#endif /* LINK_STATS */
+    LINK_STATS_INC(link.recv);
   } else {
     /* drop packet(); */
     cur_length = 0;
-#if LINK_STATS
-    lwip_stats.link.memerr++;
-    lwip_stats.link.drop++;
-#endif /* LINK_STATS */
+    LINK_STATS_INC(link.memerr);
+    LINK_STATS_INC(link.drop);
   }
 
   return p;
