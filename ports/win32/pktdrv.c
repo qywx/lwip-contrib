@@ -73,15 +73,20 @@
 /** @todo use the lwip header file */
 #define ETHARP_HWADDR_LEN 6
 
+extern void process_input(void);
+
+/* global variables for only one adapter */
 LPADAPTER  lpAdapter;
 LPPACKET   lpPacket;
+
 char buffer[256000];  /* buffer to hold the data coming from the driver */
 unsigned char *cur_packet;
 int cur_length;
 unsigned char ethaddr[ETHARP_HWADDR_LEN];
 
 /*-----------------------------------------------------------------------------------*/
-int init_adapter(int adapter_num, char* mac_addr)
+int
+init_adapter(int adapter_num, char* mac_addr)
 {
   #define Max_Num_Adapter 10
 
@@ -176,11 +181,13 @@ int init_adapter(int adapter_num, char* mac_addr)
   ppacket_oid_data=malloc(sizeof(PACKET_OID_DATA)+ETHARP_HWADDR_LEN);
   lpAdapter=PacketOpenAdapter(AdapterList[adapter_num]);
   if (!lpAdapter || (lpAdapter->hFile == INVALID_HANDLE_VALUE)) {
+    lpAdapter = NULL;
     return -1;
   }
   ppacket_oid_data->Oid=OID_802_3_PERMANENT_ADDRESS;
   ppacket_oid_data->Length=ETHARP_HWADDR_LEN;
   if (!PacketRequest(lpAdapter,FALSE,ppacket_oid_data)) {
+    lpAdapter = NULL;
     return -1;
   }
   memcpy(&ethaddr,ppacket_oid_data->Data,ETHARP_HWADDR_LEN);
@@ -191,24 +198,33 @@ int init_adapter(int adapter_num, char* mac_addr)
   PacketSetReadTimeout(lpAdapter,1);
   PacketSetHwFilter(lpAdapter,NDIS_PACKET_TYPE_ALL_LOCAL | NDIS_PACKET_TYPE_PROMISCUOUS);
   if ((lpPacket = PacketAllocatePacket())==NULL) {
-    return (-1);
+    lpAdapter = NULL;
+    return -1;
   }
-  PacketInitPacket(lpPacket,(char*)buffer,256000);
+
+  PacketInitPacket(lpPacket,(char*)buffer, sizeof(buffer));
 
   return 0;
 }
 
-void shutdown_adapter(void)
+void
+shutdown_adapter(void)
 {
-  PacketFreePacket(lpPacket);
-  PacketCloseAdapter(lpAdapter);
+  if (lpAdapter != NULL) {
+    PacketFreePacket(lpPacket);
+    PacketCloseAdapter(lpAdapter);
+  }
 }
 
-int packet_send(void *buffer, int len)
+int
+packet_send(void *buffer, int len)
 {
   LPPACKET lpPacket;
 
-  if ((lpPacket = PacketAllocatePacket())==NULL) {
+  if (lpAdapter == NULL) {
+    return -1;
+  }
+  if ((lpPacket = PacketAllocatePacket()) == NULL) {
     return -1;
   }
   PacketInitPacket(lpPacket,buffer,len);
@@ -220,9 +236,8 @@ int packet_send(void *buffer, int len)
   return 0;
 }
 
-extern void process_input(void);
-
-static void ProcessPackets(LPPACKET lpPacket)
+static void
+ProcessPackets(LPPACKET lpPacket)
 {
   ULONG  ulLines, ulBytesReceived;
   char  *base;
@@ -257,9 +272,10 @@ static void ProcessPackets(LPPACKET lpPacket)
   }
 }
 
-void update_adapter(void)
+void
+update_adapter(void)
 {
-  if (PacketReceivePacket(lpAdapter,lpPacket,TRUE)==TRUE) {
+  if ((lpAdapter != NULL) && (PacketReceivePacket(lpAdapter, lpPacket, TRUE))) {
     ProcessPackets(lpPacket);
   }
   cur_length=0;
