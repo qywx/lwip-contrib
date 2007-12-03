@@ -36,7 +36,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 
 /** @todo fix some warnings */
 #pragma warning (disable: 4244)

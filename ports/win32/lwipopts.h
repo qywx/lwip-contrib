@@ -101,6 +101,9 @@ a lot of data that needs to be copied, this should be set high. */
    sends a lot of data out of ROM (or other static memory), this
    should be set high. */
 #define MEMP_NUM_PBUF           16
+/* MEMP_NUM_RAW_PCB: the number of UDP protocol control blocks. One
+   per active RAW "connection". */
+#define MEMP_NUM_RAW_PCB        3
 /* MEMP_NUM_UDP_PCB: the number of UDP protocol control blocks. One
    per active UDP "connection". */
 #define MEMP_NUM_UDP_PCB        4
@@ -115,7 +118,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_TCP_SEG        16
 /* MEMP_NUM_SYS_TIMEOUT: the number of simulateously active
    timeouts. */
-#define MEMP_NUM_SYS_TIMEOUT    10
+#define MEMP_NUM_SYS_TIMEOUT    15
 
 /* The following four are used only with the sequential API and can be
    set to 0 if the application only will use the raw API. */
@@ -123,7 +126,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_NETBUF         2
 /* MEMP_NUM_NETCONN: the number of struct netconns. */
 #define MEMP_NUM_NETCONN        10
-/* MEMP_NUM_TCPIPMSG: the number of struct tcpip_msg, which is used
+/* MEMP_NUM_TCPIP_MSG_*: the number of struct tcpip_msg, which is used
    for sequential API communication and incoming packets. Used in
    src/api/tcpip.c. */
 #define MEMP_NUM_TCPIP_MSG_API   16
