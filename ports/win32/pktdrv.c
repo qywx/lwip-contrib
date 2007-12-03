@@ -73,140 +73,122 @@
 /** @todo use the lwip header file */
 #define ETHARP_HWADDR_LEN 6
 
+#define MAX_NUM_ADAPTERS       10
+#define ADAPTER_NAME_LEN       4096
+#define PACKET_ADAPTER_BUFSIZE 512000
+#define PACKET_INPUT_BUFSIZE   256000
+
 extern void process_input(void);
 
 /* global variables for only one adapter */
 LPADAPTER  lpAdapter;
 LPPACKET   lpPacket;
-
-char buffer[256000];  /* buffer to hold the data coming from the driver */
+char buffer[PACKET_INPUT_BUFSIZE];  /* buffer to hold the data coming from the driver */
 unsigned char *cur_packet;
 int cur_length;
-unsigned char ethaddr[ETHARP_HWADDR_LEN];
 
-/*-----------------------------------------------------------------------------------*/
+/**
+ * Open a network adapter and set it up for packet input
+ *
+ * @param adapter_num the index of the adapter to use
+ * @param mac_addr the MAC address of the adapter is stored here (if != NULL)
+ * @return 0 on success, -1 on failure
+ */
 int
 init_adapter(int adapter_num, char* mac_addr)
 {
-  #define Max_Num_Adapter 10
-
-  void *AdapterList[Max_Num_Adapter];
-
+  void *AdapterList[MAX_NUM_ADAPTERS];
   int i;
-  DWORD dwVersion;
-  DWORD dwWindowsMajorVersion;
-
-  /* unicode strings (winnt) */
-  char   AdapterName[8192]; /* string that contains a list of the network adapters */
-  char   *temp,*temp1;
-
-  /* ascii strings (win95) */
-  char    AdapterNamea[8192]; /* string that contains a list of the network adapters */
-  char    *tempa,*temp1a;
-
-  int      AdapterNum=0;
-  ULONG    AdapterLength;
-
+  char AdapterName[ADAPTER_NAME_LEN]; /* string that contains a list of the network adapters */
+  char *temp, *start;
+  int AdapterNum =0;
+  ULONG AdapterLength;
   PPACKET_OID_DATA ppacket_oid_data;
+  unsigned char ethaddr[ETHARP_HWADDR_LEN];
 
-  /* obtain the name of the adapters installed on this machine */
-  AdapterLength=4096;
+  memset(AdapterList, 0, sizeof(AdapterList));
+  memset(AdapterName, 0, sizeof(AdapterName));
 
-  memset(AdapterList,0,sizeof(AdapterList));
-  memset(AdapterName,0,sizeof(AdapterName));
-  memset(AdapterNamea,0,sizeof(AdapterNamea));
-
-  i=0;
-
-  /* the data returned by PacketGetAdapterNames is different in Win95 and in WinNT.
-   * We have to check the os on which we are running */
-  dwVersion=GetVersion();
-  dwWindowsMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
-  if (!(dwVersion >= 0x80000000 && dwWindowsMajorVersion >= 4)) {
-    /* Windows NT */
-    if (PacketGetAdapterNames((char *)AdapterName,&AdapterLength)==FALSE){
-      printf("Unable to retrieve the list of the adapters!\n");
-      return -1;
-    }
-    temp=AdapterName;
-    temp1=AdapterName;
-    while ((*temp!='\0')||(*(temp-1)!='\0')) {
-      if (*temp=='\0') {
-        AdapterList[i] = temp1;
-        temp1=temp+1;
-        i++;
-      }
-
-      temp++;
-    }
-
-    AdapterNum=i;
-    for (i=0; i<AdapterNum; i++) {
-      printf("%2i: %s\n", i, AdapterList[i]);
-    }
-  } else {
-    /* Windows 95 */
-    if (PacketGetAdapterNames(AdapterNamea,&AdapterLength)==FALSE) {
-      printf("Unable to retrieve the list of the adapters!\n");
-      return -1;
-    }
-    tempa = AdapterNamea;
-    temp1a = AdapterNamea;
-
-    while ((*tempa!='\0')||(*(tempa-1)!='\0')) {
-      if (*tempa=='\0') {
-        AdapterList[i] = temp1a;
-        temp1a=tempa+1;
-        i++;
-      }
-      tempa++;
-    }
-
-    AdapterNum=i;
-    AdapterNum=i;
-    for (i=0; i<AdapterNum; i++) {
-      printf("%2i: %s", i, AdapterList[i]);
-    }
-  }
-
-  if (AdapterNum<=0) {
+  /* obtain the name of the adapters installed on this machine
+     (a list of strings separated by '\0') */
+  AdapterLength = ADAPTER_NAME_LEN;
+  if (PacketGetAdapterNames((char*)AdapterName, &AdapterLength)==FALSE){
+    printf("Unable to retrieve the list of the adapters!\n");
     return -1;
   }
+
+  /* get the start of each adapter name in the list and put it into
+   * the AdapterList array */
+  i = 0;
+  temp = AdapterName;
+  start = AdapterName;
+  while ((*temp != '\0') || (*(temp - 1) != '\0')) {
+    if (*temp == '\0') {
+      AdapterList[i] = start;
+      start = temp + 1;
+      i++;
+      if (i >= MAX_NUM_ADAPTERS) {
+        break;
+      }
+    }
+    temp++;
+  }
+
+  /* print all adapter names */
+  AdapterNum = i;
+  if (AdapterNum <= 0) {
+    return -1; /* no adapters found */
+  }
+  for (i = 0; i < AdapterNum; i++) {
+    printf("%2i: %s\n", i, AdapterList[i]);
+  }
+  /* invalid adapter index -> check this after printing the adapters */
   if (adapter_num < 0) {
     return -1;
   }
+  /* adapter index out of range */
   if (adapter_num >= AdapterNum) {
     return -1;
   }
-  ppacket_oid_data=malloc(sizeof(PACKET_OID_DATA)+ETHARP_HWADDR_LEN);
-  lpAdapter=PacketOpenAdapter(AdapterList[adapter_num]);
+  /* set up the selected adapter */
+  ppacket_oid_data = malloc(sizeof(PACKET_OID_DATA) + ETHARP_HWADDR_LEN);
+  lpAdapter = PacketOpenAdapter(AdapterList[adapter_num]);
   if (!lpAdapter || (lpAdapter->hFile == INVALID_HANDLE_VALUE)) {
     lpAdapter = NULL;
     return -1;
   }
-  ppacket_oid_data->Oid=OID_802_3_PERMANENT_ADDRESS;
-  ppacket_oid_data->Length=ETHARP_HWADDR_LEN;
-  if (!PacketRequest(lpAdapter,FALSE,ppacket_oid_data)) {
+  /* get the MAC address of the selected adapter */
+  ppacket_oid_data->Oid = OID_802_3_PERMANENT_ADDRESS;
+  ppacket_oid_data->Length = ETHARP_HWADDR_LEN;
+  if (!PacketRequest(lpAdapter, FALSE, ppacket_oid_data)) {
     lpAdapter = NULL;
     return -1;
   }
-  memcpy(&ethaddr,ppacket_oid_data->Data,ETHARP_HWADDR_LEN);
+  /* copy the MAC address */
+  memcpy(&ethaddr, ppacket_oid_data->Data, ETHARP_HWADDR_LEN);
   free(ppacket_oid_data);
-  memcpy(mac_addr, ethaddr, ETHARP_HWADDR_LEN);
+  if (mac_addr != NULL) {
+    /* copy the MAC address to the user supplied buffer, also */
+    memcpy(mac_addr, ethaddr, ETHARP_HWADDR_LEN);
+  }
   printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
-  PacketSetBuff(lpAdapter,512000);
-  PacketSetReadTimeout(lpAdapter,1);
-  PacketSetHwFilter(lpAdapter,NDIS_PACKET_TYPE_ALL_LOCAL | NDIS_PACKET_TYPE_PROMISCUOUS);
-  if ((lpPacket = PacketAllocatePacket())==NULL) {
+  /* some more adapter settings */
+  PacketSetBuff(lpAdapter, PACKET_ADAPTER_BUFSIZE);
+  PacketSetReadTimeout(lpAdapter, 1);
+  PacketSetHwFilter(lpAdapter, NDIS_PACKET_TYPE_ALL_LOCAL | NDIS_PACKET_TYPE_PROMISCUOUS);
+  /* set up packet descriptor (the application input buffer) */
+  if ((lpPacket = PacketAllocatePacket()) == NULL) {
     lpAdapter = NULL;
     return -1;
   }
-
   PacketInitPacket(lpPacket,(char*)buffer, sizeof(buffer));
 
   return 0;
 }
 
+/**
+ * Close the adapter (no more packets can be sent or received
+ */
 void
 shutdown_adapter(void)
 {
@@ -216,6 +198,12 @@ shutdown_adapter(void)
   }
 }
 
+/**
+ * Send a packet
+ *
+ * @param buffer complete packet to send (including ETH header; without CRC)
+ * @param len length of the packet (including ETH header; without CRC)
+ */
 int
 packet_send(void *buffer, int len)
 {
@@ -227,8 +215,8 @@ packet_send(void *buffer, int len)
   if ((lpPacket = PacketAllocatePacket()) == NULL) {
     return -1;
   }
-  PacketInitPacket(lpPacket,buffer,len);
-  if (!PacketSendPacket(lpAdapter,lpPacket,TRUE)) {
+  PacketInitPacket(lpPacket, buffer, len);
+  if (!PacketSendPacket(lpAdapter, lpPacket, TRUE)) {
     return -1;
   }
   PacketFreePacket(lpPacket);
@@ -236,14 +224,19 @@ packet_send(void *buffer, int len)
   return 0;
 }
 
+/**
+ * Process a packet buffer (which can hold multiple packets) and feed
+ * every packet to process_input().
+ *
+ * @param lpPacket the packet buffer to process */
 static void
 ProcessPackets(LPPACKET lpPacket)
 {
   ULONG  ulLines, ulBytesReceived;
   char  *base;
   char  *buf;
-  u_int off=0;
-  u_int tlen,tlen1;
+  u_int off = 0;
+  u_int tlen, tlen1;
   struct bpf_hdr *hdr;
 
   ulBytesReceived = lpPacket->ulBytesReceived;
@@ -252,16 +245,16 @@ ProcessPackets(LPPACKET lpPacket)
 
   off=0;
 
-  while (off<ulBytesReceived) {
-    hdr=(struct bpf_hdr *)(buf+off);
-    tlen1=hdr->bh_datalen;
-    cur_length=tlen1;
-    tlen=hdr->bh_caplen;
-    off+=hdr->bh_hdrlen;
+  while (off < ulBytesReceived) {
+    hdr = (struct bpf_hdr *)(buf + off);
+    tlen1 = hdr->bh_datalen;
+    cur_length = tlen1;
+    tlen = hdr->bh_caplen;
+    off += hdr->bh_hdrlen;
 
     ulLines = (tlen + 15) / 16;
     if (ulLines > 5) {
-      ulLines=5;
+      ulLines = 5;
     }
 
     base =(char*)(buf + off);
@@ -272,12 +265,14 @@ ProcessPackets(LPPACKET lpPacket)
   }
 }
 
+/**
+ * Check for newly received packets. Called in the main loop: 'interrupt' mode is not
+ * really supported :(
+ */
 void
 update_adapter(void)
 {
   if ((lpAdapter != NULL) && (PacketReceivePacket(lpAdapter, lpPacket, TRUE))) {
     ProcessPackets(lpPacket);
   }
-  cur_length=0;
-  cur_packet=NULL;
 }
