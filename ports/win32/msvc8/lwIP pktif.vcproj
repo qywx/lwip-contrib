@@ -218,6 +218,18 @@
 				</FileConfiguration>
 			</File>
 		</Filter>
+		<Filter
+			Name="Header Files"
+			>
+			<File
+				RelativePath="..\pktdrv.h"
+				>
+			</File>
+			<File
+				RelativePath="..\pktif.h"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

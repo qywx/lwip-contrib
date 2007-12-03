@@ -62,6 +62,8 @@
  *
  */
 
+#include "pktif.h"
+
 /* get the windows definitions of the following 4 functions out of the way */
 #include <stdlib.h>
 #include <stdio.h>
@@ -78,6 +80,7 @@
 #include "lwip/snmp.h"
 
 #include "netif/etharp.h"
+#include "pktdrv.h"
 
 /* include the port-dependent configuration */
 #include "lwipcfg_msvc.h"
@@ -94,18 +97,12 @@
 #define PACKET_LIB_ADAPTER_NR   0
 #endif
 
-static struct eth_addr broadcastaddr = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+const static struct eth_addr broadcastaddr = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 /* Forward declarations. */
-static void  ethernetif_input(struct netif *netif);
+void ethernetif_process_input(void *arg, void *packet, int len);
 
 static struct netif *pktif_netif;
-
-extern unsigned char ethaddr[ETHARP_HWADDR_LEN];
-extern unsigned char *cur_packet;
-extern int cur_length;
-extern int init_adapter(int adapter_num, char* mac_addr);
-extern int packet_send(void *buffer, int len);
 
 /*-----------------------------------------------------------------------------------*/
 static void
@@ -116,7 +113,8 @@ low_level_init(struct netif *netif)
   LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
 
   /* Do whatever else is needed to initialize interface. */
-  if (init_adapter(PACKET_LIB_ADAPTER_NR, mac_addr) != 0) {
+  if ((netif->state = init_adapter(PACKET_LIB_ADAPTER_NR, mac_addr,
+                                   ethernetif_process_input, netif)) == NULL) {
     printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
     return;
   }
@@ -139,7 +137,7 @@ low_level_init(struct netif *netif)
 /*-----------------------------------------------------------------------------------*/
 
 static err_t
-low_level_output(struct netif *ethernetif, struct pbuf *p)
+low_level_output(struct netif *netif, struct pbuf *p)
 {
   struct pbuf *q;
   unsigned char buffer[1600];
@@ -161,7 +159,7 @@ low_level_output(struct netif *ethernetif, struct pbuf *p)
   }
 
   /* signal that packet should be sent(); */
-  if (packet_send(buffer, p->tot_len) < 0) {
+  if (packet_send(netif->state, buffer, p->tot_len) < 0) {
     return ERR_BUF;
   }
 
@@ -178,26 +176,24 @@ low_level_output(struct netif *ethernetif, struct pbuf *p)
  */
 /*-----------------------------------------------------------------------------------*/
 static struct pbuf *
-low_level_input(struct netif *netif)
+low_level_input(struct netif *netif, void *packet, int packet_len)
 {
   struct pbuf *p, *q;
   int start, length;
   struct eth_hdr *ethhdr;
 
   /* Obtain the size of the packet and put it into the "len" variable. */
-  length = cur_length;
-  if (length<=0) {
+  length = packet_len;
+  if (length <= 0) {
     return NULL;
   }
 
-  ethhdr = (struct eth_hdr*)cur_packet;
+  ethhdr = (struct eth_hdr*)packet;
   /* MAC filter: only let my MAC or non-unicast through */
   if (((memcmp(&ethhdr->dest, &netif->hwaddr, ETHARP_HWADDR_LEN)) &&
       ((ethhdr->dest.addr[0] & 0x01) == 0)) ||
       /* and don't let feedback packets through (limitation in winpcap?) */
        !memcmp(&ethhdr->src, netif->hwaddr, ETHARP_HWADDR_LEN)) {
-    /* acknowledge that packet has been read(); */
-    cur_length=0;
     return NULL;
   }
 
@@ -215,19 +211,16 @@ low_level_input(struct netif *netif)
          variable. */
       /* read data into(q->payload, q->len); */
       LWIP_DEBUGF(NETIF_DEBUG, ("netif: recv start %i length %i q->payload %p q->len %i q->next %p\n", start, length, q->payload, (int)q->len, q->next));
-      memcpy(q->payload, &cur_packet[start], q->len);
+      memcpy(q->payload, &((char*)packet)[start], q->len);
       start += q->len;
       length -= q->len;
       if (length<=0) {
         break;
       }
     }
-    /* acknowledge that packet has been read(); */
-    cur_length = 0;
     LINK_STATS_INC(link.recv);
   } else {
     /* drop packet(); */
-    cur_length = 0;
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.drop);
   }
@@ -247,16 +240,13 @@ low_level_input(struct netif *netif)
  */
 /*-----------------------------------------------------------------------------------*/
 static void
-ethernetif_input(struct netif *netif)
+ethernetif_input(struct netif *netif, void *packet, int packet_len)
 {
-  struct ethernetif *ethernetif;
   struct eth_hdr *ethhdr;
   struct pbuf *p;
 
-  ethernetif = netif->state;
-
   /* move received packet into a new pbuf */
-  p = low_level_input(netif);
+  p = low_level_input(netif, packet, packet_len);
   /* no packet could be read, silently ignore this */
   if (p == NULL) {
     return;
@@ -315,6 +305,19 @@ ethernetif_init(struct netif *netif)
   
   return ERR_OK;
 }
+
+void
+ethernetif_shutdown(struct netif *netif)
+{
+  shutdown_adapter(netif->state);
+}
+
+void
+ethernetif_poll(struct netif *netif)
+{
+  update_adapter(netif->state);
+}
+
 /*-----------------------------------------------------------------------------------*/
 /*
  * pktif_update():
@@ -323,7 +326,9 @@ ethernetif_init(struct netif *netif)
  * be done inside a thread.
  */
 /*-----------------------------------------------------------------------------------*/
-void process_input(void)
+void
+ethernetif_process_input(void *arg, void *packet, int packet_len)
 {
-  ethernetif_input(pktif_netif);
+  struct netif *netif = (struct netif*)arg;
+  ethernetif_input(netif, packet, packet_len);
 }

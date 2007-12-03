@@ -49,6 +49,7 @@
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
 #include "lwip/dns.h"
+#include "lwip/dhcp.h"
 
 /* lwIP netif includes */
 #include "netif/loopif.h"
@@ -69,13 +70,11 @@
 #include "lwip/autoip.h"
 #endif /* NO_SYS */
 
+#include "pktif.h"
+
 /* include the port-dependent configuration */
 #include "lwipcfg_msvc.h"
 
-/* some forward function definitions... */
-err_t ethernetif_init(struct netif *netif);
-void shutdown_adapter(void);
-void update_adapter(void);
 
 #if NO_SYS
 /* port-defined functions used for timer execution */
@@ -169,25 +168,7 @@ msvc_netif_init()
   struct ip_addr ipaddr, netmask, gw;
 #if LWIP_HAVE_LOOPIF
   struct ip_addr loop_ipaddr, loop_netmask, loop_gw;
-#endif /* LWIP_HAVE_LOOPIF */
 
-  LWIP_PORT_INIT_GW(&gw);
-  LWIP_PORT_INIT_IPADDR(&ipaddr);
-  LWIP_PORT_INIT_NETMASK(&netmask);
-  printf("Starting lwIP, local interface IP is %s\n", inet_ntoa(*(struct in_addr*)&ipaddr));
-
-#if NO_SYS
-#if LWIP_ARP
-  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ethernet_input));
-#else /* LWIP_ARP */
-  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ip_input));
-#endif /* LWIP_ARP */
-#else  /* NO_SYS */
-  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_input));
-#endif /* NO_SYS */
-  netif_set_up(&netif);
-
-#if LWIP_HAVE_LOOPIF
   IP4_ADDR(&loop_gw, 127,0,0,1);
   IP4_ADDR(&loop_ipaddr, 127,0,0,1);
   IP4_ADDR(&loop_netmask, 255,0,0,0);
@@ -200,10 +181,38 @@ msvc_netif_init()
 #endif /* NO_SYS */
   netif_set_up(&loop_netif);
 #endif /* LWIP_HAVE_LOOPIF */
+
+#if LWIP_DHCP
+  gw.addr = 0;
+  ipaddr.addr = 0;
+  netmask.addr = 0;
+  printf("Starting lwIP, local interface IP is dhcp-enabled\n");
+#else /* LWIP_DHCP */
+  LWIP_PORT_INIT_GW(&gw);
+  LWIP_PORT_INIT_IPADDR(&ipaddr);
+  LWIP_PORT_INIT_NETMASK(&netmask);
+  printf("Starting lwIP, local interface IP is %s\n", inet_ntoa(*(struct in_addr*)&ipaddr));
+#endif /* LWIP_DHCP */
+
+#if NO_SYS
+#if LWIP_ARP
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ethernet_input));
+#else /* LWIP_ARP */
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ip_input));
+#endif /* LWIP_ARP */
+#else  /* NO_SYS */
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_input));
+#endif /* NO_SYS */
+#if LWIP_DHCP
+  dhcp_start(&netif);
+#else /* LWIP_DHCP */
+  netif_set_up(&netif);
+#endif /* LWIP_DHCP */
 }
 
 void dns_found(const char *name, struct ip_addr *addr, void *arg)
-{ printf("%s: %s\n", name, addr?inet_ntoa(*(struct in_addr*)addr):"<not found>");
+{
+  printf("%s: %s\n", name, addr?inet_ntoa(*(struct in_addr*)addr):"<not found>");
 }
 
 /* This function initializes applications */
@@ -218,7 +227,7 @@ apps_init()
   }
 #endif /* LWIP_DNS */
 
-#if LWIP_RAW
+#if LWIP_RAW && LWIP_ICMP
   ping_init();
 #endif /* LWIP_RAW */
 
@@ -292,11 +301,11 @@ void main_loop()
 #endif /* NO_SYS */
 
     /* check for packets */
-    update_adapter();
+    ethernetif_poll(&netif);
   }
 
   /* release the pcap library... */
-  shutdown_adapter();
+  ethernetif_shutdown(&netif);
 }
 
 int main(void)

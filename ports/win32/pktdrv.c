@@ -62,6 +62,8 @@
  *
  */
 
+#include "pktdrv.h"
+
 #define WIN32_LEAN_AND_MEAN
 /* get the windows definitions of the following 4 functions out of the way */
 #include <stdlib.h>
@@ -78,24 +80,26 @@
 #define PACKET_ADAPTER_BUFSIZE 512000
 #define PACKET_INPUT_BUFSIZE   256000
 
-extern void process_input(void);
-
-/* global variables for only one adapter */
-LPADAPTER  lpAdapter;
-LPPACKET   lpPacket;
-char buffer[PACKET_INPUT_BUFSIZE];  /* buffer to hold the data coming from the driver */
-unsigned char *cur_packet;
-int cur_length;
+struct packet_adapter {
+  input_fn   input;
+  void       *input_fn_arg;
+  LPADAPTER  lpAdapter;
+  LPPACKET   lpPacket;
+  /* buffer to hold the data coming from the driver */
+  char       buffer[PACKET_INPUT_BUFSIZE];
+};
 
 /**
  * Open a network adapter and set it up for packet input
  *
  * @param adapter_num the index of the adapter to use
  * @param mac_addr the MAC address of the adapter is stored here (if != NULL)
- * @return 0 on success, -1 on failure
+ * @param input a function to call to receive a packet
+ * @param arg argument to pass to input
+ * @return an adapter handle on success, NULL on failure
  */
-int
-init_adapter(int adapter_num, char* mac_addr)
+void*
+init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
 {
   void *AdapterList[MAX_NUM_ADAPTERS];
   int i;
@@ -104,7 +108,12 @@ init_adapter(int adapter_num, char* mac_addr)
   int AdapterNum =0;
   ULONG AdapterLength;
   PPACKET_OID_DATA ppacket_oid_data;
+  struct packet_adapter *pa = malloc(sizeof(struct packet_adapter));
   unsigned char ethaddr[ETHARP_HWADDR_LEN];
+
+  memset(pa, 0, sizeof(struct packet_adapter));
+  pa->input = input;
+  pa->input_fn_arg = arg;
 
   memset(AdapterList, 0, sizeof(AdapterList));
   memset(AdapterName, 0, sizeof(AdapterName));
@@ -114,7 +123,8 @@ init_adapter(int adapter_num, char* mac_addr)
   AdapterLength = ADAPTER_NAME_LEN;
   if (PacketGetAdapterNames((char*)AdapterName, &AdapterLength)==FALSE){
     printf("Unable to retrieve the list of the adapters!\n");
-    return -1;
+    free(pa);
+    return NULL;
   }
 
   /* get the start of each adapter name in the list and put it into
@@ -137,86 +147,96 @@ init_adapter(int adapter_num, char* mac_addr)
   /* print all adapter names */
   AdapterNum = i;
   if (AdapterNum <= 0) {
-    return -1; /* no adapters found */
+    free(pa);
+    return NULL; /* no adapters found */
   }
   for (i = 0; i < AdapterNum; i++) {
     printf("%2i: %s\n", i, AdapterList[i]);
   }
   /* invalid adapter index -> check this after printing the adapters */
   if (adapter_num < 0) {
-    return -1;
+    free(pa);
+    return NULL;
   }
   /* adapter index out of range */
   if (adapter_num >= AdapterNum) {
-    return -1;
+    free(pa);
+    return NULL;
   }
   /* set up the selected adapter */
   ppacket_oid_data = malloc(sizeof(PACKET_OID_DATA) + ETHARP_HWADDR_LEN);
-  lpAdapter = PacketOpenAdapter(AdapterList[adapter_num]);
-  if (!lpAdapter || (lpAdapter->hFile == INVALID_HANDLE_VALUE)) {
-    lpAdapter = NULL;
-    return -1;
+  pa->lpAdapter = PacketOpenAdapter(AdapterList[adapter_num]);
+  if (!pa->lpAdapter || (pa->lpAdapter->hFile == INVALID_HANDLE_VALUE)) {
+    free(pa);
+    return NULL;
   }
   /* get the MAC address of the selected adapter */
   ppacket_oid_data->Oid = OID_802_3_PERMANENT_ADDRESS;
   ppacket_oid_data->Length = ETHARP_HWADDR_LEN;
-  if (!PacketRequest(lpAdapter, FALSE, ppacket_oid_data)) {
-    lpAdapter = NULL;
-    return -1;
+  if (!PacketRequest(pa->lpAdapter, FALSE, ppacket_oid_data)) {
+    free(pa);
+    return NULL;
   }
   /* copy the MAC address */
   memcpy(&ethaddr, ppacket_oid_data->Data, ETHARP_HWADDR_LEN);
   free(ppacket_oid_data);
   if (mac_addr != NULL) {
     /* copy the MAC address to the user supplied buffer, also */
-    memcpy(mac_addr, ethaddr, ETHARP_HWADDR_LEN);
+    memcpy(mac_addr, &ethaddr, ETHARP_HWADDR_LEN);
   }
-  printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", ethaddr[0], ethaddr[1], ethaddr[2], ethaddr[3], ethaddr[4], ethaddr[5]);
+  printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", ethaddr[0], ethaddr[1], ethaddr[2],
+          ethaddr[3], ethaddr[4], ethaddr[5]);
   /* some more adapter settings */
-  PacketSetBuff(lpAdapter, PACKET_ADAPTER_BUFSIZE);
-  PacketSetReadTimeout(lpAdapter, 1);
-  PacketSetHwFilter(lpAdapter, NDIS_PACKET_TYPE_ALL_LOCAL | NDIS_PACKET_TYPE_PROMISCUOUS);
+  PacketSetBuff(pa->lpAdapter, PACKET_ADAPTER_BUFSIZE);
+  PacketSetReadTimeout(pa->lpAdapter, 1);
+  PacketSetHwFilter(pa->lpAdapter, NDIS_PACKET_TYPE_ALL_LOCAL | NDIS_PACKET_TYPE_PROMISCUOUS);
   /* set up packet descriptor (the application input buffer) */
-  if ((lpPacket = PacketAllocatePacket()) == NULL) {
-    lpAdapter = NULL;
-    return -1;
+  if ((pa->lpPacket = PacketAllocatePacket()) == NULL) {
+    free(pa);
+    return NULL;
   }
-  PacketInitPacket(lpPacket,(char*)buffer, sizeof(buffer));
+  PacketInitPacket(pa->lpPacket,(char*)pa->buffer, sizeof(pa->buffer));
 
-  return 0;
+  return pa;
 }
 
 /**
- * Close the adapter (no more packets can be sent or received
+ * Close the adapter (no more packets can be sent or received)
+ *
+ * @param adapter adapter handle received by a call to init_adapter, invalid on return
  */
 void
-shutdown_adapter(void)
+shutdown_adapter(void *adapter)
 {
-  if (lpAdapter != NULL) {
-    PacketFreePacket(lpPacket);
-    PacketCloseAdapter(lpAdapter);
+  struct packet_adapter *pa = (struct packet_adapter*)adapter;
+  if (pa != NULL) {
+    PacketFreePacket(pa->lpPacket);
+    PacketCloseAdapter(pa->lpAdapter);
+    free(pa);
   }
 }
 
 /**
  * Send a packet
  *
+ * @param adapter adapter handle received by a call to init_adapter
  * @param buffer complete packet to send (including ETH header; without CRC)
  * @param len length of the packet (including ETH header; without CRC)
  */
 int
-packet_send(void *buffer, int len)
+packet_send(void *adapter, void *buffer, int len)
 {
+  struct packet_adapter *pa = (struct packet_adapter*)adapter;
   LPPACKET lpPacket;
 
-  if (lpAdapter == NULL) {
+  if (pa == NULL) {
     return -1;
   }
   if ((lpPacket = PacketAllocatePacket()) == NULL) {
     return -1;
   }
   PacketInitPacket(lpPacket, buffer, len);
-  if (!PacketSendPacket(lpAdapter, lpPacket, TRUE)) {
+  if (!PacketSendPacket(pa->lpAdapter, lpPacket, TRUE)) {
     return -1;
   }
   PacketFreePacket(lpPacket);
@@ -228,16 +248,25 @@ packet_send(void *buffer, int len)
  * Process a packet buffer (which can hold multiple packets) and feed
  * every packet to process_input().
  *
- * @param lpPacket the packet buffer to process */
+ * @param adapter adapter handle received by a call to init_adapter
+ * @param lpPacket the packet buffer to process
+ */
 static void
-ProcessPackets(LPPACKET lpPacket)
+ProcessPackets(void *adapter, LPPACKET lpPacket)
 {
+  struct packet_adapter *pa = (struct packet_adapter*)adapter;
   ULONG  ulLines, ulBytesReceived;
   char  *base;
   char  *buf;
   u_int off = 0;
   u_int tlen, tlen1;
   struct bpf_hdr *hdr;
+  void *cur_packet;
+  int cur_length;
+
+  if (pa == NULL) {
+    return;
+  }
 
   ulBytesReceived = lpPacket->ulBytesReceived;
 
@@ -261,18 +290,22 @@ ProcessPackets(LPPACKET lpPacket)
     cur_packet = base;
     off = Packet_WORDALIGN(off + tlen);
 
-    process_input();
+    pa->input(pa->input_fn_arg, cur_packet, cur_length);
   }
 }
 
 /**
  * Check for newly received packets. Called in the main loop: 'interrupt' mode is not
  * really supported :(
+ *
+ * @param adapter adapter handle received by a call to init_adapter
  */
 void
-update_adapter(void)
+update_adapter(void *adapter)
 {
-  if ((lpAdapter != NULL) && (PacketReceivePacket(lpAdapter, lpPacket, TRUE))) {
-    ProcessPackets(lpPacket);
+  struct packet_adapter *pa = (struct packet_adapter*)adapter;
+
+  if ((pa != NULL) && (PacketReceivePacket(pa->lpAdapter, pa->lpPacket, TRUE))) {
+    ProcessPackets(adapter, pa->lpPacket);
   }
 }
