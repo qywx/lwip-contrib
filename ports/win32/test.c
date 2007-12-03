@@ -70,6 +70,12 @@
 #include "lwip/autoip.h"
 #endif /* NO_SYS */
 
+#if PPP_SUPPORT
+/* PPP includes */
+#include "../netif/ppp/ppp.h"
+#include "lwip/sio.h"
+#endif /* PPP_SUPPORT */
+
 #include "pktif.h"
 
 /* include the port-dependent configuration */
@@ -161,6 +167,62 @@ timers_update()
 }
 #endif /* NO_SYS */
 
+#if PPP_SUPPORT
+void
+pppLinkStatusCallback(void *ctx, int errCode, void *arg)
+{
+  switch(errCode) {
+    case PPPERR_NONE: {             /* No error. */
+      struct ppp_addrs *ppp_addrs = arg;
+
+      printf("pppLinkStatusCallback: PPPERR_NONE");
+      printf(" our_ipaddr=%s", inet_ntoa(*(struct in_addr*)&(ppp_addrs->our_ipaddr.addr)));
+      printf(" his_ipaddr=%s", inet_ntoa(*(struct in_addr*)&(ppp_addrs->his_ipaddr.addr)));
+      printf(" netmask=%s", inet_ntoa(*(struct in_addr*)&(ppp_addrs->netmask.addr)));
+      printf(" dns1=%s", inet_ntoa(*(struct in_addr*)&(ppp_addrs->dns1.addr)));
+      printf(" dns2=%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->dns2.addr)));
+      break;
+    }
+    case PPPERR_PARAM: {           /* Invalid parameter. */
+      printf("pppLinkStatusCallback: PPPERR_PARAM\n");
+      break;
+    }
+    case PPPERR_OPEN: {            /* Unable to open PPP session. */
+      printf("pppLinkStatusCallback: PPPERR_OPEN\n");
+      break;
+    }
+    case PPPERR_DEVICE: {          /* Invalid I/O device for PPP. */
+      printf("pppLinkStatusCallback: PPPERR_DEVICE\n");
+      break;
+    }
+    case PPPERR_ALLOC: {           /* Unable to allocate resources. */
+      printf("pppLinkStatusCallback: PPPERR_ALLOC\n");
+      break;
+    }
+    case PPPERR_USER: {            /* User interrupt. */
+      printf("pppLinkStatusCallback: PPPERR_USER\n");
+      break;
+    }
+    case PPPERR_CONNECT: {         /* Connection lost. */
+      printf("pppLinkStatusCallback: PPPERR_CONNECT\n");
+      break;
+    }
+    case PPPERR_AUTHFAIL: {        /* Failed authentication challenge. */
+      printf("pppLinkStatusCallback: PPPERR_AUTHFAIL\n");
+      break;
+    }
+    case PPPERR_PROTOCOL: {        /* Failed to meet protocol. */
+      printf("pppLinkStatusCallback: PPPERR_PROTOCOL\n");
+      break;
+    }
+    default: {
+      printf("pppLinkStatusCallback: unknown errCode %d\n", errCode);
+      break;
+    }
+  }
+}
+#endif /* PPP_SUPPORT */
+
 /* This function initializes all network interfaces */
 static void
 msvc_netif_init()
@@ -203,6 +265,22 @@ msvc_netif_init()
 #else  /* NO_SYS */
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_input));
 #endif /* NO_SYS */
+
+#if PPP_SUPPORT
+{ sio_fd_t ppp_sio;
+  ppp_sio = sio_open(0);
+  if (ppp_sio != NULL) {
+    printf("pppInit\n");
+    pppInit();
+    pppSetAuth(PPPAUTHTYPE_CHAP, "lwip", "mysecret");
+    printf("pppOpen\n");
+    pppOpen(ppp_sio, pppLinkStatusCallback, NULL);
+  } else {
+    printf("sio_open error\n");
+  }
+}
+#endif /* PPP_SUPPORT */
+
 #if LWIP_DHCP
   dhcp_start(&netif);
 #else /* LWIP_DHCP */

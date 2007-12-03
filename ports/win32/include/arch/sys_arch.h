@@ -45,5 +45,8 @@ typedef struct lwip_mbox* sys_mbox_t;
 /* DWORD (thread id) is used for sys_thread_t but we won't include windows.h */
 typedef u32_t sys_thread_t;
 
+/* sys_jiffies */
+#define sys_jiffies() sys_now()
+
 #endif /* __ARCH_SYS_ARCH_H__ */
 
