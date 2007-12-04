@@ -88,9 +88,10 @@
 #undef  NETIF_DEBUG
 #define NETIF_DEBUG 0
 
-/* Define those to better describe your network interface. */
-#define IFNAME0 'p'
-#define IFNAME1 'k'
+/* Define those to better describe your network interface.
+   For now, we use 'e0', 'e1', 'e2' and so on */
+#define IFNAME0 'e'
+#define IFNAME1 '0'
 
 /* index of the network adapter to use for lwIP */
 #ifndef PACKET_LIB_ADAPTER_NR
@@ -101,8 +102,6 @@ const static struct eth_addr broadcastaddr = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 
 /* Forward declarations. */
 void ethernetif_process_input(void *arg, void *packet, int len);
-
-static struct netif *pktif_netif;
 
 /*-----------------------------------------------------------------------------------*/
 static void
@@ -121,9 +120,9 @@ low_level_init(struct netif *netif)
 
   /* Prepare MAC addr: increase the last octet so that lwIP netif has a similar but different MAC addr */
   memcpy(&netif->hwaddr, mac_addr, ETHARP_HWADDR_LEN);
-  netif->hwaddr[ETHARP_HWADDR_LEN - 1]++;
-
-  pktif_netif=netif;
+  /* change the MAC address to a unique value
+     so that multiple ethernetifs are supported */
+  netif->hwaddr[ETHARP_HWADDR_LEN - 1] += 1 + netif->num;
 }
 /*-----------------------------------------------------------------------------------*/
 /*
@@ -290,8 +289,16 @@ ethernetif_input(struct netif *netif, void *packet, int packet_len)
 err_t
 ethernetif_init(struct netif *netif)
 {
+  static int ethernetif_index;
+
+  int local_index;
+  SYS_ARCH_DECL_PROTECT(lev);
+  SYS_ARCH_PROTECT(lev);
+  local_index = ethernetif_index++;
+  SYS_ARCH_UNPROTECT(lev);
+
   netif->name[0] = IFNAME0;
-  netif->name[1] = IFNAME1;
+  netif->name[1] = IFNAME1 + local_index;
   netif->linkoutput = low_level_output;
   netif->output = etharp_output;
 
