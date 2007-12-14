@@ -91,7 +91,7 @@ send_data(struct tcp_pcb *pcb, struct http_state *hs)
     hs->file += len;
     hs->left -= len;
     /*  } else {
-	printf("send_data: error %s len %d %d\n", lwip_strerr(err), len, tcp_sndbuf(pcb));*/
+    printf("send_data: error %s len %d %d\n", lwip_strerr(err), len, tcp_sndbuf(pcb));*/
   }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -156,33 +156,34 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
       data = p->payload;
       
       if (strncmp(data, "GET ", 4) == 0) {
-	for(i = 0; i < 40; i++) {
-	  if (((char *)data + 4)[i] == ' ' ||
-	     ((char *)data + 4)[i] == '\r' ||
-	     ((char *)data + 4)[i] == '\n') {
-	    ((char *)data + 4)[i] = 0;
-	  }
-	}
+        for(i = 0; i < 40; i++) {
+          if (((char *)data + 4)[i] == ' ' ||
+             ((char *)data + 4)[i] == '\r' ||
+             ((char *)data + 4)[i] == '\n') {
+            ((char *)data + 4)[i] = 0;
+          }
+        }
 
-	if (*(char *)(data + 4) == '/' &&
-	   *(char *)(data + 5) == 0) {
-	  fs_open("/index.html", &file);
-	} else if (!fs_open((char *)data + 4, &file)) {
-	  fs_open("/404.html", &file);	 
-	}
-	hs->file = file.data;
-	hs->left = file.len;
-	/*	printf("data %p len %ld\n", hs->file, hs->left);*/
+        if (*(char *)(data + 4) == '/' &&
+           *(char *)(data + 5) == 0) {
+          fs_open("/index.html", &file);
+        } else if (!fs_open((char *)data + 4, &file)) {
+          fs_open("/404.html", &file);
+        }
 
-	pbuf_free(p);
-	send_data(pcb, hs);
+        hs->file = file.data;
+        hs->left = file.len;
+        /* printf("data %p len %ld\n", hs->file, hs->left);*/
 
-	/* Tell TCP that we wish be to informed of data that has been
-	   successfully sent by a call to the http_sent() function. */
-	tcp_sent(pcb, http_sent);
+        pbuf_free(p);
+        send_data(pcb, hs);
+
+        /* Tell TCP that we wish be to informed of data that has been
+           successfully sent by a call to the http_sent() function. */
+        tcp_sent(pcb, http_sent);
       } else {
-	pbuf_free(p);
-	close_conn(pcb, hs);
+        pbuf_free(p);
+        close_conn(pcb, hs);
       }
     } else {
       pbuf_free(p);
