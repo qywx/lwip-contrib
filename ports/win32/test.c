@@ -300,7 +300,7 @@ apps_init()
 #if LWIP_DNS
   char*          dnsname="3com.com";
   struct ip_addr dnsresp;
-  if (dns_gethostbyname(dnsname, &dnsresp, dns_found, 0) == DNS_COMPLETE) {
+  if (dns_gethostbyname(dnsname, &dnsresp, dns_found, 0) == ERR_OK) {
     dns_found(dnsname, &dnsresp, 0);
   }
 #endif /* LWIP_DNS */
