@@ -174,7 +174,7 @@ ping_thread(void *arg)
 {
   int s;
   int timeout = PING_RCV_TIMEO;
-  struct ip_addr ping_target = PING_TARGET;
+  struct ip_addr ping_target;
 
   if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
     return;
@@ -183,6 +183,8 @@ ping_thread(void *arg)
   lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
   while (1) {
+    ping_target = PING_TARGET;
+
     LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
     ip_addr_debug_print(PING_DEBUG, &ping_target);
     LWIP_DEBUGF( PING_DEBUG, ("\n"));
