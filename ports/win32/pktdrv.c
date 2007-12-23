@@ -80,6 +80,8 @@
 #define PACKET_ADAPTER_BUFSIZE 512000
 #define PACKET_INPUT_BUFSIZE   256000
 
+#define PACKET_OID_DATA_SIZE   255
+
 /* Packet Adapter informations */
 struct packet_adapter {
   input_fn         input;
@@ -172,11 +174,22 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
     return NULL;
   }
   /* set up the selected adapter */
-  ppacket_oid_data = malloc(sizeof(PACKET_OID_DATA) + ETHARP_HWADDR_LEN);
   pa->lpAdapter = PacketOpenAdapter(AdapterList[adapter_num]);
   if (!pa->lpAdapter || (pa->lpAdapter->hFile == INVALID_HANDLE_VALUE)) {
     free(pa);
     return NULL;
+  }
+  /* alloc the OID packet  */
+  ppacket_oid_data = malloc(sizeof(PACKET_OID_DATA) + PACKET_OID_DATA_SIZE);
+  if (!ppacket_oid_data) {
+    free(pa);
+    return NULL;
+  }
+  /* get the description of the selected adapter */
+  ppacket_oid_data->Oid = OID_GEN_VENDOR_DESCRIPTION;
+  ppacket_oid_data->Length = PACKET_OID_DATA_SIZE;
+  if (PacketRequest(pa->lpAdapter, FALSE, ppacket_oid_data)) {
+    printf("USE: %s\n", ppacket_oid_data->Data);
   }
   /* get the MAC address of the selected adapter */
   ppacket_oid_data->Oid = OID_802_3_PERMANENT_ADDRESS;
