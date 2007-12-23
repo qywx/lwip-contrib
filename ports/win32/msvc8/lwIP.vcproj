@@ -1078,38 +1078,10 @@
 				<File
 					RelativePath="$(LWIP_DIR)\src\netif\etharp.c"
 					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(LWIP_DIR)\src\netif\ethernetif.c"
 					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(LWIP_DIR)\src\netif\FILES"
@@ -1132,38 +1104,10 @@
 				<File
 					RelativePath="$(LWIP_DIR)\src\netif\loopif.c"
 					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="$(LWIP_DIR)\src\netif\slipif.c"
 					>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<Filter
 					Name="ppp"
@@ -1171,20 +1115,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\auth.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\auth.h"
@@ -1207,20 +1137,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\chap.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\chap.h"
@@ -1243,20 +1159,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\chpms.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\chpms.h"
@@ -1279,20 +1181,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\fsm.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\fsm.h"
@@ -1315,20 +1203,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\ipcp.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\ipcp.h"
@@ -1351,20 +1225,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\lcp.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\lcp.h"
@@ -1387,20 +1247,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\magic.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\magic.h"
@@ -1423,20 +1269,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\md5.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\md5.h"
@@ -1459,20 +1291,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\pap.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\pap.h"
@@ -1495,20 +1313,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\ppp.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\ppp.h"
@@ -1531,20 +1335,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\ppp_oe.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\pppdebug.h"
@@ -1567,20 +1357,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\randm.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\randm.h"
@@ -1603,20 +1379,6 @@
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\vj.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\vj.h"
@@ -1716,6 +1478,22 @@
 				RelativePath="..\include\arch\sys_arch.h"
 				>
 			</File>
+			<Filter
+				Name="sio"
+				>
+				<File
+					RelativePath="..\Serial.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Serial.lib"
+					>
+				</File>
+				<File
+					RelativePath="..\sio.c"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath="$(LWIP_DIR)\CHANGELOG"

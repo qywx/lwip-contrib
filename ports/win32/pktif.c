@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * pktif.c - This file is part of lwIPtest
+ * pktif.c - This file is part of lwIP pktif
  *
  ****************************************************************************
  *
@@ -78,6 +78,7 @@
 #include "lwip/sys.h"
 #include "lwip/ip.h"
 #include "lwip/snmp.h"
+#include "lwip/tcpip.h"
 
 #include "netif/etharp.h"
 #include "pktdrv.h"
@@ -85,18 +86,28 @@
 /* include the port-dependent configuration */
 #include "lwipcfg_msvc.h"
 
-#undef  NETIF_DEBUG
-#define NETIF_DEBUG 0
-
 /* Define those to better describe your network interface.
    For now, we use 'e0', 'e1', 'e2' and so on */
-#define IFNAME0 'e'
-#define IFNAME1 '0'
+#define IFNAME0               'e'
+#define IFNAME1               '0'
 
 /* index of the network adapter to use for lwIP */
 #ifndef PACKET_LIB_ADAPTER_NR
-#define PACKET_LIB_ADAPTER_NR   0
+#define PACKET_LIB_ADAPTER_NR  0
 #endif
+
+/* Define PHY delay when "link up" */
+#ifndef PHY_LINKUP_DELAY
+#define PHY_LINKUP_DELAY       5000
+#endif
+
+/* link state notification macro */
+#if NO_SYS
+#define NOTIFY_LINKSTATE(netif,linkfunc) tcpip_timeout(PHY_LINKUP_DELAY, (sys_timeout_handler)linkfunc, netif)
+#else  /* NO_SYS*/
+#define NOTIFY_LINKSTATE(netif,linkfunc) linkfunc(netif)
+#endif /* NO_SYS*/
+
 
 const static struct eth_addr broadcastaddr = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
@@ -323,6 +334,20 @@ void
 ethernetif_poll(struct netif *netif)
 {
   update_adapter(netif->state);
+
+#if LWIP_NETIF_LINK_CALLBACK
+  /* Process the link status change */
+  switch (link_adapter(netif->state)) {
+    case LINKEVENT_UP: {
+      NOTIFY_LINKSTATE(netif,netif_set_link_up);
+      break;
+    }
+    case LINKEVENT_DOWN: {
+      NOTIFY_LINKSTATE(netif,netif_set_link_down);
+      break;
+    }
+  }
+#endif /* LWIP_NETIF_LINK_CALLBACK */
 }
 
 /*-----------------------------------------------------------------------------------*/

@@ -27,7 +27,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * pktif.c - This file is part of lwIPtest
+ * pktdrv.c - This file is part of lwIP pktif
  *
  ****************************************************************************
  *
@@ -73,18 +73,20 @@
 #include <ntddndis.h>
 
 /** @todo use the lwip header file */
-#define ETHARP_HWADDR_LEN 6
+#define ETHARP_HWADDR_LEN      6
 
 #define MAX_NUM_ADAPTERS       10
 #define ADAPTER_NAME_LEN       4096
 #define PACKET_ADAPTER_BUFSIZE 512000
 #define PACKET_INPUT_BUFSIZE   256000
 
+/* Packet Adapter informations */
 struct packet_adapter {
-  input_fn   input;
-  void       *input_fn_arg;
-  LPADAPTER  lpAdapter;
-  LPPACKET   lpPacket;
+  input_fn         input;
+  void            *input_fn_arg;
+  LPADAPTER        lpAdapter;
+  LPPACKET         lpPacket;
+  NDIS_MEDIA_STATE fNdisMediaState;
   /* buffer to hold the data coming from the driver */
   char       buffer[PACKET_INPUT_BUFSIZE];
 };
@@ -108,8 +110,14 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
   int AdapterNum =0;
   ULONG AdapterLength;
   PPACKET_OID_DATA ppacket_oid_data;
-  struct packet_adapter *pa = malloc(sizeof(struct packet_adapter));
   unsigned char ethaddr[ETHARP_HWADDR_LEN];
+  struct packet_adapter *pa;
+  
+  pa = malloc(sizeof(struct packet_adapter));
+  if (!pa) {
+    printf("Unable to alloc the adapter!\n");
+    return NULL;
+  }
 
   memset(pa, 0, sizeof(struct packet_adapter));
   pa->input = input;
@@ -308,4 +316,40 @@ update_adapter(void *adapter)
   if ((pa != NULL) && (PacketReceivePacket(pa->lpAdapter, pa->lpPacket, TRUE))) {
     ProcessPackets(adapter, pa->lpPacket);
   }
+}
+
+/**
+ * Check for link state changes. Called in the main loop: 'interrupt' mode is not
+ * really supported :(
+ *
+ * @param adapter adapter handle received by a call to init_adapter
+ * @return one of the link_adapter_event values
+ */
+enum link_adapter_event
+link_adapter(void *adapter)
+{
+  struct packet_adapter *pa = (struct packet_adapter*)adapter;
+
+  if (pa != NULL) {
+    PPACKET_OID_DATA ppacket_oid_data;
+    NDIS_MEDIA_STATE fNdisMediaState = pa->fNdisMediaState;
+
+    /* get the media connect status of the selected adapter */
+    ppacket_oid_data = malloc(sizeof(PACKET_OID_DATA) + sizeof(NDIS_MEDIA_STATE));
+    if (ppacket_oid_data) {
+      ppacket_oid_data->Oid    = OID_GEN_MEDIA_CONNECT_STATUS;
+      ppacket_oid_data->Length = sizeof(NDIS_MEDIA_STATE);
+      if (PacketRequest(pa->lpAdapter, FALSE, ppacket_oid_data)) {
+        fNdisMediaState = (*((PNDIS_MEDIA_STATE)(ppacket_oid_data->Data)));
+      }
+      free(ppacket_oid_data);
+    }
+
+    if (pa->fNdisMediaState != fNdisMediaState) {
+      pa->fNdisMediaState = fNdisMediaState;
+      return ((fNdisMediaState == NdisMediaStateConnected) ? LINKEVENT_UP : LINKEVENT_DOWN);
+    }
+  }
+
+  return LINKEVENT_UNCHANGED;
 }

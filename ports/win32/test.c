@@ -223,6 +223,18 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 }
 #endif /* PPP_SUPPORT */
 
+#if LWIP_NETIF_STATUS_CALLBACK
+void status_callback(struct netif *netif)
+{ printf("status_callback==%s\n", netif_is_up(netif)?"UP":"DOWN");
+}
+#endif /* LWIP_NETIF_STATUS_CALLBACK */
+
+#if LWIP_NETIF_LINK_CALLBACK
+void link_callback(struct netif *netif)
+{ printf("link_callback==%s\n", netif_is_link_up(netif)?"UP":"DOWN");
+}
+#endif /* LWIP_NETIF_LINK_CALLBACK */
+
 /* This function initializes all network interfaces */
 static void
 msvc_netif_init()
@@ -265,6 +277,12 @@ msvc_netif_init()
 #else  /* NO_SYS */
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_input));
 #endif /* NO_SYS */
+#if LWIP_NETIF_STATUS_CALLBACK
+  netif_set_status_callback(&netif, status_callback);
+#endif /* LWIP_NETIF_STATUS_CALLBACK */
+#if LWIP_NETIF_LINK_CALLBACK
+  netif_set_link_callback(&netif, link_callback);
+#endif /* LWIP_NETIF_LINK_CALLBACK */
 
 #if PPP_SUPPORT
 { sio_fd_t ppp_sio;

@@ -3,8 +3,8 @@
 
 #include "lwip/err.h"
 
-err_t ethernetif_init(struct netif *netif);
-void ethernetif_shutdown(struct netif *netif);
-void ethernetif_poll(struct netif *netif);
+err_t ethernetif_init    (struct netif *netif);
+void  ethernetif_shutdown(struct netif *netif);
+void  ethernetif_poll    (struct netif *netif);
 
 #endif
