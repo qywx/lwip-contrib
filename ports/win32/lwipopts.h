@@ -218,13 +218,12 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* 1 if you want to do an ARP check on the offered address
    (recommended). */
-#if LWIP_DHCP
-#define DHCP_DOES_ARP_CHECK     1
-#endif
+#define DHCP_DOES_ARP_CHECK    (LWIP_DHCP)
 
 
 /* ---------- AUTOIP options ------- */
 #define LWIP_AUTOIP             0
+#define LWIP_DHCP_AUTOIP_COOP  (LWIP_DHCP && LWIP_AUTOIP)
 
 
 /* ---------- UDP options ---------- */

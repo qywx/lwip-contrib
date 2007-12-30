@@ -50,6 +50,7 @@
 #include "lwip/udp.h"
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
+#include "lwip/autoip.h"
 
 /* lwIP netif includes */
 #include "netif/loopif.h"
@@ -66,8 +67,6 @@
 /* ... then we need information about the timer intervals: */
 #include "lwip/ip_frag.h"
 #include "lwip/igmp.h"
-#include "lwip/dhcp.h"
-#include "lwip/autoip.h"
 #endif /* NO_SYS */
 
 #if PPP_SUPPORT
@@ -225,7 +224,11 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 
 #if LWIP_NETIF_STATUS_CALLBACK
 void status_callback(struct netif *netif)
-{ printf("status_callback==%s\n", netif_is_up(netif)?"UP":"DOWN");
+{ if (netif_is_up(netif)) {
+    printf("status_callback==UP, local interface IP is %s\n", inet_ntoa(*(struct in_addr*)&(netif->ip_addr)));
+  } else {
+    printf("status_callback==DOWN\n");
+  }
 }
 #endif /* LWIP_NETIF_STATUS_CALLBACK */
 
@@ -261,7 +264,12 @@ msvc_netif_init()
   ipaddr.addr = 0;
   netmask.addr = 0;
   printf("Starting lwIP, local interface IP is dhcp-enabled\n");
-#else /* LWIP_DHCP */
+#elif LWIP_AUTOIP
+  gw.addr = 0;
+  ipaddr.addr = 0;
+  netmask.addr = 0;
+  printf("Starting lwIP, local interface IP is autoip-enabled\n");
+#else /* LWIP_AUTOIP */
   LWIP_PORT_INIT_GW(&gw);
   LWIP_PORT_INIT_IPADDR(&ipaddr);
   LWIP_PORT_INIT_NETMASK(&netmask);
@@ -301,6 +309,8 @@ msvc_netif_init()
 
 #if LWIP_DHCP
   dhcp_start(&netif);
+#elif LWIP_AUTOIP
+  autoip_start(&netif);
 #else /* LWIP_DHCP */
   netif_set_up(&netif);
 #endif /* LWIP_DHCP */
@@ -396,7 +406,7 @@ void main_loop()
     timers_update();
 #endif /* NO_SYS */
 
-    /* check for packets */
+    /* check for packets and link status*/
     ethernetif_poll(&netif);
   }
 
