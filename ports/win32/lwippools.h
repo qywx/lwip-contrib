@@ -18,4 +18,3 @@ LWIP_MALLOC_MEMPOOL_END
  * lwIP's memory pools for anything else.
  */
 LWIP_MEMPOOL(SYS_MBOX, 22, 100, "SYS_MBOX")
-//LWIP_MEMPOOL(SYS_SEM, 12, sizeof(struct sys_sem_struct), "SYS_SEM")

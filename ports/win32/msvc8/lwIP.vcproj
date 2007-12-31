@@ -1478,22 +1478,6 @@
 				RelativePath="..\include\arch\sys_arch.h"
 				>
 			</File>
-			<Filter
-				Name="sio"
-				>
-				<File
-					RelativePath="..\Serial.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Serial.lib"
-					>
-				</File>
-				<File
-					RelativePath="..\sio.c"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<File
 			RelativePath="$(LWIP_DIR)\CHANGELOG"
