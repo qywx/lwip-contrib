@@ -108,9 +108,6 @@
 #define NOTIFY_LINKSTATE(netif,linkfunc) linkfunc(netif)
 #endif /* NO_SYS*/
 
-
-const static struct eth_addr broadcastaddr = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-
 /* Forward declarations. */
 void ethernetif_process_input(void *arg, void *packet, int len);
 
@@ -119,8 +116,6 @@ static void
 low_level_init(struct netif *netif)
 {
   char mac_addr[ETHARP_HWADDR_LEN];
-
-  LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
 
   /* Do whatever else is needed to initialize interface. */
   if ((netif->state = init_adapter(PACKET_LIB_ADAPTER_NR, mac_addr,
@@ -134,7 +129,10 @@ low_level_init(struct netif *netif)
   /* change the MAC address to a unique value
      so that multiple ethernetifs are supported */
   netif->hwaddr[ETHARP_HWADDR_LEN - 1] += 1 + netif->num;
+
+  LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
 }
+
 /*-----------------------------------------------------------------------------------*/
 /*
  * low_level_output():
@@ -145,7 +143,6 @@ low_level_init(struct netif *netif)
  *
  */
 /*-----------------------------------------------------------------------------------*/
-
 static err_t
 low_level_output(struct netif *netif, struct pbuf *p)
 {
@@ -176,6 +173,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
   LINK_STATS_INC(link.xmit);
   return ERR_OK;
 }
+
 /*-----------------------------------------------------------------------------------*/
 /*
  * low_level_input():
@@ -287,6 +285,7 @@ ethernetif_input(struct netif *netif, void *packet, int packet_len)
     break;
   }
 }
+
 /*-----------------------------------------------------------------------------------*/
 /*
  * ethernetif_init():
