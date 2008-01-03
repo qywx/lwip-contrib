@@ -61,7 +61,7 @@
 
 /** SNTP server address as IPv4 address in "u32_t" format */
 #ifndef SNTP_SERVER_ADDRESS
-#define SNTP_SERVER_ADDRESS         inet_addr("91.121.71.87") /* pool.ntp.org */
+#define SNTP_SERVER_ADDRESS         inet_addr("213.161.194.93") /* pool.ntp.org */
 #endif
 
 /** SNTP receive timeout - in milliseconds */
