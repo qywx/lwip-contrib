@@ -1471,6 +1471,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sio.c"
+				>
+			</File>
+			<File
 				RelativePath="..\sys_arch.c"
 				>
 			</File>

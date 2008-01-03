@@ -174,12 +174,12 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
     case PPPERR_NONE: {             /* No error. */
       struct ppp_addrs *ppp_addrs = arg;
 
-      printf("pppLinkStatusCallback: PPPERR_NONE");
-      printf(" our_ipaddr=%s", inet_ntoa(*(struct in_addr*)&(ppp_addrs->our_ipaddr.addr)));
-      printf(" his_ipaddr=%s", inet_ntoa(*(struct in_addr*)&(ppp_addrs->his_ipaddr.addr)));
-      printf(" netmask=%s", inet_ntoa(*(struct in_addr*)&(ppp_addrs->netmask.addr)));
-      printf(" dns1=%s", inet_ntoa(*(struct in_addr*)&(ppp_addrs->dns1.addr)));
-      printf(" dns2=%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->dns2.addr)));
+      printf("pppLinkStatusCallback: PPPERR_NONE\n");
+      printf(" our_ipaddr=%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->our_ipaddr.addr)));
+      printf(" his_ipaddr=%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->his_ipaddr.addr)));
+      printf(" netmask   =%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->netmask.addr)));
+      printf(" dns1      =%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->dns1.addr)));
+      printf(" dns2      =%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->dns2.addr)));
       break;
     }
     case PPPERR_PARAM: {           /* Invalid parameter. */
@@ -242,6 +242,19 @@ void link_callback(struct netif *netif)
 static void
 msvc_netif_init()
 {
+#if PPP_SUPPORT
+  sio_fd_t ppp_sio;
+  ppp_sio = sio_open(0);
+  if (ppp_sio != NULL) {
+    printf("pppInit\n");
+    pppInit();
+    pppSetAuth(PPPAUTHTYPE_ANY, "", "");
+    printf("pppOpen\n");
+    pppOpen(ppp_sio, pppLinkStatusCallback, NULL);
+  } else {
+    printf("sio_open error\n");
+  }
+#else  /* PPP_SUPPORT */
   struct ip_addr ipaddr, netmask, gw;
 #if LWIP_HAVE_LOOPIF
   struct ip_addr loop_ipaddr, loop_netmask, loop_gw;
@@ -292,21 +305,6 @@ msvc_netif_init()
   netif_set_link_callback(&netif, link_callback);
 #endif /* LWIP_NETIF_LINK_CALLBACK */
 
-#if PPP_SUPPORT
-{ sio_fd_t ppp_sio;
-  ppp_sio = sio_open(0);
-  if (ppp_sio != NULL) {
-    printf("pppInit\n");
-    pppInit();
-    pppSetAuth(PPPAUTHTYPE_CHAP, "lwip", "mysecret");
-    printf("pppOpen\n");
-    pppOpen(ppp_sio, pppLinkStatusCallback, NULL);
-  } else {
-    printf("sio_open error\n");
-  }
-}
-#endif /* PPP_SUPPORT */
-
 #if LWIP_DHCP
   dhcp_start(&netif);
 #elif LWIP_AUTOIP
@@ -314,6 +312,8 @@ msvc_netif_init()
 #else /* LWIP_DHCP */
   netif_set_up(&netif);
 #endif /* LWIP_DHCP */
+
+#endif /* PPP_SUPPORT */
 }
 
 void dns_found(const char *name, struct ip_addr *addr, void *arg)
