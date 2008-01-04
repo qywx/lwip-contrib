@@ -44,7 +44,7 @@
 
 #define LWIP_HAVE_LOOPIF           1
 
-#define LWIP_LISTEN_BACKLOG        0
+#define TCP_LISTEN_BACKLOG         0
 
 #define LWIP_COMPAT_SOCKETS        1
 #define LWIP_SO_RCVTIMEO           1
