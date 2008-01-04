@@ -6,6 +6,9 @@
 #if LWIP_TCP
 static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
+
+  LWIP_UNUSED_ARG(arg);
+
   if (err == ERR_OK && p != NULL) {
     tcp_recved(pcb, p->tot_len);
     pbuf_free(p);
@@ -25,6 +28,9 @@ static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t er
 
 static err_t netio_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 {
+  LWIP_UNUSED_ARG(arg);
+  LWIP_UNUSED_ARG(err);
+
   tcp_arg(pcb, NULL);
   tcp_sent(pcb, NULL);
   tcp_recv(pcb, netio_recv);

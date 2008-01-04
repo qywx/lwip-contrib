@@ -142,7 +142,9 @@ netbios_name_decoding( char *name_enc, char *name_dec, int name_dec_len)
   char  cname;
   char  cnbname;
   int   index = 0;
-  
+
+  LWIP_UNUSED_ARG(name_dec_len);
+
   /* Start decoding netbios name. */
   pname  = name_enc;
   for (;;) {
@@ -238,6 +240,8 @@ netbios_name_encoding(char *name_enc, char *name_dec, int name_dec_len)
 static void
 netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
 {
+  LWIP_UNUSED_ARG(arg);
+
   /* if packet is valid */
   if (p != NULL) {
     char   netbios_name[NETBIOS_NAME_LEN+1];
@@ -252,7 +256,7 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
           ((ntohs(netbios_hdr->flags) & NETB_HFLAG_RESPONSE) == 0) &&
            (ntohs(netbios_hdr->questions) == 1)) {
         /* decode the NetBIOS name */
-        netbios_name_decoding( netbios_name_hdr->encname, netbios_name, sizeof(netbios_name));
+        netbios_name_decoding( (char*)(netbios_name_hdr->encname), netbios_name, sizeof(netbios_name));
         /* if the packet is for us */
         if (strcmp( netbios_name, NETBIOS_LWIP_NAME)==0) {
           struct pbuf *q;

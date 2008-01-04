@@ -192,6 +192,7 @@ sntp_request()
 static void
 sntp_thread(void *arg)
 {
+  LWIP_UNUSED_ARG(arg);
   while(1) {
     sntp_request();
     sys_msleep(SNTP_UPDATE_DELAY);

@@ -150,7 +150,7 @@ ping_recv(int s)
   struct sockaddr_in from;
   struct icmp_echo_hdr *iecho;
 
-  while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, &fromlen)) > 0) {
+  while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, (socklen_t*)&fromlen)) > 0) {
     if (len >= sizeof(struct icmp_echo_hdr)) {
       LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
       ip_addr_debug_print(PING_DEBUG, (struct ip_addr *)&(from.sin_addr));
@@ -175,6 +175,8 @@ ping_thread(void *arg)
   int s;
   int timeout = PING_RCV_TIMEO;
   struct ip_addr ping_target;
+
+  LWIP_UNUSED_ARG(arg);
 
   if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
     return;
