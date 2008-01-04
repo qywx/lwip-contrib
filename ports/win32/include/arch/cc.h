@@ -38,6 +38,7 @@
 #include <stdlib.h>
 
 /** @todo fix some warnings */
+#pragma warning (disable: 4127)
 #pragma warning (disable: 4244)
 #pragma warning (disable: 4996)
 

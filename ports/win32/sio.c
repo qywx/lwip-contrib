@@ -60,7 +60,7 @@ static int sio_abort=0;
 sio_fd_t sio_open(u8_t devnum)
 { HANDLE hPipe = INVALID_HANDLE_VALUE;
   CHAR   szPipeName[256];
-  printf("sio_open(%lu)\n", (DWORD)devnum);
+  LWIP_DEBUGF( SIO_DEBUG, ("sio_open(%lu)\n", (DWORD)devnum));
   sprintf( szPipeName, "\\\\.\\pipe\\lwip%lu", (DWORD)(devnum));
   hPipe = CreateFile(szPipeName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
   if (hPipe != INVALID_HANDLE_VALUE) {
@@ -90,7 +90,7 @@ void sio_send(u8_t num, sio_fd_t psio)
  */
 u8_t sio_recv(sio_fd_t psio)
 { DWORD dwNbBytesReadden = 0;
-  u8_t byte;
+  u8_t byte = 0;
   LWIP_DEBUGF( SIO_DEBUG, ("sio_recv()\n"));
   while ((sio_abort==0) && ((!ReadFile( (HANDLE)(psio), &byte, 1, &dwNbBytesReadden, NULL)) || (dwNbBytesReadden<1)));
   LWIP_DEBUGF( SIO_DEBUG, ("sio_recv()=%lu\n", (DWORD)byte));
@@ -114,7 +114,8 @@ u32_t sio_write(sio_fd_t psio, u8_t * data, u32_t len)
 }
 
 void sio_read_abort(sio_fd_t psio)
-{ LWIP_DEBUGF( SIO_DEBUG, ("sio_read_abort() !!!!!...\n"));
+{ LWIP_UNUSED_ARG(psio);
+  LWIP_DEBUGF( SIO_DEBUG, ("sio_read_abort() !!!!!...\n"));
   sio_abort=1;
   return;
 }
@@ -122,8 +123,10 @@ void sio_read_abort(sio_fd_t psio)
 void ppp_trace( int level, const char *format, ...)
 { int len;
   char buffer[1024];
-  
   va_list argList;
+
+  LWIP_UNUSED_ARG(level);
+
   va_start  ( argList, format);
   len=vsprintf( buffer, format, argList);
   buffer[len-1]='\0';
@@ -133,8 +136,10 @@ void ppp_trace( int level, const char *format, ...)
 
 int snprintf( char *buffer, size_t count, const char *format, ...)
 { int len;
-  
   va_list argList;
+
+  LWIP_UNUSED_ARG(count);
+
   va_start  ( argList, format);
   len=vsprintf( buffer, format, argList);
   buffer[len-1]='\0';

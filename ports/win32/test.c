@@ -318,6 +318,7 @@ msvc_netif_init()
 
 void dns_found(const char *name, struct ip_addr *addr, void *arg)
 {
+  LWIP_UNUSED_ARG(arg);
   printf("%s: %s\n", name, addr?inet_ntoa(*(struct in_addr*)addr):"<not found>");
 }
 
