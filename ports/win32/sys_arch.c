@@ -253,9 +253,12 @@ sys_thread_t sys_thread_new(char *name, void (* function)(void *arg), void *arg,
   return 0;
 }
 
-sys_mbox_t sys_mbox_new()
+sys_mbox_t sys_mbox_new(int size)
 {
   struct lwip_mbox *new_mbox;
+
+  LWIP_UNUSED_ARG(size);
+
   new_mbox = (struct lwip_mbox*)malloc(sizeof(struct lwip_mbox));
   LWIP_ASSERT("new_mbox != NULL", new_mbox != NULL);
   if(new_mbox == NULL) {
@@ -324,6 +327,30 @@ void sys_mbox_post(sys_mbox_t q, void *msg)
   LWIP_ASSERT("Error releasing sem", ret != 0);
 
   SYS_ARCH_UNPROTECT(lev);
+}
+
+err_t sys_mbox_trypost(sys_mbox_t q, void *msg)
+{
+  DWORD ret;
+  SYS_ARCH_DECL_PROTECT(lev);
+
+  /* parameter check */
+  LWIP_ASSERT("sys_mbox_free ", q != SYS_MBOX_NULL );
+  LWIP_ASSERT("q->sem != NULL", q->sem != NULL);
+  LWIP_ASSERT("q->sem != INVALID_HANDLE_VALUE", q->sem != INVALID_HANDLE_VALUE);
+
+  SYS_ARCH_PROTECT(lev);
+  q->q_mem[q->head] = msg;
+  (q->head)++;
+  if (q->head >= MAX_QUEUE_ENTRIES) {
+    q->head = 0;
+  }
+  LWIP_ASSERT("mbox is full!", q->head != q->tail);
+  ret = ReleaseSemaphore(q->sem, 1, 0);
+  LWIP_ASSERT("Error releasing sem", ret != 0);
+
+  SYS_ARCH_UNPROTECT(lev);
+  return ERR_OK;
 }
 
 u32_t sys_arch_mbox_fetch(sys_mbox_t q, void **msg, u32_t timeout)
