@@ -42,6 +42,12 @@
 #include <lwip/debug.h>
 #include <lwip/sys.h>
 
+int MySleep(DWORD x)
+{
+  Sleep(x);
+  return 0;
+}
+
 /* These functions are used from NO_SYS also, for precise timer triggering */
 LARGE_INTEGER freq, sys_start_time;
 
@@ -331,6 +337,7 @@ void sys_mbox_post(sys_mbox_t q, void *msg)
 
 err_t sys_mbox_trypost(sys_mbox_t q, void *msg)
 {
+  u32_t new_head;
   DWORD ret;
   SYS_ARCH_DECL_PROTECT(lev);
 
@@ -340,11 +347,18 @@ err_t sys_mbox_trypost(sys_mbox_t q, void *msg)
   LWIP_ASSERT("q->sem != INVALID_HANDLE_VALUE", q->sem != INVALID_HANDLE_VALUE);
 
   SYS_ARCH_PROTECT(lev);
-  q->q_mem[q->head] = msg;
-  (q->head)++;
-  if (q->head >= MAX_QUEUE_ENTRIES) {
-    q->head = 0;
+
+  new_head = q->head + 1;
+  if (new_head >= MAX_QUEUE_ENTRIES) {
+    new_head = 0;
   }
+  if (new_head == q->tail) {
+    SYS_ARCH_UNPROTECT(lev);
+    return ERR_MEM;
+  }
+
+  q->q_mem[q->head] = msg;
+  q->head = new_head;
   LWIP_ASSERT("mbox is full!", q->head != q->tail);
   ret = ReleaseSemaphore(q->sem, 1, 0);
   LWIP_ASSERT("Error releasing sem", ret != 0);
