@@ -120,15 +120,16 @@ ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
 #if LWIP_SOCKET
 
 /* Ping using the socket ip */
-static void
+static err_t
 ping_send(int s, struct ip_addr *addr)
 {
+  int err;
   struct icmp_echo_hdr *iecho;
   struct sockaddr_in to;
   size_t ping_size = sizeof(struct icmp_echo_hdr) + PING_DATA_SIZE;
 
   if (!(iecho = mem_malloc(ping_size))) {
-    return;
+    return ERR_MEM;
   }
 
   ping_prepare_echo(iecho, ping_size);
@@ -137,9 +138,11 @@ ping_send(int s, struct ip_addr *addr)
   to.sin_family = AF_INET;
   to.sin_addr.s_addr = addr->addr;
 
-  lwip_sendto(s, iecho, ping_size, 0, (struct sockaddr*)&to, sizeof(to));
+  err = lwip_sendto(s, iecho, ping_size, 0, (struct sockaddr*)&to, sizeof(to));
 
   mem_free(iecho);
+
+  return (err ? ERR_OK : ERR_VAL);
 }
 
 static void
@@ -159,10 +162,16 @@ ping_recv(int s)
       iecho = (struct icmp_echo_hdr *)buf;
       if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
         /* do some ping result processing */
-        PING_RESULT(1);
+        PING_RESULT((ICMPH_TYPE(iecho) == ICMP_ER));
         return;
+      } else {
+        LWIP_DEBUGF( PING_DEBUG, ("ping: drop\n"));
       }
     }
+  }
+
+  if (len == 0) {
+    LWIP_DEBUGF( PING_DEBUG, ("ping: recv - %lu ms - timeout\n", (sys_now()-ping_time)));
   }
 
   /* do some ping result processing */
@@ -187,13 +196,18 @@ ping_thread(void *arg)
   while (1) {
     ping_target = PING_TARGET;
 
-    LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
-    ip_addr_debug_print(PING_DEBUG, &ping_target);
-    LWIP_DEBUGF( PING_DEBUG, ("\n"));
+    if (ping_send(s, &ping_target) == ERR_OK) {
+      LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
+      ip_addr_debug_print(PING_DEBUG, &ping_target);
+      LWIP_DEBUGF( PING_DEBUG, ("\n"));
 
-    ping_send(s, &ping_target);
-    ping_time = sys_now();
-    ping_recv(s);
+      ping_time = sys_now();
+      ping_recv(s);
+    } else {
+      LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
+      ip_addr_debug_print(PING_DEBUG, &ping_target);
+      LWIP_DEBUGF( PING_DEBUG, (" - error\n"));
+    }
     sys_msleep(PING_DELAY);
   }
 }
