@@ -42,12 +42,6 @@
 #include <lwip/debug.h>
 #include <lwip/sys.h>
 
-int MySleep(DWORD x)
-{
-  Sleep(x);
-  return 0;
-}
-
 /* These functions are used from NO_SYS also, for precise timer triggering */
 LARGE_INTEGER freq, sys_start_time;
 
