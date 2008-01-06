@@ -88,6 +88,7 @@ struct packet_adapter {
   void            *input_fn_arg;
   LPADAPTER        lpAdapter;
   LPPACKET         lpPacket;
+  UINT             bs_drop;
   NDIS_MEDIA_STATE fNdisMediaState;
   /* buffer to hold the data coming from the driver */
   char       buffer[PACKET_INPUT_BUFSIZE];
@@ -325,6 +326,17 @@ void
 update_adapter(void *adapter)
 {
   struct packet_adapter *pa = (struct packet_adapter*)adapter;
+  struct bpf_stat stat;
+
+  /* print the capture statistics */
+  if(PacketGetStats(pa->lpAdapter, &stat) == FALSE) {
+    printf("Warning: unable to get stats from the kernel!\n");
+  } else {
+    if (pa->bs_drop != stat.bs_drop) {
+      printf("%d packets received.\n%d Packets dropped.\n", stat.bs_recv, stat.bs_drop);
+      pa->bs_drop = stat.bs_drop;
+    }
+  }
 
   if ((pa != NULL) && (PacketReceivePacket(pa->lpAdapter, pa->lpPacket, TRUE))) {
     ProcessPackets(adapter, pa->lpPacket);
