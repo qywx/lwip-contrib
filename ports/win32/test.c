@@ -234,7 +234,16 @@ void status_callback(struct netif *netif)
 
 #if LWIP_NETIF_LINK_CALLBACK
 void link_callback(struct netif *netif)
-{ printf("link_callback==%s\n", netif_is_link_up(netif)?"UP":"DOWN");
+{ if (netif_is_link_up(netif)) {
+    printf("link_callback==UP\n");
+#if LWIP_DHCP
+    if (netif->dhcp != NULL) {
+      dhcp_renew(netif);
+    }
+#endif /* LWIP_DHCP */
+  } else {
+    printf("link_callback==DOWN\n");
+  }
 }
 #endif /* LWIP_NETIF_LINK_CALLBACK */
 
