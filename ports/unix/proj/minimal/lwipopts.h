@@ -132,7 +132,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* If defined to 1, IP options are allowed (but ignored). If
    defined to 0, all packets with IP options are dropped. */
-#define IP_OPTIONS              1
+#define IP_OPTIONS_ALLOWED      1
 
 #define IP_REASSEMBLY           1
 #define IP_FRAG                 1
