@@ -26,7 +26,7 @@
  * 
  * Author: Kieran Mansley <kjm25@cam.ac.uk>
  *
- * $Id: unixlib.c,v 1.5 2007/02/26 20:09:23 jifl Exp $
+ * $Id: unixlib.c,v 1.6 2008/01/15 13:10:51 kieranm Exp $
  */
 
 /*-----------------------------------------------------------------------------------*/
@@ -41,6 +41,7 @@
  * you would like the stack to use.
  */
 /*-----------------------------------------------------------------------------------*/
+#include "lwip/init.h"
 #include "lwip/sys.h"
 #include "lwip/mem.h"
 #include "lwip/memp.h"
@@ -67,24 +68,16 @@ void _init(void){
   struct ip_addr ipaddr, netmask, gateway;
   sys_sem_t sem;
 
-  stats_init();
-  sys_init();
-  mem_init();
-  memp_init();
-  pbuf_init();
-  lwip_socket_init();
-  
   sem = sys_sem_new(0);
   tcpip_init(tcpip_init_done, &sem);
   sys_sem_wait(sem);
   sys_sem_free(sem);
   
-  netif_init();
  /*
     CHANGE THESE to suit your own network configuration:
   */
   IP4_ADDR(&gateway, 192,168,1,1);
-  IP4_ADDR(&ipaddr, 192,168,1,1);
+  IP4_ADDR(&ipaddr, 192,168,1,2);
   IP4_ADDR(&netmask, 255,255,255,0);
   
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gateway, NULL, tapif_init,

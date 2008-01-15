@@ -36,6 +36,8 @@
 
 #include "lwip/opt.h"
 
+#include "lwip/init.h"
+
 #include "lwip/mem.h"
 #include "lwip/memp.h"
 #include "lwip/sys.h"
@@ -473,17 +475,8 @@ main(int argc, char **argv)
 #ifdef PERF
   perf_init("/tmp/simhost.perf");
 #endif /* PERF */
-#if LWIP_STATS
-  stats_init();
-#endif /* STATS */
-  mem_init();
-  memp_init();
-  pbuf_init();
-  sys_init();
-#ifdef LWIP_TCPDUMP
-  tcpdump_init();
-#endif
-  lwip_socket_init();
+
+  lwip_init();
   
   printf("System initialized.\n");
     

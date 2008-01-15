@@ -250,6 +250,35 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
 }
 /*-----------------------------------------------------------------------------------*/
 u32_t
+sys_arch_mbox_tryfetch(struct sys_mbox *mbox, void **msg)
+{
+  sys_arch_sem_wait(mbox->mutex, 0);
+
+  if (mbox->first == mbox->last) {
+    sys_sem_signal(mbox->mutex);
+    return SYS_MBOX_EMPTY;
+  }
+
+  if (msg != NULL) {
+    LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_tryfetch: mbox %p msg %p\n", (void *)mbox, *msg));
+    *msg = mbox->msgs[mbox->first % SYS_MBOX_SIZE];
+  }
+  else{
+    LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_tryfetch: mbox %p, null msg\n", (void *)mbox));
+  }
+
+  mbox->first++;
+  
+  if (mbox->wait_send) {
+    sys_sem_signal(mbox->mail);
+  }
+
+  sys_sem_signal(mbox->mutex);
+
+  return 0;
+}
+/*-----------------------------------------------------------------------------------*/
+u32_t
 sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
 {
   u32_t time = 0;

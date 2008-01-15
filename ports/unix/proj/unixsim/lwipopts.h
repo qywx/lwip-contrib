@@ -202,8 +202,8 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_DHCP               0
 
 /* 1 if you want to do an ARP check on the offered address
-   (recommended). */
-#define DHCP_DOES_ARP_CHECK     1
+   (recommended if using DHCP). */
+#define DHCP_DOES_ARP_CHECK     (LWIP_DHCP)
 
 /* ---------- AUTOIP options ------- */
 #define LWIP_AUTOIP             0

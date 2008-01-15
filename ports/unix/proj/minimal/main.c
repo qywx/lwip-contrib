@@ -32,6 +32,9 @@
 
 #include <unistd.h>
 #include <getopt.h>
+
+#include "lwip/init.h"
+
 #include "lwip/debug.h"
 
 #include "lwip/mem.h"
@@ -171,17 +174,9 @@ main(int argc, char **argv)
 #ifdef PERF
   perf_init("/tmp/minimal.perf");
 #endif /* PERF */
-#ifdef STATS
-  stats_init();
-#endif /* STATS */
 
-  mem_init();
-  memp_init();
-  pbuf_init(); 
-  netif_init();
-  ip_init();
-  udp_init();
-  tcp_init();
+  lwip_init();
+
   printf("TCP/IP initialized.\n");
   
   netif_add(&netif, &ipaddr, &netmask, &gw, NULL, mintapif_init, ip_input);  
