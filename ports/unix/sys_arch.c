@@ -176,7 +176,7 @@ sys_thread_new(char *name, void (* function)(void *arg), void *arg, int stacksiz
 }
 /*-----------------------------------------------------------------------------------*/
 struct sys_mbox *
-sys_mbox_new()
+sys_mbox_new(int size)
 {
   struct sys_mbox *mbox;
   
@@ -213,7 +213,38 @@ sys_mbox_free(struct sys_mbox *mbox)
     free(mbox);
   }
 }
+/*-----------------------------------------------------------------------------------*/
+err_t
+sys_mbox_trypost(struct sys_mbox *mbox, void *msg)
+{
+  u8_t first;
+  
+  sys_sem_wait(mbox->mutex);
+  
+  LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_trypost: mbox %p msg %p\n",
+                          (void *)mbox, (void *)msg));
+  
+  if ((mbox->last + 1) >= (mbox->first + SYS_MBOX_SIZE))
+    return ERR_MEM;
 
+  mbox->msgs[mbox->last % SYS_MBOX_SIZE] = msg;
+  
+  if (mbox->last == mbox->first) {
+    first = 1;
+  } else {
+    first = 0;
+  }
+  
+  mbox->last++;
+  
+  if (first) {
+    sys_sem_signal(mbox->mail);
+  }
+
+  sys_sem_signal(mbox->mutex);
+
+  return ERR_OK;
+}
 /*-----------------------------------------------------------------------------------*/
 void
 sys_mbox_post(struct sys_mbox *mbox, void *msg)
