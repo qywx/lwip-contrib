@@ -3,6 +3,8 @@
 #include "lwip/opt.h"
 #include "lwip/tcp.h"
 
+/* See http://www.nwlab.net/art/netio/netio.html to get the netio tool */
+
 #if LWIP_TCP
 static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
