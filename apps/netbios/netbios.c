@@ -278,7 +278,7 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
             resp->resp_hdr.additionalRRs = 0;
 
             /* prepare NetBIOS header datas */
-            memcpy( resp->resp_name.encname, netbios_name_hdr->encname, sizeof(netbios_name_hdr->encname));
+            MEMCPY( resp->resp_name.encname, netbios_name_hdr->encname, sizeof(netbios_name_hdr->encname));
             resp->resp_name.nametype     = netbios_name_hdr->nametype;
             resp->resp_name.type         = netbios_name_hdr->type;
             resp->resp_name.class        = netbios_name_hdr->class;
