@@ -37,8 +37,6 @@
 
 #include <windows.h>
 
-typedef void* sio_fd_t;
-
 static int sio_abort=0;
 
 /* \\.\pipe\lwip0 */
