@@ -37,16 +37,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/** @todo fix some warnings */
+/** @todo fix some warnings: don't use #pragma if compiling with cygwin gcc */
+#ifndef __GNUC__
 #pragma warning (disable: 4127)
 #pragma warning (disable: 4244)
 #pragma warning (disable: 4706)
 #pragma warning (disable: 4996)
+#endif
 
 #define LWIP_PROVIDE_ERRNO
 
-/* Define platform endianness */
+/* Define platform endianness (might already be defined) */
+#ifndef BYTE_ORDER
 #define BYTE_ORDER LITTLE_ENDIAN
+#endif /* BYTE_ORDER */
 
 /* Define generic types used in lwIP */
 typedef unsigned   char    u8_t;
@@ -65,9 +69,6 @@ typedef u32_t mem_ptr_t;
 #define U32_F "lu"
 #define S32_F "ld"
 #define X32_F "lx"
-
-/* Compiler hints for byte order */
-#define BYTE_ORDER LITTLE_ENDIAN
 
 /* Compiler hints for packing structures */
 #define PACK_STRUCT_STRUCT
