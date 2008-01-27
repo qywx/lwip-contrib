@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8,00"
-	Name="lwIP test"
+	Name="lwIP_test"
 	ProjectGUID="{8CC0CE51-32CF-4585-BFAF-A9343BC5A96D}"
-	RootNamespace="lwIP test"
+	RootNamespace="lwIP_test"
 	>
 	<Platforms>
 		<Platform
