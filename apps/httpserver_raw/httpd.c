@@ -212,7 +212,7 @@ http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
   
   /* Allocate memory for the structure that holds the state of the
      connection. */
-  hs = mem_malloc(sizeof(struct http_state));
+  hs = (struct http_state *)mem_malloc(sizeof(struct http_state));
 
   if (hs == NULL) {
     printf("http_accept: Out of memory\n");
