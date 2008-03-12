@@ -151,15 +151,17 @@ ping_recv(int s)
   char buf[64];
   int fromlen, len;
   struct sockaddr_in from;
+  struct ip_hdr *iphdr;
   struct icmp_echo_hdr *iecho;
 
   while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, (socklen_t*)&fromlen)) > 0) {
-    if (len >= sizeof(struct icmp_echo_hdr)) {
+    if (len >= (sizeof(struct ip_hdr)+sizeof(struct icmp_echo_hdr))) {
       LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
       ip_addr_debug_print(PING_DEBUG, (struct ip_addr *)&(from.sin_addr));
       LWIP_DEBUGF( PING_DEBUG, (" %lu ms\n", (sys_now()-ping_time)));
 
-      iecho = (struct icmp_echo_hdr *)buf;
+      iphdr = (struct ip_hdr *)buf;
+      iecho = (struct icmp_echo_hdr *)(buf+(IPH_HL(iphdr) * 4));
       if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
         /* do some ping result processing */
         PING_RESULT((ICMPH_TYPE(iecho) == ICMP_ER));
