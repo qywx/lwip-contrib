@@ -211,7 +211,7 @@ struct sys_timeouts *sys_arch_timeouts(void)
   new_thread = (struct threadlist*)malloc(sizeof(struct threadlist));
   LWIP_ASSERT("new_thread != NULL", new_thread != NULL);
   if(new_thread != NULL) {
-    OutputDebugString("First call to sys_arch_timoeuts for thread");
+    OutputDebugString("First call to sys_arch_timeouts for thread");
     new_thread->next = lwip_win32_threads;
     lwip_win32_threads = new_thread;
     new_thread->id = threadID;
