@@ -170,6 +170,8 @@ timers_update()
 void
 pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 {
+  LWIP_UNUSED_ARG(ctx);
+
   switch(errCode) {
     case PPPERR_NONE: {             /* No error. */
       struct ppp_addrs *ppp_addrs = arg;
