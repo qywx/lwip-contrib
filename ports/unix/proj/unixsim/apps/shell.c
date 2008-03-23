@@ -317,65 +317,65 @@ static char *stat_formats[STAT_NUM] = {
   U16_F, /* pbuf refresh_locked */
 
   /* FIXME: always using 11 memp pools is wrong! */
-  MEM_SIZE_F, /* mem avail */
-  MEM_SIZE_F, /* mem used */
-  MEM_SIZE_F, /* mem max */
-  MEM_SIZE_F, /* mem err */
+  U32_F, /* mem avail */
+  U32_F, /* mem used */
+  U32_F, /* mem max */
+  U32_F, /* mem err */
   
-  MEM_SIZE_F, /* memp pbuf avail */
-  MEM_SIZE_F, /* memp pbuf used */
-  MEM_SIZE_F, /* memp pbuf max */
-  MEM_SIZE_F, /* memp pbuf err */
+  U32_F, /* memp pbuf avail */
+  U32_F, /* memp pbuf used */
+  U32_F, /* memp pbuf max */
+  U32_F, /* memp pbuf err */
 
-  MEM_SIZE_F, /* memp raw pcb avail */
-  MEM_SIZE_F, /* memp raw pcb used */
-  MEM_SIZE_F, /* memp raw pcb max */
-  MEM_SIZE_F, /* memp raw err */
+  U32_F, /* memp raw pcb avail */
+  U32_F, /* memp raw pcb used */
+  U32_F, /* memp raw pcb max */
+  U32_F, /* memp raw err */
 
-  MEM_SIZE_F, /* memp udp pcb avail */
-  MEM_SIZE_F, /* memp udp pcb used */
-  MEM_SIZE_F, /* memp udp pcb max */
-  MEM_SIZE_F, /* memp udp pcb err */
+  U32_F, /* memp udp pcb avail */
+  U32_F, /* memp udp pcb used */
+  U32_F, /* memp udp pcb max */
+  U32_F, /* memp udp pcb err */
 
-  MEM_SIZE_F, /* memp tcp pcb avail */
-  MEM_SIZE_F, /* memp tcp pcb used */
-  MEM_SIZE_F, /* memp tcp pcb max */
-  MEM_SIZE_F, /* memp tcp pcb err */
+  U32_F, /* memp tcp pcb avail */
+  U32_F, /* memp tcp pcb used */
+  U32_F, /* memp tcp pcb max */
+  U32_F, /* memp tcp pcb err */
 
-  MEM_SIZE_F, /* memp tcp lstn pcb avail */
-  MEM_SIZE_F, /* memp tcp lstn pcb used */
-  MEM_SIZE_F, /* memp tcp lstn pcb max */
-  MEM_SIZE_F, /* memp tcp lstn pcb err */
+  U32_F, /* memp tcp lstn pcb avail */
+  U32_F, /* memp tcp lstn pcb used */
+  U32_F, /* memp tcp lstn pcb max */
+  U32_F, /* memp tcp lstn pcb err */
 
-  MEM_SIZE_F, /* memp tcp seg avail */
-  MEM_SIZE_F, /* memp tcp seg used */
-  MEM_SIZE_F, /* memp tcp seg max */
-  MEM_SIZE_F, /* memp tcp seg err */
+  U32_F, /* memp tcp seg avail */
+  U32_F, /* memp tcp seg used */
+  U32_F, /* memp tcp seg max */
+  U32_F, /* memp tcp seg err */
 
-  MEM_SIZE_F, /* memp netbuf avail */
-  MEM_SIZE_F, /* memp netbuf used */
-  MEM_SIZE_F, /* memp netbuf max */
-  MEM_SIZE_F, /* memp netbuf err */
+  U32_F, /* memp netbuf avail */
+  U32_F, /* memp netbuf used */
+  U32_F, /* memp netbuf max */
+  U32_F, /* memp netbuf err */
 
-  MEM_SIZE_F, /* memp netconn avail */
-  MEM_SIZE_F, /* memp netconn used */
-  MEM_SIZE_F, /* memp netconn max */
-  MEM_SIZE_F, /* memp netconn err */
+  U32_F, /* memp netconn avail */
+  U32_F, /* memp netconn used */
+  U32_F, /* memp netconn max */
+  U32_F, /* memp netconn err */
 
-  MEM_SIZE_F, /* memp api msg avail */
-  MEM_SIZE_F, /* memp api msg used */
-  MEM_SIZE_F, /* memp api msg max */
-  MEM_SIZE_F, /* memp api msg err */
+  U32_F, /* memp api msg avail */
+  U32_F, /* memp api msg used */
+  U32_F, /* memp api msg max */
+  U32_F, /* memp api msg err */
 
-  MEM_SIZE_F, /* memp tcpip msg avail */
-  MEM_SIZE_F, /* memp tcpip msg used */
-  MEM_SIZE_F, /* memp tcpip msg max */
-  MEM_SIZE_F, /* memp tcpip msg err */
+  U32_F, /* memp tcpip msg avail */
+  U32_F, /* memp tcpip msg used */
+  U32_F, /* memp tcpip msg max */
+  U32_F, /* memp tcpip msg err */
 
-  MEM_SIZE_F, /* memp sys to avail */
-  MEM_SIZE_F, /* memp sys to used */
-  MEM_SIZE_F, /* memp sys to max */
-  MEM_SIZE_F, /* memp sys to err */
+  U32_F, /* memp sys to avail */
+  U32_F, /* memp sys to used */
+  U32_F, /* memp sys to max */
+  U32_F, /* memp sys to err */
 
   U16_F, /* sys sem used */
   U16_F, /* sys sem max */
@@ -768,7 +768,7 @@ com_stat(struct command *com)
     if (strcmp(stat_formats[i], U16_F) == 0) {
       len = snprintf(buf, sizeof(buf), fmt, stat_msgs[i], *(u16_t*)stat_ptrs[i]);    
     }
-    else if (strcmp(stat_formats[i], MEM_SIZE_F) == 0) {
+    else if (strcmp(stat_formats[i], U32_F) == 0) {
       len = snprintf(buf, sizeof(buf), fmt, stat_msgs[i], *(mem_size_t*)stat_ptrs[i]);
     }
     else {
