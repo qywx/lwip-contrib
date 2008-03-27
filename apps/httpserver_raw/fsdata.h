@@ -39,11 +39,4 @@ struct fsdata_file {
   const int len;
 };
 
-struct fsdata_file_noconst {
-  struct fsdata_file *next;
-  unsigned char *name;
-  unsigned char *data;
-  int len;
-};
-
 #endif /* __FSDATA_H__ */

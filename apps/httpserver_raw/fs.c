@@ -39,15 +39,15 @@
 
 /*-----------------------------------------------------------------------------------*/
 int
-fs_open(char *name, struct fs_file *file)
+fs_open(const char *name, struct fs_file *file)
 {
-  struct fsdata_file_noconst *f;
+  const struct fsdata_file *f;
 
-  for(f = (struct fsdata_file_noconst *)FS_ROOT;
+  for(f = FS_ROOT;
       f != NULL;
-      f = (struct fsdata_file_noconst *)f->next) {
-    if (!strcmp(name, (char *)f->name)) {
-      file->data = (char *)f->data;
+      f = f->next) {
+    if (!strcmp(name, (const char*)f->name)) {
+      file->data = f->data;
       file->len = f->len;
       return 1;
     }

@@ -41,8 +41,8 @@
 #include "fs.h"
 
 struct http_state {
-  char *file;
-  u16_t left;
+  u32_t left;
+  const unsigned char *file;
   u8_t retries;
 };
 
@@ -80,6 +80,7 @@ send_data(struct tcp_pcb *pcb, struct http_state *hs)
     len = tcp_sndbuf(pcb);
   } else {
     len = hs->left;
+    LWIP_ASSERT((len == hs->left), "hs->left did not fit into u16_t!");
   }
 
   do {
@@ -176,6 +177,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
         }
 
         hs->file = file.data;
+        LWIP_ASSERT((file.len >= 0), "File length must be positive!");
         hs->left = file.len;
         /* printf("data %p len %ld\n", hs->file, hs->left);*/
 

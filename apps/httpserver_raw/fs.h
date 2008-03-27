@@ -33,12 +33,12 @@
 #define __FS_H__
 
 struct fs_file {
-  char *data;
+  const unsigned char *data;
   int len;
 };
 
 /* file must be allocated by caller and will be filled in
    by the function. */
-int fs_open(char *name, struct fs_file *file);
+int fs_open(const char *name, struct fs_file *file);
 
 #endif /* __FS_H__ */
