@@ -13,7 +13,7 @@ To get this compiling, you have to set a couple of environment variables:
 
 You also will have to copy the file 'lwipcfg_msvc.h.example' to
 'lwipcfg_msvc.h' and modify to suit your needs (WinPcap adapter number,
-IP configuration).
+IP configuration, applications...).
 
 Note that you also have to set the PCAP_DIR environment variable to point
 to the WinPcap Developer's Packs (containing 'include' and 'lib').
