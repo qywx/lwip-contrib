@@ -91,7 +91,7 @@ struct packet_adapter {
   UINT             bs_drop;
   NDIS_MEDIA_STATE fNdisMediaState;
   /* buffer to hold the data coming from the driver */
-  char       buffer[PACKET_INPUT_BUFSIZE];
+  char             buffer[PACKET_INPUT_BUFSIZE];
 };
 
 /**

@@ -61,6 +61,7 @@
 #include "apps/netio/netio.h"
 #include "apps/netbios/netbios.h"
 #include "apps/ping/ping.h"
+#include "apps/rtp/rtp.h"
 #include "apps/sntp/sntp.h"
 
 #if NO_SYS
@@ -337,30 +338,37 @@ void dns_found(const char *name, struct ip_addr *addr, void *arg)
 static void
 apps_init()
 {
-#if LWIP_DNS
+#if LWIP_DNS_APP && LWIP_DNS
   char*          dnsname="3com.com";
   struct ip_addr dnsresp;
   if (dns_gethostbyname(dnsname, &dnsresp, dns_found, 0) == ERR_OK) {
     dns_found(dnsname, &dnsresp, 0);
   }
-#endif /* LWIP_DNS */
+#endif /* LWIP_DNS_APP && LWIP_DNS */
 
-#if LWIP_RAW && LWIP_ICMP
+#if LWIP_PING_APP && LWIP_RAW && LWIP_ICMP
   ping_init();
-#endif /* LWIP_RAW */
+#endif /* LWIP_PING_APP && LWIP_RAW && LWIP_ICMP */
 
-#if LWIP_UDP
+#if LWIP_NETBIOS_APP && LWIP_UDP
   netbios_init();
-#endif /* LWIP_UDP */
+#endif /* LWIP_NETBIOS_APP && LWIP_UDP */
 
-#if LWIP_TCP
+#if LWIP_HTTPD_APP && LWIP_TCP
   httpd_init();
-  netio_init();
-#endif /* LWIP_TCP */
+#endif /* LWIP_HTTPD_APP && LWIP_TCP */
 
-#if LWIP_SOCKET
+#if LWIP_NETIO_APP && LWIP_TCP
+  netio_init();
+#endif /* LWIP_NETIO_APP && LWIP_TCP */
+
+#if LWIP_RTP_APP && LWIP_SOCKET
+  rtp_init();
+#endif /* LWIP_RTP_APP && LWIP_SOCKET */
+
+#if LWIP_SNTP_APP && LWIP_SOCKET
   sntp_init();
-#endif /* LWIP_SOCKET */
+#endif /* LWIP_SNTP_APP && LWIP_SOCKET */
 }
 
 /* This function initializes this lwIP test. When NO_SYS=1, this is done in

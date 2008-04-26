@@ -201,7 +201,8 @@ low_level_input(struct netif *netif, void *packet, int packet_len)
   if (((memcmp(&ethhdr->dest, &netif->hwaddr, ETHARP_HWADDR_LEN)) &&
       ((ethhdr->dest.addr[0] & 0x01) == 0)) ||
       /* and don't let feedback packets through (limitation in winpcap?) */
-       !memcmp(&ethhdr->src, netif->hwaddr, ETHARP_HWADDR_LEN)) {
+      ((!memcmp(&ethhdr->src, netif->hwaddr, ETHARP_HWADDR_LEN)) &&
+       ((ethhdr->dest.addr[0] & 0x01) == 0))) {
     return NULL;
   }
 
@@ -259,9 +260,9 @@ ethernetif_input(struct netif *netif, void *packet, int packet_len)
   if (p == NULL) {
     return;
   }
+
   /* points to packet payload, which starts with an Ethernet header */
   ethhdr = p->payload;
-
   switch (htons(ethhdr->type)) {
   /* IP or ARP packet? */
   case ETHTYPE_IP:
@@ -313,7 +314,7 @@ ethernetif_init(struct netif *netif)
   netif->output = etharp_output;
 
   netif->mtu = 1500;
-  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
+  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP | NETIF_FLAG_LINK_UP;
   netif->hwaddr_len = ETHARP_HWADDR_LEN;
 
   NETIF_INIT_SNMP(netif, snmp_ifType_ethernet_csmacd, 100000000);

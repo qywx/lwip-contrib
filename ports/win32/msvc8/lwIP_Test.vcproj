@@ -272,6 +272,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\apps\rtp\rtp.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\apps\sntp\sntp.c"
 					>
 				</File>
