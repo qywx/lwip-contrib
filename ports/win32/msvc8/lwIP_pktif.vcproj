@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="9,00"
 	Name="lwIP pktif"
 	ProjectGUID="{8DFF6C89-B0A1-4179-83D6-61EDD66B204C}"
 	RootNamespace="lwIP pktif"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform

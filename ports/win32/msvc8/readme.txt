@@ -1,7 +1,7 @@
 lwIP for Win32
 
 This is a quickly hacked port and example project of the lwIP library to
-Win32/MSVC8.
+Win32/MSVC9.
 
 It doesn't (yet?) include support for dhcp, autoip, slipif, ppp or pppoe. This
 is simply because none of the active developers using this port are using these
