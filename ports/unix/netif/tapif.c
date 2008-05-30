@@ -312,13 +312,6 @@ tapif_input(struct netif *netif)
   }
 }
 /*-----------------------------------------------------------------------------------*/
-static void
-arp_timer(void *arg)
-{
-  etharp_tmr();
-  sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler)arp_timer, NULL);
-}
-/*-----------------------------------------------------------------------------------*/
 /*
  * tapif_init():
  *
@@ -347,9 +340,7 @@ tapif_init(struct netif *netif)
   
   tapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
   low_level_init(netif);
-  etharp_init();
   
-  sys_timeout(ARP_TMR_INTERVAL, (sys_timeout_handler)arp_timer, NULL);
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/

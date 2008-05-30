@@ -58,7 +58,9 @@ tcpdump(struct pbuf *p)
 {
   struct ip_hdr *iphdr;
   struct tcp_hdr *tcphdr;
+#if LWIP_UDP
   struct udp_hdr *udphdr;
+#endif
   char flags[5];
   int i;
   int len;
@@ -139,6 +141,7 @@ tcpdump(struct pbuf *p)
     pbuf_header(p, IP_HLEN);
     break;
     
+#if LWIP_UDP
   case IP_PROTO_UDP:    
     udphdr = (struct udp_hdr *)((char *)iphdr + IP_HLEN);
     
@@ -174,6 +177,7 @@ tcpdump(struct pbuf *p)
     
     pbuf_header(p, IP_HLEN);
     break;
+#endif /* LWIP_UDP */
 
   }
 #endif /* IPv4 */

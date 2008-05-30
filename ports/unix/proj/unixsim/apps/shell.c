@@ -80,7 +80,7 @@ clos [connection #]: closes a TCP or UDP connection.\n\
 stat: prints out lwIP statistics.\n\
 quit: quits.\n";
 
-#define STAT_NUM ((6 * 13) + (6) + (4) + (11 * 4) + (2 * 3))
+#define STAT_NUM (((5 + LWIP_UDP) * 13) + (4) + (11 * 4) + (2 * 3))
 
 static char *stat_msgs[STAT_NUM] = {
   "Link level * transmitted ",
@@ -135,6 +135,7 @@ static char *stat_msgs[STAT_NUM] = {
   "             option errors ",
   "           * misc errors ",
   "             cache hits ",  
+#if LWIP_UDP
   "UDP        * transmitted ",
   "             retransmitted ",
   "           * received ",
@@ -148,6 +149,7 @@ static char *stat_msgs[STAT_NUM] = {
   "             option errors ",
   "           * misc errors ",
   "             cache hits ",  
+#endif
   "TCP        * transmitted ",
   "           * retransmitted ",
   "           * received ",
@@ -161,12 +163,6 @@ static char *stat_msgs[STAT_NUM] = {
   "           * option errors ",
   "           * misc errors ",
   "           * cache hits ",  
-  "Pbufs      * available ",
-  "           * used ",
-  "           * high water mark ",
-  "           * errors ",
-  "             pbuf_alloc() locked ",
-  "             pbuf_refresh() locked ",
   "Memory     * available ",
   "           * used ",
   "           * high water mark ",
@@ -280,6 +276,7 @@ static char *stat_formats[STAT_NUM] = {
   U16_F, /* icmp err */
   U16_F, /* icmp cachehit */
 
+#if LWIP_UDP
   U16_F, /* udp xmit */
   U16_F, /* udp rexmit */
   U16_F, /* udp recv */
@@ -293,6 +290,7 @@ static char *stat_formats[STAT_NUM] = {
   U16_F, /* udp opterr */
   U16_F, /* udp err */
   U16_F, /* udp cachehit */  
+#endif
 
   U16_F, /* tcp xmit */
   U16_F, /* tcp exmit */
@@ -307,14 +305,6 @@ static char *stat_formats[STAT_NUM] = {
   U16_F, /* tcp opterr */
   U16_F, /* tcp err */
   U16_F, /* tcp cachehit */
-
-  /* FIXME: pbuf stats have moved to memp stats */
-  U16_F, /* pbuf avail */
-  U16_F, /* pbuf used */
-  U16_F, /* pbuf max */
-  U16_F, /* pbuf err */
-  U16_F, /* pbuf alloc_locked */
-  U16_F, /* pbuf refresh_locked */
 
   /* FIXME: always using 11 memp pools is wrong! */
   U32_F, /* mem avail */
@@ -443,6 +433,7 @@ static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.icmp.err,
   &lwip_stats.icmp.cachehit,
 
+#if LWIP_UDP
   &lwip_stats.udp.xmit,
   &lwip_stats.udp.rexmit,
   &lwip_stats.udp.recv,
@@ -456,6 +447,7 @@ static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.udp.opterr,
   &lwip_stats.udp.err,
   &lwip_stats.udp.cachehit,
+#endif
 
   &lwip_stats.tcp.xmit,
   &lwip_stats.tcp.rexmit,
@@ -470,15 +462,6 @@ static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.tcp.opterr,
   &lwip_stats.tcp.err,
   &lwip_stats.tcp.cachehit,
-
-  /* FIXME: pbuf stats have moved to memp stats */
-  NULL, NULL, NULL, NULL, NULL, NULL,
-  /*&lwip_stats.pbuf.avail,
-  &lwip_stats.pbuf.used,
-  &lwip_stats.pbuf.max,
-  &lwip_stats.pbuf.err,
-  &lwip_stats.pbuf.alloc_locked,
-  &lwip_stats.pbuf.refresh_locked,*/
 
   &lwip_stats.mem.avail,
   &lwip_stats.mem.used,
