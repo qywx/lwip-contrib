@@ -227,8 +227,10 @@ sys_mbox_trypost(struct sys_mbox *mbox, void *msg)
   LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_trypost: mbox %p msg %p\n",
                           (void *)mbox, (void *)msg));
   
-  if ((mbox->last + 1) >= (mbox->first + SYS_MBOX_SIZE))
+  if ((mbox->last + 1) >= (mbox->first + SYS_MBOX_SIZE)) {
+    sys_sem_signal(mbox->mutex);
     return ERR_MEM;
+  }
 
   mbox->msgs[mbox->last % SYS_MBOX_SIZE] = msg;
   
