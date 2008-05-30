@@ -72,7 +72,8 @@ struct sys_mbox_msg {
 struct sys_mbox {
   int first, last;
   void *msgs[SYS_MBOX_SIZE];
-  struct sys_sem *mail;
+  struct sys_sem *not_empty;
+  struct sys_sem *not_full;
   struct sys_sem *mutex;
   int wait_send;
 };
@@ -96,8 +97,8 @@ static pthread_mutex_t lwprot_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t lwprot_thread = (pthread_t) 0xDEAD;
 static int lwprot_count = 0;
 
-static struct sys_sem *sys_sem_new_(u8_t count);
-static void sys_sem_free_(struct sys_sem *sem);
+static struct sys_sem *sys_sem_new_internal(u8_t count);
+static void sys_sem_free_internal(struct sys_sem *sem);
 
 static u32_t cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex,
                        u32_t timeout);
@@ -183,8 +184,9 @@ sys_mbox_new(int size)
   mbox = malloc(sizeof(struct sys_mbox));
   if (mbox != NULL) {
     mbox->first = mbox->last = 0;
-    mbox->mail = sys_sem_new_(0);
-    mbox->mutex = sys_sem_new_(1);
+    mbox->not_empty = sys_sem_new_internal(0);
+    mbox->not_full = sys_sem_new_internal(0);
+    mbox->mutex = sys_sem_new_internal(1);
     mbox->wait_send = 0;
   
 #if SYS_STATS
@@ -206,9 +208,10 @@ sys_mbox_free(struct sys_mbox *mbox)
 #endif /* SYS_STATS */
     sys_sem_wait(mbox->mutex);
     
-    sys_sem_free_(mbox->mail);
-    sys_sem_free_(mbox->mutex);
-    mbox->mail = mbox->mutex = NULL;
+    sys_sem_free_internal(mbox->not_empty);
+    sys_sem_free_internal(mbox->not_full);
+    sys_sem_free_internal(mbox->mutex);
+    mbox->not_empty = mbox->not_full = mbox->mutex = NULL;
     /*  LWIP_DEBUGF("sys_mbox_free: mbox 0x%lx\n", mbox); */
     free(mbox);
   }
@@ -238,7 +241,7 @@ sys_mbox_trypost(struct sys_mbox *mbox, void *msg)
   mbox->last++;
   
   if (first) {
-    sys_sem_signal(mbox->mail);
+    sys_sem_signal(mbox->not_empty);
   }
 
   sys_sem_signal(mbox->mutex);
@@ -258,7 +261,7 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
   while ((mbox->last + 1) >= (mbox->first + SYS_MBOX_SIZE)) {
     mbox->wait_send++;
     sys_sem_signal(mbox->mutex);
-    sys_arch_sem_wait(mbox->mail, 0);
+    sys_arch_sem_wait(mbox->not_full, 0);
     sys_arch_sem_wait(mbox->mutex, 0);
     mbox->wait_send--;
   }
@@ -274,7 +277,7 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
   mbox->last++;
   
   if (first) {
-    sys_sem_signal(mbox->mail);
+    sys_sem_signal(mbox->not_empty);
   }
 
   sys_sem_signal(mbox->mutex);
@@ -301,7 +304,7 @@ sys_arch_mbox_tryfetch(struct sys_mbox *mbox, void **msg)
   mbox->first++;
   
   if (mbox->wait_send) {
-    sys_sem_signal(mbox->mail);
+    sys_sem_signal(mbox->not_full);
   }
 
   sys_sem_signal(mbox->mutex);
@@ -324,13 +327,13 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
     /* We block while waiting for a mail to arrive in the mailbox. We
        must be prepared to timeout. */
     if (timeout != 0) {
-      time = sys_arch_sem_wait(mbox->mail, timeout);
+      time = sys_arch_sem_wait(mbox->not_empty, timeout);
       
       if (time == SYS_ARCH_TIMEOUT) {
         return SYS_ARCH_TIMEOUT;
       }
     } else {
-      sys_arch_sem_wait(mbox->mail, 0);
+      sys_arch_sem_wait(mbox->not_empty, 0);
     }
     
     sys_arch_sem_wait(mbox->mutex, 0);
@@ -347,7 +350,7 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
   mbox->first++;
   
   if (mbox->wait_send) {
-    sys_sem_signal(mbox->mail);
+    sys_sem_signal(mbox->not_full);
   }
 
   sys_sem_signal(mbox->mutex);
@@ -355,21 +358,8 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
   return time;
 }
 /*-----------------------------------------------------------------------------------*/
-struct sys_sem *
-sys_sem_new(u8_t count)
-{
-#if SYS_STATS
-  lwip_stats.sys.sem.used++;
-  if (lwip_stats.sys.sem.used > lwip_stats.sys.sem.max) {
-    lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
-  }
-#endif /* SYS_STATS */
-  return sys_sem_new_(count);
-}
-
-/*-----------------------------------------------------------------------------------*/
 static struct sys_sem *
-sys_sem_new_(u8_t count)
+sys_sem_new_internal(u8_t count)
 {
   struct sys_sem *sem;
   
@@ -381,7 +371,18 @@ sys_sem_new_(u8_t count)
   }
   return sem;
 }
-
+/*-----------------------------------------------------------------------------------*/
+struct sys_sem *
+sys_sem_new(u8_t count)
+{
+#if SYS_STATS
+  lwip_stats.sys.sem.used++;
+  if (lwip_stats.sys.sem.used > lwip_stats.sys.sem.max) {
+    lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
+  }
+#endif /* SYS_STATS */
+  return sys_sem_new_internal(count);
+}
 /*-----------------------------------------------------------------------------------*/
 static u32_t
 cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
@@ -465,6 +466,14 @@ sys_sem_signal(struct sys_sem *sem)
   pthread_mutex_unlock(&(sem->mutex));
 }
 /*-----------------------------------------------------------------------------------*/
+static void
+sys_sem_free_internal(struct sys_sem *sem)
+{
+  pthread_cond_destroy(&(sem->cond));
+  pthread_mutex_destroy(&(sem->mutex));
+  free(sem);
+}
+/*-----------------------------------------------------------------------------------*/
 void
 sys_sem_free(struct sys_sem *sem)
 {
@@ -472,17 +481,8 @@ sys_sem_free(struct sys_sem *sem)
 #if SYS_STATS
     lwip_stats.sys.sem.used--;
 #endif /* SYS_STATS */
-    sys_sem_free_(sem);
+    sys_sem_free_internal(sem);
   }
-}
-
-/*-----------------------------------------------------------------------------------*/
-static void
-sys_sem_free_(struct sys_sem *sem)
-{
-  pthread_cond_destroy(&(sem->cond));
-  pthread_mutex_destroy(&(sem->mutex));
-  free(sem);
 }
 /*-----------------------------------------------------------------------------------*/
 unsigned long
