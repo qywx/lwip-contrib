@@ -80,7 +80,7 @@ clos [connection #]: closes a TCP or UDP connection.\n\
 stat: prints out lwIP statistics.\n\
 quit: quits.\n";
 
-#define STAT_NUM (((5 + LWIP_UDP) * 13) + (4) + (11 * 4) + (2 * 3))
+#define STAT_NUM (((5 + UDP_STATS) * 13) + (4) + (11 * 4) + (2 * 3))
 
 static char *stat_msgs[STAT_NUM] = {
   "Link level * transmitted ",
@@ -135,7 +135,7 @@ static char *stat_msgs[STAT_NUM] = {
   "             option errors ",
   "           * misc errors ",
   "             cache hits ",  
-#if LWIP_UDP
+#if UDP_STATS
   "UDP        * transmitted ",
   "             retransmitted ",
   "           * received ",
@@ -276,7 +276,7 @@ static char *stat_formats[STAT_NUM] = {
   U16_F, /* icmp err */
   U16_F, /* icmp cachehit */
 
-#if LWIP_UDP
+#if UDP_STATS
   U16_F, /* udp xmit */
   U16_F, /* udp rexmit */
   U16_F, /* udp recv */
@@ -433,7 +433,7 @@ static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.icmp.err,
   &lwip_stats.icmp.cachehit,
 
-#if LWIP_UDP
+#if UDP_STATS
   &lwip_stats.udp.xmit,
   &lwip_stats.udp.rexmit,
   &lwip_stats.udp.recv,
