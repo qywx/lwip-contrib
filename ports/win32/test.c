@@ -393,7 +393,7 @@ test_init(void * arg)
 
 #if !NO_SYS
   sys_sem_signal(init_sem);
-#endif /* NO_SYS */
+#endif /* !NO_SYS */
 }
 
 /* This is somewhat different to other ports: we have a main loop here:
