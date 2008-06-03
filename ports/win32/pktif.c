@@ -103,9 +103,9 @@
 
 /* link state notification macro */
 #if NO_SYS
-#define NOTIFY_LINKSTATE(netif,linkfunc) tcpip_timeout(PHY_LINKUP_DELAY, (sys_timeout_handler)linkfunc, netif)
-#else  /* NO_SYS*/
 #define NOTIFY_LINKSTATE(netif,linkfunc) linkfunc(netif)
+#else  /* NO_SYS*/
+#define NOTIFY_LINKSTATE(netif,linkfunc) tcpip_timeout(PHY_LINKUP_DELAY, (sys_timeout_handler)linkfunc, netif)
 #endif /* NO_SYS*/
 
 /* Forward declarations. */
