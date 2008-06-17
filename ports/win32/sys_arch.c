@@ -194,8 +194,8 @@ struct sys_timeouts *sys_arch_timeouts(void)
 {
   struct sys_timeouts *ret = NULL;
   struct threadlist *t, *new_thread;
-  SYS_ARCH_DECL_PROTECT(lev);
   DWORD threadID;
+  SYS_ARCH_DECL_PROTECT(lev);
 
   threadID = GetCurrentThreadId();
   SYS_ARCH_PROTECT(lev);
