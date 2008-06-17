@@ -428,6 +428,10 @@ void main_loop()
 
     /* check for packets and link status*/
     ethernetif_poll(&netif);
+#if !LWIP_NETIF_LOOPBACK_MULTITHREADING
+    /* check for loopback packets on all netifs */
+    netif_poll_all();
+#endif /* !LWIP_NETIF_LOOPBACK_MULTITHREADING */
   }
 
   /* release the pcap library... */

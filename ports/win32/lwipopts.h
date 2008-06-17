@@ -43,6 +43,8 @@
 #define LWIP_DNS                   1
 
 #define LWIP_HAVE_LOOPIF           1
+#define LWIP_NETIF_LOOPBACK        1
+#define LWIP_LOOPBACK_MAX_PBUFS    10
 
 #define TCP_LISTEN_BACKLOG         0
 
