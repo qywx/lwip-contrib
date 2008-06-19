@@ -587,10 +587,12 @@ unsigned long
 sys_jiffies(void)
 {
     struct timeval tv;
-    unsigned long sec = tv.tv_sec;
-    long usec = tv.tv_usec;
+    unsigned long sec;
+    long usec;
 
     gettimeofday(&tv,NULL);
+    sec = tv.tv_sec - starttime.tv_sec;
+    usec = tv.tv_usec;
 
     if (sec >= (MAX_JIFFY_OFFSET / HZ))
 	return MAX_JIFFY_OFFSET;
