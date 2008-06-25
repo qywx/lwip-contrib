@@ -221,6 +221,8 @@ static u8_t
 ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *addr)
 {
   struct icmp_echo_hdr *iecho;
+  LWIP_UNUSED_ARG(arg);
+  LWIP_UNUSED_ARG(pcb);
 
   if (pbuf_header( p, -PBUF_IP_HLEN)==0) {
     iecho = p->payload;
