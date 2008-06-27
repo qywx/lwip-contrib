@@ -116,7 +116,7 @@ sys_sem_t sys_sem_new(u8_t count)
   LWIP_ASSERT("Error creating semaphore", new_sem != NULL);
   if(new_sem != NULL) {
 #if LWIP_STATS
-    lwip_stats.sys.sem.used++;
+    SYS_STATS_INC(sem.used);
     LWIP_ASSERT("sys_sem_new() counter overflow", lwip_stats.sys.sem.used != 0 );
     if (lwip_stats.sys.sem.used > lwip_stats.sys.sem.max) {
       lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
@@ -127,7 +127,7 @@ sys_sem_t sys_sem_new(u8_t count)
    
   /* failed to allocate memory... */
 #if LWIP_STATS
-  lwip_stats.sys.sem.err++;
+  SYS_STATS_INC(sem.err);
 #endif /* LWIP_STATS */
   return SYS_SEM_NULL;
 }
@@ -140,7 +140,7 @@ void sys_sem_free(sys_sem_t sem)
   CloseHandle(sem);
 
 #if LWIP_STATS
-  lwip_stats.sys.sem.used--;
+  SYS_STATS_DEC(sem.used);
   LWIP_ASSERT("sys_sem_free() closed more than created", lwip_stats.sys.sem.used != (u16_t)-1);
 #endif /* LWIP_STATS */
 }
@@ -263,7 +263,7 @@ sys_mbox_t sys_mbox_new(int size)
   LWIP_ASSERT("new_mbox != NULL", new_mbox != NULL);
   if(new_mbox == NULL) {
 #if LWIP_STATS
-    lwip_stats.sys.mbox.err++;
+    SYS_STATS_INC(mbox.err);
 #endif /* LWIP_STATS */
     return SYS_SEM_NULL;
   }
@@ -271,7 +271,7 @@ sys_mbox_t sys_mbox_new(int size)
   LWIP_ASSERT("Error creating semaphore", new_mbox->sem != NULL);
   if(new_mbox->sem == NULL) {
 #if LWIP_STATS
-    lwip_stats.sys.mbox.err++;
+    SYS_STATS_INC(mbox.err);
 #endif /* LWIP_STATS */
     free(new_mbox);
     new_mbox = NULL;
@@ -281,7 +281,7 @@ sys_mbox_t sys_mbox_new(int size)
   new_mbox->head = 0;
   new_mbox->tail = 0;
 #if LWIP_STATS
-  lwip_stats.sys.mbox.used++;
+  SYS_STATS_INC(mbox.used);
   LWIP_ASSERT("sys_mbox_new() counter overflow", lwip_stats.sys.mbox.used != 0 );
   if (lwip_stats.sys.mbox.used > lwip_stats.sys.mbox.max) {
     lwip_stats.sys.mbox.max = lwip_stats.sys.mbox.used;
@@ -301,7 +301,7 @@ void sys_mbox_free(sys_mbox_t mbox)
   free(mbox);
 
 #if LWIP_STATS
-   lwip_stats.sys.mbox.used--;
+   SYS_STATS_DEC(mbox.used);
    LWIP_ASSERT( "sys_mbox_free() ", lwip_stats.sys.mbox.used!= (u16_t)-1 );
 #endif /* LWIP_STATS */
 }
