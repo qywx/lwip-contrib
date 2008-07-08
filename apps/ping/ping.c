@@ -91,6 +91,9 @@
 /* ping variables */
 static u16_t ping_seq_num;
 static u32_t ping_time;
+#if !LWIP_SOCKET
+static struct raw_pcb *pcb;
+#endif /* LWIP_SOCKET */
 
 #if NO_SYS
 /* port-defined functions used for timer execution */
@@ -281,8 +284,6 @@ ping_timeout(void *arg)
 static void
 ping_raw_init(void)
 {
-  struct raw_pcb *pcb;
-
   if (!(pcb = raw_new(IP_PROTO_ICMP))) {
     return;
   }
@@ -291,6 +292,14 @@ ping_raw_init(void)
   raw_bind(pcb, IP_ADDR_ANY);
   sys_timeout(PING_DELAY, ping_timeout, pcb);
 }
+
+#if NO_SYS
+void
+ping_send_now()
+{
+  ping_timeout((void*)pcb);
+}
+#endif /* NO_SYS */
 
 #endif /* LWIP_SOCKET */
 
