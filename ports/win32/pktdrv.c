@@ -190,7 +190,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
   ppacket_oid_data->Oid = OID_GEN_VENDOR_DESCRIPTION;
   ppacket_oid_data->Length = PACKET_OID_DATA_SIZE;
   if (PacketRequest(pa->lpAdapter, FALSE, ppacket_oid_data)) {
-    printf("USE: %s\n", ppacket_oid_data->Data);
+    printf("USE: %s", ppacket_oid_data->Data);
   }
   /* get the MAC address of the selected adapter */
   ppacket_oid_data->Oid = OID_802_3_PERMANENT_ADDRESS;
@@ -206,7 +206,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
     /* copy the MAC address to the user supplied buffer, also */
     memcpy(mac_addr, &ethaddr, ETHARP_HWADDR_LEN);
   }
-  printf("MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", ethaddr[0], ethaddr[1], ethaddr[2],
+  printf(" [MAC: %02X:%02X:%02X:%02X:%02X:%02X]\n", ethaddr[0], ethaddr[1], ethaddr[2],
           ethaddr[3], ethaddr[4], ethaddr[5]);
   /* some more adapter settings */
   PacketSetBuff(pa->lpAdapter, PACKET_ADAPTER_BUFSIZE);

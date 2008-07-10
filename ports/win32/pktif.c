@@ -115,20 +115,21 @@ void ethernetif_process_input(void *arg, void *packet, int len);
 static void
 low_level_init(struct netif *netif)
 {
-  char mac_addr[ETHARP_HWADDR_LEN];
+  char adapter_mac_addr[ETHARP_HWADDR_LEN];
+  char my_mac_addr[ETHARP_HWADDR_LEN] = LWIP_MAC_ADDR_BASE;
 
   /* Do whatever else is needed to initialize interface. */
-  if ((netif->state = init_adapter(PACKET_LIB_ADAPTER_NR, mac_addr,
+  if ((netif->state = init_adapter(PACKET_LIB_ADAPTER_NR, adapter_mac_addr,
                                    ethernetif_process_input, netif)) == NULL) {
     printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
     return;
   }
 
-  /* Prepare MAC addr: increase the last octet so that lwIP netif has a similar but different MAC addr */
-  memcpy(&netif->hwaddr, mac_addr, ETHARP_HWADDR_LEN);
   /* change the MAC address to a unique value
      so that multiple ethernetifs are supported */
-  netif->hwaddr[ETHARP_HWADDR_LEN - 1] += 1 + netif->num;
+  my_mac_addr[ETHARP_HWADDR_LEN - 1] += netif->num;
+  /* Copy MAC addr */
+  memcpy(&netif->hwaddr, my_mac_addr, ETHARP_HWADDR_LEN);
 
   LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
 }
