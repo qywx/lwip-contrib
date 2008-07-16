@@ -51,6 +51,7 @@ static void
 conn_err(void *arg, err_t err)
 {
   struct http_state *hs;
+  LWIP_UNUSED_ARG(err);
 
   hs = arg;
   mem_free(hs);
@@ -123,6 +124,7 @@ static err_t
 http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 {
   struct http_state *hs;
+  LWIP_UNUSED_ARG(len);
 
   hs = arg;
 
@@ -199,6 +201,8 @@ static err_t
 http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 {
   struct http_state *hs;
+  LWIP_UNUSED_ARG(arg);
+  LWIP_UNUSED_ARG(err);
 
   tcp_setprio(pcb, TCP_PRIO_MIN);
   

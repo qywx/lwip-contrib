@@ -68,6 +68,7 @@ static sio_status_t statusar[3];
  */
 static void	signal_handler_IO_0( int status )
 {
+	LWIP_UNUSED_ARG(status);
 	LWIP_DEBUGF(SIO_DEBUG, ("SigHand: rxSignal channel 0\n"));
 	fifoPut( &statusar[0].myfifo, statusar[0].fd );
 }
@@ -78,6 +79,7 @@ static void	signal_handler_IO_0( int status )
  */
 static void signal_handler_IO_1( int status )
 {
+	LWIP_UNUSED_ARG(status);
 	LWIP_DEBUGF(SIO_DEBUG, ("SigHand: rxSignal channel 1\n"));
 	fifoPut( &statusar[1].myfifo, statusar[1].fd );
 }
@@ -96,6 +98,7 @@ static int sio_init( char * device, int devnum, sio_status_t * siostat )
 	struct sigaction saio;           /* definition of signal action */
 #endif
 	int fd;
+	LWIP_UNUSED_ARG(siostat);
 
 	/* open the device to be non-blocking (read will return immediately) */
 	fd = open( device, O_RDWR | O_NOCTTY | O_NONBLOCK );
@@ -212,6 +215,7 @@ void sio_send_string( u8_t *str, sio_status_t * siostat )
 
 void sio_flush( sio_status_t * siostat )
 {
+	LWIP_UNUSED_ARG(siostat);
 	/* not implemented in unix as it is not needed */
  	/*sio_status_t * siostat = ((siostruct_t*)netif->state)->sio; */
 }

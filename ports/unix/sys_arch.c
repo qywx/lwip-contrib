@@ -157,7 +157,10 @@ sys_thread_new(char *name, void (* function)(void *arg), void *arg, int stacksiz
   int code;
   pthread_t tmp;
   struct sys_thread *st = NULL;
-  
+  LWIP_UNUSED_ARG(name);
+  LWIP_UNUSED_ARG(stacksize);
+  LWIP_UNUSED_ARG(prio);
+
   code = pthread_create(&tmp,
                         NULL, 
                         (void *(*)(void *)) 
@@ -180,6 +183,7 @@ struct sys_mbox *
 sys_mbox_new(int size)
 {
   struct sys_mbox *mbox;
+  LWIP_UNUSED_ARG(size);
   
   mbox = malloc(sizeof(struct sys_mbox));
   if (mbox != NULL) {
@@ -317,7 +321,7 @@ sys_arch_mbox_tryfetch(struct sys_mbox *mbox, void **msg)
 u32_t
 sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
 {
-  u32_t time = 0;
+  u32_t time_needed = 0;
   
   /* The mutex lock is quick so we don't bother with the timeout
      stuff here. */
@@ -329,9 +333,9 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
     /* We block while waiting for a mail to arrive in the mailbox. We
        must be prepared to timeout. */
     if (timeout != 0) {
-      time = sys_arch_sem_wait(mbox->not_empty, timeout);
+      time_needed = sys_arch_sem_wait(mbox->not_empty, timeout);
       
-      if (time == SYS_ARCH_TIMEOUT) {
+      if (time_needed == SYS_ARCH_TIMEOUT) {
         return SYS_ARCH_TIMEOUT;
       }
     } else {
@@ -357,7 +361,7 @@ sys_arch_mbox_fetch(struct sys_mbox *mbox, void **msg, u32_t timeout)
 
   sys_sem_signal(mbox->mutex);
 
-  return time;
+  return time_needed;
 }
 /*-----------------------------------------------------------------------------------*/
 static struct sys_sem *
@@ -432,26 +436,26 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
 u32_t
 sys_arch_sem_wait(struct sys_sem *sem, u32_t timeout)
 {
-  u32_t time = 0;
+  u32_t time_needed = 0;
   
   pthread_mutex_lock(&(sem->mutex));
   while (sem->c <= 0) {
     if (timeout > 0) {
-      time = cond_wait(&(sem->cond), &(sem->mutex), timeout);
+      time_needed = cond_wait(&(sem->cond), &(sem->mutex), timeout);
       
-      if (time == SYS_ARCH_TIMEOUT) {
+      if (time_needed == SYS_ARCH_TIMEOUT) {
         pthread_mutex_unlock(&(sem->mutex));
         return SYS_ARCH_TIMEOUT;
       }
       /*      pthread_mutex_unlock(&(sem->mutex));
-              return time; */
+              return time_needed; */
     } else {
       cond_wait(&(sem->cond), &(sem->mutex), 0);
     }
   }
   sem->c--;
   pthread_mutex_unlock(&(sem->mutex));
-  return time;
+  return time_needed;
 }
 /*-----------------------------------------------------------------------------------*/
 void
@@ -563,6 +567,7 @@ an operating system.
 void
 sys_arch_unprotect(sys_prot_t pval)
 {
+    LWIP_UNUSED_ARG(pval);
     if (lwprot_thread == pthread_self())
     {
         if (--lwprot_count == 0)

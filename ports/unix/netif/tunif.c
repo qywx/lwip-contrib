@@ -234,6 +234,7 @@ tunif_output(struct netif *netif, struct pbuf *p,
 		  struct ip_addr *ipaddr)
 {
   struct tunif *tunif;
+  LWIP_UNUSED_ARG(ipaddr);
 
   tunif = netif->state;
 
