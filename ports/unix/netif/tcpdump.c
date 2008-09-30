@@ -123,14 +123,14 @@ tcpdump(struct pbuf *p)
     
     len = ntohs(IPH_LEN(iphdr)) - offset * 4 - IP_HLEN;
     if (len != 0 || flags[0] != '.') {
-      fprintf(file, "%s %lu:%lu(%u) ",
+      fprintf(file, "%s %u:%u(%u) ",
 	      flags,
 	      ntohl(tcphdr->seqno),
 	      ntohl(tcphdr->seqno) + len,
 	      len);
     }
     if (TCPH_FLAGS(tcphdr) & TCP_ACK) {
-      fprintf(file, "ack %lu ",
+      fprintf(file, "ack %u ",
 	      ntohl(tcphdr->ackno));
     }
     fprintf(file, "wnd %u\n",

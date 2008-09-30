@@ -80,11 +80,10 @@ clos [connection #]: closes a TCP or UDP connection.\n\
 stat: prints out lwIP statistics.\n\
 quit: quits.\n";
 
-#define STAT_NUM (((5 + UDP_STATS) * 13) + (4) + (11 * 4) + (2 * 3))
+#define STAT_NUM (((5 + UDP_STATS) * 12) + (4) + (11 * 4) + (2 * 3))
 
 static char *stat_msgs[STAT_NUM] = {
   "Link level * transmitted ",
-  "             retransmitted ",
   "           * received ",
   "             forwarded ",
   "           * dropped ",
@@ -97,7 +96,6 @@ static char *stat_msgs[STAT_NUM] = {
   "           * misc errors ",
   "             cache hits ",  
   "IP_FRAG    * transmitted ",
-  "             retransmitted ",
   "           * received ",
   "           * forwarded ",
   "           * dropped ",
@@ -110,7 +108,6 @@ static char *stat_msgs[STAT_NUM] = {
   "           * misc errors ",
   "             cache hits ",
   "IP         * transmitted ",
-  "             retransmitted ",
   "           * received ",
   "           * forwarded ",
   "           * dropped ",
@@ -123,7 +120,6 @@ static char *stat_msgs[STAT_NUM] = {
   "           * misc errors ",
   "             cache hits ",
   "ICMP       * transmitted ",
-  "             retransmitted ",
   "           * received ",
   "             forwarded ",
   "           * dropped ",
@@ -137,7 +133,6 @@ static char *stat_msgs[STAT_NUM] = {
   "             cache hits ",  
 #if UDP_STATS
   "UDP        * transmitted ",
-  "             retransmitted ",
   "           * received ",
   "             forwarded ",
   "           * dropped ",
@@ -151,7 +146,6 @@ static char *stat_msgs[STAT_NUM] = {
   "             cache hits ",  
 #endif
   "TCP        * transmitted ",
-  "           * retransmitted ",
   "           * received ",
   "             forwarded ",
   "           * dropped ",
@@ -221,7 +215,6 @@ static char *stat_msgs[STAT_NUM] = {
 
 static char *stat_formats[STAT_NUM] = {
   U16_F, /* link xmit */
-  U16_F, /* link rexmit */
   U16_F, /* link recv */
   U16_F, /* link fw */ 
   U16_F, /* link drop */
@@ -235,7 +228,6 @@ static char *stat_formats[STAT_NUM] = {
   U16_F, /* link cachehit */
 
   U16_F, /* ip_frag xmit */
-  U16_F, /* ip_frag rexmit */
   U16_F, /* ip_frag recv */
   U16_F, /* ip_frag fw */ 
   U16_F, /* ip_frag drop */
@@ -249,7 +241,6 @@ static char *stat_formats[STAT_NUM] = {
   U16_F, /* ip_frag cachehit */
 
   U16_F, /* ip xmit */
-  U16_F, /* ip rexmit */
   U16_F, /* ip recv */
   U16_F, /* ip fw */ 
   U16_F, /* ip drop */
@@ -263,7 +254,6 @@ static char *stat_formats[STAT_NUM] = {
   U16_F, /* ip cachehit */
 
   U16_F, /* icmp xmit */
-  U16_F, /* icmp rexmit */
   U16_F, /* icmp recv */
   U16_F, /* icmp fw */ 
   U16_F, /* icmp drop */
@@ -278,7 +268,6 @@ static char *stat_formats[STAT_NUM] = {
 
 #if UDP_STATS
   U16_F, /* udp xmit */
-  U16_F, /* udp rexmit */
   U16_F, /* udp recv */
   U16_F, /* udp fw */ 
   U16_F, /* udp drop */
@@ -293,7 +282,6 @@ static char *stat_formats[STAT_NUM] = {
 #endif
 
   U16_F, /* tcp xmit */
-  U16_F, /* tcp exmit */
   U16_F, /* tcp recv */
   U16_F, /* tcp fw */ 
   U16_F, /* tcp drop */
@@ -378,7 +366,6 @@ static char *stat_formats[STAT_NUM] = {
 
 static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.link.xmit,
-  &lwip_stats.link.rexmit,
   &lwip_stats.link.recv,
   &lwip_stats.link.fw,
   &lwip_stats.link.drop,
@@ -392,7 +379,6 @@ static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.link.cachehit,
 
   &lwip_stats.ip_frag.xmit,
-  &lwip_stats.ip_frag.rexmit,
   &lwip_stats.ip_frag.recv,
   &lwip_stats.ip_frag.fw,
   &lwip_stats.ip_frag.drop,
@@ -406,7 +392,6 @@ static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.ip_frag.cachehit,
 
   &lwip_stats.ip.xmit,
-  &lwip_stats.ip.rexmit,
   &lwip_stats.ip.recv,
   &lwip_stats.ip.fw,
   &lwip_stats.ip.drop,
@@ -420,7 +405,6 @@ static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.ip.cachehit,
 
   &lwip_stats.icmp.xmit,
-  &lwip_stats.icmp.rexmit,
   &lwip_stats.icmp.recv,
   &lwip_stats.icmp.fw,
   &lwip_stats.icmp.drop,
@@ -435,7 +419,6 @@ static void *stat_ptrs[STAT_NUM] = {
 
 #if UDP_STATS
   &lwip_stats.udp.xmit,
-  &lwip_stats.udp.rexmit,
   &lwip_stats.udp.recv,
   &lwip_stats.udp.fw,
   &lwip_stats.udp.drop,
@@ -450,7 +433,6 @@ static void *stat_ptrs[STAT_NUM] = {
 #endif
 
   &lwip_stats.tcp.xmit,
-  &lwip_stats.tcp.rexmit,
   &lwip_stats.tcp.recv,
   &lwip_stats.tcp.fw,
   &lwip_stats.tcp.drop,

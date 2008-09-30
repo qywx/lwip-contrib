@@ -172,8 +172,8 @@ sys_thread_new(char *name, void (* function)(void *arg), void *arg, int stacksiz
   }
   
   if (NULL == st) {
-    LWIP_DEBUGF(SYS_DEBUG, ("sys_thread_new: pthread_create %d, st = 0x%x",
-                       code, (int)st));
+    LWIP_DEBUGF(SYS_DEBUG, ("sys_thread_new: pthread_create %d, st = 0x%lx",
+                       code, (unsigned long)st));
     abort();
   }
   return st;
@@ -588,7 +588,7 @@ sys_arch_unprotect(sys_prot_t pval)
 #define HZ 100
 #endif
 
-unsigned long
+u32_t
 sys_jiffies(void)
 {
     struct timeval tv;

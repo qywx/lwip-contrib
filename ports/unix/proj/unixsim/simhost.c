@@ -284,7 +284,7 @@ ping_recv(int s, struct ip_addr *addr)
 
   len = lwip_recvfrom(s, buf,sizeof(buf),0,(struct sockaddr*)&from,&fromlen);
 
-  printf("Received %d bytes from %lx\n",len,ntohl(from.sin_addr.s_addr));
+  printf("Received %d bytes from %x\n",len,ntohl(from.sin_addr.s_addr));
 }
 
 static void
