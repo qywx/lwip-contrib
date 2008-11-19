@@ -492,7 +492,7 @@ sys_sem_free(struct sys_sem *sem)
 }
 /*-----------------------------------------------------------------------------------*/
 unsigned long
-sys_unix_now()
+sys_now(void)
 {
   struct timeval tv;
   struct timezone tz;
