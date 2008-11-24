@@ -166,11 +166,13 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
   }
   /* invalid adapter index -> check this after printing the adapters */
   if (adapter_num < 0) {
+    printf("Invalid adapter_num: %d\n", adapter_num);
     free(pa);
     return NULL;
   }
   /* adapter index out of range */
-  if (adapter_num >= AdapterNum) {
+  if (adapter_num > AdapterNum) {
+    printf("Invalid adapter_num: %d\n", adapter_num);
     free(pa);
     return NULL;
   }

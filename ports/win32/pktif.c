@@ -122,6 +122,7 @@ low_level_init(struct netif *netif)
   if ((netif->state = init_adapter(PACKET_LIB_ADAPTER_NR, adapter_mac_addr,
                                    ethernetif_process_input, netif)) == NULL) {
     printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
+    LWIP_ASSERT("ERROR initializing network adapter!\n", 0);
     return;
   }
 
