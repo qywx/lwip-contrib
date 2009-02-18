@@ -209,7 +209,7 @@ low_level_input(struct netif *netif, void *packet, int packet_len)
   }
 
   /* We allocate a pbuf chain of pbufs from the pool. */
-  p = pbuf_alloc(PBUF_LINK, (u16_t)length, PBUF_POOL);
+  p = pbuf_alloc(PBUF_RAW, (u16_t)length, PBUF_POOL);
   LWIP_DEBUGF(NETIF_DEBUG, ("netif: recv length %i p->tot_len %i\n", length, (int)p->tot_len));
   
   if (p != NULL) {
