@@ -130,12 +130,13 @@ ping_send(int s, struct ip_addr *addr)
   struct icmp_echo_hdr *iecho;
   struct sockaddr_in to;
   size_t ping_size = sizeof(struct icmp_echo_hdr) + PING_DATA_SIZE;
+  LWIP_ASSERT("ping_size is too big", ping_size <= 0xffff);
 
-  if (!(iecho = mem_malloc(ping_size))) {
+  if (!(iecho = mem_malloc((mem_size_t)ping_size))) {
     return ERR_MEM;
   }
 
-  ping_prepare_echo(iecho, ping_size);
+  ping_prepare_echo(iecho, (u16_t)ping_size);
 
   to.sin_len = sizeof(to);
   to.sin_family = AF_INET;
