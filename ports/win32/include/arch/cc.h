@@ -39,6 +39,7 @@
 
 /** @todo fix some warnings: don't use #pragma if compiling with cygwin gcc */
 #ifndef __GNUC__
+#include <limits.h>
 #pragma warning (disable: 4127)
 #pragma warning (disable: 4244)
 #pragma warning (disable: 4706)
@@ -60,7 +61,7 @@ typedef signed     short   s16_t;
 typedef unsigned   long    u32_t;
 typedef signed     long    s32_t;
 
-typedef u32_t mem_ptr_t;
+typedef size_t mem_ptr_t;
 
 /* Define (sn)printf formatters for these lwIP types */
 #define U16_F "hu"
