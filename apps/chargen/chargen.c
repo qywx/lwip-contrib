@@ -81,14 +81,14 @@ static void close_chargen(struct charcb *p_charcb);
  **************************************************************/
 static void chargen_thread(void *arg)
 {
-
     int listenfd;
     struct sockaddr_in chargen_saddr;
     fd_set readset;
     fd_set writeset;
     int i, maxfdp1;
     struct charcb *p_charcb;
-    
+    LWIP_UNUSED_ARG(arg);
+
     /* First acquire our socket for listening for connections */
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
