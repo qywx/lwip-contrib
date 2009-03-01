@@ -105,19 +105,21 @@ u32_t sys_now();
 static void
 ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
 {
-  int i;
+  size_t i;
+  size_t data_len = len - sizeof(struct icmp_echo_hdr);
 
-  ICMPH_TYPE_SET(iecho,ICMP_ECHO);
+  ICMPH_TYPE_SET(iecho, ICMP_ECHO);
   ICMPH_CODE_SET(iecho, 0);
   iecho->chksum = 0;
   iecho->id     = PING_ID;
   iecho->seqno  = htons(++ping_seq_num);
-  iecho->chksum = inet_chksum(iecho, len);
 
   /* fill the additional data buffer with some data */
-  for(i = 0; i < PING_DATA_SIZE; i++) {
-    ((char*)iecho)[sizeof(struct icmp_echo_hdr) + i] = i;
+  for(i = 0; i < data_len; i++) {
+    ((char*)iecho)[sizeof(struct icmp_echo_hdr) + i] = (char)i;
   }
+
+  iecho->chksum = inet_chksum(iecho, len);
 }
 
 #if LWIP_SOCKET
