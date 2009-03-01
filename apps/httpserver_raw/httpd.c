@@ -106,13 +106,15 @@ http_poll(void *arg, struct tcp_pcb *pcb)
   hs = arg;
   
   /*  printf("Polll\n");*/
-  if (hs == NULL) {
+  if ((hs == NULL) && (pcb->state == ESTABLISHED)) {
     /*    printf("Null, close\n");*/
     tcp_abort(pcb);
     return ERR_ABRT;
-  } else {
+  } else if (hs != NULL) {
     ++hs->retries;
     if (hs->retries == 4) {
+      tcp_arg(pcb, NULL);
+      mem_free(hs);
       tcp_abort(pcb);
       return ERR_ABRT;
     }
