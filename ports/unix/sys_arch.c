@@ -491,17 +491,16 @@ sys_sem_free(struct sys_sem *sem)
   }
 }
 /*-----------------------------------------------------------------------------------*/
-unsigned long
+u32_t 
 sys_now(void)
 {
   struct timeval tv;
   struct timezone tz;
-  long sec, usec;
-  unsigned long msec;
+  u32_t sec, usec, msec;
   gettimeofday(&tv, &tz);
   
-  sec = tv.tv_sec - starttime.tv_sec;
-  usec = tv.tv_usec - starttime.tv_usec;
+  sec = (u32_t)(tv.tv_sec - starttime.tv_sec);
+  usec = (u32_t)(tv.tv_usec - starttime.tv_usec);
   msec = sec * 1000 + usec / 1000;
     
   return msec;
