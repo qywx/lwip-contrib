@@ -50,6 +50,7 @@
 #include "lwip/opt.h"
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
+#include "lwip/mem.h"
 
 #if LWIP_SOCKET
 
@@ -133,14 +134,14 @@ static void chargen_thread(void *arg)
         {
             /* We have a new connection request!!! */
             /* Lets create a new control block */
-            p_charcb = (struct charcb *)calloc(1, sizeof(struct charcb));
+            p_charcb = (struct charcb *)mem_malloc(sizeof(struct charcb));
             if (p_charcb)
             {
                 p_charcb->socket = accept(listenfd,
                                         (struct sockaddr *) &p_charcb->cliaddr,
                                         &p_charcb->clilen);
                 if (p_charcb->socket < 0)
-                    free(p_charcb);
+                    mem_free(p_charcb);
                 else
                 {
                     /* Keep this tecb in our list */
@@ -222,7 +223,7 @@ static void close_chargen(struct charcb *p_charcb)
                     break;
                 }
             }
-        free(p_charcb);
+        mem_free(p_charcb);
 }
 
 
