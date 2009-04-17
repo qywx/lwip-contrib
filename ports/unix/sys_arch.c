@@ -210,7 +210,7 @@ sys_mbox_free(struct sys_mbox *mbox)
 #if SYS_STATS
     lwip_stats.sys.mbox.used--;
 #endif /* SYS_STATS */
-    sys_sem_wait(mbox->mutex);
+    sys_arch_sem_wait(mbox->mutex, 0);
     
     sys_sem_free_internal(mbox->not_empty);
     sys_sem_free_internal(mbox->not_full);
@@ -226,7 +226,7 @@ sys_mbox_trypost(struct sys_mbox *mbox, void *msg)
 {
   u8_t first;
   
-  sys_sem_wait(mbox->mutex);
+  sys_arch_sem_wait(mbox->mutex, 0);
   
   LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_trypost: mbox %p msg %p\n",
                           (void *)mbox, (void *)msg));
@@ -260,7 +260,7 @@ sys_mbox_post(struct sys_mbox *mbox, void *msg)
 {
   u8_t first;
   
-  sys_sem_wait(mbox->mutex);
+  sys_arch_sem_wait(mbox->mutex, 0);
   
   LWIP_DEBUGF(SYS_DEBUG, ("sys_mbox_post: mbox %p msg %p\n", (void *)mbox, (void *)msg));
   
