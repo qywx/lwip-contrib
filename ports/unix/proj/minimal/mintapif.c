@@ -242,40 +242,15 @@ low_level_input(struct netif *netif)
 static void
 mintapif_input(struct netif *netif)
 {
-  struct mintapif *mintapif;
-  struct eth_hdr *ethhdr;
   struct pbuf *p;
 
-
-  mintapif = netif->state;
-  
   p = low_level_input(netif);
-
   if (p != NULL) {
-
 #if LINK_STATS
     lwip_stats.link.recv++;
 #endif /* LINK_STATS */
 
-    ethhdr = p->payload;
-
-    switch (htons(ethhdr->type)) {
-    case ETHTYPE_IP:
-#if 0
-/* CSi disabled ARP table update on ingress IP packets.
-   This seems to work but needs thorough testing. */
-      etharp_ip_input(netif, p);
-#endif
-      pbuf_header(p, -14);
-      netif->input(p, netif);
-      break;
-    case ETHTYPE_ARP:
-      etharp_arp_input(netif, mintapif->ethaddr, p);
-      break;
-    default:
-      LWIP_ASSERT("p != NULL", p != NULL);
-      pbuf_free(p);
-      break;
+    netif->input(p, netif);
     }
   }
 }

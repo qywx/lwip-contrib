@@ -179,7 +179,7 @@ main(int argc, char **argv)
 
   printf("TCP/IP initialized.\n");
   
-  netif_add(&netif, &ipaddr, &netmask, &gw, NULL, mintapif_init, ip_input);  
+  netif_add(&netif, &ipaddr, &netmask, &gw, NULL, mintapif_init, ethernet_input);
   netif_set_default(&netif);
   netif_set_up(&netif);
 
@@ -198,11 +198,10 @@ main(int argc, char **argv)
   echo_init();
   
   timer_init();
-  timer_set_interval(TIMER_EVT_ETHARPTMR,2000);
-  timer_set_interval(TIMER_EVT_TCPFASTTMR, TCP_FAST_INTERVAL / 10);
-  timer_set_interval(TIMER_EVT_TCPSLOWTMR, TCP_SLOW_INTERVAL / 10);
+  timer_set_interval(TIMER_EVT_ETHARPTMR, ARP_TMR_INTERVAL / 10);
+  timer_set_interval(TIMER_EVT_TCPTMR, TCP_TMR_INTERVAL / 10);
 #if IP_REASSEMBLY
-  timer_set_interval(TIMER_EVT_IPREASSTMR,100);
+  timer_set_interval(TIMER_EVT_IPREASSTMR, IP_TMR_INTERVAL / 10);
 #endif
   
   printf("Applications started.\n");
@@ -233,14 +232,10 @@ main(int argc, char **argv)
           sigprocmask(SIG_SETMASK, &oldmask, NULL);
       }
     
-      if(timer_testclr_evt(TIMER_EVT_TCPFASTTMR))
+      if(timer_testclr_evt(TIMER_EVT_TCPTMR))
       {
-        tcp_fasttmr();
+        tcp_tmr();
       }
-      if(timer_testclr_evt(TIMER_EVT_TCPSLOWTMR))
-      {
-        tcp_slowtmr();
-      }      
 #if IP_REASSEMBLY
       if(timer_testclr_evt(TIMER_EVT_IPREASSTMR))
       {
