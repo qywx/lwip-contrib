@@ -251,7 +251,6 @@ mintapif_input(struct netif *netif)
 #endif /* LINK_STATS */
 
     netif->input(p, netif);
-    }
   }
 }
 /*-----------------------------------------------------------------------------------*/
