@@ -32,8 +32,6 @@
 #ifndef __ARCH_SYS_ARCH_H__
 #define __ARCH_SYS_ARCH_H__
 
-typedef u32_t sys_prot_t;
-
 /* HANDLE is used for sys_sem_t but we won't include windows.h */
 typedef void* sys_sem_t;
 #define SYS_SEM_NULL NULL

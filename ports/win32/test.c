@@ -84,7 +84,7 @@
 
 #if NO_SYS
 /* port-defined functions used for timer execution */
-void sys_init_timing();
+void msvc_sys_init();
 u32_t sys_now();
 #endif /* NO_SYS */
 
@@ -135,7 +135,7 @@ static timers_infos timers_table[] = {
 static void
 nosys_init()
 {
-  sys_init_timing();
+  msvc_sys_init();
   lwip_init();
 }
 

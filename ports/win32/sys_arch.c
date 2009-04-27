@@ -65,6 +65,29 @@ u32_t sys_now()
   return sys_get_ms_longlong();
 }
 
+CRITICAL_SECTION critSec;
+
+void InitSysArchProtect()
+{
+  InitializeCriticalSection(&critSec);
+}
+u32_t sys_arch_protect()
+{
+  EnterCriticalSection(&critSec);
+  return 0;
+}
+void sys_arch_unprotect(u32_t pval)
+{
+  LWIP_UNUSED_ARG(pval);
+  LeaveCriticalSection(&critSec);
+}
+
+void msvc_sys_init()
+{
+  sys_init_timing();
+  InitSysArchProtect();
+}
+
 #if !NO_SYS
 
 #define MAX_QUEUE_ENTRIES 100
@@ -82,31 +105,15 @@ struct lwip_mbox {
 };
 
 struct threadlist *lwip_win32_threads = NULL;
-CRITICAL_SECTION critSec;
 
-void InitSysArchProtect()
+void sys_init()
 {
-  InitializeCriticalSection(&critSec);
+  msvc_sys_init();
 }
-u32_t sys_arch_protect()
-{
-  EnterCriticalSection(&critSec);
-  return 0;
-}
-void sys_arch_unprotect(u32_t pval)
-{
-  LWIP_UNUSED_ARG(pval);
-  LeaveCriticalSection(&critSec);
-}
+
 void do_sleep(int ms)
 {
   Sleep(ms);
-}
-
-void sys_init(void)
-{
-  sys_init_timing();
-  InitSysArchProtect();
 }
 
 sys_sem_t sys_sem_new(u8_t count)

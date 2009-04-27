@@ -62,6 +62,7 @@ typedef unsigned   long    u32_t;
 typedef signed     long    s32_t;
 
 typedef size_t mem_ptr_t;
+typedef u32_t sys_prot_t;
 
 /* Define (sn)printf formatters for these lwIP types */
 #define U16_F "hu"
@@ -70,6 +71,7 @@ typedef size_t mem_ptr_t;
 #define U32_F "lu"
 #define S32_F "ld"
 #define X32_F "lx"
+#define SZT_F U32_F
 
 /* Compiler hints for packing structures */
 #define PACK_STRUCT_STRUCT
@@ -81,7 +83,13 @@ typedef size_t mem_ptr_t;
 #define LWIP_PLATFORM_ASSERT(x) do {printf("Assertion \"%s\" failed at line %d in %s\n", \
                                      x, __LINE__, __FILE__); fflush(NULL); abort();} while(0)
 
+#define LWIP_ERROR(message, expression, handler) do { if (!(expression)) { \
+  printf("Assertion \"%s\" failed at line %d in %s\n", expression, __LINE__, __FILE__); \
+  fflush(NULL);handler;}} while(0)
+
 /* C runtime functions redefined */
 #define snprintf _snprintf
+
+u32_t dns_lookup_external_hosts_file(const char *name);
 
 #endif /* __ARCH_CC_H__ */
