@@ -580,7 +580,7 @@ sys_arch_unprotect(sys_prot_t pval)
 /*-----------------------------------------------------------------------------------*/
 
 #ifndef MAX_JIFFY_OFFSET
-#define MAX_JIFFY_OFFSET ((~0UL >> 1)-1)
+#define MAX_JIFFY_OFFSET ((~0U >> 1)-1)
 #endif
 
 #ifndef HZ
@@ -599,7 +599,7 @@ sys_jiffies(void)
     usec = tv.tv_usec;
 
     if (sec >= (MAX_JIFFY_OFFSET / HZ))
-	return MAX_JIFFY_OFFSET;
+      return MAX_JIFFY_OFFSET;
     usec += 1000000L / HZ - 1;
     usec /= 1000000L / HZ;
     return HZ * sec + usec;

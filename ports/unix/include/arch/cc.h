@@ -59,6 +59,13 @@ typedef unsigned long mem_ptr_t;
 #define S32_F "d"
 #define X32_F "x"
 
+/* If only we could use C99 and get %zu */
+#if defined(__x86_64__)
+#define SZT_F "lu"
+#else
+#define SZT_F "u"
+#endif
+
 /* Compiler hints for packing structures */
 #define PACK_STRUCT_FIELD(x) x
 #define PACK_STRUCT_STRUCT __attribute__((packed))
