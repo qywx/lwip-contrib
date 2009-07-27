@@ -212,6 +212,9 @@ http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
   LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(err);
 
+  /* Decrease the listen backlog counter */
+  tcp_accepted(pcb);
+
   tcp_setprio(pcb, TCP_PRIO_MIN);
   
   /* Allocate memory for the structure that holds the state of the
@@ -239,6 +242,7 @@ http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
   tcp_err(pcb, conn_err);
   
   tcp_poll(pcb, http_poll, 4);
+
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
