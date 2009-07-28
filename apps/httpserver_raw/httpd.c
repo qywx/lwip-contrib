@@ -210,7 +210,6 @@ http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
   struct http_state *hs;
   struct tcp_pcb_listen *lpcb = (struct tcp_pcb_listen*)arg;
 
-  LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(err);
 
   /* Decrease the listen backlog counter */
