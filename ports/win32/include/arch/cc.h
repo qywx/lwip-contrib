@@ -32,10 +32,21 @@
 #ifndef __ARCH_CC_H__
 #define __ARCH_CC_H__
 
+#if 1
 /* Include some files for defining library routines */
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio.h> /* printf, fflush, FILE */
+#include <stdlib.h> /* abort */
+#else
+/* Declare fuction prototypes for assert/diag/error - leads to some warnings,
+ * but good to test if no includes are missing. */
+int printf(const char *format, ...);
+void abort(void);
+struct _iobuf;
+typedef struct _iobuf FILE;
+int fflush(FILE *stream);
+#endif
+
+
 
 /** @todo fix some warnings: don't use #pragma if compiling with cygwin gcc */
 #ifndef __GNUC__
@@ -84,7 +95,7 @@ typedef u32_t sys_prot_t;
                                      x, __LINE__, __FILE__); fflush(NULL); abort();} while(0)
 
 #define LWIP_ERROR(message, expression, handler) do { if (!(expression)) { \
-  printf("Assertion \"%s\" failed at line %d in %s\n", expression, __LINE__, __FILE__); \
+  printf("Assertion \"%s\" failed at line %d in %s\n", message, __LINE__, __FILE__); \
   fflush(NULL);handler;}} while(0)
 
 /* C runtime functions redefined */
