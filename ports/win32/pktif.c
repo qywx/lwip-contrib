@@ -67,6 +67,7 @@
 /* get the windows definitions of the following 4 functions out of the way */
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "lwip/debug.h"
 

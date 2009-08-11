@@ -31,14 +31,12 @@
  */
 
 #include "lwip/debug.h"
-
 #include "lwip/stats.h"
-
 #include "httpd.h"
-
 #include "lwip/tcp.h"
-
 #include "fs.h"
+
+#include <string.h>
 
 struct http_state {
   u32_t left;

@@ -38,7 +38,8 @@
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
 
-#include "time.h"
+#include <string.h>
+#include <time.h>
 
 /** This is an example of a "SNTP" client (with socket API).
  * 

@@ -52,6 +52,8 @@
 #include "lwip/sockets.h"
 #include "lwip/mem.h"
 
+#include <string.h>
+
 #if LWIP_SOCKET
 
 #define MAX_SERV                 5         /* Maximum number of chargen services. Don't need too many */

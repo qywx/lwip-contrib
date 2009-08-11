@@ -38,6 +38,8 @@
 #include "lwip/udp.h"
 #include "lwip/netif.h"
 
+#include <string.h>
+
 /** This is an example implementation of a NetBIOS name server.
  * It responds to name queries for a configurable name.
  * Name resolving is not supported.
