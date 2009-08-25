@@ -89,8 +89,10 @@ u32_t sys_now();
 #endif /* NO_SYS */
 
 /* globales variables for netifs */
+#if !PPP_SUPPORT
 /* THE ethernet interface */
 struct netif netif;
+#endif /* PPP_SUPPORT */
 #if LWIP_HAVE_LOOPIF
 /* THE loopback interface */
 struct netif loop_netif;
@@ -178,11 +180,11 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
       struct ppp_addrs *ppp_addrs = arg;
 
       printf("pppLinkStatusCallback: PPPERR_NONE\n");
-      printf(" our_ipaddr=%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->our_ipaddr.addr)));
-      printf(" his_ipaddr=%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->his_ipaddr.addr)));
-      printf(" netmask   =%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->netmask.addr)));
-      printf(" dns1      =%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->dns1.addr)));
-      printf(" dns2      =%s\n", inet_ntoa(*(struct in_addr*)&(ppp_addrs->dns2.addr)));
+      printf(" our_ipaddr=%s\n", ip_ntoa(&ppp_addrs->our_ipaddr));
+      printf(" his_ipaddr=%s\n", ip_ntoa(&ppp_addrs->his_ipaddr));
+      printf(" netmask   =%s\n", ip_ntoa(&ppp_addrs->netmask));
+      printf(" dns1      =%s\n", ip_ntoa(&ppp_addrs->dns1));
+      printf(" dns2      =%s\n", ip_ntoa(&ppp_addrs->dns2));
       break;
     }
     case PPPERR_PARAM: {           /* Invalid parameter. */
@@ -228,7 +230,7 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 #if LWIP_NETIF_STATUS_CALLBACK
 void status_callback(struct netif *netif)
 { if (netif_is_up(netif)) {
-    printf("status_callback==UP, local interface IP is %s\n", inet_ntoa(*(struct in_addr*)&(netif->ip_addr)));
+    printf("status_callback==UP, local interface IP is %s\n", ip_ntoa(&netif->ip_addr));
   } else {
     printf("status_callback==DOWN\n");
   }
@@ -274,7 +276,7 @@ msvc_netif_init()
   IP4_ADDR(&loop_gw, 127,0,0,1);
   IP4_ADDR(&loop_ipaddr, 127,0,0,1);
   IP4_ADDR(&loop_netmask, 255,0,0,0);
-  printf("Starting lwIP, loopback interface IP is %s\n", inet_ntoa(*(struct in_addr*)&loop_ipaddr));
+  printf("Starting lwIP, loopback interface IP is %s\n", ip_ntoa(&loop_ipaddr));
 
 #if NO_SYS
   netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, ip_input);
@@ -298,7 +300,7 @@ msvc_netif_init()
   LWIP_PORT_INIT_GW(&gw);
   LWIP_PORT_INIT_IPADDR(&ipaddr);
   LWIP_PORT_INIT_NETMASK(&netmask);
-  printf("Starting lwIP, local interface IP is %s\n", inet_ntoa(*(struct in_addr*)&ipaddr));
+  printf("Starting lwIP, local interface IP is %s\n", ip_ntoa(&ipaddr));
 #endif /* LWIP_DHCP */
 
 #if NO_SYS
@@ -331,7 +333,7 @@ msvc_netif_init()
 void dns_found(const char *name, struct ip_addr *addr, void *arg)
 {
   LWIP_UNUSED_ARG(arg);
-  printf("%s: %s\n", name, addr?inet_ntoa(*(struct in_addr*)addr):"<not found>");
+  printf("%s: %s\n", name, addr ? ip_ntoa(addr) : "<not found>");
 }
 
 /* This function initializes applications */
@@ -426,16 +428,20 @@ void main_loop()
     timers_update();
 #endif /* NO_SYS */
 
+#if !PPP_SUPPORT
     /* check for packets and link status*/
     ethernetif_poll(&netif);
+#endif /* PPP_SUPPORT */
 #if !LWIP_NETIF_LOOPBACK_MULTITHREADING
     /* check for loopback packets on all netifs */
     netif_poll_all();
 #endif /* !LWIP_NETIF_LOOPBACK_MULTITHREADING */
   }
 
+#if !PPP_SUPPORT
   /* release the pcap library... */
   ethernetif_shutdown(&netif);
+#endif /* PPP_SUPPORT */
 }
 
 int main(void)
