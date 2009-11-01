@@ -6,12 +6,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lwIP_test", "lwIP_Test.vcpr
 		{2CC276FA-B226-49C9-8F82-7FCD5A228E28} = {2CC276FA-B226-49C9-8F82-7FCD5A228E28}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lwIP_pktif", "lwIP_pktif.vcproj", "{8DFF6C89-B0A1-4179-83D6-61EDD66B204C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lwIP pktif", "lwIP_pktif.vcproj", "{8DFF6C89-B0A1-4179-83D6-61EDD66B204C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2CC276FA-B226-49C9-8F82-7FCD5A228E28} = {2CC276FA-B226-49C9-8F82-7FCD5A228E28}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lwIP", "lwIP.vcproj", "{2CC276FA-B226-49C9-8F82-7FCD5A228E28}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makefsdata", "makefsdata.vcproj", "{0BFC0F21-8E84-4E68-A9E1-CE2A09B72F6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,10 @@ Global
 		{2CC276FA-B226-49C9-8F82-7FCD5A228E28}.Debug|Win32.Build.0 = Debug|Win32
 		{2CC276FA-B226-49C9-8F82-7FCD5A228E28}.Release|Win32.ActiveCfg = Release|Win32
 		{2CC276FA-B226-49C9-8F82-7FCD5A228E28}.Release|Win32.Build.0 = Release|Win32
+		{0BFC0F21-8E84-4E68-A9E1-CE2A09B72F6D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0BFC0F21-8E84-4E68-A9E1-CE2A09B72F6D}.Debug|Win32.Build.0 = Debug|Win32
+		{0BFC0F21-8E84-4E68-A9E1-CE2A09B72F6D}.Release|Win32.ActiveCfg = Release|Win32
+		{0BFC0F21-8E84-4E68-A9E1-CE2A09B72F6D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
