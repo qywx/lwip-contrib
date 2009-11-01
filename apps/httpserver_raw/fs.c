@@ -52,6 +52,9 @@ fs_open(const char *name, struct fs_file *file)
     if (!strcmp(name, (const char*)f->name)) {
       file->data = f->data;
       file->len = f->len;
+#if HTTPD_SUPPORT_DYNAMIC_PAGES
+      file->includes_http_header = f->includes_http_header;
+#endif
       return 1;
     }
   }
