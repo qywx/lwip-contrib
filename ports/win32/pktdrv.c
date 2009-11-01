@@ -171,7 +171,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
     return NULL;
   }
   /* adapter index out of range */
-  if (adapter_num > AdapterNum) {
+  if (adapter_num >= AdapterNum) {
     printf("Invalid adapter_num: %d\n", adapter_num);
     free(pa);
     return NULL;
