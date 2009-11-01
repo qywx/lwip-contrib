@@ -186,21 +186,6 @@ int process_sub(FILE *data_file, FILE *struct_file)
   int filesProcessed = 0;
   char oldSubdir[MAX_PATH_LEN];
 
-  fret = FINDFIRST_FILE("*.*", &fInfo);
-  if (FINDFIRST_SUCCEEDED(fret)) {
-    /* at least one file in directory */
-    do {
-      if (FIND_T_IS_FILE(fInfo)) {
-        const char *curName = FIND_T_FILENAME(fInfo);
-        printf("processing %s/%s..." NEWLINE, curSubdir, curName);
-        if (process_file(data_file, struct_file, curName) < 0) {
-          printf(NEWLINE "Error... aborting" NEWLINE);
-          return -1;
-        }
-        filesProcessed++;
-      }
-    } while (FINDNEXT_SUCCEEDED(FINDNEXT(fret, &fInfo)));
-  }
   if (processSubs) {
     /* process subs recursively */
     strcpy(oldSubdir, curSubdir);
@@ -221,6 +206,22 @@ int process_sub(FILE *data_file, FILE *struct_file)
         strcpy(curSubdir, oldSubdir);
       } while (FINDNEXT_SUCCEEDED(FINDNEXT(fret, &fInfo)));
     }
+  }
+
+  fret = FINDFIRST_FILE("*.*", &fInfo);
+  if (FINDFIRST_SUCCEEDED(fret)) {
+    /* at least one file in directory */
+    do {
+      if (FIND_T_IS_FILE(fInfo)) {
+        const char *curName = FIND_T_FILENAME(fInfo);
+        printf("processing %s/%s..." NEWLINE, curSubdir, curName);
+        if (process_file(data_file, struct_file, curName) < 0) {
+          printf(NEWLINE "Error... aborting" NEWLINE);
+          return -1;
+        }
+        filesProcessed++;
+      }
+    } while (FINDNEXT_SUCCEEDED(FINDNEXT(fret, &fInfo)));
   }
   return filesProcessed;
 }
