@@ -36,18 +36,19 @@
 
 #include <string.h>
 
-/*-----------------------------------------------------------------------------------*/
-
-
-/*-----------------------------------------------------------------------------------*/
+/** Search for a file by its full name and return pointer and length if found.
+ *
+ * @param name full file name as passed in HTTP request
+ * @param file structure that must be allocated by caller and will be filled in
+ *        by the function if the filename was found.
+ * @return 1 if the file was found, 0 if the file was not found
+ */
 int
 fs_open(const char *name, struct fs_file *file)
 {
   const struct fsdata_file *f;
 
-  for(f = FS_ROOT;
-      f != NULL;
-      f = f->next) {
+  for (f = FS_ROOT; f != NULL; f = f->next) {
     if (!strcmp(name, (const char*)f->name)) {
       file->data = f->data;
       file->len = f->len;
@@ -56,4 +57,3 @@ fs_open(const char *name, struct fs_file *file)
   }
   return 0;
 }
-/*-----------------------------------------------------------------------------------*/
