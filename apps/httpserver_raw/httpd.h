@@ -32,6 +32,51 @@
 #ifndef __HTTPD_H__
 #define __HTTPD_H__
 
+
+typedef enum file_type_enum
+{
+  HTML, /* .htm(l) */
+  GIF, /* .gif */
+  PNG, /* .png */ 
+  JPEG, /* .jp(e)g */
+  OCTET_STREAM, /* .bin, .class, ??? */
+  REALAUDIO, /* .ra(m) */
+  TEXT, /* .txt */
+  JAVASCRIPT, /* .js */
+  CSS /* .css */
+}
+CONTENT_TYPE;
+
+static const char *httpContentType_header[] = {
+  "Content-Type: text/html\r\n",
+  "Content-Type: image/gif\r\n",
+  "Content-Type: image/png\r\n",
+  "Content-Type: image/jpeg\r\n",
+  "Content-Type: application/octet-stream\r\n",
+  "Content-Type: audio/x-pn-realaudio\r\n",
+  "Content-Type: text/plain\r\n",
+  "Content-Type: application/x-javascript\r\n",
+  "Content-Type: text/css\r\n",
+  NULL
+};
+
+typedef enum getResponseEnum
+{
+  HTTP_200_OK,
+  HTTP_404_NOT_FOUND
+} HTTP_RESPONSE;
+
+static const char *httpResponseText_1_0[] = {
+  "HTTP/1.0 200 OK\r\n",
+  "HTTP/1.0 404 File not found\r\n"
+};
+static const char *httpResponseText_1_1[] = {
+  "HTTP/1.1 200 OK\r\n",
+  "HTTP/1.1 404 File not found\r\n"
+};
+static const char *httpContentLength = "Content-Length: ";
+static const char *httpConnectionClose = "Connection: close\r\n";
+
 void httpd_init(void);
 
 #endif /* __HTTPD_H__ */
