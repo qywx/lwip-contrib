@@ -37,6 +37,13 @@
 
 #include <windows.h>
 
+/* If this is 1, use COMx (not working yet), if 0, use a pipe (default) */
+#if SIO_USE_COMPORT
+#define SIO_DEVICENAME "\\\\.\\COM"
+#else
+#define SIO_DEVICENAME "\\\\.\\pipe\\lwip"
+#endif
+
 static int sio_abort=0;
 
 /* \\.\pipe\lwip0 */
@@ -51,18 +58,20 @@ static int sio_abort=0;
 #endif
 
 /**
-* Open serial port entry point from serial protocol (slipif, pppif)
-* @param devnum the device number to use, i.e. ttySx, comx:, etc. there x = devnum
-* @return psio struct, contains sio instance data, use when calling sio functions
-*/
+ * Opens a serial device for communication.
+ * 
+ * @param devnum device number
+ * @return handle to serial device if successful, NULL otherwise
+ */
 sio_fd_t sio_open(u8_t devnum)
-{ HANDLE hPipe = INVALID_HANDLE_VALUE;
+{
+  HANDLE hPipe = INVALID_HANDLE_VALUE;
   CHAR   szPipeName[256];
-  LWIP_DEBUGF( SIO_DEBUG, ("sio_open(%lu)\n", (DWORD)devnum));
-  sprintf( szPipeName, "\\\\.\\pipe\\lwip%lu", (DWORD)(devnum));
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_open(%lu)\n", (DWORD)devnum));
+  sprintf(szPipeName, SIO_DEVICENAME"%lu", (DWORD)(devnum));
   hPipe = CreateFile(szPipeName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
   if (hPipe != INVALID_HANDLE_VALUE) {
-    sio_abort=0;
+    sio_abort = 0;
     FlushFileBuffers(hPipe);
     return (sio_fd_t)(hPipe);
   }
@@ -70,77 +79,106 @@ sio_fd_t sio_open(u8_t devnum)
 }
 
 /**
- * Write a char to output data stream
- * @param num char to write to output stream
- * @param psio struct, contains sio instance data, given by sio_open
+ * Sends a single character to the serial device.
+ * 
+ * @param c character to send
+ * @param fd serial device handle
+ * 
+ * @note This function will block until the character can be sent.
  */
-void sio_send(u8_t num, sio_fd_t psio)
-{ DWORD dwNbBytesWritten = 0;
-  LWIP_DEBUGF( SIO_DEBUG, ("sio_send(%lu)\n", (DWORD)num));
-  while ((!WriteFile( (HANDLE)(psio), &num, 1, &dwNbBytesWritten, NULL)) || (dwNbBytesWritten<1));
+void sio_send(u8_t c, sio_fd_t fd)
+{
+  DWORD dwNbBytesWritten = 0;
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_send(%lu)\n", (DWORD)c));
+  while ((!WriteFile((HANDLE)(fd), &c, 1, &dwNbBytesWritten, NULL)) || (dwNbBytesWritten < 1));
   return;
 }
 
 /**
- * Read a char from incoming data stream, this call blocks until data has arrived
- * @param psio siostatus struct, contains sio instance data, given by sio_open
- * @return char read from input stream
+ * Receives a single character from the serial device.
+ * 
+ * @param fd serial device handle
+ * 
+ * @note This function will block until a character is received.
  */
-u8_t sio_recv(sio_fd_t psio)
-{ DWORD dwNbBytesReadden = 0;
+u8_t sio_recv(sio_fd_t fd)
+{
+  DWORD dwNbBytesReadden = 0;
   u8_t byte = 0;
-  LWIP_DEBUGF( SIO_DEBUG, ("sio_recv()\n"));
-  while ((sio_abort==0) && ((!ReadFile( (HANDLE)(psio), &byte, 1, &dwNbBytesReadden, NULL)) || (dwNbBytesReadden<1)));
-  LWIP_DEBUGF( SIO_DEBUG, ("sio_recv()=%lu\n", (DWORD)byte));
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_recv()\n"));
+  while ((sio_abort == 0) && ((!ReadFile((HANDLE)(fd), &byte, 1, &dwNbBytesReadden, NULL)) || (dwNbBytesReadden < 1)));
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_recv()=%lu\n", (DWORD)byte));
   return byte;
 }
 
-u32_t sio_read(sio_fd_t psio, u8_t * data, u32_t len)
-{ DWORD dwNbBytesReadden = 0;
-  LWIP_DEBUGF( SIO_DEBUG, ("sio_read()...\n"));
-  ReadFile( (HANDLE)(psio), data, len, &dwNbBytesReadden, NULL);
-  LWIP_DEBUGF( SIO_DEBUG, ("sio_read()=%lu bytes\n", dwNbBytesReadden));
+/**
+ * Reads from the serial device.
+ * 
+ * @param fd serial device handle
+ * @param data pointer to data buffer for receiving
+ * @param len maximum length (in bytes) of data to receive
+ * @return number of bytes actually received - may be 0 if aborted by sio_read_abort
+ * 
+ * @note This function will block until data can be received. The blocking
+ * can be cancelled by calling sio_read_abort().
+ */
+u32_t sio_read(sio_fd_t fd, u8_t* data, u32_t len)
+{
+  DWORD dwNbBytesReadden = 0;
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_read()...\n"));
+  ReadFile((HANDLE)(fd), data, len, &dwNbBytesReadden, NULL);
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_read()=%lu bytes\n", dwNbBytesReadden));
   return dwNbBytesReadden;
 }
 
-u32_t sio_write(sio_fd_t psio, u8_t * data, u32_t len)
-{ DWORD dwNbBytesWritten = 0;
-  LWIP_DEBUGF( SIO_DEBUG, ("sio_write()...\n"));
-  WriteFile( (HANDLE)(psio), data, len, &dwNbBytesWritten, NULL);
-  LWIP_DEBUGF( SIO_DEBUG, ("sio_write()=%lu bytes\n", dwNbBytesWritten));
+/**
+ * Writes to the serial device.
+ * 
+ * @param fd serial device handle
+ * @param data pointer to data to send
+ * @param len length (in bytes) of data to send
+ * @return number of bytes actually sent
+ * 
+ * @note This function will block until all data can be sent.
+ */
+u32_t sio_write(sio_fd_t fd, u8_t* data, u32_t len)
+{
+  DWORD dwNbBytesWritten = 0;
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_write()...\n"));
+  WriteFile((HANDLE)(fd), data, len, &dwNbBytesWritten, NULL);
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_write()=%lu bytes\n", dwNbBytesWritten));
   return dwNbBytesWritten;
 }
 
-void sio_read_abort(sio_fd_t psio)
-{ LWIP_UNUSED_ARG(psio);
-  LWIP_DEBUGF( SIO_DEBUG, ("sio_read_abort() !!!!!...\n"));
-  sio_abort=1;
+/**
+ * Aborts a blocking sio_read() call.
+ * @todo: This currently ignores fd and aborts all reads
+ * 
+ * @param fd serial device handle
+ */
+void sio_read_abort(sio_fd_t fd)
+{
+  LWIP_UNUSED_ARG(fd);
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_read_abort() !!!!!...\n"));
+  sio_abort = 1;
   return;
 }
 
+/**
+ * Used by pppdebug:
+ * ppp_trace - a form of printf to send tracing information to stderr
+ */
 void ppp_trace( int level, const char *format, ...)
-{ int len;
+{
+  int len;
   char buffer[1024];
   va_list argList;
 
   LWIP_UNUSED_ARG(level);
 
-  va_start  ( argList, format);
-  len=vsprintf( buffer, format, argList);
-  buffer[len-1]='\0';
-  va_end    ( argList);
+  va_start(argList, format);
+  len = vsprintf(buffer, format, argList);
+  buffer[len - 1] = '\0';
+  va_end(argList);
   printf("%s\n", buffer);
-}
-
-int snprintf( char *buffer, size_t count, const char *format, ...)
-{ int len;
-  va_list argList;
-
-  LWIP_UNUSED_ARG(count);
-
-  va_start  ( argList, format);
-  len=vsprintf( buffer, format, argList);
-  buffer[len-1]='\0';
-  va_end    ( argList);
-  return len;
 }
