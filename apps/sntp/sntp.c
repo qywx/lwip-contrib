@@ -43,7 +43,6 @@
 
 #include <string.h>
 #include <time.h>
-#define static
 
 /** This is simple "SNTP" client for socket or raw API.
  * It is a minimal implementation of SNTPv4 as specified in RFC 4330.
