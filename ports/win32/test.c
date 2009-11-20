@@ -63,6 +63,7 @@
 #include "apps/ping/ping.h"
 #include "apps/rtp/rtp.h"
 #include "apps/sntp/sntp.h"
+#include "apps/chargen/chargen.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
@@ -347,6 +348,10 @@ apps_init()
     dns_found(dnsname, &dnsresp, 0);
   }
 #endif /* LWIP_DNS_APP && LWIP_DNS */
+
+#if LWIP_CHARGEN_APP && LWIP_SOCKET
+  chargen_init();
+#endif /* LWIP_CHARGEN_APP && LWIP_SOCKET */
 
 #if LWIP_PING_APP && LWIP_RAW && LWIP_ICMP
   ping_init();
