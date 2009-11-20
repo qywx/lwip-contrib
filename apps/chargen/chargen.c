@@ -54,6 +54,8 @@
 
 #include <string.h>
 
+#include "chargen.h"
+
 #if LWIP_SOCKET
 
 #define MAX_SERV                 5         /* Maximum number of chargen services. Don't need too many */
