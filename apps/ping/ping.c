@@ -40,7 +40,9 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_RAW && LWIP_ICMP /* don't build if not configured for use in lwipopts.h */
+#if LWIP_RAW /* don't build if not configured for use in lwipopts.h */
+
+#include "ping.h"
 
 #include "lwip/mem.h"
 #include "lwip/raw.h"
@@ -50,6 +52,7 @@
 #include "lwip/sockets.h"
 #include "lwip/inet.h"
 #include "lwip/inet_chksum.h"
+
 
 /**
  * PING_DEBUG: Enable debugging for PING.
@@ -91,9 +94,9 @@
 /* ping variables */
 static u16_t ping_seq_num;
 static u32_t ping_time;
-#if !LWIP_SOCKET
+#if !PING_USE_SOCKETS
 static struct raw_pcb *pcb;
-#endif /* LWIP_SOCKET */
+#endif /* PING_USE_SOCKETS */
 
 #if NO_SYS
 /* port-defined functions used for timer execution */
@@ -122,7 +125,7 @@ ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
   iecho->chksum = inet_chksum(iecho, len);
 }
 
-#if LWIP_SOCKET
+#if PING_USE_SOCKETS
 
 /* Ping using the socket ip */
 static err_t
@@ -220,7 +223,7 @@ ping_thread(void *arg)
   }
 }
 
-#else /* LWIP_SOCKET */
+#else /* PING_USE_SOCKETS */
 
 /* Ping using the raw ip */
 static u8_t
@@ -253,6 +256,10 @@ ping_send(struct raw_pcb *raw, struct ip_addr *addr)
   struct icmp_echo_hdr *iecho;
   size_t ping_size = sizeof(struct icmp_echo_hdr) + PING_DATA_SIZE;
 
+  LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
+  ip_addr_debug_print(PING_DEBUG, addr);
+  LWIP_DEBUGF( PING_DEBUG, ("\n"));
+
   if (!(p = pbuf_alloc(PBUF_IP, ping_size, PBUF_RAM))) {
     return;
   }
@@ -275,10 +282,6 @@ ping_timeout(void *arg)
   
   LWIP_ASSERT("ping_timeout: no pcb given!", pcb != NULL);
 
-  LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
-  ip_addr_debug_print(PING_DEBUG, &ping_target);
-  LWIP_DEBUGF( PING_DEBUG, ("\n"));
-
   ping_send(pcb, &ping_target);
 
   sys_timeout(PING_DELAY, ping_timeout, pcb);
@@ -296,24 +299,25 @@ ping_raw_init(void)
   sys_timeout(PING_DELAY, ping_timeout, pcb);
 }
 
-#if NO_SYS
+#if !PING_USE_SOCKETS
 void
 ping_send_now()
 {
-  ping_timeout((void*)pcb);
+  struct ip_addr ping_target = PING_TARGET;
+  ping_send(pcb, &ping_target);
 }
-#endif /* NO_SYS */
+#endif /* !PING_USE_SOCKETS */
 
-#endif /* LWIP_SOCKET */
+#endif /* PING_USE_SOCKETS */
 
 void
 ping_init(void)
 {
-#if LWIP_SOCKET
+#if PING_USE_SOCKETS
   sys_thread_new("ping_thread", ping_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
-#else /* LWIP_SOCKET */
+#else /* PING_USE_SOCKETS */
   ping_raw_init();
-#endif /* LWIP_SOCKET */
+#endif /* PING_USE_SOCKETS */
 }
 
-#endif /* LWIP_RAW && LWIP_ICMP */
+#endif /* LWIP_RAW */
