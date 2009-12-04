@@ -94,6 +94,78 @@ struct packet_adapter {
   char             buffer[PACKET_INPUT_BUFSIZE];
 };
 
+/** Get a list of adapters
+ *
+ * @param adapter_list void* array: list where the adapters are stored
+ * @param list_len size of adapter_list (number of void*)
+ * @param buffer here the actual data is stored, adapter_list points into this buffer
+ * @param buf_len size of buffer in bytes
+ * @return number of adapters found or negative on error
+ */
+static int
+get_adapter_list(void** adapter_list, int list_len, void* buffer, size_t buf_len)
+{
+  int i;
+  char *temp, *start;
+  ULONG AdapterLength;
+
+  memset(adapter_list, 0, list_len*sizeof(void*));
+  memset(buffer, 0, buf_len);
+
+  /* obtain the name of the adapters installed on this machine
+     (a list of strings separated by '\0') */
+  AdapterLength = buf_len;
+  if (PacketGetAdapterNames((char*)buffer, &AdapterLength)==FALSE){
+    printf("Unable to retrieve the list of the adapters!\n");
+    return 0;
+  }
+
+  /* get the start of each adapter name in the list and put it into
+   * the AdapterList array */
+  i = 0;
+  temp = buffer;
+  start = buffer;
+  while ((*temp != '\0') || (*(temp - 1) != '\0')) {
+    if (*temp == '\0') {
+      adapter_list[i] = start;
+      start = temp + 1;
+      i++;
+      if (i >= list_len) {
+        break;
+      }
+    }
+    temp++;
+  }
+  return i;
+}
+
+/** Get the index of an adapter by its GUID
+ *
+ * @param GUID of the adapter
+ * @return index of the adapter or negative on error
+ */
+int
+get_adapter_index(const char* adapter_guid)
+{
+  void *AdapterList[MAX_NUM_ADAPTERS];
+  int i;
+  char AdapterName[ADAPTER_NAME_LEN]; /* string that contains a list of the network adapters */
+  int AdapterNum;
+
+  if ((adapter_guid != NULL) && (adapter_guid[0] != 0)) {
+    AdapterNum = get_adapter_list(AdapterList, MAX_NUM_ADAPTERS, AdapterName, ADAPTER_NAME_LEN);
+    if (AdapterNum > 0) {
+      for (i = 0; i < AdapterNum; i++) {
+        if(strstr(AdapterList[i], adapter_guid)) {
+          return i;
+        }
+      }
+    }
+  }
+  return -1;
+}
+
+
 /**
  * Open a network adapter and set it up for packet input
  *
@@ -109,9 +181,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
   void *AdapterList[MAX_NUM_ADAPTERS];
   int i;
   char AdapterName[ADAPTER_NAME_LEN]; /* string that contains a list of the network adapters */
-  char *temp, *start;
-  int AdapterNum =0;
-  ULONG AdapterLength;
+  int AdapterNum;
   PPACKET_OID_DATA ppacket_oid_data;
   unsigned char ethaddr[ETHARP_HWADDR_LEN];
   struct packet_adapter *pa;
@@ -126,43 +196,31 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
   pa->input = input;
   pa->input_fn_arg = arg;
 
-  memset(AdapterList, 0, sizeof(AdapterList));
-  memset(AdapterName, 0, sizeof(AdapterName));
-
-  /* obtain the name of the adapters installed on this machine
-     (a list of strings separated by '\0') */
-  AdapterLength = ADAPTER_NAME_LEN;
-  if (PacketGetAdapterNames((char*)AdapterName, &AdapterLength)==FALSE){
-    printf("Unable to retrieve the list of the adapters!\n");
-    free(pa);
-    return NULL;
-  }
-
-  /* get the start of each adapter name in the list and put it into
-   * the AdapterList array */
-  i = 0;
-  temp = AdapterName;
-  start = AdapterName;
-  while ((*temp != '\0') || (*(temp - 1) != '\0')) {
-    if (*temp == '\0') {
-      AdapterList[i] = start;
-      start = temp + 1;
-      i++;
-      if (i >= MAX_NUM_ADAPTERS) {
-        break;
-      }
-    }
-    temp++;
-  }
+  AdapterNum = get_adapter_list(AdapterList, MAX_NUM_ADAPTERS, AdapterName, ADAPTER_NAME_LEN);
 
   /* print all adapter names */
-  AdapterNum = i;
   if (AdapterNum <= 0) {
     free(pa);
     return NULL; /* no adapters found */
   }
   for (i = 0; i < AdapterNum; i++) {
+    LPADAPTER lpAdapter;
     printf("%2i: %s\n", i, AdapterList[i]);
+    /* set up the selected adapter */
+    lpAdapter = PacketOpenAdapter(AdapterList[i]);
+    if (lpAdapter && (lpAdapter->hFile != INVALID_HANDLE_VALUE)) {
+      ppacket_oid_data = malloc(sizeof(PACKET_OID_DATA) + PACKET_OID_DATA_SIZE);
+      if (ppacket_oid_data) {
+        ppacket_oid_data->Oid = OID_GEN_VENDOR_DESCRIPTION;
+        ppacket_oid_data->Length = PACKET_OID_DATA_SIZE;
+        if (PacketRequest(lpAdapter, FALSE, ppacket_oid_data)) {
+          printf("     Name: \"%s\"\n", ppacket_oid_data->Data);
+        }
+        free(ppacket_oid_data);
+      }
+      PacketCloseAdapter(lpAdapter);
+      lpAdapter = NULL;
+    }
   }
   /* invalid adapter index -> check this after printing the adapters */
   if (adapter_num < 0) {
@@ -176,6 +234,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
     free(pa);
     return NULL;
   }
+  printf("Using adapter_num: %d\n", adapter_num);
   /* set up the selected adapter */
   pa->lpAdapter = PacketOpenAdapter(AdapterList[adapter_num]);
   if (!pa->lpAdapter || (pa->lpAdapter->hFile == INVALID_HANDLE_VALUE)) {
@@ -185,6 +244,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
   /* alloc the OID packet  */
   ppacket_oid_data = malloc(sizeof(PACKET_OID_DATA) + PACKET_OID_DATA_SIZE);
   if (!ppacket_oid_data) {
+    PacketCloseAdapter(pa->lpAdapter);
     free(pa);
     return NULL;
   }
@@ -198,6 +258,8 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
   ppacket_oid_data->Oid = OID_802_3_PERMANENT_ADDRESS;
   ppacket_oid_data->Length = ETHARP_HWADDR_LEN;
   if (!PacketRequest(pa->lpAdapter, FALSE, ppacket_oid_data)) {
+    printf("ERROR getting the adapter's HWADDR, maybe it's not an ethernet adapter?\n");
+    PacketCloseAdapter(pa->lpAdapter);
     free(pa);
     return NULL;
   }
@@ -216,6 +278,8 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
   PacketSetHwFilter(pa->lpAdapter, NDIS_PACKET_TYPE_ALL_LOCAL | NDIS_PACKET_TYPE_PROMISCUOUS);
   /* set up packet descriptor (the application input buffer) */
   if ((pa->lpPacket = PacketAllocatePacket()) == NULL) {
+    printf("ERROR setting up a packet descriptor\n");
+    PacketCloseAdapter(pa->lpAdapter);
     free(pa);
     return NULL;
   }
@@ -234,8 +298,12 @@ shutdown_adapter(void *adapter)
 {
   struct packet_adapter *pa = (struct packet_adapter*)adapter;
   if (pa != NULL) {
-    PacketFreePacket(pa->lpPacket);
-    PacketCloseAdapter(pa->lpAdapter);
+    if (pa->lpPacket) {
+      PacketFreePacket(pa->lpPacket);
+    }
+    if (pa->lpAdapter) {
+      PacketCloseAdapter(pa->lpAdapter);
+    }
     free(pa);
   }
 }

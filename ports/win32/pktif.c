@@ -118,9 +118,20 @@ low_level_init(struct netif *netif)
 {
   char adapter_mac_addr[ETHARP_HWADDR_LEN];
   char my_mac_addr[ETHARP_HWADDR_LEN] = LWIP_MAC_ADDR_BASE;
+  int adapter_num = PACKET_LIB_ADAPTER_NR;
+
+#ifdef PACKET_LIB_ADAPTER_GUID
+  /* get adapter index for guid string */
+  adapter_num = get_adapter_index(PACKET_LIB_ADAPTER_GUID);
+  if (adapter_num < 0) {
+    printf("ERROR finding network adapter with GUID \"%s\"!\n", PACKET_LIB_ADAPTER_GUID);
+    LWIP_ASSERT("ERROR initializing network adapter!\n", 0);
+    return;
+  }
+#endif /* PACKET_LIB_ADAPTER_GUID */
 
   /* Do whatever else is needed to initialize interface. */
-  if ((netif->state = init_adapter(PACKET_LIB_ADAPTER_NR, adapter_mac_addr,
+  if ((netif->state = init_adapter(adapter_num, adapter_mac_addr,
                                    ethernetif_process_input, netif)) == NULL) {
     printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
     LWIP_ASSERT("ERROR initializing network adapter!\n", 0);

@@ -18,6 +18,7 @@ void                    shutdown_adapter(void *adapter);
 int                     packet_send     (void *adapter, void *buffer, int len);
 void                    update_adapter  (void *adapter);
 enum link_adapter_event link_adapter    (void *adapter);
+int                     get_adapter_index(const char* adapter_guid);
 
 #ifdef __cplusplus
 }
