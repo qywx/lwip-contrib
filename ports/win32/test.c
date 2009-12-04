@@ -75,12 +75,25 @@
 /* PPP includes */
 #include "../netif/ppp/ppp.h"
 #include "lwip/sio.h"
+#include "netif/ppp_oe.h"
 #endif /* PPP_SUPPORT */
 
 #include "pktif.h"
 
 /* include the port-dependent configuration */
 #include "lwipcfg_msvc.h"
+
+/** Use an ethernet adapter? By default only if PPP is not used. */
+#ifndef USE_ETHERNET
+#define USE_ETHERNET  (!PPP_SUPPORT || PPPOE_SUPPORT)
+#endif
+/** Use an ethernet adapter for TCP/IP? By default only if PPP is not used. */
+#ifndef USE_ETHERNET_TCPIP
+#define USE_ETHERNET_TCPIP  !PPP_SUPPORT
+#endif
+#if PPP_SUPPORT && PPPOS_SUPPORT && PPPOE_SUPPORT
+#error "This example does not support PPPoS and PPPoE at the same time"
+#endif
 
 
 #if NO_SYS
@@ -90,14 +103,18 @@ u32_t sys_now();
 #endif /* NO_SYS */
 
 /* globales variables for netifs */
-#if !PPP_SUPPORT
+#if USE_ETHERNET
 /* THE ethernet interface */
 struct netif netif;
-#endif /* PPP_SUPPORT */
+#endif /* USE_ETHERNET */
 #if LWIP_HAVE_LOOPIF
 /* THE loopback interface */
 struct netif loop_netif;
 #endif /* LWIP_HAVE_LOOPIF */
+#if PPP_SUPPORT
+/* THE PPP descriptor */
+int ppp_desc;
+#endif /* PPP_SUPPORT */
 
 
 #if NO_SYS
@@ -257,23 +274,39 @@ void link_callback(struct netif *netif)
 static void
 msvc_netif_init()
 {
-#if PPP_SUPPORT
-  sio_fd_t ppp_sio;
-  ppp_sio = sio_open(0);
-  if (ppp_sio != NULL) {
-    printf("pppInit\n");
-    pppInit();
-    pppSetAuth(PPPAUTHTYPE_ANY, "", "");
-    printf("pppOpen\n");
-    pppOpen(ppp_sio, pppLinkStatusCallback, NULL);
-  } else {
-    printf("sio_open error\n");
-  }
-#else  /* PPP_SUPPORT */
+#if USE_ETHERNET
   struct ip_addr ipaddr, netmask, gw;
+#endif /* USE_ETHERNET */
 #if LWIP_HAVE_LOOPIF
   struct ip_addr loop_ipaddr, loop_netmask, loop_gw;
+#endif /* LWIP_HAVE_LOOPIF */
+#if PPP_SUPPORT && PPPOS_SUPPORT
+  sio_fd_t ppp_sio;
+#endif /* PPP_SUPPORT && PPPOS_SUPPORT */
 
+#if PPP_SUPPORT
+  const char *username = NULL, *password = NULL;
+#ifdef PPP_USERNAME
+  username = PPP_USERNAME;
+#endif
+#ifdef PPP_PASSWORD
+  password = PPP_PASSWORD;
+#endif
+  printf("pppInit\n");
+  pppInit();
+  pppSetAuth(PPPAUTHTYPE_ANY, username, password);
+  printf("pppOpen\n");
+#if PPPOS_SUPPORT
+  ppp_sio = sio_open(0);
+  if (ppp_sio == NULL) {
+    printf("sio_open error\n");
+  } else {
+    ppp_desc = pppOpen(ppp_sio, pppLinkStatusCallback, NULL);
+  }
+#endif /* PPPOS_SUPPORT */
+#endif  /* PPP_SUPPORT */
+
+#if LWIP_HAVE_LOOPIF
   IP4_ADDR(&loop_gw, 127,0,0,1);
   IP4_ADDR(&loop_ipaddr, 127,0,0,1);
   IP4_ADDR(&loop_netmask, 255,0,0,0);
@@ -287,15 +320,14 @@ msvc_netif_init()
   netif_set_up(&loop_netif);
 #endif /* LWIP_HAVE_LOOPIF */
 
-#if LWIP_DHCP
+#if USE_ETHERNET
   gw.addr = 0;
   ipaddr.addr = 0;
   netmask.addr = 0;
+#if USE_ETHERNET_TCPIP
+#if LWIP_DHCP
   printf("Starting lwIP, local interface IP is dhcp-enabled\n");
 #elif LWIP_AUTOIP
-  gw.addr = 0;
-  ipaddr.addr = 0;
-  netmask.addr = 0;
   printf("Starting lwIP, local interface IP is autoip-enabled\n");
 #else /* LWIP_AUTOIP */
   LWIP_PORT_INIT_GW(&gw);
@@ -303,6 +335,7 @@ msvc_netif_init()
   LWIP_PORT_INIT_NETMASK(&netmask);
   printf("Starting lwIP, local interface IP is %s\n", ip_ntoa(&ipaddr));
 #endif /* LWIP_DHCP */
+#endif /* USE_ETHERNET_TCPIP */
 
 #if NO_SYS
 #if LWIP_ARP
@@ -320,6 +353,7 @@ msvc_netif_init()
   netif_set_link_callback(&netif, link_callback);
 #endif /* LWIP_NETIF_LINK_CALLBACK */
 
+#if USE_ETHERNET_TCPIP
 #if LWIP_DHCP
   dhcp_start(&netif);
 #elif LWIP_AUTOIP
@@ -327,8 +361,14 @@ msvc_netif_init()
 #else /* LWIP_DHCP */
   netif_set_up(&netif);
 #endif /* LWIP_DHCP */
+#endif /* USE_ETHERNET_TCPIP */
 
-#endif /* PPP_SUPPORT */
+#if PPP_SUPPORT && PPPOE_SUPPORT
+  /* start PPPoE after ethernet netif is added! */
+  ppp_desc = pppOverEthernetOpen(&netif, NULL, NULL, pppLinkStatusCallback, NULL);
+#endif /* PPP_SUPPORT && PPPOE_SUPPORT */
+
+#endif /* USE_ETHERNET */
 }
 
 void dns_found(const char *name, struct ip_addr *addr, void *arg)
@@ -412,6 +452,9 @@ void main_loop()
 #if !NO_SYS
   sys_sem_t init_sem;
 #endif /* NO_SYS */
+#if PPP_SUPPORT
+  volatile int callClosePpp = 0;
+#endif /* PPP_SUPPORT */
 
   /* initialize lwIP stack, network interfaces and applications */
 #if NO_SYS
@@ -433,20 +476,43 @@ void main_loop()
     timers_update();
 #endif /* NO_SYS */
 
-#if !PPP_SUPPORT
+#if USE_ETHERNET
     /* check for packets and link status*/
     ethernetif_poll(&netif);
-#endif /* PPP_SUPPORT */
+#endif /* USE_ETHERNET */
 #if !LWIP_NETIF_LOOPBACK_MULTITHREADING
     /* check for loopback packets on all netifs */
     netif_poll_all();
 #endif /* !LWIP_NETIF_LOOPBACK_MULTITHREADING */
+#if PPP_SUPPORT
+    if(callClosePpp && (ppp_desc >= 0)) {
+      /* make sure to disconnect PPP before stopping the program... */
+      callClosePpp = 0;
+      pppClose(ppp_desc);
+      ppp_desc = -1;
+    }
+#endif /* PPP_SUPPORT */
   }
 
-#if !PPP_SUPPORT
+#if PPP_SUPPORT
+    if(ppp_desc >= 0) {
+      u32_t started;
+      printf("Closing PPP connection...\n");
+      /* make sure to disconnect PPP before stopping the program... */
+      pppClose(ppp_desc);
+      ppp_desc = -1;
+      /* Wait for some time to let PPP finish... */
+      started = sys_now();
+      do
+      {
+        ethernetif_poll(&netif);
+      } while(sys_now() - started < 5000);
+    }
+#endif /* PPP_SUPPORT */
+#if USE_ETHERNET
   /* release the pcap library... */
   ethernetif_shutdown(&netif);
-#endif /* PPP_SUPPORT */
+#endif /* USE_ETHERNET */
 }
 
 int main(void)
