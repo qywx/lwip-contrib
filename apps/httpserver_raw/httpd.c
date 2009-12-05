@@ -40,7 +40,16 @@
 #include <string.h>
 
 #ifndef HTTPD_DEBUG
-#define HTTPD_DEBUG     LWIP_DBG_OFF
+#define HTTPD_DEBUG         LWIP_DBG_OFF
+#endif
+
+/** Set this to 1 and add the next line to lwippools.h to use a memp pool
+ * for allocating struct http_state instead of the heap:
+ *
+ * LWIP_MEMPOOL(HTTPD_STATE, 20, 100, "HTTPD_STATE")
+ */
+#ifndef HTTPD_USE_MEM_POOL
+#define HTTPD_USE_MEM_POOL  0
 #endif
 
 /** The server port for HTTPD to use */
@@ -90,7 +99,11 @@ static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err
 static struct http_state*
 http_state_alloc()
 {
-  return (struct http_state*)memp_malloc(MEMP_HTTPD_STATE);
+#if HTTPD_USE_MEM_POOL
+  return memp_malloc(MEMP_HTTPD_STATE);
+#else /* HTTPD_USE_MEM_POOL */
+  return mem_malloc(sizeof(struct http_state));
+#endif /* HTTPD_USE_MEM_POOL */
 }
 
 /** Free a struct http_state.
@@ -105,7 +118,11 @@ http_state_free(struct http_state *hs)
       mem_free((void*)hs->file_orig);
     }
 #endif /* HTTPD_SUPPORT_DYNAMIC_PAGES */
+#if HTTPD_USE_MEM_POOL
     memp_free(MEMP_HTTPD_STATE, hs);
+#else /* HTTPD_USE_MEM_POOL */
+    mem_free(hs);
+#endif /* HTTPD_USE_MEM_POOL */
   }
 }
 
