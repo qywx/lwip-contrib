@@ -5,7 +5,7 @@
  * PING_USE_SOCKETS: Set to 1 to use sockets, otherwise the raw api is used
  */
 #ifndef PING_USE_SOCKETS
-#define PING_USE_SOCKETS    !LWIP_SOCKET
+#define PING_USE_SOCKETS    LWIP_SOCKET
 #endif
 
 
