@@ -37,7 +37,7 @@
 
 #include <windows.h>
 
-/* If this is 1, use COMx (not working yet), if 0, use a pipe (default) */
+/** If SIO_USE_COMPORT==1, use COMx, if 0, use a pipe (default) */
 #if SIO_USE_COMPORT
 #define SIO_DEVICENAME "\\\\.\\COM"
 #else
@@ -57,6 +57,29 @@ static int sio_abort=0;
 #define SIO_DEBUG    LWIP_DBG_OFF
 #endif
 
+#if SIO_USE_COMPORT
+/** When using a real COM port, set up the
+ * serial line settings (baudrate etc.)
+ */
+static BOOL
+sio_setup(HANDLE fd)
+{
+  COMMTIMEOUTS cto;
+  memset(&cto, 0, sizeof(cto));
+
+  if(!GetCommTimeouts(fd, &cto))
+  {
+    return FALSE;
+  }
+  /* change read timeout, leave write timeout as it is */
+  cto.ReadIntervalTimeout = 1;
+  cto.ReadTotalTimeoutMultiplier = 0;
+  cto.ReadTotalTimeoutConstant = 100; /* 10 ms */
+  return SetCommTimeouts(fd, &cto);
+  /* @todo: set up baudrate and other communication settings */
+}
+#endif /* SIO_USE_COMPORT */
+
 /**
  * Opens a serial device for communication.
  * 
@@ -65,15 +88,23 @@ static int sio_abort=0;
  */
 sio_fd_t sio_open(u8_t devnum)
 {
-  HANDLE hPipe = INVALID_HANDLE_VALUE;
-  CHAR   szPipeName[256];
+  HANDLE fileHandle = INVALID_HANDLE_VALUE;
+  CHAR   fileName[256];
   LWIP_DEBUGF(SIO_DEBUG, ("sio_open(%lu)\n", (DWORD)devnum));
-  sprintf(szPipeName, SIO_DEVICENAME"%lu", (DWORD)(devnum));
-  hPipe = CreateFile(szPipeName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-  if (hPipe != INVALID_HANDLE_VALUE) {
+  _snprintf(fileName, 255, SIO_DEVICENAME"%lu", (DWORD)(devnum));
+  fileHandle = CreateFile(fileName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+  if (fileHandle != INVALID_HANDLE_VALUE) {
     sio_abort = 0;
-    FlushFileBuffers(hPipe);
-    return (sio_fd_t)(hPipe);
+    FlushFileBuffers(fileHandle);
+#if SIO_USE_COMPORT
+    if(!sio_setup(fileHandle)) {
+      LWIP_DEBUGF(SIO_DEBUG, ("sio_open(%lu): sio_setup. GetLastError() returns %d\n",
+                  (DWORD)devnum, GetLastError()));
+      CloseHandle(fileHandle);
+      return NULL;
+    }
+#endif /* SIO_USE_COMPORT */
+    return (sio_fd_t)(fileHandle);
   }
   LWIP_DEBUGF(SIO_DEBUG, ("sio_open(%lu) failed. GetLastError() returns %d\n",
               (DWORD)devnum, GetLastError()));
@@ -126,10 +157,11 @@ u8_t sio_recv(sio_fd_t fd)
  */
 u32_t sio_read(sio_fd_t fd, u8_t* data, u32_t len)
 {
+  BOOL ret;
   DWORD dwNbBytesReadden = 0;
   LWIP_DEBUGF(SIO_DEBUG, ("sio_read()...\n"));
-  ReadFile((HANDLE)(fd), data, len, &dwNbBytesReadden, NULL);
-  LWIP_DEBUGF(SIO_DEBUG, ("sio_read()=%lu bytes\n", dwNbBytesReadden));
+  ret = ReadFile((HANDLE)(fd), data, len, &dwNbBytesReadden, NULL);
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_read()=%lu bytes -> \n", dwNbBytesReadden, ret));
   return dwNbBytesReadden;
 }
 
@@ -145,10 +177,11 @@ u32_t sio_read(sio_fd_t fd, u8_t* data, u32_t len)
  */
 u32_t sio_write(sio_fd_t fd, u8_t* data, u32_t len)
 {
+  BOOL ret;
   DWORD dwNbBytesWritten = 0;
   LWIP_DEBUGF(SIO_DEBUG, ("sio_write()...\n"));
-  WriteFile((HANDLE)(fd), data, len, &dwNbBytesWritten, NULL);
-  LWIP_DEBUGF(SIO_DEBUG, ("sio_write()=%lu bytes\n", dwNbBytesWritten));
+  ret = WriteFile((HANDLE)(fd), data, len, &dwNbBytesWritten, NULL);
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_write()=%lu bytes -> %d\n", dwNbBytesWritten, ret));
   return dwNbBytesWritten;
 }
 
@@ -166,7 +199,7 @@ void sio_read_abort(sio_fd_t fd)
   return;
 }
 
-/**
+/** @todo: remove this by changing the PPP log defines to use LWIP_DEBUGF()...
  * Used by pppdebug:
  * ppp_trace - a form of printf to send tracing information to stderr
  */
