@@ -479,6 +479,8 @@ void main_loop()
 #if USE_ETHERNET
     /* check for packets and link status*/
     ethernetif_poll(&netif);
+#else /* USE_ETHERNET */
+    sys_msleep(10);
 #endif /* USE_ETHERNET */
 #if !LWIP_NETIF_LOOPBACK_MULTITHREADING
     /* check for loopback packets on all netifs */
