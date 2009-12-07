@@ -113,7 +113,7 @@ struct netif loop_netif;
 #endif /* LWIP_HAVE_LOOPIF */
 #if PPP_SUPPORT
 /* THE PPP descriptor */
-int ppp_desc;
+int ppp_desc = -1;
 #endif /* PPP_SUPPORT */
 
 
