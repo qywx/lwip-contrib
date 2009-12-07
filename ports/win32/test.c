@@ -505,7 +505,11 @@ void main_loop()
       started = sys_now();
       do
       {
+#if USE_ETHERNET
         ethernetif_poll(&netif);
+#else /* USE_ETHERNET */
+        sys_msleep(50);
+#endif /* USE_ETHERNET */
       } while(sys_now() - started < 5000);
     }
 #endif /* PPP_SUPPORT */
