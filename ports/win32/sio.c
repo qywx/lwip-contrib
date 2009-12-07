@@ -75,6 +75,8 @@ sio_fd_t sio_open(u8_t devnum)
     FlushFileBuffers(hPipe);
     return (sio_fd_t)(hPipe);
   }
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_open(%lu) failed. GetLastError() returns %d\n",
+              (DWORD)devnum, GetLastError()));
   return NULL;
 }
 
