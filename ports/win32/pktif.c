@@ -62,6 +62,10 @@
  *
  */
 
+#include "lwip/opt.h"
+
+#if LWIP_ETHERNET
+
 #include "pktif.h"
 
 /* get the windows definitions of the following 4 functions out of the way */
@@ -71,7 +75,6 @@
 
 #include "lwip/debug.h"
 
-#include "lwip/opt.h"
 #include "lwip/def.h"
 #include "lwip/mem.h"
 #include "lwip/pbuf.h"
@@ -325,7 +328,11 @@ ethernetif_init(struct netif *netif)
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1 + local_index;
   netif->linkoutput = low_level_output;
+#if LWIP_ARP
   netif->output = etharp_output;
+#else /* LWIP_ARP */
+  netif->output = NULL; /* not used for PPPoE */
+#endif /* LWIP_ARP */
 
   netif->mtu = 1500;
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP | NETIF_FLAG_LINK_UP;
@@ -378,3 +385,5 @@ ethernetif_process_input(void *arg, void *packet, int packet_len)
   struct netif *netif = (struct netif*)arg;
   ethernetif_input(netif, packet, packet_len);
 }
+
+#endif /* LWIP_ETHERNET */
