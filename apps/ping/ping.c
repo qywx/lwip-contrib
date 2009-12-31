@@ -49,6 +49,7 @@
 #include "lwip/icmp.h"
 #include "lwip/netif.h"
 #include "lwip/sys.h"
+#include "lwip/timers.h"
 #include "lwip/sockets.h"
 #include "lwip/inet.h"
 #include "lwip/inet_chksum.h"
@@ -97,12 +98,6 @@ static u32_t ping_time;
 #if !PING_USE_SOCKETS
 static struct raw_pcb *pcb;
 #endif /* PING_USE_SOCKETS */
-
-#if NO_SYS
-/* port-defined functions used for timer execution */
-void sys_msleep(u32_t ms);
-u32_t sys_now();
-#endif /* NO_SYS */
 
 /** Prepare a echo ICMP request */
 static void

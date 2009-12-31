@@ -60,6 +60,11 @@ static LONGLONG sys_get_ms_longlong()
   return (u32_t)(((ret)*1000)/freq.QuadPart);
 }
 
+u32_t sys_jiffies()
+{
+  return sys_get_ms_longlong();
+}
+
 u32_t sys_now()
 {
   return sys_get_ms_longlong();
@@ -88,12 +93,16 @@ void msvc_sys_init()
   InitSysArchProtect();
 }
 
+void sys_init()
+{
+  msvc_sys_init();
+}
+
 #if !NO_SYS
 
 #define MAX_QUEUE_ENTRIES 100
 
 struct threadlist {
-  struct sys_timeouts timeouts;
   DWORD id;
   struct threadlist *next;
 };
@@ -105,11 +114,6 @@ struct lwip_mbox {
 };
 
 struct threadlist *lwip_win32_threads = NULL;
-
-void sys_init()
-{
-  msvc_sys_init();
-}
 
 void do_sleep(int ms)
 {
@@ -197,41 +201,6 @@ void sys_sem_signal(sys_sem_t sem)
   LWIP_ASSERT("Error releasing mutex", ret != 0);
 }
 
-struct sys_timeouts *sys_arch_timeouts(void)
-{
-  struct sys_timeouts *ret = NULL;
-  struct threadlist *t, *new_thread;
-  DWORD threadID;
-  SYS_ARCH_DECL_PROTECT(lev);
-
-  threadID = GetCurrentThreadId();
-  SYS_ARCH_PROTECT(lev);
-  for(t = lwip_win32_threads; t != NULL; t = t->next)
-  {
-    if(t->id == threadID)
-    {
-      ret = &(t->timeouts);
-      SYS_ARCH_UNPROTECT(lev);
-      return ret;
-    }
-  }
-  new_thread = (struct threadlist*)malloc(sizeof(struct threadlist));
-  LWIP_ASSERT("new_thread != NULL", new_thread != NULL);
-  if(new_thread != NULL) {
-    OutputDebugString("First call to sys_arch_timeouts for thread");
-    new_thread->next = lwip_win32_threads;
-    lwip_win32_threads = new_thread;
-    new_thread->id = threadID;
-    new_thread->timeouts.next = NULL;
-    ret = &(new_thread->timeouts);
-    SYS_ARCH_UNPROTECT(lev);
-    return ret;
-  }
-  SYS_ARCH_UNPROTECT(lev);
-  LWIP_ASSERT("should not come here", 0);
-  return 0;
-}
-
 sys_thread_t sys_thread_new(char *name, void (* function)(void *arg), void *arg, int stacksize, int prio)
 {
   struct threadlist *new_thread;
@@ -248,7 +217,6 @@ sys_thread_t sys_thread_new(char *name, void (* function)(void *arg), void *arg,
     SYS_ARCH_PROTECT(lev);
     new_thread->next = lwip_win32_threads;
     lwip_win32_threads = new_thread;
-    new_thread->timeouts.next = NULL;
 
     h = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)function, arg, 0, &(new_thread->id));
     LWIP_ASSERT("h != 0", h != 0);

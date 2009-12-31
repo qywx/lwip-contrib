@@ -36,7 +36,7 @@
 
 #include "sntp.h"
 
-#include "lwip/sys.h"
+#include "lwip/timers.h"
 #include "lwip/sockets.h"
 #include "lwip/udp.h"
 #include "lwip/dns.h"
