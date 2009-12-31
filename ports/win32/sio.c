@@ -104,6 +104,7 @@ sio_fd_t sio_open(u8_t devnum)
       return NULL;
     }
 #endif /* SIO_USE_COMPORT */
+    LWIP_DEBUGF(SIO_DEBUG, ("sio_open: file \"%s\" successfully opened.\n", fileName));
     return (sio_fd_t)(fileHandle);
   }
   LWIP_DEBUGF(SIO_DEBUG, ("sio_open(%lu) failed. GetLastError() returns %d\n",
