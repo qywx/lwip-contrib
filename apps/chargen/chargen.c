@@ -101,7 +101,7 @@ static void chargen_thread(void *arg)
     memset(&chargen_saddr, 0, sizeof(chargen_saddr));
     chargen_saddr.sin_family = AF_INET;
     chargen_saddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    chargen_saddr.sin_port = htons(19);     // Chargen server
+    chargen_saddr.sin_port = htons(19);     /* Chargen server port */
 
     if (bind(listenfd, (struct sockaddr *) &chargen_saddr, sizeof(chargen_saddr)) == -1)
         LWIP_ASSERT("chargen_thread(): Socket bind failed.", 0);
