@@ -26,7 +26,7 @@
  * 
  * Author: Kieran Mansley <kjm25@cam.ac.uk>
  *
- * $Id: unixlib.c,v 1.6 2008/01/15 13:10:51 kieranm Exp $
+ * $Id: unixlib.c,v 1.7 2010/01/07 10:21:13 goldsimon Exp $
  */
 
 /*-----------------------------------------------------------------------------------*/
@@ -54,26 +54,16 @@
 
 #include "netif/tapif.h"
 
+struct netif netif;
+
 static void
 tcpip_init_done(void *arg)
 {
+  struct ip_addr ipaddr, netmask, gateway;
   sys_sem_t *sem;
   sem = arg;
-  sys_sem_signal(*sem);
-}
 
-struct netif netif;
-
-void _init(void){
-  struct ip_addr ipaddr, netmask, gateway;
-  sys_sem_t sem;
-
-  sem = sys_sem_new(0);
-  tcpip_init(tcpip_init_done, &sem);
-  sys_sem_wait(sem);
-  sys_sem_free(sem);
-  
- /*
+  /*
     CHANGE THESE to suit your own network configuration:
   */
   IP4_ADDR(&gateway, 192,168,1,1);
@@ -82,6 +72,17 @@ void _init(void){
   
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gateway, NULL, tapif_init,
 			      tcpip_input));
+
+  sys_sem_signal(*sem);
+}
+
+void _init(void){
+  sys_sem_t sem;
+
+  sem = sys_sem_new(0);
+  tcpip_init(tcpip_init_done, &sem);
+  sys_sem_wait(sem);
+  sys_sem_free(sem);
 }
 
 void _fini(void){

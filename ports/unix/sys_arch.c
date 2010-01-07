@@ -59,6 +59,10 @@
 
 #define UMAX(a, b)      ((a) > (b) ? (a) : (b))
 
+static struct timeval starttime;
+
+#if !NO_SYS
+
 static struct sys_thread *threads = NULL;
 static pthread_mutex_t threads_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -86,12 +90,8 @@ struct sys_sem {
 
 struct sys_thread {
   struct sys_thread *next;
-  struct sys_timeouts timeouts;
   pthread_t pthread;
 };
-
-
-static struct timeval starttime;
 
 static pthread_mutex_t lwprot_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t lwprot_thread = (pthread_t) 0xDEAD;
@@ -114,41 +114,12 @@ introduce_thread(pthread_t id)
   if (thread != NULL) {
     pthread_mutex_lock(&threads_mutex);
     thread->next = threads;
-    thread->timeouts.next = NULL;
     thread->pthread = id;
     threads = thread;
     pthread_mutex_unlock(&threads_mutex);
   }
     
   return thread;
-}
-/*-----------------------------------------------------------------------------------*/
-static struct sys_thread *
-current_thread(void)
-{
-  struct sys_thread *st;
-  pthread_t pt;
-  pt = pthread_self();
-  pthread_mutex_lock(&threads_mutex);
-
-  for(st = threads; st != NULL; st = st->next) {    
-    if (pthread_equal(st->pthread, pt)) {
-      pthread_mutex_unlock(&threads_mutex);
-      
-      return st;
-    }
-  }
-
-  pthread_mutex_unlock(&threads_mutex);
-
-  st = introduce_thread(pt);
-
-  if (!st) {
-    printf("current_thread???\n");
-    abort();
-  }
-
-  return st;
 }
 /*-----------------------------------------------------------------------------------*/
 sys_thread_t
@@ -490,6 +461,7 @@ sys_sem_free(struct sys_sem *sem)
     sys_sem_free_internal(sem);
   }
 }
+#endif /* !NO_SYS */
 /*-----------------------------------------------------------------------------------*/
 u32_t 
 sys_now(void)
@@ -513,15 +485,7 @@ sys_init()
   gettimeofday(&starttime, &tz);
 }
 /*-----------------------------------------------------------------------------------*/
-struct sys_timeouts *
-sys_arch_timeouts(void)
-{
-  struct sys_thread *thread;
-
-  thread = current_thread();
-  return &thread->timeouts;
-}
-/*-----------------------------------------------------------------------------------*/
+#if SYS_LIGHTWEIGHT_PROT
 /** sys_prot_t sys_arch_protect(void)
 
 This optional function does a "fast" critical region protection and returns
@@ -576,6 +540,7 @@ sys_arch_unprotect(sys_prot_t pval)
         }
     }
 }
+#endif /* SYS_LIGHTWEIGHT_PROT */
 
 /*-----------------------------------------------------------------------------------*/
 

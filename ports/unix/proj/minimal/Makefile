@@ -55,7 +55,7 @@ COREFILES=$(LWIPDIR)/core/mem.c $(LWIPDIR)/core/memp.c $(LWIPDIR)/core/netif.c \
 	$(LWIPDIR)/core/stats.c $(LWIPDIR)/core/sys.c \
         $(LWIPDIR)/core/tcp.c $(LWIPDIR)/core/tcp_in.c \
         $(LWIPDIR)/core/tcp_out.c $(LWIPDIR)/core/udp.c $(LWIPDIR)/core/dhcp.c \
-	$(LWIPDIR)/core/init.c
+	$(LWIPDIR)/core/init.c $(LWIPDIR)/core/timers.c
 CORE4FILES=$(LWIPDIR)/core/ipv4/icmp.c $(LWIPDIR)/core/ipv4/ip.c \
 	$(LWIPDIR)/core/ipv4/inet.c $(LWIPDIR)/core/ipv4/ip_addr.c \
 	$(LWIPDIR)/core/ipv4/ip_frag.c $(LWIPDIR)/core/ipv4/inet_chksum.c 
@@ -68,8 +68,11 @@ SNMPFILES=$(LWIPDIR)/core/snmp/asn1_dec.c $(LWIPDIR)/core/snmp/asn1_enc.c \
 # NETIFFILES: Files implementing various generic network interface functions.'
 NETIFFILES=$(LWIPDIR)/netif/etharp.c mintapif.c
 
+# ARCHFILES: Architecture specific files
+ARCHFILES=$(LWIPARCH)/sys_arch.c
+
 # LWIPFILES: All the above.
-LWIPFILES=$(COREFILES) $(CORE4FILES) $(SNMPFILES) $(NETIFFILES)
+LWIPFILES=$(COREFILES) $(CORE4FILES) $(SNMPFILES) $(NETIFFILES) $(ARCHFILES)
 LWIPFILESW=$(wildcard $(LWIPFILES))
 LWIPOBJS=$(notdir $(LWIPFILESW:.c=.o))
 

@@ -38,6 +38,7 @@
 #include "lwip/mem.h"
 #include "lwip/memp.h"
 #include "lwip/sys.h"
+#include "lwip/tcp.h"
 
 #include "lwip/stats.h"
 
@@ -61,6 +62,9 @@
 #include "tcpecho.h"
 #include "shell.h"
 
+/* nonstatic debug cmd option, exported in lwipopts.h */
+unsigned char debug_flags;
+
 /*-----------------------------------------------------------------------------------*/
 static void
 tcp_timeout(void *data)
@@ -71,23 +75,15 @@ tcp_timeout(void *data)
   sys_timeout(5000, tcp_timeout, NULL);
 }
 /*-----------------------------------------------------------------------------------*/
+struct netif netif_unix;
+/*-----------------------------------------------------------------------------------*/
 static void
 tcpip_init_done(void *arg)
 {
+  struct ip_addr ipaddr, netmask, gw;
   sys_sem_t *sem;
   sem = arg;
-  sys_sem_signal(*sem);
-}
-/*-----------------------------------------------------------------------------------*/
-struct netif netif_unix;
 
-static void
-main_thread(void *arg)
-{
-  struct ip_addr ipaddr, netmask, gw;
-  sys_sem_t sem;
-
-    
   IP4_ADDR(&gw, 192,168,1,1);
   IP4_ADDR(&ipaddr, 192,168,1,2);
   IP4_ADDR(&netmask, 255,255,255,0);
@@ -97,21 +93,29 @@ main_thread(void *arg)
   /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, sioslipif_init1,
 			      tcpip_input)); */
 
-  
-  sem = sys_sem_new(0);
-  tcpip_init(tcpip_init_done, &sem);
-  sys_sem_wait(sem);
-  sys_sem_free(sem);
-  printf("TCP/IP initialized.\n");
-
   tcpecho_init();
   shell_init();
   httpd_init();
   udpecho_init();
 
   printf("Applications started.\n");
-    
+
   sys_timeout(5000, tcp_timeout, NULL);
+
+  sys_sem_signal(*sem);
+}
+/*-----------------------------------------------------------------------------------*/
+
+static void
+main_thread(void *arg)
+{
+  sys_sem_t sem;
+
+  sem = sys_sem_new(0);
+  tcpip_init(tcpip_init_done, &sem);
+  sys_sem_wait(sem);
+  sys_sem_free(sem);
+  printf("TCP/IP initialized.\n");
 
 #ifdef MEM_PERF
   mem_perf_init("/tmp/memstats.client");
@@ -128,20 +132,12 @@ main(int argc, char **argv)
 #ifdef PERF
   perf_init("/tmp/client.perf");
 #endif /* PERF */
-#if LWIP_STATS
-  stats_init();
-#endif /* STATS */
-  sys_init();
-  mem_init();
-  memp_init();
-  pbuf_init();
 
   tcpdump_init();
 
-  
   printf("System initialized.\n");
-    
-  sys_thread_new("main_thread", (void *)(main_thread), NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
+
+  sys_thread_new("main_thread", main_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   pause();
   return 0;
 }

@@ -108,6 +108,8 @@ static struct option longopts[] = {
 };
 #define NUM_OPTS ((sizeof(longopts) / sizeof(struct option)) - 1)
 
+static void init_netifs(void);
+
 void usage(void)
 {
   unsigned char i;
@@ -132,6 +134,9 @@ tcpip_init_done(void *arg)
 {
   sys_sem_t *sem;
   sem = arg;
+
+  init_netifs();
+
   sys_sem_signal(*sem);
 }
 
@@ -199,7 +204,7 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 static int seq_num;
 
 #if 0
-/* Ping using the raw ip */
+/* Ping using the raw api */
 static int
 ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *addr)
 {
@@ -248,7 +253,7 @@ ping_thread(void *arg)
   raw_remove(raw);
 }
 #else
-/* Ping using the socket ip */
+/* Ping using the socket api */
 
 static void
 ping_send(int s, struct ip_addr *addr)
@@ -311,22 +316,10 @@ struct netif netif;
 #if LWIP_HAVE_LOOPIF
 struct netif loopif;
 #endif
-/*-----------------------------------------------------------------------------------*/
+
 static void
-main_thread(void *arg)
+init_netifs(void)
 {
-  sys_sem_t sem;
-#if PPP_SUPPORT
-  sio_fd_t ppp_sio;
-#endif
-
-  netif_init();
-
-  sem = sys_sem_new(0);
-  tcpip_init(tcpip_init_done, &sem);
-  sys_sem_wait(sem);
-  sys_sem_free(sem);
-  printf("TCP/IP initialized.\n");
 #if PPP_SUPPORT
   pppInit();
 #if PPP_PTY_TEST
@@ -388,6 +381,25 @@ main_thread(void *arg)
 #if LWIP_UDP  
   udpecho_init();
 #endif  
+  /*  sys_timeout(5000, tcp_debug_timeout, NULL);*/
+}
+
+/*-----------------------------------------------------------------------------------*/
+static void
+main_thread(void *arg)
+{
+  sys_sem_t sem;
+#if PPP_SUPPORT
+  sio_fd_t ppp_sio;
+#endif
+
+  netif_init();
+
+  sem = sys_sem_new(0);
+  tcpip_init(tcpip_init_done, &sem);
+  sys_sem_wait(sem);
+  sys_sem_free(sem);
+  printf("TCP/IP initialized.\n");
 
 #if LWIP_RAW
   /** @todo remove dependency on RAW PCB support */
@@ -398,7 +410,6 @@ main_thread(void *arg)
 
   printf("Applications started.\n");
 
-  /*  sys_timeout(5000, tcp_debug_timeout, NULL);*/
 
 #ifdef MEM_PERF
   mem_perf_init("/tmp/memstats.client");
@@ -476,8 +487,6 @@ main(int argc, char **argv)
   perf_init("/tmp/simhost.perf");
 #endif /* PERF */
 
-  lwip_init();
-  
   printf("System initialized.\n");
     
   sys_thread_new("main_thread", main_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
