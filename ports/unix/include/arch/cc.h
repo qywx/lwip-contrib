@@ -80,5 +80,7 @@ typedef unsigned long mem_ptr_t;
 
 #define LWIP_PLATFORM_ASSERT(x) do {printf("Assertion \"%s\" failed at line %d in %s\n", \
                                      x, __LINE__, __FILE__); fflush(NULL); abort();} while(0)
-				     
+
+#define LWIP_RAND() ((u32_t)rand())
+
 #endif /* __ARCH_CC_H__ */

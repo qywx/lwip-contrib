@@ -103,4 +103,6 @@ typedef u32_t sys_prot_t;
 
 u32_t dns_lookup_external_hosts_file(const char *name);
 
+#define LWIP_RAND() ((u32_t)rand())
+
 #endif /* __ARCH_CC_H__ */
