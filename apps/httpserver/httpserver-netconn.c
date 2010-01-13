@@ -1,13 +1,19 @@
+
 #include "lwip/opt.h"
 #include "lwip/arch.h"
 #include "lwip/api.h"
 
+#include "httpserver-netconn.h"
+
 #if LWIP_NETCONN
 
 const static char http_html_hdr[] = "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
-const static char http_index_html[] = "<html><head><title>Congrats!</title></head><body><h1>Welcome to our lwIP HTTP server!</h1><p>This is a small test page.</body></html>";
+const static char http_index_html[] = "<html><head><title>Congrats!</title></head><body><h1>Welcome to our lwIP HTTP server!</h1><p>This is a small test page, served by httpserver-netconn.</body></html>";
 
-void http_server_serve(struct netconn *conn) {
+/** Serve one HTTP connection accepted in the http thread */
+static void
+http_server_netconn_serve(struct netconn *conn)
+{
   struct netbuf *inbuf;
   char *buf;
   u16_t buflen;
@@ -46,12 +52,16 @@ void http_server_serve(struct netconn *conn) {
   netbuf_delete(inbuf);
 }
 
-int http_server() {
+/** The main function, never returns! */
+static void
+http_server_netconn_thread(void *arg)
+{
   struct netconn *conn, *newconn;
+  LWIP_UNUSED_ARG(arg);
   
   /* Create a new TCP connection handle */
   conn = netconn_new(NETCONN_TCP);
-  LWIP_ERROR("http_server: invalid conn", (conn != NULL), return -1;);
+  LWIP_ERROR("http_server: invalid conn", (conn != NULL), return;);
   
   /* Bind to port 80 (HTTP) with default IP address */
   netconn_bind(conn, NULL, 80);
@@ -61,10 +71,17 @@ int http_server() {
   
   while(1) {
     newconn = netconn_accept(conn);
-    http_server_serve(newconn);
+    http_server_netconn_serve(newconn);
     netconn_delete(newconn);
   }
-  return 0;
+  return;
+}
+
+/** Initialize the HTTP server (start its thread) */
+void
+http_server_netconn_init()
+{
+  sys_thread_new("http_server_netconn", http_server_netconn_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 }
 
 #endif /* LWIP_NETCONN*/
