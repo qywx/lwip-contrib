@@ -41,10 +41,13 @@
 /* lwIP core includes */
 #include "lwip/opt.h"
 
+#include "lwip/sys.h"
+#include "lwip/timers.h"
 #include "lwip/debug.h"
 #include "lwip/stats.h"
 #include "lwip/init.h"
 #include "lwip/tcpip.h"
+#include "lwip/netif.h"
 
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
@@ -58,6 +61,7 @@
 
 /* applications includes */
 #include "apps/httpserver_raw/httpd.h"
+#include "apps/httpserver/httpserver-netconn.h"
 #include "apps/netio/netio.h"
 #include "apps/netbios/netbios.h"
 #include "apps/ping/ping.h"
@@ -74,6 +78,7 @@
 #if PPP_SUPPORT
 /* PPP includes */
 #include "../netif/ppp/ppp.h"
+#include "../netif/ppp/lcp.h"
 #include "lwip/sio.h"
 #include "netif/ppp_oe.h"
 #endif /* PPP_SUPPORT */
@@ -91,16 +96,7 @@
 #ifndef USE_ETHERNET_TCPIP
 #define USE_ETHERNET_TCPIP  !PPP_SUPPORT
 #endif
-#if PPP_SUPPORT && PPPOS_SUPPORT && PPPOE_SUPPORT
-#error "This example does not support PPPoS and PPPoE at the same time"
-#endif
 
-
-#if NO_SYS
-/* port-defined functions used for timer execution */
-void msvc_sys_init();
-u32_t sys_now();
-#endif /* NO_SYS */
 
 /* globales variables for netifs */
 #if USE_ETHERNET
@@ -114,78 +110,10 @@ struct netif loop_netif;
 #if PPP_SUPPORT
 /* THE PPP descriptor */
 int ppp_desc = -1;
+int sio_idx = 0;
+sio_fd_t ppp_sio;
 #endif /* PPP_SUPPORT */
 
-
-#if NO_SYS
-/* special functions used for NO_SYS=1 only */
-typedef struct _timers_infos {
-  int timer;
-  int timer_interval;
-  void (*timer_func)(void);
-}timers_infos;
-
-static timers_infos timers_table[] = {
-#if LWIP_TCP
-  { 0, TCP_FAST_INTERVAL,       tcp_fasttmr},
-  { 0, TCP_SLOW_INTERVAL,       tcp_slowtmr},
-#endif /* LWIP_TCP */
-#if LWIP_ARP
-  { 0, ARP_TMR_INTERVAL,        etharp_tmr},
-#endif /* LWIP_ARP */
-#if LWIP_DHCP
-  { 0, DHCP_FINE_TIMER_MSECS,   dhcp_fine_tmr},
-  { 0, DHCP_COARSE_TIMER_MSECS, dhcp_coarse_tmr},
-#endif /* LWIP_DHCP */
-#if IP_REASSEMBLY
-  { 0, IP_TMR_INTERVAL,         ip_reass_tmr},
-#endif /* IP_REASSEMBLY */
-#if LWIP_AUTOIP
-  { 0, AUTOIP_TMR_INTERVAL,     autoip_tmr},
-#endif /* LWIP_AUTOIP */
-#if LWIP_IGMP
-  { 0, IGMP_TMR_INTERVAL,       igmp_tmr},
-#endif /* LWIP_IGMP */
-#if LWIP_DNS
-  { 0, DNS_TMR_INTERVAL,        dns_tmr},
-#endif /* LWIP_DNS */
-};
-
-/* initialize stack when NO_SYS=1 */
-static void
-nosys_init()
-{
-  msvc_sys_init();
-  lwip_init();
-}
-
-/* get the current time and see if any timer has expired */
-static void
-timers_update()
-{
-  /* static variables for timer execution, initialized to zero! */
-  static int last_time;
-
-  int cur_time, time_diff, idxtimer;
-
-  cur_time = sys_now();
-  time_diff = cur_time - last_time;
-
-  /* the '> 0' is an easy wrap-around check: the big gap at
-   * the wraparound step is simply ignored... */
-  if (time_diff > 0) {
-    last_time = cur_time;
-    for( idxtimer=0; idxtimer<(sizeof(timers_table)/sizeof(timers_infos)); idxtimer++) {
-      timers_table[idxtimer].timer += time_diff;
-
-      if (timers_table[idxtimer].timer > timers_table[idxtimer].timer_interval) {
-        timers_table[idxtimer].timer_func();
-        timers_table[idxtimer].timer -= timers_table[idxtimer].timer_interval;
-      }
-    }
-  }
-}
-#endif /* NO_SYS */
 
 #if PPP_SUPPORT
 void
@@ -280,9 +208,6 @@ msvc_netif_init()
 #if LWIP_HAVE_LOOPIF
   struct ip_addr loop_ipaddr, loop_netmask, loop_gw;
 #endif /* LWIP_HAVE_LOOPIF */
-#if PPP_SUPPORT && PPPOS_SUPPORT
-  sio_fd_t ppp_sio;
-#endif /* PPP_SUPPORT && PPPOS_SUPPORT */
 
 #if PPP_SUPPORT
   const char *username = NULL, *password = NULL;
@@ -297,7 +222,7 @@ msvc_netif_init()
   pppSetAuth(PPPAUTHTYPE_ANY, username, password);
   printf("pppOpen\n");
 #if PPPOS_SUPPORT
-  ppp_sio = sio_open(0);
+  ppp_sio = sio_open(sio_idx);
   if (ppp_sio == NULL) {
     printf("sio_open error\n");
   } else {
@@ -402,7 +327,11 @@ apps_init()
 #endif /* LWIP_NETBIOS_APP && LWIP_UDP */
 
 #if LWIP_HTTPD_APP && LWIP_TCP
+#ifdef LWIP_HTTPD_APP_NETCONN
+  http_server_netconn_init();
+#else /* LWIP_HTTPD_APP_NETCONN */
   httpd_init();
+#endif /* LWIP_HTTPD_APP_NETCONN */
 #endif /* LWIP_HTTPD_APP && LWIP_TCP */
 
 #if LWIP_NETIO_APP && LWIP_TCP
@@ -443,6 +372,14 @@ test_init(void * arg)
 #endif /* !NO_SYS */
 }
 
+#if PPP_SUPPORT
+static void pppCloseCallback(void *arg)
+{
+  int pd = (int)arg;
+  pppClose(pd);
+}
+#endif /* PPP_SUPPORT */
+
 /* This is somewhat different to other ports: we have a main loop here:
  * a dedicated task that waits for packets to arrive. This would normally be
  * done from interrupt context with embedded hardware, but we don't get an
@@ -453,12 +390,16 @@ void main_loop()
   sys_sem_t init_sem;
 #endif /* NO_SYS */
 #if PPP_SUPPORT
+#if !USE_ETHERNET
+  int count;
+  u8_t rxbuf[1024];
+#endif
   volatile int callClosePpp = 0;
 #endif /* PPP_SUPPORT */
 
   /* initialize lwIP stack, network interfaces and applications */
 #if NO_SYS
-  nosys_init();
+  lwip_init();
   test_init(NULL);
 #else /* NO_SYS */
   init_sem = sys_sem_new(0);
@@ -473,24 +414,46 @@ void main_loop()
   while (!_kbhit()) {
 #if NO_SYS
     /* handle timers (already done in tcpip.c when NO_SYS=0) */
-    timers_update();
+    sys_check_timeouts();
 #endif /* NO_SYS */
 
 #if USE_ETHERNET
     /* check for packets and link status*/
     ethernetif_poll(&netif);
 #else /* USE_ETHERNET */
-    sys_msleep(10);
+#if 0 /* set this to 1 if PPP_INPROC_OWNTHREAD==0 or not defined (see ppp.c) */
+    /* try to read characters from serial line and pass them to PPPoS */
+    count = sio_read(ppp_sio, (u8_t*)rxbuf, 1024);
+    if(count > 0) {
+      pppos_input(ppp_desc, rxbuf, count);
+    } else
+#endif
+    {
+      /* nothing received, give other tasks a chance to run */
+      sys_msleep(1);
+    }
+
 #endif /* USE_ETHERNET */
 #if !LWIP_NETIF_LOOPBACK_MULTITHREADING
     /* check for loopback packets on all netifs */
     netif_poll_all();
 #endif /* !LWIP_NETIF_LOOPBACK_MULTITHREADING */
 #if PPP_SUPPORT
+    {
+    int do_hup = 0;
+    if(do_hup) {
+      pppSigHUP(ppp_desc);
+      do_hup = 0;
+    }
+    }
     if(callClosePpp && (ppp_desc >= 0)) {
       /* make sure to disconnect PPP before stopping the program... */
       callClosePpp = 0;
+#if NO_SYS
       pppClose(ppp_desc);
+#else
+      tcpip_callback_with_block(pppCloseCallback, (void*)ppp_desc, 0);
+#endif
       ppp_desc = -1;
     }
 #endif /* PPP_SUPPORT */
@@ -501,7 +464,11 @@ void main_loop()
       u32_t started;
       printf("Closing PPP connection...\n");
       /* make sure to disconnect PPP before stopping the program... */
+#if NO_SYS
       pppClose(ppp_desc);
+#else
+      tcpip_callback_with_block(pppCloseCallback, (void*)ppp_desc, 0);
+#endif
       ppp_desc = -1;
       /* Wait for some time to let PPP finish... */
       started = sys_now();
@@ -512,6 +479,7 @@ void main_loop()
 #else /* USE_ETHERNET */
         sys_msleep(50);
 #endif /* USE_ETHERNET */
+        /* @todo: need a better check here: only wait until PPP is down */
       } while(sys_now() - started < 5000);
     }
 #endif /* PPP_SUPPORT */
@@ -521,8 +489,18 @@ void main_loop()
 #endif /* USE_ETHERNET */
 }
 
+#if PPP_SUPPORT && PPPOS_SUPPORT
+int main(int argc, char **argv)
+#else /* PPP_SUPPORT && PPPOS_SUPPORT */
 int main(void)
+#endif /* PPP_SUPPORT && PPPOS_SUPPORT */
 {
+#if PPP_SUPPORT && PPPOS_SUPPORT
+  if(argc > 1) {
+    sio_idx = atoi(argv[1]);
+  }
+  printf("Using serial port %d for PPP\n", sio_idx);
+#endif /* PPP_SUPPORT && PPPOS_SUPPORT */
   /* no stdio-buffering, please! */
   setvbuf(stdout, NULL,_IONBF, 0);
 
