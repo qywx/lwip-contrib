@@ -33,12 +33,14 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_SOCKET && LWP_IGMP /* don't build if not configured for use in lwipopts.h */
+#if LWIP_SOCKET && LWIP_IGMP /* don't build if not configured for use in lwipopts.h */
 
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
 
 #include "rtpdata.h"
+
+#include <string.h>
 
 /** This is an example of a "RTP" client/server based on a MPEG4 bitstream (with socket API).
  */
@@ -128,27 +130,29 @@ rtp_send_packets( int sock, struct sockaddr_in* to)
   rtphdr->version     = RTP_VERSION;
   rtphdr->payloadtype = 0;
   rtphdr->ssrc        = htonl(RTP_SSRC);
-  rtphdr->timestamp   = htonl(ntohl(rtphdr->timestamp)+RTP_TIMESTAMP_INCREMENT);
+  rtphdr->timestamp   = htonl(ntohl(rtphdr->timestamp) + RTP_TIMESTAMP_INCREMENT);
 
   /* send RTP stream packets */
   rtp_data_index = 0;
   do {
     rtp_payload      = rtp_send_packet+sizeof(struct rtp_hdr);
-    rtp_payload_size = min( RTP_PAYLOAD_SIZE, (sizeof(rtp_data)-rtp_data_index));
+    rtp_payload_size = min(RTP_PAYLOAD_SIZE, (sizeof(rtp_data) - rtp_data_index));
 
-    memcpy( rtp_payload, rtp_data+rtp_data_index, rtp_payload_size);
+    memcpy(rtp_payload, rtp_data + rtp_data_index, rtp_payload_size);
 
     /* set MARKER bit in RTP header on the last packet of an image */
-    rtphdr->payloadtype = RTP_PAYLOADTYPE | (((rtp_data_index+rtp_payload_size)>=sizeof(rtp_data))?RTP_MARKER_MASK:0);
+    rtphdr->payloadtype = RTP_PAYLOADTYPE | (((rtp_data_index + rtp_payload_size)
+      >= sizeof(rtp_data)) ? RTP_MARKER_MASK : 0);
 
     /* send RTP stream packet */
-    if (sendto( sock, rtp_send_packet, sizeof(struct rtp_hdr)+rtp_payload_size, 0, (struct sockaddr *)to, sizeof(struct sockaddr))>=0) {
-      rtphdr->seqNum  = htons(ntohs(rtphdr->seqNum)+1);
+    if (sendto(sock, rtp_send_packet, sizeof(struct rtp_hdr) + rtp_payload_size,
+        0, (struct sockaddr *)to, sizeof(struct sockaddr)) >= 0) {
+      rtphdr->seqNum  = htons(ntohs(rtphdr->seqNum) + 1);
       rtp_data_index += rtp_payload_size;
     } else {
-      LWIP_DEBUGF( RTP_DEBUG, ("rtp_sender: not sendto==%i\n", errno));
+      LWIP_DEBUGF(RTP_DEBUG, ("rtp_sender: not sendto==%i\n", errno));
     }
-  }while (rtp_data_index<sizeof(rtp_data));
+  }while (rtp_data_index < sizeof(rtp_data));
 }
 
 /**
@@ -168,10 +172,10 @@ rtp_send_thread(void *arg)
   rtp_stream_address = RTP_STREAM_ADDRESS;
 
   /* if we got a valid RTP stream address... */
-  if (rtp_stream_address!=0) {
+  if (rtp_stream_address != 0) {
     /* create new socket */
-    sock = socket( AF_INET, SOCK_DGRAM, 0);
-    if (sock>=0) {
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock >= 0) {
       /* prepare local address */
       memset(&local, 0, sizeof(local));
       local.sin_family      = AF_INET;
@@ -179,7 +183,7 @@ rtp_send_thread(void *arg)
       local.sin_addr.s_addr = htonl(INADDR_ANY);
 
       /* bind to local address */
-      if (bind( sock, (struct sockaddr *)&local, sizeof(local))==0) {
+      if (bind(sock, (struct sockaddr *)&local, sizeof(local)) == 0) {
         /* prepare RTP stream address */
         memset(&to, 0, sizeof(to));
         to.sin_family      = AF_INET;
@@ -187,8 +191,8 @@ rtp_send_thread(void *arg)
         to.sin_addr.s_addr = rtp_stream_address;
 
         /* send RTP packets */
-        memset( rtp_send_packet, 0, sizeof(rtp_send_packet));
-        while(1) {
+        memset(rtp_send_packet, 0, sizeof(rtp_send_packet));
+        while (1) {
           rtp_send_packets( sock, &to);
           sys_msleep(RTP_SEND_DELAY);
         }
@@ -225,10 +229,10 @@ rtp_recv_thread(void *arg)
   rtp_stream_address = RTP_STREAM_ADDRESS;
 
   /* if we got a valid RTP stream address... */
-  if (rtp_stream_address!=0) {
+  if (rtp_stream_address != 0) {
     /* create new socket */
-    sock = socket( AF_INET, SOCK_DGRAM, 0);
-    if (sock>=0) {
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock >= 0) {
       /* prepare local address */
       memset(&local, 0, sizeof(local));
       local.sin_family      = AF_INET;
@@ -236,40 +240,41 @@ rtp_recv_thread(void *arg)
       local.sin_addr.s_addr = htonl(INADDR_ANY);
 
       /* bind to local address */
-      if (bind( sock, (struct sockaddr *)&local, sizeof(local))==0) {
+      if (bind(sock, (struct sockaddr *)&local, sizeof(local)) == 0) {
         /* set recv timeout */
         timeout = RTP_RECV_TIMEOUT;
-        setsockopt( sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+        setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
 
         /* prepare multicast "ip_mreq" struct */
         ipmreq.imr_multiaddr.s_addr = rtp_stream_address;
         ipmreq.imr_interface.s_addr = htonl(INADDR_ANY);
 
         /* join multicast group */
-        if (setsockopt( sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, &ipmreq, sizeof(ipmreq))==0) {
+        if (setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, &ipmreq, sizeof(ipmreq)) == 0) {
           /* receive RTP packets */
           while(1) {
             fromlen = sizeof(from);
-            result  = recvfrom( sock, rtp_recv_packet, sizeof(rtp_recv_packet), 0, (struct sockaddr *)&from, (socklen_t *)&fromlen);
+            result  = recvfrom(sock, rtp_recv_packet, sizeof(rtp_recv_packet), 0,
+              (struct sockaddr *)&from, (socklen_t *)&fromlen);
             if (result >= sizeof(struct rtp_hdr)) {
-              rtphdr = (struct rtp_hdr  *)rtp_recv_packet;
+              rtphdr = (struct rtp_hdr *)rtp_recv_packet;
               recvrtppackets++;
-              if ((lastrtpseq == 0) || ((lastrtpseq+1) == ntohs(rtphdr->seqNum))) {
-                RTP_RECV_PROCESSING((rtp_recv_packet+sizeof(rtp_hdr)),(result-sizeof(rtp_hdr)));
+              if ((lastrtpseq == 0) || ((lastrtpseq + 1) == ntohs(rtphdr->seqNum))) {
+                RTP_RECV_PROCESSING((rtp_recv_packet + sizeof(rtp_hdr)),(result-sizeof(rtp_hdr)));
               } else {
                 lostrtppackets++;
               }
               lastrtpseq = ntohs(rtphdr->seqNum);
               if ((recvrtppackets % RTP_RECV_STATS) == 0) {
-                LWIP_DEBUGF( RTP_DEBUG, ("rtp_recv_thread: recv %6i packet(s) / lost %4i packet(s) (%.4f%%)...\n", recvrtppackets, lostrtppackets, (lostrtppackets*100.0)/recvrtppackets));
+                LWIP_DEBUGF(RTP_DEBUG, ("rtp_recv_thread: recv %6i packet(s) / lost %4i packet(s) (%.4f%%)...\n", recvrtppackets, lostrtppackets, (lostrtppackets*100.0)/recvrtppackets));
               }
             } else {
-              LWIP_DEBUGF( RTP_DEBUG, ("rtp_recv_thread: recv timeout...\n"));
+              LWIP_DEBUGF(RTP_DEBUG, ("rtp_recv_thread: recv timeout...\n"));
             }
           }
 
           /* leave multicast group */
-          setsockopt( sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, &ipmreq, sizeof(ipmreq));
+          setsockopt(sock, IPPROTO_IP, IP_DROP_MEMBERSHIP, &ipmreq, sizeof(ipmreq));
         }
       }
 
@@ -281,7 +286,8 @@ rtp_recv_thread(void *arg)
 
 void
 rtp_init(void)
-{ sys_thread_new("rtp_send_thread", rtp_send_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
+{
+  sys_thread_new("rtp_send_thread", rtp_send_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   sys_thread_new("rtp_recv_thread", rtp_recv_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 }
 
