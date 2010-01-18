@@ -51,10 +51,10 @@ int fflush(FILE *stream);
 /** @todo fix some warnings: don't use #pragma if compiling with cygwin gcc */
 #ifndef __GNUC__
 #include <limits.h>
-#pragma warning (disable: 4127)
-#pragma warning (disable: 4244)
-#pragma warning (disable: 4706)
-#pragma warning (disable: 4996)
+#pragma warning (disable: 4127) /* conditional expression is constant */
+#pragma warning (disable: 4244) /* conversion from 'x' to 'y', possible loss of data */
+#pragma warning (disable: 4706) /* assignment within conditional expression */
+#pragma warning (disable: 4996) /* 'strncpy' was declared deprecated */
 #endif
 
 #define LWIP_PROVIDE_ERRNO
