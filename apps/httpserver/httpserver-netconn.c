@@ -17,12 +17,13 @@ http_server_netconn_serve(struct netconn *conn)
   struct netbuf *inbuf;
   char *buf;
   u16_t buflen;
+  err_t err;
   
   /* Read the data from the port, blocking if nothing yet there. 
    We assume the request (the part we care about) is in one netbuf */
-  inbuf = netconn_recv(conn);
+  err = netconn_recv(conn, &inbuf);
   
-  if (netconn_err(conn) == ERR_OK) {
+  if (err == ERR_OK) {
     netbuf_data(inbuf, &buf, &buflen);
     
     /* Is this an HTTP GET command? (only check the first 5 chars, since
@@ -57,6 +58,7 @@ static void
 http_server_netconn_thread(void *arg)
 {
   struct netconn *conn, *newconn;
+  err_t err;
   LWIP_UNUSED_ARG(arg);
   
   /* Create a new TCP connection handle */
@@ -70,9 +72,12 @@ http_server_netconn_thread(void *arg)
   netconn_listen(conn);
   
   while(1) {
-    newconn = netconn_accept(conn);
-    http_server_netconn_serve(newconn);
-    netconn_delete(newconn);
+    err = netconn_accept(conn, &newconn);
+    LWIP_ASSERT("err == ERR_OK", err == ERR_OK);
+    if (err == ERR_OK) {
+      http_server_netconn_serve(newconn);
+      netconn_delete(newconn);
+    }
   }
   return;
 }
