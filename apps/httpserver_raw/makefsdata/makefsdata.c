@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
   CHDIR(path);
 
   fprintf(data_file, "#include \"fs.h\"" NEWLINE);
-  fprintf(data_file, "#include \"lwip\\def.h\"" NEWLINE);
+  fprintf(data_file, "#include \"lwip/def.h\"" NEWLINE);
   fprintf(data_file, "#include \"fsdata.h\"" NEWLINE NEWLINE NEWLINE);
 
   fprintf(data_file, "#define file_NULL (struct fsdata_file *) NULL" NEWLINE NEWLINE NEWLINE);
