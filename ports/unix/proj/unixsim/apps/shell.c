@@ -52,7 +52,7 @@ struct command {
 #undef IP_HDRINCL
 
 #include <stdio.h>
-#include <errno.h>
+//#include <errno.h>
 #include <stdlib.h>
 #include <limits.h>
 
@@ -679,6 +679,7 @@ static s8_t
 com_acpt(struct command *com)
 {
   int i, j;
+  err_t err;
 
   /* Find the first unused connection in conns. */
   for(j = 0; j < NCONNS && conns[j] != NULL; j++);
@@ -699,12 +700,12 @@ com_acpt(struct command *com)
     return ESUCCESS;
   }
 
-  conns[j] = netconn_accept(conns[i]);
+  err = netconn_accept(conns[i], &conns[j]);
   
-  if (conns[j] == NULL) {
+  if (err != ERR_OK) {
     sendstr("Could not accept connection: ", com->conn);
 #ifdef LWIP_DEBUG
-    sendstr(lwip_strerr(netconn_err(conns[i])), com->conn);
+    sendstr(lwip_strerr(err), com->conn);
 #else
     sendstr("(debugging must be turned on for error message to appear)", com->conn);
 #endif /* LWIP_DEBUG */
@@ -806,8 +807,8 @@ com_recv(struct command *com)
     return ESUCCESS;
   }
 
-  buf = netconn_recv(conns[i]);
-  if (buf != NULL) {
+  err = netconn_recv(conns[i], &buf);
+  if (err == ERR_OK) {
       
     netbuf_copy(buf, buffer, 1024);
     len = netbuf_len(buf);
@@ -1235,10 +1236,10 @@ parse_command(struct command *com, u32_t len)
        buffer[bufp] == '\n') {
       buffer[bufp] = 0;
       if (i < com->nargs - 1) {
-	return ETOOFEW;
+        return ETOOFEW;
       }
       if (i > com->nargs - 1) {
-	return ETOOMANY;
+        return ETOOMANY;
       }
       break;
     }    
@@ -1247,9 +1248,9 @@ parse_command(struct command *com, u32_t len)
     }    
     com->args[i] = (char *)&buffer[bufp];
     for(; bufp < len && buffer[bufp] != ' ' && buffer[bufp] != '\r' &&
-	  buffer[bufp] != '\n'; bufp++) {
+      buffer[bufp] != '\n'; bufp++) {
       if (buffer[bufp] == '\\') {
-	buffer[bufp] = ' ';
+        buffer[bufp] = ' ';
       }
     }
     if (bufp > len) {
@@ -1296,43 +1297,44 @@ shell_main(struct netconn *conn)
   struct command com;
   s8_t err;
   int i;
-  
+  err_t ret;
+
   do {
-    buf = netconn_recv(conn);
-    if (buf != NULL) {
+    ret = netconn_recv(conn, &buf);
+    if (ret == ERR_OK) {
       netbuf_copy(buf, buffer, 1024);
       len = netbuf_len(buf);
       netbuf_delete(buf);
       if (len >= 4) {
-	if (buffer[0] != 0xff && 
-	   buffer[1] != 0xfe) {
-	  err = parse_command(&com, len);
-	  if (err == ESUCCESS) {	
-	    com.conn = conn;
-	    err = com.exec(&com);
-	  }
-	  if (err != ESUCCESS) {
-	    error(err, conn);
-	  }
-	  if (err == ECLOSED) {
-	    printf("Closed\n");
-	    error(err, conn);
-	    goto close;
-	  }
-	} else {
-	  sendstr("\n\n"
-	          "lwIP simple interactive shell.\n"
-	          "(c) Copyright 2001, Swedish Institute of Computer Science.\n"
-	          "Written by Adam Dunkels.\n"
-	          "For help, try the \"help\" command.\n", conn);
-	}
+        if (buffer[0] != 0xff && 
+           buffer[1] != 0xfe) {
+          err = parse_command(&com, len);
+          if (err == ESUCCESS) {	
+            com.conn = conn;
+            err = com.exec(&com);
+          }
+          if (err != ESUCCESS) {
+            error(err, conn);
+          }
+          if (err == ECLOSED) {
+            printf("Closed\n");
+            error(err, conn);
+            goto close;
+          }
+        } else {
+          sendstr("\n\n"
+                  "lwIP simple interactive shell.\n"
+                  "(c) Copyright 2001, Swedish Institute of Computer Science.\n"
+                  "Written by Adam Dunkels.\n"
+                  "For help, try the \"help\" command.\n", conn);
+        }
       }
     }
-    if (buf != NULL) {
+    if (ret == ERR_OK) {
       prompt(conn);
     }
-  } while (buf != NULL);
-  printf("buf == NULL err %s\n", lwip_strerr(conn->err));
+  } while (ret == ERR_OK);
+  printf("err %s\n", lwip_strerr(ret));
  close:  
   netconn_close(conn);
   
@@ -1349,20 +1351,24 @@ static void
 shell_thread(void *arg)
 {
   struct netconn *conn, *newconn;
-  
+  err_t err;
+  LWIP_UNUSED_ARG(arg);
+
   conn = netconn_new(NETCONN_TCP);
   netconn_bind(conn, NULL, 23);
   netconn_listen(conn);
 
   while (1) {
-    newconn = netconn_accept(conn);
-    shell_main(newconn);
-    netconn_delete(newconn);
+    err = netconn_accept(conn, &newconn);
+    if (err == ERR_OK) {
+      shell_main(newconn);
+      netconn_delete(newconn);
+    }
   }
 }
 /*-----------------------------------------------------------------------------------*/
 void
-shell_init(void)     
+shell_init(void)
 {
   sys_thread_new("shell_thread", shell_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 }

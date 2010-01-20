@@ -38,6 +38,7 @@ tcpecho_thread(void *arg)
 {
   struct netconn *conn, *newconn;
   err_t err;
+  LWIP_UNUSED_ARG(arg);
 
   /* Create a new connection identifier. */
   conn = netconn_new(NETCONN_TCP);
@@ -51,26 +52,26 @@ tcpecho_thread(void *arg)
   while (1) {
 
     /* Grab new connection. */
-    newconn = netconn_accept(conn);
+    err = netconn_accept(conn, &newconn);
     /*printf("accepted new connection %p\n", newconn);*/
     /* Process the new connection. */
-    if (newconn != NULL) {
+    if (err == ERR_OK) {
       struct netbuf *buf;
       void *data;
       u16_t len;
       
-      while ((buf = netconn_recv(newconn)) != NULL) {
+      while ((err = netconn_recv(newconn, &buf)) == ERR_OK) {
         /*printf("Recved\n");*/
         do {
              netbuf_data(buf, &data, &len);
              err = netconn_write(newconn, data, len, NETCONN_COPY);
 #if 0
-            if (err != ERR_OK) {    
+            if (err != ERR_OK) {
               printf("tcpecho: netconn_write: error \"%s\"\n", lwip_strerr(err));
             }
 #endif
         } while (netbuf_next(buf) >= 0);
-        netbuf_delete(buf);  
+        netbuf_delete(buf);
       }
       /*printf("Got EOF, looping\n");*/ 
       /* Close connection and discard connection identifier. */
@@ -83,7 +84,7 @@ tcpecho_thread(void *arg)
 void
 tcpecho_init(void)
 {
-  sys_thread_new("tcpecho_thread", tcpecho_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);  
+  sys_thread_new("tcpecho_thread", tcpecho_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 }
 /*-----------------------------------------------------------------------------------*/
 

@@ -42,20 +42,24 @@ udpecho_thread(void *arg)
   static struct ip_addr *addr;
   static unsigned short port;
   char buffer[4096];
-  
+  err_t err;
+  LWIP_UNUSED_ARG(arg);
+
   conn = netconn_new(NETCONN_UDP);
   netconn_bind(conn, NULL, 7);
 
   while (1) {
-    buf = netconn_recv(conn);
-    addr = netbuf_fromaddr(buf);
-    port = netbuf_fromport(buf);
-    netconn_connect(conn, addr, port);
-    netbuf_copy(buf, buffer, buf->p->tot_len);
-    buffer[buf->p->tot_len] = '\0';
-    netconn_send(conn, buf);
-    printf("got %s\n", buffer);
-    netbuf_delete(buf);
+    err = netconn_recv(conn, &buf);
+    if (err == ERR_OK) {
+      addr = netbuf_fromaddr(buf);
+      port = netbuf_fromport(buf);
+      netconn_connect(conn, addr, port);
+      netbuf_copy(buf, buffer, buf->p->tot_len);
+      buffer[buf->p->tot_len] = '\0';
+      netconn_send(conn, buf);
+      printf("got %s\n", buffer);
+      netbuf_delete(buf);
+    }
   }
 }
 /*-----------------------------------------------------------------------------------*/
