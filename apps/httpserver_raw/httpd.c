@@ -134,14 +134,14 @@ static void
 http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
 {
   err_t err;
-  LWIP_DEBUGF(HTTPD_DEBUG, ("http_close: pcb=0x%08X hs=0x%08X left=%d\n", pcb,
-    hs, hs != NULL ? hs->left : 0));
-  
+  LWIP_DEBUGF(HTTPD_DEBUG, ("http_close: pcb=%p hs=%p left=%d\n", (void*)pcb,
+    (void*)hs, hs != NULL ? hs->left : 0));
+
   tcp_recv(pcb, NULL);
   err = tcp_close(pcb);
   if (err != ERR_OK) {
     /* closing failed, try again later */
-    LWIP_DEBUGF(HTTPD_DEBUG, ("Error %s closing pcb=0x%08X\n", lwip_strerr(err), pcb));
+    LWIP_DEBUGF(HTTPD_DEBUG, ("Error %s closing pcb=%p\n", lwip_strerr(err), (void*)pcb));
     tcp_recv(pcb, http_recv);
   } else {
     /* closing succeeded */
@@ -164,8 +164,8 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
   u16_t len;
   u16_t snd_buf;
 
-  LWIP_DEBUGF(HTTPD_DEBUG, ("http_send_data: pcb=0x%08X hs=0x%08X left=%d\n", pcb,
-    hs, hs != NULL ? hs->left : 0));
+  LWIP_DEBUGF(HTTPD_DEBUG, ("http_send_data: pcb=%p hs=%p left=%d\n", (void*)pcb,
+    (void*)hs, hs != NULL ? hs->left : 0));
 
   if ((hs == NULL) || (hs->left == 0)) {
     /* Already closed or nothing more to send; be robust: close */
@@ -177,7 +177,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
   snd_buf = tcp_sndbuf(pcb);
   len = LWIP_MIN(snd_buf, hs->left);
   if (hs->left <= snd_buf) {
-    LWIP_ASSERT((len == hs->left), "hs->left did not fit into u16_t!");
+    LWIP_ASSERT("hs->left did not fit into u16_t!", len == hs->left);
   }
 #if HTTPD_USE_MAX_SEND_LIMIT
   /* upper send limit */
@@ -194,10 +194,10 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
       len /= 2;
     }
   } while ((err == ERR_MEM) && (len > 1));  
-  
+
   if (err == ERR_OK) {
     hs->file += len;
-    LWIP_ASSERT((hs->left >= len), "hs->left >= len");
+    LWIP_ASSERT("hs->left >= len", hs->left >= len);
     hs->left -= len;
   }
   if (hs->left <= 0) {
@@ -270,7 +270,7 @@ http_parse_request(struct pbuf *p, struct http_state *hs)
   /* @todo: if file was created dynamically and must be freed after sending: */
   /*hs->file_orig = hs->file;*/
 #endif /* HTTPD_SUPPORT_DYNAMIC_PAGES */
-  LWIP_ASSERT((file.len >= 0), "File length must be positive!");
+  LWIP_ASSERT("File length must be positive!", file.len >= 0);
   hs->left = file.len;
 #if HTTPD_TRACK_SENT_BYTES
   hs->file_size = file.len;
@@ -303,7 +303,8 @@ static err_t
 http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 {
   struct http_state *hs = arg;
-  LWIP_DEBUGF(HTTPD_DEBUG, ("http_sent: pcb=0x%08X hs=0x%08X len=%d\n", pcb, hs, len));
+  LWIP_DEBUGF(HTTPD_DEBUG, ("http_sent: pcb=%p hs=%p len=%"U16_F"\n",
+    (void*)pcb, (void*)hs, len));
 
   LWIP_UNUSED_ARG(len);
 
@@ -321,7 +322,7 @@ http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 
   /* reset retry counter */
   hs->retries = 0;
-  
+
   if (hs->left > 0) {
     LWIP_DEBUGF(HTTPD_DEBUG, ("http_sent: %d bytes left, calling http_send_data\n", hs->left));
     http_send_data(pcb, hs);
@@ -344,9 +345,9 @@ static err_t
 http_poll(void *arg, struct tcp_pcb *pcb)
 {
   struct http_state *hs = arg;
-  LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: pcb=0x%08X hs=0x%08X pcb_state=%s\n",
-    pcb, hs, tcp_debug_state_str(pcb->state)));
-  
+  LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: pcb=%p hs=%p pcb_state=%s\n",
+    (void*)pcb, (void*)hs, tcp_debug_state_str(pcb->state)));
+
   if (hs == NULL) {
     if (pcb->state == ESTABLISHED) {
       /* arg is null, close. */
@@ -377,8 +378,8 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
   err_t parsed = ERR_ABRT;
   struct http_state *hs = arg;
-  LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: pcb=0x%08X pbuf=0x%08X err=%s\n", pcb, p,
-    lwip_strerr(err)));
+  LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: pcb=%p pbuf=%p err=%s\n", (void*)pcb,
+    (void*)p, lwip_strerr(err)));
 
   if (p != NULL) {
     /* Inform TCP that we have taken the data. */
@@ -408,7 +409,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
   }
   pbuf_free(p);
   if (parsed == ERR_OK) {
-    LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: data %p len %ld\n", hs->file, hs->left));
+    LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: data %p len %"S32_F"\n", hs->file, hs->left));
     http_send_data(pcb, hs);
   } else if (parsed == ERR_ABRT) {
     http_close_conn(pcb, hs);
@@ -475,11 +476,11 @@ httpd_init(void)
   err_t err;
 
   pcb = tcp_new();
-  LWIP_ASSERT(("httpd_init: tcp_new failed"), pcb != NULL);
+  LWIP_ASSERT("httpd_init: tcp_new failed", pcb != NULL);
   err = tcp_bind(pcb, IP_ADDR_ANY, HTTPD_SERVER_PORT);
-  LWIP_ASSERT(("httpd_init: tcp_bind failed: %s", lwip_strerr(err)), err == ERR_OK);
+  LWIP_ASSERT("httpd_init: tcp_bind failed", err == ERR_OK);
   pcb = tcp_listen(pcb);
-  LWIP_ASSERT(("httpd_init: tcp_listen failed"), pcb != NULL);
+  LWIP_ASSERT("httpd_init: tcp_listen failed", pcb != NULL);
   /* initialize callback arg and accept callback */
   tcp_arg(pcb, pcb);
   tcp_accept(pcb, http_accept);
