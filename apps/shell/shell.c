@@ -46,6 +46,13 @@
 #define NEWLINE "\n"
 #endif /* WIN32 */
 
+/** Define this to 1 if you want to echo back all received characters
+ * (e.g. so they are displayed on a remote telnet)
+ */
+#ifndef SHELL_ECHO
+#define SHELL_ECHO 0
+#endif
+
 #define BUFSIZE             1024
 static unsigned char buffer[BUFSIZE];
 
@@ -1368,6 +1375,9 @@ shell_main(struct netconn *conn)
   s8_t err;
   int i;
   err_t ret;
+#if SHELL_ECHO
+  void *echomem;
+#endif /* SHELL_ECHO */
 
   do {
     ret = netconn_recv(conn, &buf);
@@ -1375,6 +1385,14 @@ shell_main(struct netconn *conn)
       netbuf_copy(buf, &buffer[len], BUFSIZE - len);
       cur_len = netbuf_len(buf);
       len += cur_len;
+#if SHELL_ECHO
+      echomem = mem_malloc(cur_len);
+      if (echomem != NULL) {
+        netbuf_copy(buf, echomem, cur_len);
+        netconn_write(conn, echomem, cur_len, NETCONN_COPY);
+        mem_free(echomem);
+      }
+#endif /* SHELL_ECHO */
       netbuf_delete(buf);
       if (((len > 0) && ((buffer[len-1] == '\r') || (buffer[len-1] == '\n'))) ||
           (len >= BUFSIZE)) {
