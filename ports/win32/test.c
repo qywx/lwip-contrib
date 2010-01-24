@@ -71,6 +71,7 @@
 #include "apps/shell/shell.h"
 #include "apps/tcpecho/tcpecho.h"
 #include "apps/udpecho/udpecho.h"
+#include "apps/tcpecho_raw/echo.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
@@ -352,8 +353,12 @@ apps_init()
 #if LWIP_SHELL_APP && LWIP_NETCONN
   shell_init();
 #endif /* LWIP_SHELL_APP && LWIP_NETCONN */
-#if LWIP_TCPECHO_APP && LWIP_NETCONN
+#if LWIP_TCPECHO_APP
+#if LWIP_NETCONN && defined(LWIP_TCPECHO_APP_NETCONN)
   tcpecho_init();
+#else /* LWIP_NETCONN && defined(LWIP_TCPECHO_APP_NETCONN) */
+  echo_init();
+#endif
 #endif /* LWIP_TCPECHO_APP && LWIP_NETCONN */
 #if LWIP_UDPECHO_APP && LWIP_NETCONN
   udpecho_init();
@@ -376,7 +381,7 @@ test_init(void * arg)
 
   /* init network interfaces */
   msvc_netif_init();
-  
+
   /* init apps */
   apps_init();
 

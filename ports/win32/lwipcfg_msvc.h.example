@@ -4,6 +4,8 @@
  */
 
 /* configuration for this port */
+#define PPP_USERNAME  "Admin"
+#define PPP_PASSWORD  "pass"
 
 /** Define this to the index of the windows network adapter to use */
 #define PACKET_LIB_ADAPTER_NR         1
@@ -21,14 +23,20 @@
 
 /* configuration for applications */
 
+#define LWIP_CHARGEN_APP              0
 #define LWIP_DNS_APP                  0
 #define LWIP_PING_APP                 0
 #define LWIP_NETBIOS_APP              0
 #define LWIP_HTTPD_APP                0
+/* Set this to 1 to use the netconn http server,
+ * otherwise the raw api server will be used. */
 /*#define LWIP_HTTPD_APP_NETCONN     */
 #define LWIP_NETIO_APP                0
 #define LWIP_RTP_APP                  0
 #define LWIP_SNTP_APP                 0
 #define LWIP_SHELL_APP                0
 #define LWIP_TCPECHO_APP              0
+/* Set this to 1 to use the netconn tcpecho server,
+ * otherwise the raw api server will be used. */
+/*#define LWIP_TCPECHO_APP_NETCONN   */
 #define LWIP_UDPECHO_APP              0
