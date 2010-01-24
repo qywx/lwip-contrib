@@ -68,6 +68,9 @@
 #include "apps/rtp/rtp.h"
 #include "apps/sntp/sntp.h"
 #include "apps/chargen/chargen.h"
+#include "apps/shell/shell.h"
+#include "apps/tcpecho/tcpecho.h"
+#include "apps/udpecho/udpecho.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
@@ -110,7 +113,7 @@ struct netif loop_netif;
 #if PPP_SUPPORT
 /* THE PPP descriptor */
 int ppp_desc = -1;
-int sio_idx = 0;
+u8_t sio_idx = 0;
 sio_fd_t ppp_sio;
 #endif /* PPP_SUPPORT */
 
@@ -220,7 +223,7 @@ msvc_netif_init()
   printf("pppInit\n");
   pppInit();
   pppSetAuth(PPPAUTHTYPE_ANY, username, password);
-  printf("pppOpen\n");
+  printf("pppOpen: COM%d\n", (int)sio_idx);
 #if PPPOS_SUPPORT
   ppp_sio = sio_open(sio_idx);
   if (ppp_sio == NULL) {
@@ -338,13 +341,23 @@ apps_init()
   netio_init();
 #endif /* LWIP_NETIO_APP && LWIP_TCP */
 
-#if LWIP_RTP_APP && LWIP_SOCKET
+#if LWIP_RTP_APP && LWIP_SOCKET && LWIP_IGMP
   rtp_init();
-#endif /* LWIP_RTP_APP && LWIP_SOCKET */
+#endif /* LWIP_RTP_APP && LWIP_SOCKET && LWIP_IGMP */
 
 #if LWIP_SNTP_APP && LWIP_SOCKET
   sntp_init();
 #endif /* LWIP_SNTP_APP && LWIP_SOCKET */
+
+#if LWIP_SHELL_APP && LWIP_NETCONN
+  shell_init();
+#endif /* LWIP_SHELL_APP && LWIP_NETCONN */
+#if LWIP_TCPECHO_APP && LWIP_NETCONN
+  tcpecho_init();
+#endif /* LWIP_TCPECHO_APP && LWIP_NETCONN */
+#if LWIP_UDPECHO_APP && LWIP_NETCONN
+  udpecho_init();
+#endif /* LWIP_UDPECHO_APP && LWIP_NETCONN */
 }
 
 /* This function initializes this lwIP test. When NO_SYS=1, this is done in
@@ -497,7 +510,7 @@ int main(void)
 {
 #if PPP_SUPPORT && PPPOS_SUPPORT
   if(argc > 1) {
-    sio_idx = atoi(argv[1]);
+    sio_idx = (u8_t)atoi(argv[1]);
   }
   printf("Using serial port %d for PPP\n", sio_idx);
 #endif /* PPP_SUPPORT && PPPOS_SUPPORT */
