@@ -25,6 +25,10 @@
 #define LWIP_PING_APP                 0
 #define LWIP_NETBIOS_APP              0
 #define LWIP_HTTPD_APP                0
+/*#define LWIP_HTTPD_APP_NETCONN     */
 #define LWIP_NETIO_APP                0
 #define LWIP_RTP_APP                  0
 #define LWIP_SNTP_APP                 0
+#define LWIP_SHELL_APP                0
+#define LWIP_TCPECHO_APP              0
+#define LWIP_UDPECHO_APP              0
