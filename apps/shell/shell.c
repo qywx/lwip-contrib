@@ -1357,7 +1357,7 @@ static void
 shell_main(struct netconn *conn)
 {
   struct netbuf *buf;
-  u16_t len;
+  u16_t len = 0, cur_len;
   struct command com;
   s8_t err;
   int i;
@@ -1366,10 +1366,12 @@ shell_main(struct netconn *conn)
   do {
     ret = netconn_recv(conn, &buf);
     if (ret == ERR_OK) {
-      netbuf_copy(buf, buffer, BUFSIZE);
-      len = netbuf_len(buf);
+      netbuf_copy(buf, &buffer[len], BUFSIZE - len);
+      cur_len = netbuf_len(buf);
+      len += cur_len;
       netbuf_delete(buf);
-      if (len >= 4) {
+      if (((len > 0) && ((buffer[len-1] == '\r') || (buffer[len-1] == '\n'))) ||
+          (len >= BUFSIZE)) {
         if (buffer[0] != 0xff && 
            buffer[1] != 0xfe) {
           err = parse_command(&com, len);
@@ -1392,23 +1394,24 @@ shell_main(struct netconn *conn)
                   "Written by Adam Dunkels.\n"
                   "For help, try the \"help\" command.\n", conn);
         }
+        if (ret == ERR_OK) {
+          prompt(conn);
+        }
+        len = 0;
       }
-    }
-    if (ret == ERR_OK) {
-      prompt(conn);
     }
   } while (ret == ERR_OK);
   printf("err %s\n", lwip_strerr(ret));
- close:  
+
+close:
   netconn_close(conn);
-  
+
   for(i = 0; i < NCONNS; i++) {
     if (conns[i] != NULL) {
       netconn_delete(conns[i]);
     }
     conns[i] = NULL;
   }
-  
 }
 /*-----------------------------------------------------------------------------------*/
 static void 
