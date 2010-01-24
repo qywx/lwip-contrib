@@ -175,7 +175,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
 
   /* We cannot send more data than space available in the send buffer. */
   snd_buf = tcp_sndbuf(pcb);
-  len = LWIP_MIN(snd_buf, hs->left);
+  len = (u16_t)LWIP_MIN(snd_buf, hs->left);
   if (hs->left <= snd_buf) {
     LWIP_ASSERT("hs->left did not fit into u16_t!", len == hs->left);
   }

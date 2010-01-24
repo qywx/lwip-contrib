@@ -62,12 +62,12 @@ static LONGLONG sys_get_ms_longlong()
 
 u32_t sys_jiffies()
 {
-  return sys_get_ms_longlong();
+  return (u32_t)sys_get_ms_longlong();
 }
 
 u32_t sys_now()
 {
-  return sys_get_ms_longlong();
+  return (u32_t)sys_get_ms_longlong();
 }
 
 CRITICAL_SECTION critSec;
@@ -201,7 +201,7 @@ void sys_sem_signal(sys_sem_t sem)
   LWIP_ASSERT("Error releasing mutex", ret != 0);
 }
 
-sys_thread_t sys_thread_new(char *name, void (* function)(void *arg), void *arg, int stacksize, int prio)
+sys_thread_t sys_thread_new(char *name, lwip_thread_fn function, void *arg, int stacksize, int prio)
 {
   struct threadlist *new_thread;
   HANDLE h;

@@ -132,7 +132,8 @@ ping_send(int s, struct ip_addr *addr)
   size_t ping_size = sizeof(struct icmp_echo_hdr) + PING_DATA_SIZE;
   LWIP_ASSERT("ping_size is too big", ping_size <= 0xffff);
 
-  if (!(iecho = mem_malloc((mem_size_t)ping_size))) {
+  iecho = mem_malloc((mem_size_t)ping_size);
+  if (!iecho) {
     return ERR_MEM;
   }
 

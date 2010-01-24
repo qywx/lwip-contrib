@@ -326,7 +326,7 @@ ethernetif_init(struct netif *netif)
   SYS_ARCH_UNPROTECT(lev);
 
   netif->name[0] = IFNAME0;
-  netif->name[1] = IFNAME1 + local_index;
+  netif->name[1] = (char)(IFNAME1 + local_index);
   netif->linkoutput = low_level_output;
 #if LWIP_ARP
   netif->output = etharp_output;
