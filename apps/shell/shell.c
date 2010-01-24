@@ -40,7 +40,8 @@
 #include "lwip/stats.h"
 #include "lwip/inet.h"
 
-static unsigned char buffer[1024];
+#define BUFSIZE             1024
+static unsigned char buffer[BUFSIZE];
 
 struct command {
   struct netconn *conn;
@@ -528,12 +529,18 @@ com_open(struct command *com)
   u16_t port;
   int i;
   err_t err;
+  long tmp;
 
   if (inet_aton(com->args[0], (struct in_addr *)&ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
-  port = strtol(com->args[1], NULL, 10);
+  tmp = strtol(com->args[1], NULL, 10);
+  if((tmp < 0) || (tmp > 0xffff)) {
+    sendstr("Invalid port number.\n", com->conn);
+    return ESUCCESS;
+  }
+  port = (u16_t)tmp;
 
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
@@ -582,8 +589,14 @@ com_lstn(struct command *com)
   u16_t port;
   int i;
   err_t err;
+  long tmp;
 
-  port = strtol(com->args[0], NULL, 10);
+  tmp = strtol(com->args[0], NULL, 10);
+  if((tmp < 0) || (tmp > 0xffff)) {
+    sendstr("Invalid port number.\n", com->conn);
+    return ESUCCESS;
+  }
+  port = (u16_t)tmp;
 
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
@@ -731,13 +744,13 @@ com_stat(struct command *com)
   for(i = 0; i < STAT_NUM; i++) {
     snprintf(&fmt[3], sizeof(fmt) - 3,"%s\n", stat_formats[i]);
     if (strcmp(stat_formats[i], U16_F) == 0) {
-      len = snprintf(buf, sizeof(buf), fmt, stat_msgs[i], *(u16_t*)stat_ptrs[i]);    
+      len = (u16_t)snprintf(buf, sizeof(buf), fmt, stat_msgs[i], *(u16_t*)stat_ptrs[i]);    
     }
     else if (strcmp(stat_formats[i], U32_F) == 0) {
-      len = snprintf(buf, sizeof(buf), fmt, stat_msgs[i], *(mem_size_t*)stat_ptrs[i]);
+      len = (u16_t)snprintf(buf, sizeof(buf), fmt, stat_msgs[i], *(mem_size_t*)stat_ptrs[i]);
     }
     else {
-      len = snprintf(buf, sizeof(buf), "%s %s", stat_msgs[i], "unkown format");
+      len = (u16_t)snprintf(buf, sizeof(buf), "%s %s", stat_msgs[i], "unkown format");
     }
     netconn_write(com->conn, buf, len, NETCONN_COPY);
   }
@@ -809,7 +822,7 @@ com_recv(struct command *com)
   err = netconn_recv(conns[i], &buf);
   if (err == ERR_OK) {
       
-    netbuf_copy(buf, buffer, 1024);
+    netbuf_copy(buf, buffer, BUFSIZE);
     len = netbuf_len(buf);
     sendstr("Reading from connection:\n", com->conn);
     netconn_write(com->conn, buffer, len, NETCONN_COPY);
@@ -838,13 +851,24 @@ com_udpc(struct command *com)
   u16_t lport, rport;
   int i;
   err_t err;
+  long tmp;
 
-  lport = strtol(com->args[0], NULL, 10);
+  tmp = strtol(com->args[0], NULL, 10);
+  if((tmp < 0) || (tmp > 0xffff)) {
+    sendstr("Invalid port number.\n", com->conn);
+    return ESUCCESS;
+  }
+  lport = (u16_t)tmp;
   if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
-  rport = strtol(com->args[2], NULL, 10);
+  tmp = strtol(com->args[2], NULL, 10);
+  if((tmp < 0) || (tmp > 0xffff)) {
+    sendstr("Invalid port number.\n", com->conn);
+    return ESUCCESS;
+  }
+  rport = (u16_t)tmp;
 
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
@@ -910,13 +934,24 @@ com_udpl(struct command *com)
   u16_t lport, rport;
   int i;
   err_t err;
+  long tmp;
 
-  lport = strtol(com->args[0], NULL, 10);
+  tmp = strtol(com->args[0], NULL, 10);
+  if((tmp < 0) || (tmp > 0xffff)) {
+    sendstr("Invalid port number.\n", com->conn);
+    return ESUCCESS;
+  }
+  lport = (u16_t)tmp;
   if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
-  rport = strtol(com->args[2], NULL, 10);
+  tmp = strtol(com->args[2], NULL, 10);
+  if((tmp < 0) || (tmp > 0xffff)) {
+    sendstr("Invalid port number.\n", com->conn);
+    return ESUCCESS;
+  }
+  rport = (u16_t)tmp;
 
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
@@ -982,13 +1017,24 @@ com_udpn(struct command *com)
   u16_t lport, rport;
   int i;
   err_t err;
+  long tmp;
 
-  lport = strtol(com->args[0], NULL, 10);
+  tmp = strtol(com->args[0], NULL, 10);
+  if((tmp < 0) || (tmp > 0xffff)) {
+    sendstr("Invalid port number.\n", com->conn);
+    return ESUCCESS;
+  }
+  lport = (u16_t)tmp;
   if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
-  rport = strtol(com->args[2], NULL, 10);
+  tmp = strtol(com->args[2], NULL, 10);
+  if((tmp < 0) || (tmp > 0xffff)) {
+    sendstr("Invalid port number.\n", com->conn);
+    return ESUCCESS;
+  }
+  rport = (u16_t)tmp;
 
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
@@ -1055,13 +1101,24 @@ com_udpb(struct command *com)
   int i;
   err_t err;
   struct ip_addr bcaddr;
+  long tmp;
 
-  lport = strtol(com->args[0], NULL, 10);
+  tmp = strtol(com->args[0], NULL, 10);
+  if((tmp < 0) || (tmp > 0xffff)) {
+    sendstr("Invalid port number.\n", com->conn);
+    return ESUCCESS;
+  }
+  lport = (u16_t)tmp;
   if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
-  rport = strtol(com->args[2], NULL, 10);
+  tmp = strtol(com->args[2], NULL, 10);
+  if((tmp < 0) || (tmp > 0xffff)) {
+    sendstr("Invalid port number.\n", com->conn);
+    return ESUCCESS;
+  }
+  rport = (u16_t)tmp;
 
   /* Find the first unused connection in conns. */
   for(i = 0; i < NCONNS && conns[i] != NULL; i++);
@@ -1122,10 +1179,12 @@ com_udpb(struct command *com)
 static s8_t
 com_usnd(struct command *com)
 {
-  int i;
+  long i;
   err_t err;
   struct netbuf *buf;
   char *mem;
+  u16_t len;
+  size_t tmp;
   
   i = strtol(com->args[0], NULL, 10);
 
@@ -1138,14 +1197,20 @@ com_usnd(struct command *com)
     sendstr("Connection identifier not in use.\n", com->conn);
     return ESUCCESS;
   }
+  tmp = strlen(com->args[1]) + 1;
+  if (tmp > 0xffff) {
+    sendstr("Invalid length.\n", com->conn);
+    return ESUCCESS;
+  }
+  len = (u16_t)tmp;
 
   buf = netbuf_new();
-  mem = netbuf_alloc(buf, strlen(com->args[1]) + 1);
+  mem = netbuf_alloc(buf, len);
   if (mem == NULL) {
     sendstr("Could not allocate memory for sending.\n", com->conn);
     return ESUCCESS;
   }
-  strncpy(mem, com->args[1], strlen(com->args[1]) + 1);
+  strncpy(mem, com->args[1], len);
   err = netconn_send(conns[i], buf);
   netbuf_delete(buf);
   if (err != ERR_OK) {
@@ -1292,7 +1357,7 @@ static void
 shell_main(struct netconn *conn)
 {
   struct netbuf *buf;
-  u32_t len;
+  u16_t len;
   struct command com;
   s8_t err;
   int i;
@@ -1301,14 +1366,14 @@ shell_main(struct netconn *conn)
   do {
     ret = netconn_recv(conn, &buf);
     if (ret == ERR_OK) {
-      netbuf_copy(buf, buffer, 1024);
+      netbuf_copy(buf, buffer, BUFSIZE);
       len = netbuf_len(buf);
       netbuf_delete(buf);
       if (len >= 4) {
         if (buffer[0] != 0xff && 
            buffer[1] != 0xfe) {
           err = parse_command(&com, len);
-          if (err == ESUCCESS) {	
+          if (err == ESUCCESS) {
             com.conn = conn;
             err = com.exec(&com);
           }
