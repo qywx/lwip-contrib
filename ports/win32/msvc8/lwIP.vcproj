@@ -506,6 +506,10 @@
 					>
 				</File>
 				<File
+					RelativePath="$(LWIP_DIR)\src\core\timers.c"
+					>
+				</File>
+				<File
 					RelativePath="$(LWIP_DIR)\src\core\udp.c"
 					>
 				</File>
@@ -1055,6 +1059,10 @@
 						>
 					</File>
 					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\timers.h"
+						>
+					</File>
+					<File
 						RelativePath="$(LWIP_DIR)\src\include\lwip\udp.h"
 						>
 					</File>
@@ -1382,24 +1390,6 @@
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\vj.h"
-						>
-						<FileConfiguration
-							Name="Release|Win32"
-							>
-							<Tool
-								Name="VCCustomBuildTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							>
-							<Tool
-								Name="VCCustomBuildTool"
-							/>
-						</FileConfiguration>
-					</File>
-					<File
-						RelativePath="$(LWIP_DIR)\src\netif\ppp\vjbsdhdr.h"
 						>
 						<FileConfiguration
 							Name="Release|Win32"

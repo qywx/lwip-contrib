@@ -226,7 +226,27 @@
 				Name="apps"
 				>
 				<File
+					RelativePath="..\..\..\apps\chargen\chargen.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\chargen\chargen.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\tcpecho_raw\echo.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\tcpecho_raw\echo.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\apps\httpserver_raw\fs.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\httpserver_raw\fs.h"
 					>
 				</File>
 				<File
@@ -250,7 +270,23 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath="..\..\..\apps\httpserver_raw\fsdata.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\apps\httpserver_raw\httpd.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\httpserver_raw\httpd.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\httpserver\httpserver-netconn.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\httpserver\httpserver-netconn.h"
 					>
 				</File>
 				<File
@@ -258,7 +294,15 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\apps\netbios\netbios.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\apps\netio\netio.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\netio\netio.h"
 					>
 				</File>
 				<File
@@ -266,11 +310,59 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\apps\ping\ping.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\apps\rtp\rtp.c"
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\apps\rtp\rtp.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\shell\shell.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\shell\shell.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\apps\sntp\sntp.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\sntp\sntp.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\tcpecho\tcpecho.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\tcpecho\tcpecho.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\udpecho\udpecho.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\udpecho\udpecho.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="private_mib"
+				>
+				<File
+					RelativePath="..\lwip_prvmib.c"
+					>
+				</File>
+				<File
+					RelativePath="..\private_mib.h"
 					>
 				</File>
 			</Filter>
