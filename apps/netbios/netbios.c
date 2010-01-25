@@ -110,7 +110,7 @@ struct netbios_name_hdr {
   PACK_STRUCT_FIELD(u8_t  nametype);
   PACK_STRUCT_FIELD(u8_t  encname[(NETBIOS_NAME_LEN*2)+1]);
   PACK_STRUCT_FIELD(u16_t type);
-  PACK_STRUCT_FIELD(u16_t class);
+  PACK_STRUCT_FIELD(u16_t cls);
   PACK_STRUCT_FIELD(u32_t ttl);
   PACK_STRUCT_FIELD(u16_t datalen);
   PACK_STRUCT_FIELD(u16_t flags);
@@ -189,6 +189,7 @@ netbios_name_decoding( char *name_enc, char *name_dec, int name_dec_len)
   return 0;
 }
 
+#if 0 /* function currently unused */
 /** NetBIOS encoding name */
 static int
 netbios_name_encoding(char *name_enc, char *name_dec, int name_dec_len)
@@ -237,6 +238,7 @@ netbios_name_encoding(char *name_enc, char *name_dec, int name_dec_len)
 
   return 0;
 }
+#endif /* 0 */
 
 /** NetBIOS Name service recv callback */
 static void
@@ -247,7 +249,7 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
   /* if packet is valid */
   if (p != NULL) {
     char   netbios_name[NETBIOS_NAME_LEN+1];
-    struct netbios_hdr*      netbios_hdr      = p->payload;
+    struct netbios_hdr*      netbios_hdr      = (struct netbios_hdr*)p->payload;
     struct netbios_name_hdr* netbios_name_hdr = (struct netbios_name_hdr*)(netbios_hdr+1);
     
     /* we only answer if we got a default interface */
@@ -283,7 +285,7 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *ad
             MEMCPY( resp->resp_name.encname, netbios_name_hdr->encname, sizeof(netbios_name_hdr->encname));
             resp->resp_name.nametype     = netbios_name_hdr->nametype;
             resp->resp_name.type         = netbios_name_hdr->type;
-            resp->resp_name.class        = netbios_name_hdr->class;
+            resp->resp_name.cls          = netbios_name_hdr->cls;
             resp->resp_name.ttl          = htonl(NETBIOS_NAME_TTL);
             resp->resp_name.datalen      = htons(sizeof(resp->resp_name.flags)+sizeof(resp->resp_name.addr));
             resp->resp_name.flags        = htons(NETB_NFLAG_NODETYPE_BNODE);
