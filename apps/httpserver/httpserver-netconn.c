@@ -24,7 +24,7 @@ http_server_netconn_serve(struct netconn *conn)
   err = netconn_recv(conn, &inbuf);
   
   if (err == ERR_OK) {
-    netbuf_data(inbuf, &buf, &buflen);
+    netbuf_data(inbuf, (void**)&buf, &buflen);
     
     /* Is this an HTTP GET command? (only check the first 5 chars, since
     there are other formats for GET, and we're keeping it very simple )*/

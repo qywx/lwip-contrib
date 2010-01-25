@@ -103,7 +103,7 @@ struct packet_adapter {
  * @return number of adapters found or negative on error
  */
 static int
-get_adapter_list(void** adapter_list, int list_len, void* buffer, size_t buf_len)
+get_adapter_list(char** adapter_list, int list_len, void* buffer, size_t buf_len)
 {
   int i;
   char *temp, *start;
@@ -123,8 +123,8 @@ get_adapter_list(void** adapter_list, int list_len, void* buffer, size_t buf_len
   /* get the start of each adapter name in the list and put it into
    * the AdapterList array */
   i = 0;
-  temp = buffer;
-  start = buffer;
+  temp = (char*)buffer;
+  start = (char*)buffer;
   while ((*temp != '\0') || (*(temp - 1) != '\0')) {
     if (*temp == '\0') {
       adapter_list[i] = start;
@@ -147,7 +147,7 @@ get_adapter_list(void** adapter_list, int list_len, void* buffer, size_t buf_len
 int
 get_adapter_index(const char* adapter_guid)
 {
-  void *AdapterList[MAX_NUM_ADAPTERS];
+  char *AdapterList[MAX_NUM_ADAPTERS];
   int i;
   char AdapterName[ADAPTER_NAME_LEN]; /* string that contains a list of the network adapters */
   int AdapterNum;
@@ -156,7 +156,7 @@ get_adapter_index(const char* adapter_guid)
     AdapterNum = get_adapter_list(AdapterList, MAX_NUM_ADAPTERS, AdapterName, ADAPTER_NAME_LEN);
     if (AdapterNum > 0) {
       for (i = 0; i < AdapterNum; i++) {
-        if(strstr(AdapterList[i], adapter_guid)) {
+        if(strstr((char*)AdapterList[i], adapter_guid)) {
           return i;
         }
       }
@@ -178,7 +178,7 @@ get_adapter_index(const char* adapter_guid)
 void*
 init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
 {
-  void *AdapterList[MAX_NUM_ADAPTERS];
+  char *AdapterList[MAX_NUM_ADAPTERS];
   int i;
   char AdapterName[ADAPTER_NAME_LEN]; /* string that contains a list of the network adapters */
   int AdapterNum;
@@ -186,7 +186,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
   unsigned char ethaddr[ETHARP_HWADDR_LEN];
   struct packet_adapter *pa;
   
-  pa = malloc(sizeof(struct packet_adapter));
+  pa = (struct packet_adapter *)malloc(sizeof(struct packet_adapter));
   if (!pa) {
     printf("Unable to alloc the adapter!\n");
     return NULL;
@@ -209,7 +209,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
     /* set up the selected adapter */
     lpAdapter = PacketOpenAdapter(AdapterList[i]);
     if (lpAdapter && (lpAdapter->hFile != INVALID_HANDLE_VALUE)) {
-      ppacket_oid_data = malloc(sizeof(PACKET_OID_DATA) + PACKET_OID_DATA_SIZE);
+      ppacket_oid_data = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA) + PACKET_OID_DATA_SIZE);
       if (ppacket_oid_data) {
         ppacket_oid_data->Oid = OID_GEN_VENDOR_DESCRIPTION;
         ppacket_oid_data->Length = PACKET_OID_DATA_SIZE;
@@ -242,7 +242,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
     return NULL;
   }
   /* alloc the OID packet  */
-  ppacket_oid_data = malloc(sizeof(PACKET_OID_DATA) + PACKET_OID_DATA_SIZE);
+  ppacket_oid_data = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA) + PACKET_OID_DATA_SIZE);
   if (!ppacket_oid_data) {
     PacketCloseAdapter(pa->lpAdapter);
     free(pa);
@@ -362,7 +362,7 @@ ProcessPackets(void *adapter, LPPACKET lpPacket)
 
   ulBytesReceived = lpPacket->ulBytesReceived;
 
-  buf = lpPacket->Buffer;
+  buf = (char*)lpPacket->Buffer;
 
   off=0;
 
@@ -430,7 +430,7 @@ link_adapter(void *adapter)
     NDIS_MEDIA_STATE fNdisMediaState = pa->fNdisMediaState;
 
     /* get the media connect status of the selected adapter */
-    ppacket_oid_data = malloc(sizeof(PACKET_OID_DATA) + sizeof(NDIS_MEDIA_STATE));
+    ppacket_oid_data = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA) + sizeof(NDIS_MEDIA_STATE));
     if (ppacket_oid_data) {
       ppacket_oid_data->Oid    = OID_GEN_MEDIA_CONNECT_STATUS;
       ppacket_oid_data->Length = sizeof(NDIS_MEDIA_STATE);

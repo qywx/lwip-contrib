@@ -100,9 +100,9 @@ static struct http_state*
 http_state_alloc()
 {
 #if HTTPD_USE_MEM_POOL
-  return memp_malloc(MEMP_HTTPD_STATE);
+  return (struct http_state *)memp_malloc(MEMP_HTTPD_STATE);
 #else /* HTTPD_USE_MEM_POOL */
-  return mem_malloc(sizeof(struct http_state));
+  return (struct http_state *)mem_malloc(sizeof(struct http_state));
 #endif /* HTTPD_USE_MEM_POOL */
 }
 
@@ -224,7 +224,7 @@ http_parse_request(struct pbuf *p, struct http_state *hs)
   struct fs_file file;
   const char* filename = NULL;
 
-  data = p->payload;
+  data = (char*)p->payload;
 
   /* default is request not supported */
   request_supported = ERR_ARG;
@@ -285,7 +285,7 @@ http_parse_request(struct pbuf *p, struct http_state *hs)
 static void
 http_err(void *arg, err_t err)
 {
-  struct http_state *hs = arg;
+  struct http_state *hs = (struct http_state *)arg;
   LWIP_UNUSED_ARG(err);
 
   LWIP_DEBUGF(HTTPD_DEBUG, ("http_err: %s", lwip_strerr(err)));
@@ -302,7 +302,7 @@ http_err(void *arg, err_t err)
 static err_t
 http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 {
-  struct http_state *hs = arg;
+  struct http_state *hs = (struct http_state *)arg;
   LWIP_DEBUGF(HTTPD_DEBUG, ("http_sent: pcb=%p hs=%p len=%"U16_F"\n",
     (void*)pcb, (void*)hs, len));
 
@@ -344,7 +344,7 @@ http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 static err_t
 http_poll(void *arg, struct tcp_pcb *pcb)
 {
-  struct http_state *hs = arg;
+  struct http_state *hs = (struct http_state *)arg;
   LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: pcb=%p hs=%p pcb_state=%s\n",
     (void*)pcb, (void*)hs, tcp_debug_state_str(pcb->state)));
 
@@ -377,7 +377,7 @@ static err_t
 http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
   err_t parsed = ERR_ABRT;
-  struct http_state *hs = arg;
+  struct http_state *hs = (struct http_state *)arg;
   LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: pcb=%p pbuf=%p err=%s\n", (void*)pcb,
     (void*)p, lwip_strerr(err)));
 
