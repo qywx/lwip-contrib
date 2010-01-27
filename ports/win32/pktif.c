@@ -120,7 +120,7 @@ static void
 low_level_init(struct netif *netif)
 {
   char adapter_mac_addr[ETHARP_HWADDR_LEN];
-  char my_mac_addr[ETHARP_HWADDR_LEN] = LWIP_MAC_ADDR_BASE;
+  u8_t my_mac_addr[ETHARP_HWADDR_LEN] = LWIP_MAC_ADDR_BASE;
   int adapter_num = PACKET_LIB_ADAPTER_NR;
 
 #ifdef PACKET_LIB_ADAPTER_GUID
