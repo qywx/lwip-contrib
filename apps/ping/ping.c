@@ -50,9 +50,12 @@
 #include "lwip/netif.h"
 #include "lwip/sys.h"
 #include "lwip/timers.h"
+#include "lwip/inet_chksum.h"
+
+#if PING_USE_SOCKETS
 #include "lwip/sockets.h"
 #include "lwip/inet.h"
-#include "lwip/inet_chksum.h"
+#endif /* PING_USE_SOCKETS */
 
 
 /**
@@ -255,14 +258,16 @@ ping_send(struct raw_pcb *raw, struct ip_addr *addr)
   LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
   ip_addr_debug_print(PING_DEBUG, addr);
   LWIP_DEBUGF( PING_DEBUG, ("\n"));
+  LWIP_ASSERT("ping_size <= 0xffff", ping_size <= 0xffff);
 
-  if (!(p = pbuf_alloc(PBUF_IP, ping_size, PBUF_RAM))) {
+  p = pbuf_alloc(PBUF_IP, (u16_t)ping_size, PBUF_RAM);
+  if (!p) {
     return;
   }
   if ((p->len == p->tot_len) && (p->next == NULL)) {
     iecho = p->payload;
 
-    ping_prepare_echo(iecho, ping_size);
+    ping_prepare_echo(iecho, (u16_t)ping_size);
 
     raw_sendto(raw, p, addr);
     ping_time = sys_now();
@@ -286,7 +291,8 @@ ping_timeout(void *arg)
 static void
 ping_raw_init(void)
 {
-  if (!(pcb = raw_new(IP_PROTO_ICMP))) {
+  pcb = raw_new(IP_PROTO_ICMP);
+  if (!pcb) {
     return;
   }
 
