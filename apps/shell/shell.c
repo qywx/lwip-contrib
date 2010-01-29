@@ -38,7 +38,6 @@
 #include "lwip/def.h"
 #include "lwip/api.h"
 #include "lwip/stats.h"
-#include "lwip/inet.h"
 
 #ifdef WIN32
 #define NEWLINE "\r\n"
@@ -544,7 +543,7 @@ com_open(struct command *com)
   err_t err;
   long tmp;
 
-  if (inet_aton(com->args[0], (struct in_addr *)&ipaddr) == -1) {
+  if (ipaddr_aton(com->args[0], &ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
@@ -872,7 +871,7 @@ com_udpc(struct command *com)
     return ESUCCESS;
   }
   lport = (u16_t)tmp;
-  if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
+  if (ipaddr_aton(com->args[1], &ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
@@ -955,7 +954,7 @@ com_udpl(struct command *com)
     return ESUCCESS;
   }
   lport = (u16_t)tmp;
-  if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
+  if (ipaddr_aton(com->args[1], &ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
@@ -1038,7 +1037,7 @@ com_udpn(struct command *com)
     return ESUCCESS;
   }
   lport = (u16_t)tmp;
-  if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
+  if (ipaddr_aton(com->args[1], &ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }
@@ -1122,7 +1121,7 @@ com_udpb(struct command *com)
     return ESUCCESS;
   }
   lport = (u16_t)tmp;
-  if (inet_aton(com->args[1], (struct in_addr *)&ipaddr) == -1) {
+  if (ipaddr_aton(com->args[1], &ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;
   }

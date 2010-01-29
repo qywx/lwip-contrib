@@ -37,13 +37,12 @@
 #include "sntp.h"
 
 #include "lwip/timers.h"
-#include "lwip/sockets.h"
 #include "lwip/udp.h"
 #include "lwip/dns.h"
 
 #include <string.h>
 #include <time.h>
-#define static
+
 /** This is simple "SNTP" client for socket or raw API.
  * It is a minimal implementation of SNTPv4 as specified in RFC 4330.
  * 
@@ -62,6 +61,10 @@
  * procesing. */
 #ifndef SNTP_SOCKET
 #define SNTP_SOCKET                 0
+#endif
+
+#if SNTP_SOCKET
+#include "lwip/sockets.h"
 #endif
 
 /**
@@ -360,7 +363,7 @@ sntp_request(void *arg)
   LWIP_UNUSED_ARG(arg);
 
   /* if we got a valid SNTP server address... */
-  if (inet_aton(SNTP_SERVER_ADDRESS, (struct in_addr*)&sntp_server_address)) {
+  if (ipaddr_aton(SNTP_SERVER_ADDRESS, (struct ip_addr*)&sntp_server_address)) {
     /* create new socket */
     sock = lwip_socket(AF_INET, SOCK_DGRAM, 0);
     if (sock >= 0) {
@@ -654,7 +657,7 @@ sntp_request(void *arg)
     return;
   }
 #else /* SNTP_SERVER_DNS */
-  err = inet_aton(sntp_server_addresses[sntp_current_server], (struct in_addr*)&sntp_server_address)
+  err = ipaddr_aton(sntp_server_addresses[sntp_current_server], &sntp_server_address)
     ? ERR_OK : ERR_ARG;
 
 #endif /* SNTP_SERVER_DNS */
