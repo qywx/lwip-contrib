@@ -7,6 +7,10 @@
 
 #if LWIP_NETCONN
 
+#ifndef HTTPD_DEBUG
+#define HTTPD_DEBUG         LWIP_DBG_OFF
+#endif
+
 const static char http_html_hdr[] = "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
 const static char http_index_html[] = "<html><head><title>Congrats!</title></head><body><h1>Welcome to our lwIP HTTP server!</h1><p>This is a small test page, served by httpserver-netconn.</body></html>";
 
@@ -71,15 +75,18 @@ http_server_netconn_thread(void *arg)
   /* Put the connection into LISTEN state */
   netconn_listen(conn);
   
-  while(1) {
+  do {
     err = netconn_accept(conn, &newconn);
-    LWIP_ASSERT("err == ERR_OK", err == ERR_OK);
     if (err == ERR_OK) {
       http_server_netconn_serve(newconn);
       netconn_delete(newconn);
     }
-  }
-  return;
+  } while(err == ERR_OK);
+  LWIP_DEBUGF(HTTPD_DEBUG,
+    ("http_server_netconn_thread: netconn_accept received error %d, shutting down",
+    err));
+  netconn_close(conn);
+  netconn_delete(conn);
 }
 
 /** Initialize the HTTP server (start its thread) */
