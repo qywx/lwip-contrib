@@ -11,7 +11,7 @@
 
 #if LWIP_SNMP
 #include "lwip/snmp_structs.h"
-extern const struct mib_array_node private;
+extern const struct mib_array_node mib_private;
 
 /** @todo remove this?? */
 struct private_msg

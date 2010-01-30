@@ -109,7 +109,6 @@ main(int argc, char **argv)
 {
   struct netif netif;
   sigset_t mask, oldmask, empty;
-  struct in_addr inaddr;
   int ch;
   char ip_str[16] = {0}, nm_str[16] = {0}, gw_str[16] = {0};
 
@@ -132,26 +131,21 @@ main(int argc, char **argv)
         exit(0);
         break;
       case 'g':
-        inet_aton(optarg, &inaddr);
-        gw.addr = inaddr.s_addr;
+        ipaddr_aton(optarg, &gw);
         break;
       case 'i':
-        inet_aton(optarg, &inaddr);
-        ipaddr.addr = inaddr.s_addr;
+        ipaddr_aton(optarg, &ipaddr);
         break;
       case 'm':
-        inet_aton(optarg, &inaddr);
-        netmask.addr = inaddr.s_addr;
+        ipaddr_aton(optarg, &netmask);
         break;
       case 't':
         trap_flag = !0;
         /* @todo: remove this authentraps tweak 
           when we have proper SET & non-volatile mem */
         snmpauthentraps_set = 1;
-        inet_aton(optarg, &inaddr);
-        /* lwip inet.h oddity workaround */
-        trap_addr.addr = inaddr.s_addr; 
-        strncpy(ip_str,inet_ntoa(inaddr),sizeof(ip_str));
+        ipaddr_aton(optarg, &trap_addr);
+        strncpy(ip_str, ipaddr_ntoa(&trap_addr),sizeof(ip_str));
         printf("SNMP trap destination %s\n", ip_str);
         break;
       default:
@@ -161,16 +155,13 @@ main(int argc, char **argv)
   }
   argc -= optind;
   argv += optind;
-  
-  inaddr.s_addr = ipaddr.addr;
-  strncpy(ip_str,inet_ntoa(inaddr),sizeof(ip_str));
-  inaddr.s_addr = netmask.addr;
-  strncpy(nm_str,inet_ntoa(inaddr),sizeof(nm_str));
-  inaddr.s_addr = gw.addr;
-  strncpy(gw_str,inet_ntoa(inaddr),sizeof(gw_str));
+
+  strncpy(ip_str, ipaddr_ntoa(&ipaddr), sizeof(ip_str));
+  strncpy(nm_str, ipaddr_ntoa(&netmask), sizeof(nm_str));
+  strncpy(gw_str, ipaddr_ntoa(&gw), sizeof(gw_str));
   printf("Host at %s mask %s gateway %s\n", ip_str, nm_str, gw_str);
 
-        
+
 #ifdef PERF
   perf_init("/tmp/minimal.perf");
 #endif /* PERF */
@@ -178,7 +169,7 @@ main(int argc, char **argv)
   lwip_init();
 
   printf("TCP/IP initialized.\n");
-  
+
   netif_add(&netif, &ipaddr, &netmask, &gw, NULL, mintapif_init, ethernet_input);
   netif_set_default(&netif);
   netif_set_up(&netif);
@@ -196,7 +187,7 @@ main(int argc, char **argv)
   snmp_init();
 
   echo_init();
-  
+
   timer_init();
   timer_set_interval(TIMER_EVT_ETHARPTMR, ARP_TMR_INTERVAL / 10);
   timer_set_interval(TIMER_EVT_TCPTMR, TCP_TMR_INTERVAL / 10);

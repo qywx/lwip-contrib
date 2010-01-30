@@ -212,7 +212,7 @@ const struct mib_array_node enterprises = {
 /* private .1.3.6.1.4 */
 const s32_t private_ids[1] = { 1 };
 struct mib_node* const private_nodes[1] = { (struct mib_node* const)&enterprises };
-const struct mib_array_node private = {
+const struct mib_array_node mib_private = {
   &noleafs_get_object_def,
   &noleafs_get_value,
   &noleafs_set_test,
