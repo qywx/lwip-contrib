@@ -72,6 +72,7 @@
 #include "apps/tcpecho/tcpecho.h"
 #include "apps/udpecho/udpecho.h"
 #include "apps/tcpecho_raw/echo.h"
+#include "apps/socket_examples/socket_examples.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
@@ -179,7 +180,8 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 
 #if LWIP_NETIF_STATUS_CALLBACK
 void status_callback(struct netif *netif)
-{ if (netif_is_up(netif)) {
+{
+  if (netif_is_up(netif)) {
     printf("status_callback==UP, local interface IP is %s\n", ip_ntoa(&netif->ip_addr));
   } else {
     printf("status_callback==DOWN\n");
@@ -189,7 +191,8 @@ void status_callback(struct netif *netif)
 
 #if LWIP_NETIF_LINK_CALLBACK
 void link_callback(struct netif *netif)
-{ if (netif_is_link_up(netif)) {
+{
+  if (netif_is_link_up(netif)) {
     printf("link_callback==UP\n");
 #if LWIP_DHCP
     if (netif->dhcp != NULL) {
@@ -363,6 +366,9 @@ apps_init()
 #if LWIP_UDPECHO_APP && LWIP_NETCONN
   udpecho_init();
 #endif /* LWIP_UDPECHO_APP && LWIP_NETCONN */
+#if LWIP_SOCKET_EXAMPLES_APP && LWIP_SOCKET
+  socket_examples_init();
+#endif /* LWIP_SOCKET_EXAMPLES_APP && LWIP_SOCKET */
 }
 
 /* This function initializes this lwIP test. When NO_SYS=1, this is done in
