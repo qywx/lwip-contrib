@@ -21,6 +21,8 @@ struct private_msg
 
 void lwip_privmib_init(void);
 
+#define SNMP_PRIVATE_MIB_INIT() lwip_privmib_init()
+
 #endif
 
 #endif

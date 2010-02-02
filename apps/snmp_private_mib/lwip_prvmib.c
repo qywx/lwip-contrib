@@ -42,16 +42,40 @@
  * Author: Christiaan Simons <christiaan.simons@axon.tv>
  */
 
+#include "private_mib.h"
+
+#if LWIP_SNMP
+
+/** Directory where the sensor files are */
+#define SENSORS_DIR           "w:\\sensors"
+/** Set to 1 to read sensor values from files (in directory defined by SENSORS_DIR) */
+#define SENSORS_USE_FILES     0
+/** Set to 1 to search sensor files at startup (in directory defined by SENSORS_DIR) */
+#define SENSORS_SEARCH_FILES  0
+
+#if SENSORS_SEARCH_FILES
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <dirent.h>
+#endif /* SENSORS_SEARCH_FILES */
 
-#include "private_mib.h"
+#include <string.h>
+#include <stdio.h>
+
 #include "lwip/snmp_msg.h"
 #include "lwip/snmp_asn1.h"
+
+#if !SENSORS_USE_FILES || !SENSORS_SEARCH_FILES
+/** When not using & searching files, defines the number of sensors */
+#define SENSOR_COUNT 2
+#endif /* !SENSORS_USE_FILES || !SENSORS_SEARCH_FILES */
+#if !SENSORS_USE_FILES
+/** When not using files, contains the values of the sensors */
+s32_t sensor_values[SENSOR_COUNT];
+#endif /* !SENSORS_USE_FILES */
 
 /*
   This example presents a table for a few (at most 10) sensors.
@@ -70,10 +94,11 @@
   The sensor values may be changed in runtime by editing the 
   text files in the "sensors" directory.
 */
-   
+
+
 #define SENSOR_MAX 10
 #define SENSOR_NAME_LEN 20
-#define SENSORS_DIR "sensors"
+
 struct sensor_inf
 {
   char sensor_files[SENSOR_MAX][SENSOR_NAME_LEN + 1];
@@ -118,7 +143,7 @@ static void sensorentry_set_value_pc(u8_t rid, struct obj_def *od);
 
 /* sensorentry .1.3.6.1.4.1.26381.1.1.1 (.level0.level1)
    where level 0 is the object identifier (temperature) and level 1 the index */
-struct mib_external_node sensorentry = {
+static struct mib_external_node sensorentry = {
   &noleafs_get_object_def,
   &noleafs_get_value,
   &noleafs_set_test,
@@ -150,11 +175,11 @@ struct mib_external_node sensorentry = {
 };
 
 /* sensortable .1.3.6.1.4.1.26381.1.1 */
-const s32_t sensortable_ids[1] = { 1 };
-struct mib_node* const sensortable_nodes[1] = {
+static const s32_t sensortable_ids[1] = { 1 };
+static struct mib_node* const sensortable_nodes[1] = {
  (struct mib_node* const)&sensorentry
 };
-const struct mib_array_node sensortable = {
+static const struct mib_array_node sensortable = {
   &noleafs_get_object_def,
   &noleafs_get_value,
   &noleafs_set_test,
@@ -166,11 +191,11 @@ const struct mib_array_node sensortable = {
 };
 
 /* example .1.3.6.1.4.1.26381.1 */
-const s32_t example_ids[1] = { 1 };
-struct mib_node* const example_nodes[1] = {
+static const s32_t example_ids[1] = { 1 };
+static struct mib_node* const example_nodes[1] = {
   (struct mib_node* const)&sensortable
 };
-const struct mib_array_node example = {
+static const struct mib_array_node example = {
   &noleafs_get_object_def,
   &noleafs_get_value,
   &noleafs_set_test,
@@ -182,9 +207,9 @@ const struct mib_array_node example = {
 };
 
 /* lwip .1.3.6.1.4.1.26381 */
-const s32_t lwip_ids[1] = { 1 };
-struct mib_node* const lwip_nodes[1] = { (struct mib_node* const)&example };
-const struct mib_array_node lwip = {
+static const s32_t lwip_ids[1] = { 1 };
+static struct mib_node* const lwip_nodes[1] = { (struct mib_node* const)&example };
+static const struct mib_array_node lwip = {
   &noleafs_get_object_def,
   &noleafs_get_value,
   &noleafs_set_test,
@@ -196,9 +221,9 @@ const struct mib_array_node lwip = {
 };
 
 /* enterprises .1.3.6.1.4.1 */
-const s32_t enterprises_ids[1] = { 26381 };
-struct mib_node* const enterprises_nodes[1] = { (struct mib_node* const)&lwip };
-const struct mib_array_node enterprises = {
+static const s32_t enterprises_ids[1] = { 26381 };
+static struct mib_node* const enterprises_nodes[1] = { (struct mib_node* const)&lwip };
+static const struct mib_array_node enterprises = {
   &noleafs_get_object_def,
   &noleafs_get_value,
   &noleafs_set_test,
@@ -210,8 +235,8 @@ const struct mib_array_node enterprises = {
 };
 
 /* private .1.3.6.1.4 */
-const s32_t private_ids[1] = { 1 };
-struct mib_node* const private_nodes[1] = { (struct mib_node* const)&enterprises };
+static const s32_t private_ids[1] = { 1 };
+static struct mib_node* const private_nodes[1] = { (struct mib_node* const)&enterprises };
 const struct mib_array_node mib_private = {
   &noleafs_get_object_def,
   &noleafs_get_value,
@@ -223,6 +248,7 @@ const struct mib_array_node mib_private = {
   private_nodes
 };
 
+
 /**
  * Initialises this private MIB before use.
  * @see main.c
@@ -230,14 +256,20 @@ const struct mib_array_node mib_private = {
 void
 lwip_privmib_init(void)
 {
+#if SENSORS_USE_FILES && SENSORS_SEARCH_FILES
   char *buf, *ebuf, *cp;
   size_t bufsize;
   int nbytes;
   struct stat sb;
   struct dirent *dp;
   int fd;
-  
+#else /* SENSORS_USE_FILES && SENSORS_SEARCH_FILES */
+  int i;
+#endif /* SENSORS_USE_FILES && SENSORS_SEARCH_FILES */
+
   printf("SNMP private MIB start, detecting sensors.\n");
+
+#if SENSORS_USE_FILES && SENSORS_SEARCH_FILES
   /* look for sensors in sensors directory */
   fd = open(SENSORS_DIR, O_RDONLY);
   if (fd > -1)
@@ -269,9 +301,9 @@ lwip_privmib_init(void)
               unsigned char index;
               
               index = dp->d_name[0] - '0';
-              snmp_mib_node_insert(&sensor_addr_inf.sensor_list_rn,index,&dummy);              
+              snmp_mib_node_insert(&sensor_addr_inf.sensor_list_rn,index,&dummy);
 
-              strncpy(&sensor_addr_inf.sensor_files[index][0],dp->d_name,SENSOR_NAME_LEN);              
+              strncpy(&sensor_addr_inf.sensor_files[index][0],dp->d_name,SENSOR_NAME_LEN);
               printf("%s\n", sensor_addr_inf.sensor_files[index]);
             }
             cp += dp->d_reclen;
@@ -284,6 +316,23 @@ lwip_privmib_init(void)
     }
     close(fd);
   }
+#else /* SENSORS_USE_FILES && SENSORS_SEARCH_FILES */
+  for (i = 0; i < SENSOR_COUNT; i++) {
+    struct mib_list_node *dummy;
+    s32_t index = i;
+    char name[256];
+    sprintf(name, "%d.txt", i);
+
+    snmp_mib_node_insert(&sensor_addr_inf.sensor_list_rn, index, &dummy);
+
+    strncpy(&sensor_addr_inf.sensor_files[index][0], name, SENSOR_NAME_LEN);
+    printf("%s\n", sensor_addr_inf.sensor_files[index]);
+#if !SENSORS_USE_FILES
+    /* initialize sensor value to != zero */
+    sensor_values[i] = 11 * (i+1);
+#endif /* !SENSORS_USE_FILES */
+  }
+#endif /* SENSORS_USE_FILE && SENSORS_SEARCH_FILES */
   if (sensor_addr_inf.sensor_list_rn.count != 0)
   {
     /* enable sensor table, 2 tree_levels under this node
@@ -376,7 +425,10 @@ sensorentry_get_subid(void* addr_inf, u8_t level, u16_t idx, s32_t *sub_id)
 static void
 sensorentry_get_object_def_q(void* addr_inf, u8_t rid, u8_t ident_len, s32_t *ident)
 {
-  u16_t sensor_register, sensor_address;
+  s32_t sensor_register, sensor_address;
+
+  LWIP_UNUSED_ARG(addr_inf);
+  LWIP_UNUSED_ARG(rid);
 
   ident_len += 1;
   ident -= 1;
@@ -384,8 +436,8 @@ sensorentry_get_object_def_q(void* addr_inf, u8_t rid, u8_t ident_len, s32_t *id
   /* send request */
   sensor_register = ident[0];
   sensor_address = ident[1];
-  LWIP_DEBUGF(SNMP_MIB_DEBUG,("sensor_request reg=%"U16_F" addr=%"U16_F"\n",
-                              (u16_t)sensor_register, (u16_t)sensor_address));
+  LWIP_DEBUGF(SNMP_MIB_DEBUG,("sensor_request reg=%"S32_F" addr=%"S32_F"\n",
+                              sensor_register, sensor_address));
   /* fake async quesion/answer */
   snmp_msg_event(rid);
 }
@@ -393,6 +445,8 @@ sensorentry_get_object_def_q(void* addr_inf, u8_t rid, u8_t ident_len, s32_t *id
 static void
 sensorentry_get_object_def_a(u8_t rid, u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
+  LWIP_UNUSED_ARG(rid);
+
   /* return to object name, adding index depth (1) */
   ident_len += 1;
   ident -= 1;
@@ -402,7 +456,7 @@ sensorentry_get_object_def_a(u8_t rid, u8_t ident_len, s32_t *ident, struct obj_
     od->id_inst_ptr = ident;
 
     od->instance = MIB_OBJECT_TAB;
-    od->access = MIB_OBJECT_READ_ONLY;
+    od->access = MIB_OBJECT_READ_WRITE;
     od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
     od->v_len = sizeof(s32_t);
   }
@@ -416,12 +470,17 @@ sensorentry_get_object_def_a(u8_t rid, u8_t ident_len, s32_t *ident, struct obj_
 static void
 sensorentry_get_object_def_pc(u8_t rid, u8_t ident_len, s32_t *ident)
 {
+  LWIP_UNUSED_ARG(rid);
+  LWIP_UNUSED_ARG(ident_len);
+  LWIP_UNUSED_ARG(ident);
   /* nop */
 }
 
 static void
 sensorentry_get_value_q(u8_t rid, struct obj_def *od)
 {
+  LWIP_UNUSED_ARG(od);
+
   /* fake async quesion/answer */
   snmp_msg_event(rid);
 }
@@ -429,12 +488,18 @@ sensorentry_get_value_q(u8_t rid, struct obj_def *od)
 static void
 sensorentry_get_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
 {
-  u8_t i;
+  s32_t i;
   s32_t *temperature = value;
+#if SENSORS_USE_FILES
   FILE* sensf;
   char senspath[sizeof(SENSORS_DIR)+1+SENSOR_NAME_LEN+1] = SENSORS_DIR"/";
+#endif /* SENSORS_USE_FILES */
+
+  LWIP_UNUSED_ARG(rid);
+  LWIP_UNUSED_ARG(len);
 
   i = od->id_inst_ptr[1];
+#if SENSORS_USE_FILES
   strncpy(&senspath[sizeof(SENSORS_DIR)],
           sensor_addr_inf.sensor_files[i],
           SENSOR_NAME_LEN);
@@ -444,17 +509,25 @@ sensorentry_get_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
     fscanf(sensf,"%"S32_F,temperature);
     fclose(sensf);
   }
+#else /* SENSORS_USE_FILES */
+  if (i <= SENSOR_COUNT) {
+    *temperature = sensor_values[i];
+  }
+#endif /* SENSORS_USE_FILES */
 }
 
 static void
 sensorentry_get_value_pc(u8_t rid, struct obj_def *od)
 {
+  LWIP_UNUSED_ARG(rid);
+  LWIP_UNUSED_ARG(od);
   /* nop */
 }
 
 static void
 sensorentry_set_test_q(u8_t rid, struct obj_def *od)
 {
+  LWIP_UNUSED_ARG(od);
   /* fake async quesion/answer */
   snmp_msg_event(rid);
 }
@@ -462,19 +535,29 @@ sensorentry_set_test_q(u8_t rid, struct obj_def *od)
 static u8_t
 sensorentry_set_test_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
 {
+  LWIP_UNUSED_ARG(rid);
+  LWIP_UNUSED_ARG(od);
+  LWIP_UNUSED_ARG(len);
+  LWIP_UNUSED_ARG(value);
   /* sensors are read-only */
-  return 0;
+  return 1; // 0 -> read only, != 0 -> read/write
 }
 
 static void
 sensorentry_set_test_pc(u8_t rid, struct obj_def *od)
 {
+  LWIP_UNUSED_ARG(rid);
+  LWIP_UNUSED_ARG(od);
   /* nop */
 }
 
 static void
 sensorentry_set_value_q(u8_t rid, struct obj_def *od, u16_t len, void *value)
 {
+  LWIP_UNUSED_ARG(rid);
+  LWIP_UNUSED_ARG(od);
+  LWIP_UNUSED_ARG(len);
+  LWIP_UNUSED_ARG(value);
   /* fake async quesion/answer */
   snmp_msg_event(rid);
 }
@@ -482,10 +565,40 @@ sensorentry_set_value_q(u8_t rid, struct obj_def *od, u16_t len, void *value)
 static void
 sensorentry_set_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
 {
+  s32_t i;
+  s32_t *temperature = value;
+#if SENSORS_USE_FILES
+  FILE* sensf;
+  char senspath[sizeof(SENSORS_DIR)+1+SENSOR_NAME_LEN+1] = SENSORS_DIR"/";
+#endif /* SENSORS_USE_FILES */
+
+  LWIP_UNUSED_ARG(rid);
+  LWIP_UNUSED_ARG(len);
+
+  i = od->id_inst_ptr[1];
+#if SENSORS_USE_FILES
+  strncpy(&senspath[sizeof(SENSORS_DIR)],
+          sensor_addr_inf.sensor_files[i],
+          SENSOR_NAME_LEN);
+  sensf = fopen(senspath, "w");
+  if (sensf != NULL)
+  {
+    fprintf(sensf, "%"S32_F, temperature);
+    fclose(sensf);
+  }
+#else /* SENSORS_USE_FILES */
+  if (i <= SENSOR_COUNT) {
+    sensor_values[i] = *temperature;
+  }
+#endif /* SENSORS_USE_FILES */
 }
 
 static void
 sensorentry_set_value_pc(u8_t rid, struct obj_def *od)
 {
+  LWIP_UNUSED_ARG(rid);
+  LWIP_UNUSED_ARG(od);
   /* nop */
 }
+
+#endif /* LWIP_SNMP */
