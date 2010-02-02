@@ -1082,6 +1082,14 @@
 						RelativePath="$(LWIP_DIR)\src\include\netif\loopif.h"
 						>
 					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\netif\ppp_oe.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\netif\slipif.h"
+						>
+					</File>
 				</Filter>
 			</Filter>
 			<Filter
