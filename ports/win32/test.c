@@ -210,10 +210,10 @@ static void
 msvc_netif_init()
 {
 #if USE_ETHERNET
-  struct ip_addr ipaddr, netmask, gw;
+  ip_addr_t ipaddr, netmask, gw;
 #endif /* USE_ETHERNET */
 #if LWIP_HAVE_LOOPIF
-  struct ip_addr loop_ipaddr, loop_netmask, loop_gw;
+  ip_addr_t loop_ipaddr, loop_netmask, loop_gw;
 #endif /* LWIP_HAVE_LOOPIF */
 
 #if PPP_SUPPORT
@@ -303,7 +303,7 @@ msvc_netif_init()
 #endif /* USE_ETHERNET */
 }
 
-void dns_found(const char *name, struct ip_addr *addr, void *arg)
+void dns_found(const char *name, ip_addr_t *addr, void *arg)
 {
   LWIP_UNUSED_ARG(arg);
   printf("%s: %s\n", name, addr ? ip_ntoa(addr) : "<not found>");
@@ -315,7 +315,7 @@ apps_init()
 {
 #if LWIP_DNS_APP && LWIP_DNS
   char*          dnsname="3com.com";
-  struct ip_addr dnsresp;
+  ip_addr_t dnsresp;
   if (dns_gethostbyname(dnsname, &dnsresp, dns_found, 0) == ERR_OK) {
     dns_found(dnsname, &dnsresp, 0);
   }

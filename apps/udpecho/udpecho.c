@@ -39,7 +39,7 @@ udpecho_thread(void *arg)
 {
   static struct netconn *conn;
   static struct netbuf *buf;
-  static struct ip_addr *addr;
+  static ip_addr_t *addr;
   static unsigned short port;
   char buffer[4096];
   err_t err;

@@ -114,7 +114,7 @@ struct netbios_name_hdr {
   PACK_STRUCT_FIELD(u32_t ttl);
   PACK_STRUCT_FIELD(u16_t datalen);
   PACK_STRUCT_FIELD(u16_t flags);
-  PACK_STRUCT_FIELD(struct ip_addr addr);
+  PACK_STRUCT_FIELD(ip_addr_t addr);
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
@@ -242,7 +242,7 @@ netbios_name_encoding(char *name_enc, char *name_dec, int name_dec_len)
 
 /** NetBIOS Name service recv callback */
 static void
-netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
+netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
 {
   LWIP_UNUSED_ARG(arg);
 

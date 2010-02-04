@@ -283,7 +283,7 @@ static u32_t sntp_retry_timeout;
 
 #if SNTP_CHECK_RESPONSE >= 1
 /** Saves the last server address to compare with response */
-static struct ip_addr sntp_last_server_address;
+static ip_addr_t sntp_last_server_address;
 #endif /* SNTP_CHECK_RESPONSE >= 1 */
 
 #if SNTP_CHECK_RESPONSE >= 2
@@ -358,12 +358,12 @@ sntp_request(void *arg)
   int                size;
   int                timeout;
   struct sntp_msg    sntpmsg;
-  u32_t              sntp_server_address;
+  ip_addr_t          sntp_server_address;
 
   LWIP_UNUSED_ARG(arg);
 
   /* if we got a valid SNTP server address... */
-  if (ipaddr_aton(SNTP_SERVER_ADDRESS, (struct ip_addr*)&sntp_server_address)) {
+  if (ipaddr_aton(SNTP_SERVER_ADDRESS, &sntp_server_address)) {
     /* create new socket */
     sock = lwip_socket(AF_INET, SOCK_DGRAM, 0);
     if (sock >= 0) {
@@ -386,7 +386,7 @@ sntp_request(void *arg)
         memset(&to, 0, sizeof(to));
         to.sin_family      = AF_INET;
         to.sin_port        = htons(SNTP_PORT);
-        to.sin_addr.s_addr = sntp_server_address;
+        inet_addr_from_ipaddr(&to.sin_addr, &sntp_server_address);
     
         /* send SNTP request to server */
         if (lwip_sendto(sock, &sntpmsg, SNTP_MSG_LEN, 0, (struct sockaddr *)&to, sizeof(to)) >= 0) {
@@ -503,7 +503,7 @@ sntp_try_next_server(void* arg)
 
 /** UDP recv callback for the sntp pcb */
 static void
-sntp_recv(void *arg, struct udp_pcb* pcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
+sntp_recv(void *arg, struct udp_pcb* pcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
 {
   u8_t mode;
   u8_t stratum;
@@ -589,7 +589,7 @@ sntp_recv(void *arg, struct udp_pcb* pcb, struct pbuf *p, struct ip_addr *addr, 
  * @param server_addr resolved IP address of the SNTP server
  */
 static void
-sntp_send_request(struct ip_addr *server_addr)
+sntp_send_request(ip_addr_t *server_addr)
 {
   struct pbuf* p;
   p = pbuf_alloc(PBUF_TRANSPORT, SNTP_MSG_LEN, PBUF_RAM);
@@ -618,7 +618,7 @@ sntp_send_request(struct ip_addr *server_addr)
  * DNS found callback when using DNS names as server address.
  */
 static void
-sntp_dns_found(const char* hostname, struct ip_addr *ipaddr, void *arg)
+sntp_dns_found(const char* hostname, ip_addr_t *ipaddr, void *arg)
 {
   LWIP_UNUSED_ARG(hostname);
   LWIP_UNUSED_ARG(arg);
@@ -642,7 +642,7 @@ sntp_dns_found(const char* hostname, struct ip_addr *ipaddr, void *arg)
 static void
 sntp_request(void *arg)
 {
-  struct ip_addr sntp_server_address;
+  ip_addr_t sntp_server_address;
   err_t err;
 
   LWIP_UNUSED_ARG(arg);

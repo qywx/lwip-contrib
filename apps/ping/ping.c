@@ -65,7 +65,7 @@
 #define PING_DEBUG     LWIP_DBG_ON
 #endif
 
-/** ping target - should be a "struct ip_addr" */
+/** ping target - should be a "ip_addr_t" */
 #ifndef PING_TARGET
 #define PING_TARGET   (netif_default?netif_default->gw:ip_addr_any)
 #endif
@@ -127,7 +127,7 @@ ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
 
 /* Ping using the socket ip */
 static err_t
-ping_send(int s, struct ip_addr *addr)
+ping_send(int s, ip_addr_t *addr)
 {
   int err;
   struct icmp_echo_hdr *iecho;
@@ -164,12 +164,14 @@ ping_recv(int s)
 
   while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, (socklen_t*)&fromlen)) > 0) {
     if (len >= (sizeof(struct ip_hdr)+sizeof(struct icmp_echo_hdr))) {
+      ip_addr_t fromaddr;
+      inet_addr_to_ipaddr(&fromaddr, &from.sin_addr);
       LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
-      ip_addr_debug_print(PING_DEBUG, (struct ip_addr *)&(from.sin_addr));
-      LWIP_DEBUGF( PING_DEBUG, (" %lu ms\n", (sys_now()-ping_time)));
+      ip_addr_debug_print(PING_DEBUG, &fromaddr);
+      LWIP_DEBUGF( PING_DEBUG, (" %lu ms\n", (sys_now() - ping_time)));
 
       iphdr = (struct ip_hdr *)buf;
-      iecho = (struct icmp_echo_hdr *)(buf+(IPH_HL(iphdr) * 4));
+      iecho = (struct icmp_echo_hdr *)(buf + (IPH_HL(iphdr) * 4));
       if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
         /* do some ping result processing */
         PING_RESULT((ICMPH_TYPE(iecho) == ICMP_ER));
@@ -193,7 +195,7 @@ ping_thread(void *arg)
 {
   int s;
   int timeout = PING_RCV_TIMEO;
-  struct ip_addr ping_target;
+  ip_addr_t ping_target;
 
   LWIP_UNUSED_ARG(arg);
 
@@ -226,7 +228,7 @@ ping_thread(void *arg)
 
 /* Ping using the raw ip */
 static u8_t
-ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *addr)
+ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
 {
   struct icmp_echo_hdr *iecho;
   LWIP_UNUSED_ARG(arg);
@@ -249,7 +251,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *addr)
 }
 
 static void
-ping_send(struct raw_pcb *raw, struct ip_addr *addr)
+ping_send(struct raw_pcb *raw, ip_addr_t *addr)
 {
   struct pbuf *p;
   struct icmp_echo_hdr *iecho;
@@ -279,7 +281,7 @@ static void
 ping_timeout(void *arg)
 {
   struct raw_pcb *pcb = (struct raw_pcb*)arg;
-  struct ip_addr ping_target = PING_TARGET;
+  ip_addr_t ping_target = PING_TARGET;
   
   LWIP_ASSERT("ping_timeout: no pcb given!", pcb != NULL);
 
@@ -305,7 +307,7 @@ ping_raw_init(void)
 void
 ping_send_now()
 {
-  struct ip_addr ping_target = PING_TARGET;
+  ip_addr_t ping_target = PING_TARGET;
   ping_send(pcb, &ping_target);
 }
 #endif /* !PING_USE_SOCKETS */

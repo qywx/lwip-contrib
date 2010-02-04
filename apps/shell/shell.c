@@ -537,7 +537,7 @@ sendstr(const char *str, struct netconn *conn)
 static s8_t
 com_open(struct command *com)
 {
-  struct ip_addr ipaddr;
+  ip_addr_t ipaddr;
   u16_t port;
   int i;
   err_t err;
@@ -859,7 +859,7 @@ com_recv(struct command *com)
 static s8_t
 com_udpc(struct command *com)
 {
-  struct ip_addr ipaddr;
+  ip_addr_t ipaddr;
   u16_t lport, rport;
   int i;
   err_t err;
@@ -942,7 +942,7 @@ com_udpc(struct command *com)
 static s8_t
 com_udpl(struct command *com)
 {
-  struct ip_addr ipaddr;
+  ip_addr_t ipaddr;
   u16_t lport, rport;
   int i;
   err_t err;
@@ -1025,7 +1025,7 @@ com_udpl(struct command *com)
 static s8_t
 com_udpn(struct command *com)
 {
-  struct ip_addr ipaddr;
+  ip_addr_t ipaddr;
   u16_t lport, rport;
   int i;
   err_t err;
@@ -1108,11 +1108,11 @@ com_udpn(struct command *com)
 static s8_t
 com_udpb(struct command *com)
 {
-  struct ip_addr ipaddr;
+  ip_addr_t ipaddr;
   u16_t lport, rport;
   int i;
   err_t err;
-  struct ip_addr bcaddr;
+  ip_addr_t bcaddr;
   long tmp;
 
   tmp = strtol(com->args[0], NULL, 10);
