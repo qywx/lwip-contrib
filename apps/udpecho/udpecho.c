@@ -46,6 +46,7 @@ udpecho_thread(void *arg)
   LWIP_UNUSED_ARG(arg);
 
   conn = netconn_new(NETCONN_UDP);
+  LWIP_ASSERT("con != NULL", conn != NULL);
   netconn_bind(conn, NULL, 7);
 
   while (1) {
