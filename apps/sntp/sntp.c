@@ -520,7 +520,7 @@ sntp_recv(void *arg, struct udp_pcb* pcb, struct pbuf *p, struct ip_addr *addr, 
   err = ERR_ARG;
 #if SNTP_CHECK_RESPONSE >= 1
   /* check server address and port */
-  if ((addr->addr == sntp_last_server_address.addr) &&
+  if (ip_addr_cmp(addr, &sntp_last_server_address) &&
     (port == SNTP_PORT))
 #else /* SNTP_CHECK_RESPONSE >= 1 */
   LWIP_UNUSED_ARG(addr);
@@ -604,7 +604,7 @@ sntp_send_request(struct ip_addr *server_addr)
     sys_timeout((u32_t)SNTP_RECV_TIMEOUT, sntp_try_next_server, NULL);
 #if SNTP_CHECK_RESPONSE >= 1
     /* save server address to verify it in sntp_recv */ 
-    sntp_last_server_address.addr = server_addr->addr;
+    ip_addr_set(&sntp_last_server_address, server_addr);
 #endif /* SNTP_CHECK_RESPONSE >= 1 */
   } else {
     LWIP_DEBUGF(SNTP_DEBUG_SERIOUS, ("sntp_send_request: Out of memory, trying again in %"U32_F" ms\n",

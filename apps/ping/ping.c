@@ -144,7 +144,7 @@ ping_send(int s, struct ip_addr *addr)
 
   to.sin_len = sizeof(to);
   to.sin_family = AF_INET;
-  to.sin_addr.s_addr = addr->addr;
+  inet_addr_from_ipaddr(&to.sin_addr, addr);
 
   err = lwip_sendto(s, iecho, ping_size, 0, (struct sockaddr*)&to, sizeof(to));
 

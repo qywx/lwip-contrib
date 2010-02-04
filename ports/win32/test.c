@@ -253,9 +253,9 @@ msvc_netif_init()
 #endif /* LWIP_HAVE_LOOPIF */
 
 #if USE_ETHERNET
-  gw.addr = 0;
-  ipaddr.addr = 0;
-  netmask.addr = 0;
+  ip_addr_set_zero(&gw);
+  ip_addr_set_zero(&ipaddr);
+  ip_addr_set_zero(&netmask);
 #if USE_ETHERNET_TCPIP
 #if LWIP_DHCP
   printf("Starting lwIP, local interface IP is dhcp-enabled\n");
