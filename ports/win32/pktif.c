@@ -166,9 +166,13 @@ low_level_output(struct netif *netif, struct pbuf *p)
   struct pbuf *q;
   unsigned char buffer[1600];
   unsigned char *ptr;
+  struct eth_hdr *ethhdr;
 
   /* initiate transfer(); */
   if (p->tot_len >= sizeof(buffer)) {
+    LINK_STATS_INC(link.lenerr);
+    LINK_STATS_INC(link.drop);
+    snmp_inc_ifoutdiscards(netif);
     return ERR_BUF;
   }
   ptr = buffer;
@@ -184,10 +188,22 @@ low_level_output(struct netif *netif, struct pbuf *p)
 
   /* signal that packet should be sent(); */
   if (packet_send(netif->state, buffer, p->tot_len) < 0) {
+    LINK_STATS_INC(link.memerr);
+    LINK_STATS_INC(link.drop);
+    snmp_inc_ifoutdiscards(netif);
     return ERR_BUF;
   }
 
   LINK_STATS_INC(link.xmit);
+  snmp_add_ifoutoctets(netif, p->tot_len);
+  ethhdr = (struct eth_hdr *)p->payload;
+  if ((ethhdr->dest.addr[0] & 1) != 0) {
+    /* broadcast or multicast packet*/
+    snmp_inc_ifoutnucastpkts(netif);
+  } else {
+    /* unicast packet */
+    snmp_inc_ifoutucastpkts(netif);
+  }
   return ERR_OK;
 }
 
@@ -204,21 +220,17 @@ static struct pbuf *
 low_level_input(struct netif *netif, void *packet, int packet_len)
 {
   struct pbuf *p, *q;
-  int start, length;
-  struct eth_hdr *ethhdr;
+  int start;
+  int length = packet_len;
+  struct eth_hdr *ethhdr = (struct eth_hdr*)packet;
+  int unicast;
 
-  /* Obtain the size of the packet and put it into the "len" variable. */
-  length = packet_len;
-  if (length <= 0) {
-    return NULL;
-  }
-
-  ethhdr = (struct eth_hdr*)packet;
   /* MAC filter: only let my MAC or non-unicast through */
-  if (((memcmp(&ethhdr->dest, &netif->hwaddr, ETHARP_HWADDR_LEN)) &&
-      ((ethhdr->dest.addr[0] & 0x01) == 0)) ||
+  unicast = ((ethhdr->dest.addr[0] & 0x01) == 0);
+  if (((memcmp(&ethhdr->dest, &netif->hwaddr, ETHARP_HWADDR_LEN)) && unicast) ||
       /* and don't let feedback packets through (limitation in winpcap?) */
       (!memcmp(&ethhdr->src, netif->hwaddr, ETHARP_HWADDR_LEN))) {
+    /* don't update counters here! */
     return NULL;
   }
 
@@ -239,11 +251,17 @@ low_level_input(struct netif *netif, void *packet, int packet_len)
       memcpy(q->payload, &((char*)packet)[start], q->len);
       start += q->len;
       length -= q->len;
-      if (length<=0) {
+      if (length <= 0) {
         break;
       }
     }
     LINK_STATS_INC(link.recv);
+    snmp_add_ifinoctets(netif, p->tot_len);
+    if (unicast) {
+      snmp_inc_ifinucastpkts(netif);
+    } else {
+      snmp_inc_ifinnucastpkts(netif);
+    }
   } else {
     /* drop packet(); */
     LINK_STATS_INC(link.memerr);
@@ -270,6 +288,9 @@ ethernetif_input(struct netif *netif, void *packet, int packet_len)
   struct eth_hdr *ethhdr;
   struct pbuf *p;
 
+  if (packet_len <= 0) {
+    return;
+  }
   /* move received packet into a new pbuf */
   p = low_level_input(netif, packet, packet_len);
   /* no packet could be read, silently ignore this */
@@ -289,7 +310,7 @@ ethernetif_input(struct netif *netif, void *packet, int packet_len)
   case ETHTYPE_PPPOE:
 #endif /* PPPOE_SUPPORT */
     /* full packet send to tcpip_thread to process */
-    if (netif->input(p, netif)!=ERR_OK) {
+    if (netif->input(p, netif) != ERR_OK) {
       LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
       pbuf_free(p);
       p = NULL;
@@ -297,6 +318,8 @@ ethernetif_input(struct netif *netif, void *packet, int packet_len)
     break;
 
   default:
+    LINK_STATS_INC(link.proterr);
+    LINK_STATS_INC(link.drop);
     pbuf_free(p);
     p = NULL;
     break;
@@ -332,6 +355,10 @@ ethernetif_init(struct netif *netif)
 #else /* LWIP_ARP */
   netif->output = NULL; /* not used for PPPoE */
 #endif /* LWIP_ARP */
+#if LWIP_NETIF_HOSTNAME
+  /* Initialize interface hostname */
+  netif_set_hostname(netif, "lwip");
+#endif /* LWIP_NETIF_HOSTNAME */
 
   netif->mtu = 1500;
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP | NETIF_FLAG_LINK_UP;
