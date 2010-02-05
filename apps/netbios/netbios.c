@@ -48,9 +48,24 @@
  * detect duplicate names!
  */
 
-/** NetBIOS name of LWIP device */
+/** NetBIOS name of LWIP device
+ * This must be uppercase until NETBIOS_STRCMP() is defined to a string
+ * comparision function that is case insensitive.
+ * If you want to use the netif's hostname, use this (with LWIP_NETIF_HOSTNAME):
+ * (ip_current_netif() != NULL ? ip_current_netif()->hostname != NULL ? ip_current_netif()->hostname : "" : "")
+ */
 #ifndef NETBIOS_LWIP_NAME
 #define NETBIOS_LWIP_NAME "NETBIOSLWIPDEV"
+#endif
+
+/** Since there's no standard function for case-insensitive string comparision,
+ * we need another define here:
+ * define this to stricmp() for windows or strcasecmp() for linux.
+ * If not defined, comparision is case sensitive and NETBIOS_LWIP_NAME must be
+ * uppercase
+ */
+#ifndef NETBIOS_STRCMP
+#define NETBIOS_STRCMP(str1, str2) strcmp(str1, str2)
 #endif
 
 /** default port number for "NetBIOS Name service */
@@ -262,7 +277,7 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u
         /* decode the NetBIOS name */
         netbios_name_decoding( (char*)(netbios_name_hdr->encname), netbios_name, sizeof(netbios_name));
         /* if the packet is for us */
-        if (strcmp( netbios_name, NETBIOS_LWIP_NAME)==0) {
+        if (NETBIOS_STRCMP(netbios_name, NETBIOS_LWIP_NAME) == 0) {
           struct pbuf *q;
           struct netbios_resp *resp;
 
