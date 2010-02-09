@@ -182,9 +182,87 @@ sockex_nonblocking_connect(void *arg)
   printf("all tests done, thread ending\n");
 }
 
+/** This is an example function that tests
+    the recv function (timeout etc.). */
+static void
+sockex_testrecv(void *arg)
+{
+  int s;
+  int ret;
+  int opt;
+  struct sockaddr_in addr;
+  size_t len;
+  char rxbuf[1024];
+
+  LWIP_UNUSED_ARG(arg);
+  /* set up address to connect to */
+  memset(&addr, 0, sizeof(addr));
+  addr.sin_len = sizeof(addr);
+  addr.sin_family = AF_INET;
+  addr.sin_port = htons(SOCK_TARGET_PORT);
+  addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
+
+  /* first try blocking: */
+
+  /* create the socket */
+  s = lwip_socket(AF_INET, SOCK_STREAM, 0);
+  LWIP_ASSERT("s >= 0", s >= 0);
+
+  /* connect */
+  ret = lwip_connect(s, (struct sockaddr*)&addr, sizeof(addr));
+  /* should succeed */
+  LWIP_ASSERT("ret == 0", ret == 0);
+
+  /* set recv timeout */
+  opt = 100;
+  ret = lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &opt, sizeof(int));
+  LWIP_ASSERT("ret == 0", ret == 0);
+
+  /* write the start of a GET request */
+#define SNDSTR1 "G"
+  len = strlen(SNDSTR1);
+  ret = lwip_write(s, SNDSTR1, len);
+  LWIP_ASSERT("ret == len", ret == (int)len);
+
+  /* should time out if the other side is a good HTTP server */
+  ret = lwip_read(s, rxbuf, 1);
+  LWIP_ASSERT("ret == -1", ret == -1);
+  ret = errno;
+  LWIP_ASSERT("errno == EAGAIN", ret == EAGAIN);
+
+  /* write the rest of a GET request */
+#define SNDSTR2 "ET / HTTP_1.1\r\n\r\n"
+  len = strlen(SNDSTR2);
+  ret = lwip_write(s, SNDSTR2, len);
+  LWIP_ASSERT("ret == len", ret == (int)len);
+
+  /* wait a while */
+  sys_msleep(1000);
+
+  /* should not time out but receive a response */
+  ret = lwip_read(s, rxbuf, 1024);
+  LWIP_ASSERT("ret > 0", ret > 0);
+
+  /* should not time out but receive a response */
+  ret = lwip_read(s, rxbuf, 1024);
+  /* might receive a second packet for HTTP/1.1 servers */
+  if (ret > 0) {
+    /* should return 0: closed */
+    ret = lwip_read(s, rxbuf, 1024);
+    LWIP_ASSERT("ret == 0", ret == 0);
+  }
+
+  /* close */
+  ret = lwip_close(s);
+  LWIP_ASSERT("ret == 0", ret == 0);
+
+  printf("sockex_testrecv finished successfully\n");
+}
+
 void socket_examples_init(void)
 {
   sys_thread_new("sockex_nonblocking_connect", sockex_nonblocking_connect, NULL, 0, 0);
+  sys_thread_new("sockex_testrecv", sockex_testrecv, NULL, 0, 0);
 }
 
 #endif /* LWIP_SOCKETS */
