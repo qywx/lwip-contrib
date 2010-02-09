@@ -540,7 +540,7 @@ sensorentry_set_test_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
   LWIP_UNUSED_ARG(len);
   LWIP_UNUSED_ARG(value);
   /* sensors are read-only */
-  return 1; // 0 -> read only, != 0 -> read/write
+  return 1; /* 0 -> read only, != 0 -> read/write */
 }
 
 static void
