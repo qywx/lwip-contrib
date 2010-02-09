@@ -62,7 +62,7 @@ struct delif {
 struct delif_pbuf {
   struct delif_pbuf *next;
   struct pbuf *p;
-  struct ip_addr *ipaddr;
+  ip_addr_t *ipaddr;
   unsigned int time;
 };
 
@@ -155,7 +155,7 @@ delif_output_timeout(void *arg)
 }
 /*-----------------------------------------------------------------------------------*/
 static err_t
-delif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
+delif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 {
   struct delif_pbuf *dp, *np;
   struct pbuf *q;

@@ -80,7 +80,7 @@ static char errbuf[PCAP_ERRBUF_SIZE];
 /*-----------------------------------------------------------------------------------*/
 static err_t
 pcapif_output(struct netif *netif, struct pbuf *p,
-	      struct ip_addr *ipaddr)
+	      ip_addr_t *ipaddr)
 {
   return ERR_OK;
 }

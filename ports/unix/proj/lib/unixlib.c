@@ -26,7 +26,7 @@
  * 
  * Author: Kieran Mansley <kjm25@cam.ac.uk>
  *
- * $Id: unixlib.c,v 1.7 2010/01/07 10:21:13 goldsimon Exp $
+ * $Id: unixlib.c,v 1.8 2010/02/09 13:19:01 goldsimon Exp $
  */
 
 /*-----------------------------------------------------------------------------------*/
@@ -59,7 +59,7 @@ struct netif netif;
 static void
 tcpip_init_done(void *arg)
 {
-  struct ip_addr ipaddr, netmask, gateway;
+  ip_addr_t ipaddr, netmask, gateway;
   sys_sem_t *sem;
   sem = arg;
 

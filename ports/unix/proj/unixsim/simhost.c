@@ -80,11 +80,11 @@
 #endif
 
 /* (manual) host IP configuration */
-static struct ip_addr ipaddr, netmask, gw;
+static ip_addr_t ipaddr, netmask, gw;
 
 /* ping out destination cmd option */
 static unsigned char ping_flag;
-static struct ip_addr ping_addr;
+static ip_addr_t ping_addr;
 
 /* nonstatic debug cmd option, exported in lwipopts.h */
 unsigned char debug_flags;
@@ -206,14 +206,14 @@ static int seq_num;
 #if 0
 /* Ping using the raw api */
 static int
-ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, struct ip_addr *addr)
+ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
 {
   printf("ping recv\n");
   return 1; /* eat the event */
 }
 
 static void
-ping_send(struct raw_pcb *raw, struct ip_addr *addr)
+ping_send(struct raw_pcb *raw, ip_addr_t *addr)
 {
   struct pbuf *p;
   struct icmp_echo_hdr *iecho;
@@ -256,7 +256,7 @@ ping_thread(void *arg)
 /* Ping using the socket api */
 
 static void
-ping_send(int s, struct ip_addr *addr)
+ping_send(int s, ip_addr_t *addr)
 {
   struct icmp_echo_hdr *iecho;
   struct sockaddr_in to;
@@ -280,7 +280,7 @@ ping_send(int s, struct ip_addr *addr)
 }
 
 static void
-ping_recv(int s, struct ip_addr *addr)
+ping_recv(int s, ip_addr_t *addr)
 {
   char buf[200];
   socklen_t fromlen;

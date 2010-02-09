@@ -76,14 +76,14 @@ tcpdump(struct pbuf *p)
     tcphdr = (struct tcp_hdr *)((char *)iphdr + IP_HLEN);
     
     pbuf_header(p, -IP_HLEN);
-    if (inet_chksum_pseudo(p, (struct ip_addr *)&(iphdr->src),
-			  (struct ip_addr *)&(iphdr->dest),
+    if (inet_chksum_pseudo(p, (ip_addr_t *)&(iphdr->src),
+			  (ip_addr_t *)&(iphdr->dest),
 			  IP_PROTO_TCP, p->tot_len) != 0) {
       LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: IP checksum failed!\n"));
       /*    fprintf(file, "chksum 0x%lx ", tcphdr->chksum);
 	    tcphdr->chksum = 0;
-	    fprintf(file, "should be 0x%lx ", inet_chksum_pseudo(p, (struct ip_addr *)&(iphdr->src),
-	    (struct ip_addr *)&(iphdr->dest),
+	    fprintf(file, "should be 0x%lx ", inet_chksum_pseudo(p, (ip_addr_t *)&(iphdr->src),
+	    (ip_addr_t *)&(iphdr->dest),
 	    IP_PROTO_TCP, p->tot_len));*/
       fprintf(file, "!chksum ");
     }
@@ -146,14 +146,14 @@ tcpdump(struct pbuf *p)
     udphdr = (struct udp_hdr *)((char *)iphdr + IP_HLEN);
     
     pbuf_header(p, -IP_HLEN);
-    if (inet_chksum_pseudo(p, (struct ip_addr *)&(iphdr->src),
-			  (struct ip_addr *)&(iphdr->dest),
+    if (inet_chksum_pseudo(p, (ip_addr_t *)&(iphdr->src),
+			  (ip_addr_t *)&(iphdr->dest),
 			  IP_PROTO_UDP, p->tot_len) != 0) {
       LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: IP checksum failed!\n"));
       /*    fprintf(file, "chksum 0x%lx ", tcphdr->chksum);
 	    tcphdr->chksum = 0;
-	    fprintf(file, "should be 0x%lx ", inet_chksum_pseudo(p, (struct ip_addr *)&(iphdr->src),
-	    (struct ip_addr *)&(iphdr->dest),
+	    fprintf(file, "should be 0x%lx ", inet_chksum_pseudo(p, (ip_addr_t *)&(iphdr->src),
+	    (ip_addr_t *)&(iphdr->dest),
 	    IP_PROTO_TCP, p->tot_len));*/
       fprintf(file, "!chksum ");
     }

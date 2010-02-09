@@ -58,11 +58,11 @@
 #include "private_mib.h"
 
 /* (manual) host IP configuration */
-static struct ip_addr ipaddr, netmask, gw;
+static ip_addr_t ipaddr, netmask, gw;
 
 /* SNMP trap destination cmd option */
 static unsigned char trap_flag;
-static struct ip_addr trap_addr;
+static ip_addr_t trap_addr;
 
 /* nonstatic debug cmd option, exported in lwipopts.h */
 unsigned char debug_flags;

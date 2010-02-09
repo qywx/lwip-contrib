@@ -92,7 +92,7 @@ unix_socket_client(char *name)
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
   snprintf(unix_addr.sun_path, sizeof(unix_addr.sun_path), "%s%05d", "/var/tmp/", getpid());
-#if !defined(linux) && !defined(cygwin)
+#if !defined(linux) && !defined(cygwin) && !defined(__CYGWIN__)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;
   unix_addr.sun_len = len;
@@ -116,7 +116,7 @@ unix_socket_client(char *name)
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
   strcpy(unix_addr.sun_path, name);
-#if !defined(linux) && !defined(cygwin)
+#if !defined(linux) && !defined(cygwin) && !defined(__CYGWIN__)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;  
   unix_addr.sun_len = len;
@@ -150,7 +150,7 @@ unix_socket_server(char *name)
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
   strcpy(unix_addr.sun_path, name);
-#if !defined(linux) && !defined(cygwin)
+#if !defined(linux) && !defined(cygwin) && !defined(__CYGWIN__)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;
   unix_addr.sun_len = len;
@@ -282,7 +282,7 @@ unixif_thread2(void *arg)
 static void unixif_output_timeout(void *arg);
 
 static err_t
-unixif_output(struct netif *netif, struct pbuf *p, struct ip_addr *ipaddr)
+unixif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 {
   struct unixif *unixif;
   struct unixif_buf *buf;

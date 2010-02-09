@@ -80,7 +80,7 @@ struct netif netif_unix;
 static void
 tcpip_init_done(void *arg)
 {
-  struct ip_addr ipaddr, netmask, gw;
+  ip_addr_t ipaddr, netmask, gw;
   sys_sem_t *sem;
   sem = arg;
 

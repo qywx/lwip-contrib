@@ -47,7 +47,7 @@ LWIPDIR=$(CONTRIBDIR)/../lwip/src
 
 CFLAGS:=$(CFLAGS) \
 	-I$(LWIPDIR)/include -I$(LWIPARCH)/include -I$(LWIPDIR)/include/ipv4 \
-	-Iapps -I.
+	-I. -I$(CONTRIBDIR)/apps/snmp_private_mib
 
 # COREFILES, CORE4FILES: The minimum set of files needed for lwIP.
 COREFILES=$(LWIPDIR)/core/mem.c $(LWIPDIR)/core/memp.c $(LWIPDIR)/core/netif.c \
