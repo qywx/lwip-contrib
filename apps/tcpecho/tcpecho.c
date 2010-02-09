@@ -29,6 +29,11 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
+#include "tcpecho.h"
+
+#include "lwip/opt.h"
+
+#if LWIP_NETCONN
 
 #include "lwip/sys.h"
 #include "lwip/api.h"
@@ -88,5 +93,4 @@ tcpecho_init(void)
 }
 /*-----------------------------------------------------------------------------------*/
 
-
-
+#endif /* LWIP_NETCONN */

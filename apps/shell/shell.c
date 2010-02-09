@@ -30,6 +30,12 @@
  *
  */
 
+#include "shell.h"
+
+#include "lwip/opt.h"
+
+#if LWIP_NETCONN
+
 #include <string.h>
 #include <stdio.h>
 
@@ -1463,6 +1469,4 @@ shell_init(void)
   sys_thread_new("shell_thread", shell_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 }
 
-
-
-
+#endif /* LWIP_NETCONN */
