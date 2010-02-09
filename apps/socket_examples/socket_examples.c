@@ -179,6 +179,7 @@ sockex_nonblocking_connect(void *arg)
   LWIP_ASSERT("ret == 0", ret == 0);
 
   printf("select() needed %d ticks to return error\n", ticks_b - ticks_a);
+  printf("all tests done, thread ending\n");
 }
 
 void socket_examples_init(void)
