@@ -6,7 +6,9 @@
 #else
   #define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
 #endif
- 
+
+#include "config.h"
+
 struct timezone 
 {
   int  tz_minuteswest; /* minutes W of Greenwich */
@@ -48,4 +50,15 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
   return 0;
 }
 
- 
+struct tm *
+localtime_r(const time_t *timer, struct tm *result)
+{
+   struct tm *local_result;
+   local_result = localtime (timer);
+
+   if (local_result == NULL || result == NULL)
+     return NULL;
+
+   memcpy (result, local_result, sizeof (result));
+   return result;
+}
