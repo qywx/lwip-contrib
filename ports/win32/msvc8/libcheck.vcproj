@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="(,00"
+	Version="8,00"
 	Name="libcheck"
 	ProjectGUID="{EBB156DC-01BF-47B2-B69C-1A750B6B5F09}"
 	RootNamespace="libcheck"
