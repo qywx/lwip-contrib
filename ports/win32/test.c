@@ -56,7 +56,6 @@
 #include "lwip/autoip.h"
 
 /* lwIP netif includes */
-#include "netif/loopif.h"
 #include "netif/etharp.h"
 
 /* applications includes */
@@ -108,10 +107,6 @@
 /* THE ethernet interface */
 struct netif netif;
 #endif /* USE_ETHERNET */
-#if LWIP_HAVE_LOOPIF
-/* THE loopback interface */
-struct netif loop_netif;
-#endif /* LWIP_HAVE_LOOPIF */
 #if PPP_SUPPORT
 /* THE PPP descriptor */
 int ppp_desc = -1;
@@ -212,9 +207,6 @@ msvc_netif_init()
 #if USE_ETHERNET
   ip_addr_t ipaddr, netmask, gw;
 #endif /* USE_ETHERNET */
-#if LWIP_HAVE_LOOPIF
-  ip_addr_t loop_ipaddr, loop_netmask, loop_gw;
-#endif /* LWIP_HAVE_LOOPIF */
 
 #if PPP_SUPPORT
   const char *username = NULL, *password = NULL;
@@ -237,20 +229,6 @@ msvc_netif_init()
   }
 #endif /* PPPOS_SUPPORT */
 #endif  /* PPP_SUPPORT */
-
-#if LWIP_HAVE_LOOPIF
-  IP4_ADDR(&loop_gw, 127,0,0,1);
-  IP4_ADDR(&loop_ipaddr, 127,0,0,1);
-  IP4_ADDR(&loop_netmask, 255,0,0,0);
-  printf("Starting lwIP, loopback interface IP is %s\n", ip_ntoa(&loop_ipaddr));
-
-#if NO_SYS
-  netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, ip_input);
-#else  /* NO_SYS */
-  netif_add(&loop_netif, &loop_ipaddr, &loop_netmask, &loop_gw, NULL, loopif_init, tcpip_input);
-#endif /* NO_SYS */
-  netif_set_up(&loop_netif);
-#endif /* LWIP_HAVE_LOOPIF */
 
 #if USE_ETHERNET
   ip_addr_set_zero(&gw);

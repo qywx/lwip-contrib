@@ -56,7 +56,6 @@
 #include "netif/unixif.h"
 #include "netif/dropif.h"
 #include "netif/pcapif.h"
-#include "netif/loopif.h"
 
 #include "netif/tcpdump.h"
 
@@ -313,9 +312,6 @@ ping_thread(void *arg)
 #endif
 
 struct netif netif;
-#if LWIP_HAVE_LOOPIF
-struct netif loopif;
-#endif
 
 static void
 init_netifs(void)
@@ -362,15 +358,6 @@ init_netifs(void)
 #if 0
   /* Only used for testing purposes: */
   netif_add(&ipaddr, &netmask, &gw, NULL, pcapif_init, tcpip_input);
-#endif
-
-#if LWIP_HAVE_LOOPIF  
-  IP4_ADDR(&gw, 127,0,0,1);
-  IP4_ADDR(&ipaddr, 127,0,0,1);
-  IP4_ADDR(&netmask, 255,0,0,0);
-  
-  netif_set_default(netif_add(&loopif, &ipaddr, &netmask, &gw, NULL, loopif_init,
-        tcpip_input));
 #endif
   
 #if LWIP_TCP  

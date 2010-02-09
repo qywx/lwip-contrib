@@ -50,8 +50,6 @@
 #include "netif/unixif.h"
 #include "netif/dropif.h"
 
-#include "netif/loopif.h"
-
 #include "netif/tcpdump.h"
 
 
