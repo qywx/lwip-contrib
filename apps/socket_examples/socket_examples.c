@@ -1,6 +1,10 @@
 
 #include "socket_examples.h"
 
+#include "lwip/opt.h"
+
+#if LWIP_SOCKET
+
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
 
@@ -181,3 +185,5 @@ void socket_examples_init(void)
 {
   sys_thread_new("sockex_nonblocking_connect", sockex_nonblocking_connect, NULL, 0, 0);
 }
+
+#endif /* LWIP_SOCKETS */
