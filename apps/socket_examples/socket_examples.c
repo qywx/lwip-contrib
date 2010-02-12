@@ -60,8 +60,30 @@ sockex_nonblocking_connect(void *arg)
   ret = lwip_close(s);
   LWIP_ASSERT("ret == 0", ret == 0);
 
+  /* now try nonblocking and close before being connected */
 
-  /* now try nonblocking:
+  /* create the socket */
+  s = lwip_socket(AF_INET, SOCK_STREAM, 0);
+  LWIP_ASSERT("s >= 0", s >= 0);
+  /* nonblocking */
+  opt = 1;
+  ret = lwip_ioctl(s, FIONBIO, &opt);
+  LWIP_ASSERT("ret == 0", ret == 0);
+  /* connect */
+  ret = lwip_connect(s, (struct sockaddr*)&addr, sizeof(addr));
+  /* should have an error: "inprogress" */
+  LWIP_ASSERT("ret == -1", ret == -1);
+  LWIP_ASSERT("errno == EINPROGRESS", errno == EINPROGRESS);
+  /* close */
+  ret = lwip_close(s);
+  LWIP_ASSERT("ret == 0", ret == 0);
+  /* try to close again, should fail with EBADF */
+  ret = lwip_close(s);
+  LWIP_ASSERT("ret == -1", ret == -1);
+  LWIP_ASSERT("errno == EBADF", errno == EBADF);
+  printf("closing socket in nonblocking connect succeeded\n");
+
+  /* now try nonblocking, connect should succeed:
      this test only works if it is fast enough, i.e. no breakpoints, please! */
 
   /* create the socket */
