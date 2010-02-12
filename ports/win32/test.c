@@ -106,6 +106,14 @@
 #if USE_ETHERNET
 /* THE ethernet interface */
 struct netif netif;
+#if LWIP_DHCP
+/* dhcp struct for the ethernet netif */
+struct dhcp netif_dhcp;
+#endif /* LWIP_DHCP */
+#if LWIP_AUTOIP
+/* autoip struct for the ethernet netif */
+struct autoip netif_autoip;
+#endif /* LWIP_AUTOIP */
 #endif /* USE_ETHERNET */
 #if PPP_SUPPORT
 /* THE PPP descriptor */
@@ -264,7 +272,11 @@ msvc_netif_init()
 #endif /* LWIP_NETIF_LINK_CALLBACK */
 
 #if USE_ETHERNET_TCPIP
+#if LWIP_AUTOIP
+  autoip_set_struct(&netif, &netif_autoip);
+#endif /* LWIP_AUTOIP */
 #if LWIP_DHCP
+  dhcp_set_struct(&netif, &netif_dhcp);
   dhcp_start(&netif);
 #elif LWIP_AUTOIP
   autoip_start(&netif);
