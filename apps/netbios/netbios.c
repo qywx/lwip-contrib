@@ -328,7 +328,8 @@ void netbios_init(void)
 
   pcb = udp_new();
   if (pcb != NULL) {
-    pcb->so_options|=SOF_BROADCAST;
+    /* we have to be allowed to send broadcast packets! */
+    pcb->so_options |= SOF_BROADCAST;
     udp_bind(pcb, IP_ADDR_ANY, NETBIOS_PORT);
     udp_recv(pcb, netbios_recv, pcb);
   }
