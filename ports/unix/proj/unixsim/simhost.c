@@ -382,10 +382,11 @@ main_thread(void *arg)
 
   netif_init();
 
-  sem = sys_sem_new(0);
+  if(sys_sem_new(&sem, 0) != ERR_OK) {
+    LWIP_ASSERT("Failed to create semaphore", 0);
+  }
   tcpip_init(tcpip_init_done, &sem);
-  sys_sem_wait(sem);
-  sys_sem_free(sem);
+  sys_sem_wait(&sem);
   printf("TCP/IP initialized.\n");
 
 #if LWIP_RAW
@@ -404,9 +405,8 @@ main_thread(void *arg)
 #if 0
     stats_display();
 #endif
-  /* Block for ever. */
-  sem = sys_sem_new(0);
-  sys_sem_wait(sem);
+  /* Block forever. */
+  sys_sem_wait(&sem);
 }
 /*-----------------------------------------------------------------------------------*/
 int

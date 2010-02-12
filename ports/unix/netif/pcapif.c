@@ -141,7 +141,7 @@ timeout(void *arg)
     printf("ip_lookup dropped\n");
   }
 
-  sys_sem_signal(pcapif->sem);
+  sys_sem_signal(&pcapif->sem);
 }
 /*-----------------------------------------------------------------------------------*/
 static void
@@ -181,7 +181,7 @@ pcapif_thread(void *arg)
 
   while (1) {
     pcap_loop(pcapif->pd, 1, callback, (u_char *)netif);
-    sys_sem_wait(pcapif->sem);
+    sys_sem_wait(&pcapif->sem);
     if (pcapif->p != NULL) {
       netif->input(pcapif->p, netif);
     }
@@ -207,7 +207,9 @@ pcapif_init(struct netif *netif)
     return ERR_IF;
   }
 
-  p->sem = sys_sem_new(0);
+  if(sys_sem_new(&p->sem, 0) != ERR_OK) {
+    LWIP_ASSERT("Failed to create semaphore", 0);
+  }
   p->p = NULL;
   p->lasttime = 0; 
   

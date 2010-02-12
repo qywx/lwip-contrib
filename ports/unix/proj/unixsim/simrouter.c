@@ -124,17 +124,18 @@ main_thread(void *arg)
 {
   sys_sem_t sem;
 
-  sem = sys_sem_new(0);
+  if(sys_sem_new(&sem, 0) != ERR_OK) {
+    LWIP_ASSERT("Failed to create semaphore", 0);
+  }
   tcpip_init(tcpip_init_done, &sem);
-  sys_sem_wait(sem);
-  sys_sem_free(sem);
+  sys_sem_wait(&sem);
   printf("TCP/IP initialized.\n");
 
 #ifdef MEM_PERF
   mem_perf_init("/tmp/memstats.client");
 #endif /* MEM_PERF */
-  sem = sys_sem_new(0);
-  sys_sem_wait(sem);
+  /* Block forever. */
+  sys_sem_wait(&sem);
 }
 /*-----------------------------------------------------------------------------------*/
 int

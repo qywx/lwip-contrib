@@ -251,7 +251,7 @@ unixif_thread(void *arg)
 
 
   while (1) {
-    sys_sem_wait(unixif->sem);
+    sys_sem_wait(&unixif->sem);
     unixif_input_handler(netif);
   }
   
@@ -274,7 +274,7 @@ unixif_thread2(void *arg)
     FD_SET(unixif->fd, &fdset);
   
     if (select(unixif->fd + 1, &fdset, NULL, NULL, NULL) > 0) {
-      sys_sem_signal(unixif->sem);
+      sys_sem_signal(&unixif->sem);
     }
   }
 }
@@ -453,7 +453,9 @@ unixif_init_server(struct netif *netif)
   LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_accept: %d\n", fd2));
 
   unixif->fd = fd2;
-  unixif->sem = sys_sem_new(0);
+  if(sys_sem_new(&unixif->sem, 0) != ERR_OK) {
+    LWIP_ASSERT("Failed to create semaphore", 0);
+  }
   sys_thread_new("unixif_thread", unixif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   sys_thread_new("unixif_thread2", unixif_thread2, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   return ERR_OK;
@@ -477,7 +479,9 @@ unixif_init_client(struct netif *netif)
     abort();
   }
   unixif->q = list_new(UNIXIF_QUEUELEN);
-  unixif->sem = sys_sem_new(0);
+  if(sys_sem_new(&unixif->sem, 0) != ERR_OK) {
+    LWIP_ASSERT("Failed to create semaphore", 0);
+  }
   sys_thread_new("unixif_thread", unixif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   sys_thread_new("unixif_thread2", unixif_thread2, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   return ERR_OK;

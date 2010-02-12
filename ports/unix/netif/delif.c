@@ -284,8 +284,10 @@ delif_thread(void *arg)
   sys_timeout(DELIF_TIMEOUT, delif_input_timeout, netif);
   sys_timeout(DELIF_TIMEOUT, delif_output_timeout, netif);
 
-  sem = sys_sem_new(0);
-  sys_sem_wait(sem);
+  if(sys_sem_new(&sem, 0) != ERR_OK) {
+    LWIP_ASSERT("Failed to create semaphore", 0);
+  }
+  sys_sem_wait(&sem);
 
 }
 /*-----------------------------------------------------------------------------------*/

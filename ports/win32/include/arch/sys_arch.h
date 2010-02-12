@@ -35,10 +35,17 @@
 /* HANDLE is used for sys_sem_t but we won't include windows.h */
 typedef void* sys_sem_t;
 #define SYS_SEM_NULL NULL
+#define sys_sem_valid(sem) (((sem) != NULL) && (*(sem) != NULL))
+#define sys_sem_set_invalid(sem) do { if((sem) != NULL) { *(sem) = NULL; }}while(0)
+
+/* let sys.h use binary semaphores for mutexes */
+#define LWIP_COMPAT_MUTEX 1
 
 struct lwip_mbox;
 typedef struct lwip_mbox* sys_mbox_t;
 #define SYS_MBOX_NULL NULL
+#define sys_mbox_valid(mbox) (((mbox) != NULL) && (*(mbox) != NULL))
+#define sys_mbox_set_invalid(mbox) do { if((mbox) != NULL) { *(mbox) = NULL; }}while(0)
 
 /* DWORD (thread id) is used for sys_thread_t but we won't include windows.h */
 typedef u32_t sys_thread_t;

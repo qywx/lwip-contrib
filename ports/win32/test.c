@@ -358,9 +358,9 @@ test_init(void * arg)
 #if NO_SYS
   LWIP_UNUSED_ARG(arg);
 #else /* NO_SYS */
-  sys_sem_t init_sem;
+  sys_sem_t *init_sem;
   LWIP_ASSERT("arg != NULL", arg != NULL);
-  init_sem = (sys_sem_t)arg;
+  init_sem = (sys_sem_t*)arg;
 #endif /* NO_SYS */
 
   /* init network interfaces */
@@ -389,6 +389,7 @@ static void pppCloseCallback(void *arg)
 void main_loop()
 {
 #if !NO_SYS
+  err_t err;
   sys_sem_t init_sem;
 #endif /* NO_SYS */
 #if PPP_SUPPORT
@@ -404,12 +405,12 @@ void main_loop()
   lwip_init();
   test_init(NULL);
 #else /* NO_SYS */
-  init_sem = sys_sem_new(0);
-  tcpip_init(test_init, init_sem);
+  err = sys_sem_new(&init_sem, 0);
+  tcpip_init(test_init, &init_sem);
   /* we have to wait for initialization to finish before
    * calling update_adapter()! */
-  sys_sem_wait(init_sem);
-  sys_sem_free(init_sem);
+  sys_sem_wait(&init_sem);
+  sys_sem_free(&init_sem);
 #endif /* NO_SYS */
 
   /* MAIN LOOP for driver update (and timers if NO_SYS) */

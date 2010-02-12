@@ -26,7 +26,7 @@
  * 
  * Author: Kieran Mansley <kjm25@cam.ac.uk>
  *
- * $Id: unixlib.c,v 1.8 2010/02/09 13:19:01 goldsimon Exp $
+ * $Id: unixlib.c,v 1.9 2010/02/12 13:57:58 goldsimon Exp $
  */
 
 /*-----------------------------------------------------------------------------------*/
@@ -79,10 +79,12 @@ tcpip_init_done(void *arg)
 void _init(void){
   sys_sem_t sem;
 
-  sem = sys_sem_new(0);
+  if(sys_sem_new(&sem, 0) != ERR_OK) {
+    LWIP_ASSERT("failed to create semaphore", 0);
+  }
   tcpip_init(tcpip_init_done, &sem);
-  sys_sem_wait(sem);
-  sys_sem_free(sem);
+  sys_sem_wait(&sem);
+  sys_sem_free(&sem);
 }
 
 void _fini(void){
