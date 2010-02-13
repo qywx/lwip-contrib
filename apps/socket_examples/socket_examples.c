@@ -66,9 +66,11 @@ sockex_nonblocking_connect(void *arg)
   s = lwip_socket(AF_INET, SOCK_STREAM, 0);
   LWIP_ASSERT("s >= 0", s >= 0);
   /* nonblocking */
-  opt = 1;
-  ret = lwip_ioctl(s, FIONBIO, &opt);
-  LWIP_ASSERT("ret == 0", ret == 0);
+  opt = lwip_fcntl(s, F_GETFL, 0);
+  LWIP_ASSERT("ret != -1", ret != -1);
+  opt |= O_NONBLOCK;
+  ret = lwip_fcntl(s, F_SETFL, opt);
+  LWIP_ASSERT("ret != -1", ret != -1);
   /* connect */
   ret = lwip_connect(s, (struct sockaddr*)&addr, sizeof(addr));
   /* should have an error: "inprogress" */
