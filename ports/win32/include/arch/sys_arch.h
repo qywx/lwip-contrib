@@ -33,19 +33,29 @@
 #define __ARCH_SYS_ARCH_H__
 
 /* HANDLE is used for sys_sem_t but we won't include windows.h */
-typedef void* sys_sem_t;
+struct _sys_sem {
+  void *sem;
+};
+typedef struct _sys_sem sys_sem_t;
 #define SYS_SEM_NULL NULL
-#define sys_sem_valid(sem) (((sem) != NULL) && (*(sem) != NULL))
-#define sys_sem_set_invalid(sem) do { if((sem) != NULL) { *(sem) = NULL; }}while(0)
+#define sys_sem_valid(sema) (((sema) != NULL) && ((sema)->sem != NULL)  && ((sema)->sem != (void*)-1))
+#define sys_sem_set_invalid(sema) ((sema)->sem = NULL)
 
 /* let sys.h use binary semaphores for mutexes */
 #define LWIP_COMPAT_MUTEX 1
 
-struct lwip_mbox;
-typedef struct lwip_mbox* sys_mbox_t;
+#ifndef MAX_QUEUE_ENTRIES
+#define MAX_QUEUE_ENTRIES 100
+#endif
+struct lwip_mbox {
+  void* sem;
+  void* q_mem[MAX_QUEUE_ENTRIES];
+  u32_t head, tail;
+};
+typedef struct lwip_mbox sys_mbox_t;
 #define SYS_MBOX_NULL NULL
-#define sys_mbox_valid(mbox) (((mbox) != NULL) && (*(mbox) != NULL))
-#define sys_mbox_set_invalid(mbox) do { if((mbox) != NULL) { *(mbox) = NULL; }}while(0)
+#define sys_mbox_valid(mbox) ((mbox != NULL) && ((mbox)->sem != NULL)  && ((mbox)->sem != (void*)-1))
+#define sys_mbox_set_invalid(mbox) ((mbox)->sem = NULL)
 
 /* DWORD (thread id) is used for sys_thread_t but we won't include windows.h */
 typedef u32_t sys_thread_t;
