@@ -100,7 +100,7 @@ tcpip_init_done(void *arg)
 
   sys_timeout(5000, tcp_timeout, NULL);
 
-  sys_sem_signal(*sem);
+  sys_sem_signal(sem);
 }
 /*-----------------------------------------------------------------------------------*/
 
