@@ -36,7 +36,7 @@ CC=gcc
 #To compile for cygwin: make ARCH=cygwin
 ARCH=unix
 CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -DLWIP_DEBUG -pedantic
-LDFLAGS=-lpcap -lutil
+LDFLAGS=-lpthread -lutil
 CONTRIBDIR=../../../..
 LWIPARCH=$(CONTRIBDIR)/ports/unix
 ARFLAGS=rs
@@ -121,11 +121,11 @@ $(LWIPLIB): $(LWIPOBJS)
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
 
 simhost: .depend $(LWIPLIB) $(APPLIB) simhost.o $(APPFILES)
-	$(CC) $(CFLAGS) $(LDFLAGS) -pthread -o simhost simhost.o $(APPLIB) $(LWIPLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o simhost simhost.o $(APPLIB) $(LWIPLIB)
 
 simrouter: .depend $(LWIPLIB) $(APPLIB) simrouter.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -pthread -o simrouter simrouter.o $(APPLIB) $(LWIPLIB) 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o simrouter simrouter.o $(APPLIB) $(LWIPLIB) 
 
 simnode: .depend $(LWIPLIB) $(APPLIB) simnode.o 
-	$(CC) $(CFLAGS) $(LDFLAGS) -pthread -o simnode simnode.o $(APPLIB) $(LWIPLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o simnode simnode.o $(APPLIB) $(LWIPLIB)
 
