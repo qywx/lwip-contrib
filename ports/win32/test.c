@@ -283,6 +283,10 @@ msvc_netif_init()
 #else /* LWIP_DHCP */
   netif_set_up(&netif);
 #endif /* LWIP_DHCP */
+#else /* USE_ETHERNET_TCPIP */
+  /* Use ethernet for PPPoE only */
+  netif.flags &= ~(NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP); /* no ARP */
+  netif.flags |= NETIF_FLAG_ETHERNET; /* but pure ethernet */
 #endif /* USE_ETHERNET_TCPIP */
 
 #if PPP_SUPPORT && PPPOE_SUPPORT
@@ -293,22 +297,32 @@ msvc_netif_init()
 #endif /* USE_ETHERNET */
 }
 
+#if LWIP_DNS_APP && LWIP_DNS
 void dns_found(const char *name, ip_addr_t *addr, void *arg)
 {
   LWIP_UNUSED_ARG(arg);
   printf("%s: %s\n", name, addr ? ip_ntoa(addr) : "<not found>");
 }
 
+void dns_dorequest(void *arg)
+{
+  char* dnsname = "3com.com";
+  ip_addr_t dnsresp;
+  LWIP_UNUSED_ARG(arg);
+ 
+  if (dns_gethostbyname(dnsname, &dnsresp, dns_found, 0) == ERR_OK) {
+    dns_found(dnsname, &dnsresp, 0);
+  }
+}
+#endif /* LWIP_DNS_APP && LWIP_DNS */
+
 /* This function initializes applications */
 static void
 apps_init()
 {
 #if LWIP_DNS_APP && LWIP_DNS
-  char*          dnsname="3com.com";
-  ip_addr_t dnsresp;
-  if (dns_gethostbyname(dnsname, &dnsresp, dns_found, 0) == ERR_OK) {
-    dns_found(dnsname, &dnsresp, 0);
-  }
+  /* wait until the netif is up (for dhcp, autoip or ppp) */
+  sys_timeout(5000, dns_dorequest, NULL);
 #endif /* LWIP_DNS_APP && LWIP_DNS */
 
 #if LWIP_CHARGEN_APP && LWIP_SOCKET
