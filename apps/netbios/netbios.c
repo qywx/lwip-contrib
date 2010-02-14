@@ -304,7 +304,7 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u
             resp->resp_name.ttl          = htonl(NETBIOS_NAME_TTL);
             resp->resp_name.datalen      = htons(sizeof(resp->resp_name.flags)+sizeof(resp->resp_name.addr));
             resp->resp_name.flags        = htons(NETB_NFLAG_NODETYPE_BNODE);
-            ip_addr_set(&resp->resp_name.addr, &netif_default->ip_addr);
+            ip_addr_copy(resp->resp_name.addr, netif_default->ip_addr);
 
             /* send the NetBIOS response */
             udp_sendto(upcb, q, addr, port);
