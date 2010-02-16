@@ -13,7 +13,7 @@ enum link_adapter_event {
   LINKEVENT_DOWN
 };
 
-void*                   init_adapter    (int adapter_num, char *mac_addr, input_fn input, void *arg);
+void*                   init_adapter    (int adapter_num, char *mac_addr, input_fn input, void *arg, enum link_adapter_event *linkstate);
 void                    shutdown_adapter(void *adapter);
 int                     packet_send     (void *adapter, void *buffer, int len);
 void                    update_adapter  (void *adapter);

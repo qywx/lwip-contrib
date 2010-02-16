@@ -107,9 +107,9 @@
 
 /* link state notification macro */
 #if NO_SYS
-#define NOTIFY_LINKSTATE(netif,linkfunc) linkfunc(netif)
+#define NOTIFY_LINKSTATE(netif, linkfunc) linkfunc(netif)
 #else  /* NO_SYS*/
-#define NOTIFY_LINKSTATE(netif,linkfunc) tcpip_timeout(PHY_LINKUP_DELAY, (sys_timeout_handler)linkfunc, netif)
+#define NOTIFY_LINKSTATE(netif, linkfunc) tcpip_timeout(PHY_LINKUP_DELAY, (sys_timeout_handler)linkfunc, netif)
 #endif /* NO_SYS*/
 
 /* Forward declarations. */
@@ -122,6 +122,7 @@ low_level_init(struct netif *netif)
   char adapter_mac_addr[ETHARP_HWADDR_LEN];
   u8_t my_mac_addr[ETHARP_HWADDR_LEN] = LWIP_MAC_ADDR_BASE;
   int adapter_num = PACKET_LIB_ADAPTER_NR;
+  enum link_adapter_event linkstate;
 
 #ifdef PACKET_LIB_ADAPTER_GUID
   /* get adapter index for guid string */
@@ -135,7 +136,7 @@ low_level_init(struct netif *netif)
 
   /* Do whatever else is needed to initialize interface. */
   if ((netif->state = init_adapter(adapter_num, adapter_mac_addr,
-                                   ethernetif_process_input, netif)) == NULL) {
+                      ethernetif_process_input, netif, &linkstate)) == NULL) {
     printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
     LWIP_ASSERT("ERROR initializing network adapter!\n", 0);
     return;
@@ -146,6 +147,12 @@ low_level_init(struct netif *netif)
   my_mac_addr[ETHARP_HWADDR_LEN - 1] += netif->num;
   /* Copy MAC addr */
   memcpy(&netif->hwaddr, my_mac_addr, ETHARP_HWADDR_LEN);
+
+  if (linkstate == LINKEVENT_UP) {
+    netif_set_link_up(netif);
+  } else {
+    netif_set_link_down(netif);
+  }
 
   LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
 }
@@ -361,11 +368,12 @@ ethernetif_init(struct netif *netif)
 #endif /* LWIP_NETIF_HOSTNAME */
 
   netif->mtu = 1500;
-  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP | NETIF_FLAG_LINK_UP;
+  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
   netif->hwaddr_len = ETHARP_HWADDR_LEN;
 
   NETIF_INIT_SNMP(netif, snmp_ifType_ethernet_csmacd, 100000000);
 
+  /* sets link up or down based on current status */
   low_level_init(netif);
   
   return ERR_OK;
@@ -382,7 +390,6 @@ ethernetif_poll(struct netif *netif)
 {
   update_adapter(netif->state);
 
-#if LWIP_NETIF_LINK_CALLBACK
   /* Process the link status change */
   switch (link_adapter(netif->state)) {
     case LINKEVENT_UP: {
@@ -394,7 +401,6 @@ ethernetif_poll(struct netif *netif)
       break;
     }
   }
-#endif /* LWIP_NETIF_LINK_CALLBACK */
 }
 
 /*-----------------------------------------------------------------------------------*/

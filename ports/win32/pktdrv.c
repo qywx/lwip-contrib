@@ -94,6 +94,9 @@ struct packet_adapter {
   char             buffer[PACKET_INPUT_BUFSIZE];
 };
 
+static int get_link_state(struct packet_adapter *pa, NDIS_MEDIA_STATE *linkstate);
+
+
 /** Get a list of adapters
  *
  * @param adapter_list void* array: list where the adapters are stored
@@ -173,10 +176,11 @@ get_adapter_index(const char* adapter_guid)
  * @param mac_addr the MAC address of the adapter is stored here (if != NULL)
  * @param input a function to call to receive a packet
  * @param arg argument to pass to input
+ * @param linkstate the initial link state
  * @return an adapter handle on success, NULL on failure
  */
 void*
-init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
+init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg, enum link_adapter_event *linkstate)
 {
   char *AdapterList[MAX_NUM_ADAPTERS];
   int i;
@@ -185,6 +189,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
   PPACKET_OID_DATA ppacket_oid_data;
   unsigned char ethaddr[ETHARP_HWADDR_LEN];
   struct packet_adapter *pa;
+  NDIS_MEDIA_STATE mediastate;
   
   pa = (struct packet_adapter *)malloc(sizeof(struct packet_adapter));
   if (!pa) {
@@ -284,6 +289,10 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg)
     return NULL;
   }
   PacketInitPacket(pa->lpPacket,(char*)pa->buffer, sizeof(pa->buffer));
+
+  if(get_link_state(pa, &mediastate)) {
+    *linkstate = (mediastate == NdisMediaStateConnected ? LINKEVENT_UP : LINKEVENT_DOWN);
+  }
 
   return pa;
 }
@@ -413,6 +422,34 @@ update_adapter(void *adapter)
   }
 }
 
+/** Get the current linkg status
+ * @param adapter adapter handle received by a call to init_adapter
+ * @param linkstate the current link state
+ * @return 1: succeeded, 0: failed
+ */
+static int
+get_link_state(struct packet_adapter *pa, NDIS_MEDIA_STATE *linkstate)
+{
+  int ret = 0;
+  if(pa != NULL) {
+    PPACKET_OID_DATA ppacket_oid_data;
+
+    /* get the media connect status of the selected adapter */
+    ppacket_oid_data = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA) + sizeof(NDIS_MEDIA_STATE));
+    if (ppacket_oid_data != NULL) {
+      ppacket_oid_data->Oid    = OID_GEN_MEDIA_CONNECT_STATUS;
+      ppacket_oid_data->Length = sizeof(NDIS_MEDIA_STATE);
+      if (PacketRequest(pa->lpAdapter, FALSE, ppacket_oid_data)) {
+        *linkstate = (*((PNDIS_MEDIA_STATE)(ppacket_oid_data->Data)));
+        ret = 1;
+      }
+      free(ppacket_oid_data);
+    }
+  }
+
+  return ret;
+}
+
 /**
  * Check for link state changes. Called in the main loop: 'interrupt' mode is not
  * really supported :(
@@ -426,23 +463,12 @@ link_adapter(void *adapter)
   struct packet_adapter *pa = (struct packet_adapter*)adapter;
 
   if (pa != NULL) {
-    PPACKET_OID_DATA ppacket_oid_data;
-    NDIS_MEDIA_STATE fNdisMediaState = pa->fNdisMediaState;
-
-    /* get the media connect status of the selected adapter */
-    ppacket_oid_data = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA) + sizeof(NDIS_MEDIA_STATE));
-    if (ppacket_oid_data) {
-      ppacket_oid_data->Oid    = OID_GEN_MEDIA_CONNECT_STATUS;
-      ppacket_oid_data->Length = sizeof(NDIS_MEDIA_STATE);
-      if (PacketRequest(pa->lpAdapter, FALSE, ppacket_oid_data)) {
-        fNdisMediaState = (*((PNDIS_MEDIA_STATE)(ppacket_oid_data->Data)));
+    NDIS_MEDIA_STATE fNdisMediaState;
+    if (get_link_state(pa, &fNdisMediaState)) {
+      if (pa->fNdisMediaState != fNdisMediaState) {
+        pa->fNdisMediaState = fNdisMediaState;
+        return ((fNdisMediaState == NdisMediaStateConnected) ? LINKEVENT_UP : LINKEVENT_DOWN);
       }
-      free(ppacket_oid_data);
-    }
-
-    if (pa->fNdisMediaState != fNdisMediaState) {
-      pa->fNdisMediaState = fNdisMediaState;
-      return ((fNdisMediaState == NdisMediaStateConnected) ? LINKEVENT_UP : LINKEVENT_DOWN);
     }
   }
 
