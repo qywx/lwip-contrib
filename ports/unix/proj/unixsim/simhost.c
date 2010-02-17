@@ -136,7 +136,7 @@ tcpip_init_done(void *arg)
 
   init_netifs();
 
-  sys_sem_signal(*sem);
+  sys_sem_signal(sem);
 }
 
 #if PPP_SUPPORT

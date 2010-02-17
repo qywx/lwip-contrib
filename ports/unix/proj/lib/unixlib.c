@@ -26,7 +26,7 @@
  * 
  * Author: Kieran Mansley <kjm25@cam.ac.uk>
  *
- * $Id: unixlib.c,v 1.9 2010/02/12 13:57:58 goldsimon Exp $
+ * $Id: unixlib.c,v 1.10 2010/02/17 16:52:30 goldsimon Exp $
  */
 
 /*-----------------------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ tcpip_init_done(void *arg)
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gateway, NULL, tapif_init,
 			      tcpip_input));
 
-  sys_sem_signal(*sem);
+  sys_sem_signal(sem);
 }
 
 void _init(void){
