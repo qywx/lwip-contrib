@@ -33,30 +33,100 @@
 #include "fs.h"
 #include "fsdata.h"
 #include "fsdata.c"
-
 #include <string.h>
 
-/** Search for a file by its full name and return pointer and length if found.
- *
- * @param name full file name as passed in HTTP request
- * @param file structure that must be allocated by caller and will be filled in
- *        by the function if the filename was found.
- * @return 1 if the file was found, 0 if the file was not found
- */
-int
-fs_open(const char *name, struct fs_file *file)
-{
-  const struct fsdata_file *f;
-
-  for (f = FS_ROOT; f != NULL; f = f->next) {
-    if (!strcmp(name, (const char*)f->name)) {
-      file->data = f->data;
-      file->len = f->len;
-#if HTTPD_SUPPORT_DYNAMIC_PAGES
-      file->includes_http_header = f->includes_http_header;
+/*-----------------------------------------------------------------------------------*/
+/* Define the number of open files that we can support. */
+#ifndef LWIP_MAX_OPEN_FILES
+#define LWIP_MAX_OPEN_FILES     10
 #endif
-      return 1;
+
+/* Define the file system memory allocation structure. */
+struct fs_table {
+  struct fs_file file;
+  int inuse;
+};
+
+/* Allocate file system memory */
+struct fs_table fs_memory[LWIP_MAX_OPEN_FILES];
+
+/*-----------------------------------------------------------------------------------*/
+static struct fs_file *
+fs_malloc(void)
+{
+  int i;
+  for(i = 0; i < LWIP_MAX_OPEN_FILES; i++) {
+    if(fs_memory[i].inuse == 0) {
+      fs_memory[i].inuse = 1;
+      return(&fs_memory[i].file);
     }
   }
-  return 0;
+  return(NULL);
 }
+
+/*-----------------------------------------------------------------------------------*/
+static void
+fs_free(struct fs_file *file)
+{
+  int i;
+  for(i = 0; i < LWIP_MAX_OPEN_FILES; i++) {
+    if(&fs_memory[i].file == file) {
+      fs_memory[i].inuse = 0;
+      break;
+    }
+  }
+  return;
+}
+
+/*-----------------------------------------------------------------------------------*/
+struct fs_file *
+fs_open(const char *name)
+{
+  struct fs_file *file;
+  const struct fsdata_file *f;
+
+  file = fs_malloc();
+  if(file == NULL) {
+    return NULL;
+  }
+
+  for(f = FS_ROOT; f != NULL; f = f->next) {
+    if (!strcmp(name, (char *)f->name)) {
+      file->data = (const char *)f->data;
+      file->len = f->len;
+      file->index = f->len;
+      file->pextension = NULL;
+      return file;
+    }
+  }
+  fs_free(file);
+  return NULL;
+}
+
+/*-----------------------------------------------------------------------------------*/
+void
+fs_close(struct fs_file *file)
+{
+  fs_free(file);
+}
+/*-----------------------------------------------------------------------------------*/
+int
+fs_read(struct fs_file *file, char *buffer, int count)
+{
+  int read;
+
+  if(file->index == file->len) {
+    return -1;
+  }
+
+  read = file->len - file->index;
+  if(read > count) {
+    read = count;
+  }
+
+  memcpy(buffer, (file->data + file->index), read);
+  file->index += read;
+
+  return(read);
+}
+

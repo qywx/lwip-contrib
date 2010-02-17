@@ -32,21 +32,17 @@
 #ifndef __FS_H__
 #define __FS_H__
 
-/** Support dynamically created pages (free contents after sending) */
-#ifndef HTTPD_SUPPORT_DYNAMIC_PAGES
-#define HTTPD_SUPPORT_DYNAMIC_PAGES         1
-#endif
-
 struct fs_file {
-  const unsigned char *data;
+  const char *data;
   int len;
-#if HTTPD_SUPPORT_DYNAMIC_PAGES
-  u8_t includes_http_header;
-#endif /* HTTPD_SUPPORT_DYNAMIC_PAGES */
+  int index;
+  void *pextension;
 };
 
 /* file must be allocated by caller and will be filled in
    by the function. */
-int fs_open(const char *name, struct fs_file *file);
+struct fs_file * fs_open(const char *name);
+void fs_close(struct fs_file *file);
+int fs_read(struct fs_file *file, char *buffer, int count);
 
 #endif /* __FS_H__ */

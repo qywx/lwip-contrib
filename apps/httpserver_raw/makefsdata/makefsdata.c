@@ -55,8 +55,9 @@
 
 #endif
 
-typedef unsigned char u8_t;
-#include "../httpd.h"
+/* define this to get the header variables we use to build HTTP headers */
+#define LWIP_HTTPD_DYNAMIC_HEADERS 1
+#include "../httpd.c"
 
 /** (Your server name here) */
 const char *serverID =
@@ -303,20 +304,22 @@ int process_file(FILE *data_file, FILE *struct_file, const char *filename)
 int file_write_http_header(FILE *data_file, const char *filename, int file_size)
 {
   int i = 0;
-  enum getResponseEnum response_type = HTTP_200_OK;
-  enum file_type_enum file_type;
-  const char **httpResponseText = httpResponseText_1_0;
+  int response_type = HTTP_HDR_OK;
+  int file_type;
+  const char **httpResponseText = g_psHTTPHeaderStrings /*httpResponseText_1_0*/;
   const char *cur_string;
   size_t cur_len;
   int written = 0;
   
+#ifdef HTTP_11
   if (useHttp11) {
     httpResponseText = httpResponseText_1_1;
   }
+#endif
 
   fprintf(data_file, NEWLINE "/* HTTP header */");
   if (strstr(filename, "404")) {
-    response_type = HTTP_404_NOT_FOUND;
+    response_type = HTTP_HDR_NOT_FOUND;
   }
   cur_string = httpResponseText[response_type];
   cur_len = strlen(cur_string);
@@ -331,30 +334,31 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size)
   i = 0;
 
   if (strstr(filename, ".html") || strstr(filename, ".htm")) {
-    file_type = HTML;
+    file_type = HTTP_HDR_HTML;
   } else if (strstr(filename, ".gif")) {
-    file_type = GIF;
+    file_type = HTTP_HDR_GIF;
   } else if (strstr(filename, ".png")) {
-    file_type = PNG;
+    file_type = HTTP_HDR_PNG;
   } else if (strstr(filename, ".jpeg") || strstr(filename, ".jpg")) {
-    file_type = JPEG;
+    file_type = HTTP_HDR_JPG;
   } else if (strstr(filename, ".bin") || strstr(filename, ".class")) {
-    file_type = OCTET_STREAM;
+    file_type = HTTP_HDR_APP;
   } else if (strstr(filename, ".ra") || strstr(filename, ".ram")) {
-    file_type = REALAUDIO;
+    file_type = HTTP_HDR_RA;
   } else if (strstr(filename, ".js")) {
-    file_type = JAVASCRIPT;
+    file_type = HTTP_HDR_JS;
   } else if (strstr(filename, ".css")) {
-    file_type = CSS;
+    file_type = HTTP_HDR_CSS;
   } else {
-    file_type = TEXT;
+    file_type = HTTP_HDR_DEFAULT_TYPE;
   }
-  cur_string = httpContentType_header[file_type];
+  cur_string = /*httpContentType_header*/ g_psHTTPHeaderStrings[file_type];
   cur_len = strlen(cur_string);
   fprintf(data_file, NEWLINE "/* \"%s\" (%d bytes) */" NEWLINE, cur_string, cur_len);
   written += file_put_ascii(data_file, cur_string, cur_len, &i);
   i = 0;
 
+#ifdef HTTP_11
   if (useHttp11) {
     char intbuf[MAX_PATH_LEN];
     memset(intbuf, 0, sizeof(intbuf));
@@ -373,8 +377,11 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size)
     fprintf(data_file, NEWLINE "/* \"%s\" (%d bytes) */" NEWLINE, cur_string, cur_len);
     written += file_put_ascii(data_file, cur_string, cur_len, &i);
   }
+#else
+  LWIP_UNUSED_ARG(file_size);
+#endif
 
-    fprintf(data_file, NEWLINE "/* Empty line (end of header - 2 bytes) */" NEWLINE, cur_string);
+  fprintf(data_file, NEWLINE "/* Empty line (end of header - 2 bytes) */" NEWLINE, cur_string);
   written += file_put_ascii(data_file, "\r\n", 2, &i);
 
   return written;
