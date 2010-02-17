@@ -79,8 +79,7 @@ static char errbuf[PCAP_ERRBUF_SIZE];
 
 /*-----------------------------------------------------------------------------------*/
 static err_t
-pcapif_output(struct netif *netif, struct pbuf *p,
-	      ip_addr_t *ipaddr)
+pcapif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 {
   return ERR_OK;
 }
@@ -107,15 +106,15 @@ timeout(void *arg)
     
     if (p != NULL) {
       /* We iterate over the pbuf chain until we have read the entire
-	 packet into the pbuf. */
+      packet into the pbuf. */
       bufptr = (u_char *)pcapif->pkt;
       for(q = p; q != NULL; q = q->next) {
-	/* Read enough bytes to fill this pbuf in the chain. The
-	   available data in the pbuf is given by the q->len
-	   variable. */
-	/* read data into(q->payload, q->len); */
-	bcopy(bufptr, q->payload, q->len);
-	bufptr += q->len;
+        /* Read enough bytes to fill this pbuf in the chain. The
+        available data in the pbuf is given by the q->len
+        variable. */
+        /* read data into(q->payload, q->len); */
+        bcopy(bufptr, q->payload, q->len);
+        bufptr += q->len;
       }
 
 #if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
@@ -124,17 +123,24 @@ timeout(void *arg)
 
       ethhdr = p->payload;
       switch (htons(ethhdr->type)) {
+      /* IP or ARP packet? */
       case ETHTYPE_IP:
-	etharp_ip_input(netif, p);
-	pbuf_header(p, -14);
-	netif->input(p, netif);
-	break;
       case ETHTYPE_ARP:
-	    etharp_arp_input(netif, pcapif->ethaddr, p);
-     	break;
-  default:
-	    pbuf_free(p);
-     	break;
+#if PPPOE_SUPPORT
+      /* PPPoE packet? */
+      case ETHTYPE_PPPOEDISC:
+      case ETHTYPE_PPPOE:
+#endif /* PPPOE_SUPPORT */
+        /* full packet send to tcpip_thread to process */
+        if (netif->input(p, netif) != ERR_OK) {
+          LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+          pbuf_free(p);
+          p = NULL;
+        }
+        break;
+      default:
+        pbuf_free(p);
+        break;
       }
     }
   } else {

@@ -87,16 +87,16 @@ delif_input_timeout(void *arg)
   dp = input_list;
   while (dp != NULL) {
     now = sys_now();
-    
+
     if (dp->time <= now) {
       delif->input(dp->p, netif);
       if (dp->next != NULL) {
-	if (dp->next->time > now) {
-	  timeout = dp->next->time - now;
-	} else {
-	  timeout = 0;
-	}
-	LWIP_DEBUGF(DELIF_DEBUG, ("delif_output_timeout: timeout %u.\n", timeout));
+        if (dp->next->time > now) {
+          timeout = dp->next->time - now;
+        } else {
+          timeout = 0;
+        }
+        LWIP_DEBUGF(DELIF_DEBUG, ("delif_output_timeout: timeout %u.\n", timeout));
 
       }
       input_list = dp->next;
@@ -122,26 +122,26 @@ delif_output_timeout(void *arg)
 
   netif = arg;
   delif = netif->state;
-  
+
   /* Check if there is anything on the output list. */
   dp = output_list;
   while (dp != NULL) {
     now = sys_now();
     if (dp->time <= now) {
       LWIP_DEBUGF(DELIF_DEBUG, ("delif_output_timeout: now %u dp->time %u\n",
-	     now, dp->time));
+        now, dp->time));
       delif->netif->output(delif->netif, dp->p, dp->ipaddr);
       if (dp->next != NULL) {
-	if (dp->next->time > now) {
-	  timeout = dp->next->time - now;
-	} else {
-	  timeout = 0;
-	}
-	LWIP_DEBUGF(DELIF_DEBUG, ("delif_output_timeout: timeout %u.\n", timeout));
-	
+        if (dp->next->time > now) {
+          timeout = dp->next->time - now;
+        } else {
+          timeout = 0;
+        }
+        LWIP_DEBUGF(DELIF_DEBUG, ("delif_output_timeout: timeout %u.\n", timeout));
+
       }
       pbuf_free(dp->p);
-      
+
       output_list = dp->next;
       free(dp);
       dp = output_list;
@@ -321,6 +321,3 @@ delif_init_thread(struct netif *netif)
 }
 
 /*-----------------------------------------------------------------------------------*/
-
-
-

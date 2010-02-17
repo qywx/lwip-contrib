@@ -289,22 +289,20 @@ tapif_input(struct netif *netif)
   ethhdr = p->payload;
 
   switch(htons(ethhdr->type)) {
+  /* IP or ARP packet? */
   case ETHTYPE_IP:
-    LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: IP packet\n"));
-#if 0
-/* CSi disabled ARP table update on ingress IP packets.
-   This seems to work but needs thorough testing. */
-    etharp_ip_input(netif, p);
-#endif
-    pbuf_header(p, -14);
-#if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
-    tcpdump(p);
-#endif /* LWIP_DEBUG && LWIP_TCPDUMP */
-    netif->input(p, netif);
-    break;
   case ETHTYPE_ARP:
-    LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: ARP packet\n"));
-    etharp_arp_input(netif, tapif->ethaddr, p);
+#if PPPOE_SUPPORT
+  /* PPPoE packet? */
+  case ETHTYPE_PPPOEDISC:
+  case ETHTYPE_PPPOE:
+#endif /* PPPOE_SUPPORT */
+    /* full packet send to tcpip_thread to process */
+    if (netif->input(p, netif) != ERR_OK) {
+      LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
+       pbuf_free(p);
+       p = NULL;
+    }
     break;
   default:
     pbuf_free(p);
@@ -334,7 +332,7 @@ tapif_init(struct netif *netif)
   netif->name[1] = IFNAME1;
   netif->output = etharp_output;
   netif->linkoutput = low_level_output;
-  netif->mtu = 1500; 	 
+  netif->mtu = 1500;
   /* hardware address length */
   netif->hwaddr_len = 6;
   
