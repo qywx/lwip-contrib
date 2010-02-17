@@ -83,7 +83,7 @@ struct command {
 #define NCONNS 10
 static struct netconn *conns[NCONNS];
 
-/* help_msg is split into 2 strings to prevent exceeding the C89 maximum length of 609 per string */
+/* help_msg is split into 2 strings to prevent exceeding the C89 maximum length of 509 per string */
 static char help_msg1[] = "Available commands:"NEWLINE"\
 open [IP address] [TCP port]: opens a TCP connection to the specified address."NEWLINE"\
 lstn [TCP port]: sets up a server on the specified port."NEWLINE"\
