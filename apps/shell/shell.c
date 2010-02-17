@@ -83,14 +83,15 @@ struct command {
 #define NCONNS 10
 static struct netconn *conns[NCONNS];
 
-static char help_msg[] = "Available commands:"NEWLINE"\
+/* help_msg is split into 2 strings to prevent exceeding the C89 maximum length of 609 per string */
+static char help_msg1[] = "Available commands:"NEWLINE"\
 open [IP address] [TCP port]: opens a TCP connection to the specified address."NEWLINE"\
 lstn [TCP port]: sets up a server on the specified port."NEWLINE"\
 acpt [connection #]: waits for an incoming connection request."NEWLINE"\
 send [connection #] [message]: sends a message on a TCP connection."NEWLINE"\
 udpc [local UDP port] [IP address] [remote port]: opens a UDP \"connection\"."NEWLINE"\
-udpl [local UDP port] [IP address] [remote port]: opens a UDP-Lite \"connection\"."NEWLINE"\
-udpn [local UDP port] [IP address] [remote port]: opens a UDP \"connection\" without checksums."NEWLINE"\
+udpl [local UDP port] [IP address] [remote port]: opens a UDP-Lite \"connection\"."NEWLINE"";
+static char help_msg2[] = "udpn [local UDP port] [IP address] [remote port]: opens a UDP \"connection\" without checksums."NEWLINE"\
 udpb [local port] [remote port]: opens a UDP broadcast \"connection\"."NEWLINE"\
 usnd [connection #] [message]: sends a message on a UDP connection."NEWLINE"\
 recv [connection #]: recieves data on a TCP or UDP connection."NEWLINE"\
@@ -1249,7 +1250,8 @@ com_usnd(struct command *com)
 static s8_t
 com_help(struct command *com)
 {
-  sendstr(help_msg, com->conn);
+  sendstr(help_msg1, com->conn);
+  sendstr(help_msg2, com->conn);
   return ESUCCESS;
 }
 /*-----------------------------------------------------------------------------------*/
