@@ -36,6 +36,8 @@
 #ifndef __HTTPD_H__
 #define __HTTPD_H__
 
+#include "lwip/opt.h"
+
 void httpd_init(void);
 
 #ifndef LWIP_HTTPD_CGI

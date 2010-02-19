@@ -37,6 +37,7 @@ struct fsdata_file {
   const unsigned char *name;
   const unsigned char *data;
   int len;
+  int http_header_included;
 };
 
 #endif /* __FSDATA_H__ */

@@ -57,11 +57,10 @@
 
 /* define this to get the header variables we use to build HTTP headers */
 #define LWIP_HTTPD_DYNAMIC_HEADERS 1
-#include "../httpd.c"
+#include "../httpd_structs.h"
 
 /** (Your server name here) */
-const char *serverID =
-"Server: lwIP/1.3.1 (http://savannah.nongnu.org/projects/lwip)\r\n";
+const char *serverID = "Server: "HTTPD_SERVER_AGENT"\r\n";
 
 /* change this to suit your MEM_ALIGNMENT */
 #define PAYLOAD_ALIGNMENT 4
@@ -381,8 +380,11 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size)
   LWIP_UNUSED_ARG(file_size);
 #endif
 
+  /* empty line already included in content-type line */
+#if 0
   fprintf(data_file, NEWLINE "/* Empty line (end of header - 2 bytes) */" NEWLINE, cur_string);
   written += file_put_ascii(data_file, "\r\n", 2, &i);
+#endif
 
   return written;
 }
