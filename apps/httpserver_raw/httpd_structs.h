@@ -8,7 +8,7 @@
 #endif
 
 #ifndef LWIP_HTTPD_DYNAMIC_HEADERS
-#define LWIP_HTTPD_DYNAMIC_HEADERS 1
+#define LWIP_HTTPD_DYNAMIC_HEADERS 0
 #endif
 
 
