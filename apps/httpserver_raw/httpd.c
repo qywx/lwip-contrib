@@ -93,7 +93,7 @@
 #include <string.h>
 
 #ifndef HTTPD_DEBUG
-#define HTTPD_DEBUG         LWIP_DBG_ON
+#define HTTPD_DEBUG         LWIP_DBG_OFF
 #endif
 
 /** Set this to 1 and add the next line to lwippools.h to use a memp pool
