@@ -1059,6 +1059,10 @@
 						>
 					</File>
 					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\tcp_impl.h"
+						>
+					</File>
+					<File
 						RelativePath="$(LWIP_DIR)\src\include\lwip\tcpip.h"
 						>
 					</File>
