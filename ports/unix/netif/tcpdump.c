@@ -39,6 +39,10 @@
 #include "lwip/inet.h"
 #include "lwip/inet_chksum.h"
 
+#ifndef TCPDUMP_DEBUG
+#define TCPDUMP_DEBUG LWIP_DBG_OFF
+#endif
+
 static FILE *file = NULL;
 
 /*-----------------------------------------------------------------------------------*/

@@ -54,6 +54,10 @@
 #define IFNAME0 't'
 #define IFNAME1 'n'
 
+#ifndef TUNIF_DEBUG
+#define TUNIF_DEBUG LWIP_DBG_OFF
+#endif
+
 struct tunif {
   /* Add whatever per-interface state that is needed here. */
   int fd;

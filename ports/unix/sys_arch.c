@@ -93,9 +93,11 @@ struct sys_thread {
   pthread_t pthread;
 };
 
+#if SYS_LIGHTWEIGHT_PROT
 static pthread_mutex_t lwprot_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_t lwprot_thread = (pthread_t)0xDEAD;
 static int lwprot_count = 0;
+#endif /* SYS_LIGHTWEIGHT_PROT */
 
 static struct sys_sem *sys_sem_new_internal(u8_t count);
 static void sys_sem_free_internal(struct sys_sem *sem);

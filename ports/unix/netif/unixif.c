@@ -62,6 +62,10 @@
 #define UNIXIF_QUEUELEN 6
 /*#define UNIXIF_DROP_FIRST      */
 
+#ifndef UNIXIF_DEBUG
+#define UNIXIF_DEBUG LWIP_DBG_OFF
+#endif
+
 struct unixif_buf {
   struct pbuf *p;
   unsigned short len, tot_len;
@@ -225,9 +229,7 @@ unixif_input_handler(void *data)
         q = q->next;
       }
       pbuf_realloc(p, len);
-#ifdef LINK_STATS
-      lwip_stats.link.recv++;
-#endif /* LINK_STATS */
+      LINK_STATS_INC(link.recv);
       tcpdump(p);
       netif->input(p, netif);
     } else {
@@ -319,9 +321,7 @@ unixif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
       LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output: drop\n"));
       
 #endif /* UNIXIF_DROP_FIRST */
-#ifdef LINK_STATS
-      lwip_stats.link.drop++;
-#endif /* LINK_STATS */
+      LINK_STATS_INC(link.drop);
 
     } else {
       LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output: on list\n"));
@@ -393,9 +393,7 @@ unixif_output_timeout(void *arg)
     abort();
   }
   tcpdump(p);
-#ifdef LINK_STATS
-  lwip_stats.link.xmit++;
-#endif /* LINK_STATS */
+  LINK_STATS_INC(link.xmit);
 
   free(data);
   free(buf);

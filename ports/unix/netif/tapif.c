@@ -72,6 +72,10 @@
 #define IFNAME0 't'
 #define IFNAME1 'p'
 
+#ifndef TAPIF_DEBUG
+#define TAPIF_DEBUG LWIP_DBG_OFF
+#endif
+
 struct tapif {
   struct eth_addr *ethaddr;
   /* Add whatever per-interface state that is needed here. */
@@ -332,7 +336,7 @@ tapif_init(struct netif *netif)
   netif->name[1] = IFNAME1;
   netif->output = etharp_output;
   netif->linkoutput = low_level_output;
-  netif->mtu = 1500; 	 
+  netif->mtu = 1500;
   /* hardware address length */
   netif->hwaddr_len = 6;
   
