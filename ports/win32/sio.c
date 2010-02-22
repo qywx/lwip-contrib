@@ -199,22 +199,3 @@ void sio_read_abort(sio_fd_t fd)
   sio_abort = 1;
   return;
 }
-
-/** @todo: remove this by changing the PPP log defines to use LWIP_DEBUGF()...
- * Used by pppdebug:
- * ppp_trace - a form of printf to send tracing information to stderr
- */
-void ppp_trace( int level, const char *format, ...)
-{
-  int len;
-  char buffer[1024];
-  va_list argList;
-
-  LWIP_UNUSED_ARG(level);
-
-  va_start(argList, format);
-  len = vsprintf(buffer, format, argList);
-  buffer[len - 1] = '\0';
-  va_end(argList);
-  printf("%s\n", buffer);
-}
