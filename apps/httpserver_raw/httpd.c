@@ -632,7 +632,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
       /* We don't have a send buffer so allocate one up to 2mss bytes long. */
       count = 2 * pcb->mss;
       do {
-        hs->buf = mem_malloc((mem_size_t)count);
+        hs->buf = (char*)mem_malloc((mem_size_t)count);
         if (hs->buf != NULL) {
           hs->buf_len = count;
           break;
@@ -1265,7 +1265,9 @@ http_parse_request(struct pbuf *p, struct http_state *hs)
 #if LWIP_HTTPD_DYNAMIC_HEADERS
     /* Determine the HTTP headers to send based on the file extension of
      * the requested URI. */
-    get_http_headers(hs, uri);
+    if (!hs->handle->http_header_included) {
+      get_http_headers(hs, uri);
+    }
 #endif /* LWIP_HTTPD_DYNAMIC_HEADERS */
   } else {
     /* @todo: return HTTP error 501 */
@@ -1298,27 +1300,19 @@ http_err(void *arg, err_t err)
 static err_t
 http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 {
-  struct http_state *hs;
+  struct http_state *hs = (struct http_state *)arg;
 
   LWIP_DEBUGF(HTTPD_DEBUG, ("http_sent %p\n", (void*)pcb));
 
   LWIP_UNUSED_ARG(len);
 
-  if(!arg) {
+  if (hs == NULL) {
     return ERR_OK;
   }
 
-  hs = arg;
-
   hs->retries = 0;
 
-  /* Temporarily disable send notifications */
-  tcp_sent(pcb, NULL);
-
   http_send_data(pcb, hs);
-
-  /* Reenable notifications. */
-  tcp_sent(pcb, http_sent);
 
   return ERR_OK;
 }

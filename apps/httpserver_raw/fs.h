@@ -37,6 +37,7 @@ struct fs_file {
   int len;
   int index;
   void *pextension;
+  int http_header_included;
 };
 
 /* file must be allocated by caller and will be filled in

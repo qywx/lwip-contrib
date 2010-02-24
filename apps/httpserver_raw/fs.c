@@ -96,6 +96,7 @@ fs_open(const char *name)
       file->len = f->len;
       file->index = f->len;
       file->pextension = NULL;
+      file->http_header_included = f->http_header_included;
       return file;
     }
   }
