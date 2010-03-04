@@ -233,6 +233,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
   struct icmp_echo_hdr *iecho;
   LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(pcb);
+  LWIP_ASSERT("p != NULL", p != NULL);
 
   if (pbuf_header( p, -PBUF_IP_HLEN)==0) {
     iecho = p->payload;
@@ -244,10 +245,12 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
 
       /* do some ping result processing */
       PING_RESULT(1);
+      pbuf_free(p);
+      return 1; /* eat the packet */
     }
   }
 
-  return 1; /* eat the event */
+  return 0; /* don't eat the packet */
 }
 
 static void
