@@ -119,6 +119,9 @@ sockex_nonblocking_connect(void *arg)
   /* select without waiting should fail */
   ret = lwip_select(s + 1, &readset, &writeset, &errset, &tv);
   LWIP_ASSERT("ret == 0", ret == 0);
+  LWIP_ASSERT("!FD_ISSET(s, &writeset)", !FD_ISSET(s, &writeset));
+  LWIP_ASSERT("!FD_ISSET(s, &readset)", !FD_ISSET(s, &readset));
+  LWIP_ASSERT("!FD_ISSET(s, &errset)", !FD_ISSET(s, &errset));
 
   FD_ZERO(&readset);
   FD_SET(s, &readset);
