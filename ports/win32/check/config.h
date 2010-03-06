@@ -12,7 +12,7 @@ typedef unsigned int uint32_t;
 
 #define _CRT_SECURE_NO_WARNINGS
 
-// disable some warnings
+/* disable some warnings */
 #pragma warning (disable: 4090) /* const assigned to non-const */
 #pragma warning (disable: 4996) /* fileno is deprecated */
 
