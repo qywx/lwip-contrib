@@ -175,6 +175,10 @@ low_level_output(struct netif *netif, struct pbuf *p)
   unsigned char *ptr;
   struct eth_hdr *ethhdr;
 
+#if defined(LWIP_DEBUG) && LWIP_NETIF_TX_SINGLE_PBUF
+  LWIP_ASSERT("p->next == NULL && p->len == p->tot_len", p->next == NULL && p->len == p->tot_len);
+#endif
+
   /* initiate transfer(); */
   if (p->tot_len >= sizeof(buffer)) {
     LINK_STATS_INC(link.lenerr);
