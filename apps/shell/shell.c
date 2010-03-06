@@ -1376,7 +1376,7 @@ prompt(struct netconn *conn)
 static void
 shell_main(struct netconn *conn)
 {
-  struct netbuf *buf;
+  struct pbuf *p;
   u16_t len = 0, cur_len;
   struct command com;
   s8_t err;
@@ -1387,20 +1387,20 @@ shell_main(struct netconn *conn)
 #endif /* SHELL_ECHO */
 
   do {
-    ret = netconn_recv(conn, &buf);
+    ret = netconn_recv_tcp_pbuf(conn, &p);
     if (ret == ERR_OK) {
-      netbuf_copy(buf, &buffer[len], BUFSIZE - len);
-      cur_len = netbuf_len(buf);
+      pbuf_copy_partial(p, &buffer[len], BUFSIZE - len, 0);
+      cur_len = p->tot_len;
       len += cur_len;
 #if SHELL_ECHO
       echomem = mem_malloc(cur_len);
       if (echomem != NULL) {
-        netbuf_copy(buf, echomem, cur_len);
+        pbuf_copy_partial(p, echomem, cur_len, 0);
         netconn_write(conn, echomem, cur_len, NETCONN_COPY);
         mem_free(echomem);
       }
 #endif /* SHELL_ECHO */
-      netbuf_delete(buf);
+      pbuf_free(p);
       if (((len > 0) && ((buffer[len-1] == '\r') || (buffer[len-1] == '\n'))) ||
           (len >= BUFSIZE)) {
         if (buffer[0] != 0xff && 
