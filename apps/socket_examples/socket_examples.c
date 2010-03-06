@@ -32,6 +32,7 @@ sockex_nonblocking_connect(void *arg)
   fd_set errset;
   struct timeval tv;
   u32_t ticks_a, ticks_b;
+  int err;
 
   LWIP_UNUSED_ARG(arg);
   /* set up address to connect to */
@@ -75,14 +76,16 @@ sockex_nonblocking_connect(void *arg)
   ret = lwip_connect(s, (struct sockaddr*)&addr, sizeof(addr));
   /* should have an error: "inprogress" */
   LWIP_ASSERT("ret == -1", ret == -1);
-  LWIP_ASSERT("errno == EINPROGRESS", errno == EINPROGRESS);
+  err = errno;
+  LWIP_ASSERT("errno == EINPROGRESS", err == EINPROGRESS);
   /* close */
   ret = lwip_close(s);
   LWIP_ASSERT("ret == 0", ret == 0);
   /* try to close again, should fail with EBADF */
   ret = lwip_close(s);
   LWIP_ASSERT("ret == -1", ret == -1);
-  LWIP_ASSERT("errno == EBADF", errno == EBADF);
+  err = errno;
+  LWIP_ASSERT("errno == EBADF", err == EBADF);
   printf("closing socket in nonblocking connect succeeded\n");
 
   /* now try nonblocking, connect should succeed:
@@ -101,12 +104,14 @@ sockex_nonblocking_connect(void *arg)
   ret = lwip_connect(s, (struct sockaddr*)&addr, sizeof(addr));
   /* should have an error: "inprogress" */
   LWIP_ASSERT("ret == -1", ret == -1);
-  LWIP_ASSERT("errno == EINPROGRESS", errno == EINPROGRESS);
+  err = errno;
+  LWIP_ASSERT("errno == EINPROGRESS", err == EINPROGRESS);
 
   /* write should fail, too */
   ret = lwip_write(s, "test", 4);
   LWIP_ASSERT("ret == -1", ret == -1);
-  LWIP_ASSERT("errno == EINPROGRESS", errno == EINPROGRESS);
+  err = errno;
+  LWIP_ASSERT("errno == EINPROGRESS", err == EINPROGRESS);
 
   FD_ZERO(&readset);
   FD_SET(s, &readset);
@@ -167,12 +172,14 @@ sockex_nonblocking_connect(void *arg)
   ret = lwip_connect(s, (struct sockaddr*)&addr, sizeof(addr));
   /* should have an error: "inprogress" */
   LWIP_ASSERT("ret == -1", ret == -1);
-  LWIP_ASSERT("errno == EINPROGRESS", errno == EINPROGRESS);
+  err = errno;
+  LWIP_ASSERT("errno == EINPROGRESS", err == EINPROGRESS);
 
   /* write should fail, too */
   ret = lwip_write(s, "test", 4);
   LWIP_ASSERT("ret == -1", ret == -1);
-  LWIP_ASSERT("errno == EINPROGRESS", errno == EINPROGRESS);
+  err = errno;
+  LWIP_ASSERT("errno == EINPROGRESS", err == EINPROGRESS);
 
   FD_ZERO(&readset);
   FD_SET(s, &readset);
@@ -216,6 +223,7 @@ sockex_testrecv(void *arg)
 {
   int s;
   int ret;
+  int err;
   int opt;
   struct sockaddr_in addr;
   size_t len;
@@ -254,8 +262,8 @@ sockex_testrecv(void *arg)
   /* should time out if the other side is a good HTTP server */
   ret = lwip_read(s, rxbuf, 1);
   LWIP_ASSERT("ret == -1", ret == -1);
-  ret = errno;
-  LWIP_ASSERT("errno == EAGAIN", ret == EAGAIN);
+  err = errno;
+  LWIP_ASSERT("errno == EAGAIN", err == EAGAIN);
 
   /* write the rest of a GET request */
 #define SNDSTR2 "ET / HTTP_1.1\r\n\r\n"
