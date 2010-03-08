@@ -75,6 +75,7 @@ typedef size_t mem_ptr_t;
 typedef u32_t sys_prot_t;
 
 /* Define (sn)printf formatters for these lwIP types */
+#define X8_F  "02x"
 #define U16_F "hu"
 #define S16_F "hd"
 #define X16_F "hx"
