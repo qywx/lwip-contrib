@@ -130,4 +130,8 @@ fs_read(struct fs_file *file, char *buffer, int count)
 
   return(read);
 }
-
+/*-----------------------------------------------------------------------------------*/
+int fs_bytes_left(struct fs_file *file)
+{
+  return file->len - file->index;
+}

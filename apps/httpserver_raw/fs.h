@@ -45,5 +45,6 @@ struct fs_file {
 struct fs_file * fs_open(const char *name);
 void fs_close(struct fs_file *file);
 int fs_read(struct fs_file *file, char *buffer, int count);
+int fs_bytes_left(struct fs_file *file);
 
 #endif /* __FS_H__ */

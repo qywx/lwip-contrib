@@ -189,9 +189,11 @@ enum tag_check_state {
 struct http_state {
   struct fs_file *handle;
   char *file;       /* Pointer to first unsent byte in buf. */
+#if LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS
   char *buf;        /* File read buffer. */
-  u32_t left;       /* Number of unsent bytes in buf. */
   int buf_len;      /* Size of file read buffer, buf. */
+#endif /* LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS */
+  u32_t left;       /* Number of unsent bytes in buf. */
   u8_t retries;
 #if LWIP_HTTPD_SSI
   const char *parsed;     /* Pointer to the first unparsed byte in buf. */
@@ -264,16 +266,16 @@ static void
 http_state_free(struct http_state *hs)
 {
   if (hs != NULL) {
-#if HTTPD_SUPPORT_DYNAMIC_PAGES
     if(hs->handle) {
       fs_close(hs->handle);
       hs->handle = NULL;
     }
+#if LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS
     if (hs->buf != NULL) {
       mem_free(hs->buf);
       hs->buf = NULL;
     }
-#endif /* HTTPD_SUPPORT_DYNAMIC_PAGES */
+#endif /* LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS */
 #if HTTPD_USE_MEM_POOL
     memp_free(MEMP_HTTPD_STATE, hs);
 #else /* HTTPD_USE_MEM_POOL */
@@ -298,19 +300,10 @@ http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
   tcp_arg(pcb, NULL);
   tcp_sent(pcb, NULL);
   tcp_recv(pcb, NULL);
-  if (hs != NULL) {
-    if (hs->handle != NULL) {
-      fs_close(hs->handle);
-      hs->handle = NULL;
-    }
-    if (hs->buf != NULL) {
-      mem_free(hs->buf);
-    }
-    mem_free(hs);
-  }
+  http_state_free(hs);
   err = tcp_close(pcb);
   if (err != ERR_OK) {
-      LWIP_DEBUGF(HTTPD_DEBUG, ("Error %d closing %p\n", err, (void*)pcb));
+    LWIP_DEBUGF(HTTPD_DEBUG, ("Error %d closing %p\n", err, (void*)pcb));
   }
 }
 #if LWIP_HTTPD_CGI
@@ -615,7 +608,9 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
   /* Have we run out of file data to send? If so, we need to read the next
    * block from the file. */
   if (hs->left == 0) {
+#if LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS
     int count;
+#endif /* LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS */
 
     /* Do we have a valid file handle? */
     if (hs->handle == NULL) {
@@ -623,7 +618,13 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
         http_close_conn(pcb, hs);
         return;
     }
-
+    if(fs_bytes_left(hs->handle) <= 0) {
+      /* We reached the end of the file so this request is done */
+      LWIP_DEBUGF(HTTPD_DEBUG, ("End of file.\n"));
+      http_close_conn(pcb, hs);
+      return;
+    }
+#if LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS
     /* Do we already have a send buffer allocated? */
     if(hs->buf) {
       /* Yes - get the length of the buffer */
@@ -654,8 +655,6 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
     if(count < 0) {
       /* We reached the end of the file so this request is done */
       LWIP_DEBUGF(HTTPD_DEBUG, ("End of file.\n"));
-      fs_close(hs->handle);
-      hs->handle = NULL;
       http_close_conn(pcb, hs);
       return;
     }
@@ -668,6 +667,9 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
     hs->parse_left = count;
     hs->parsed = hs->buf;
 #endif /* LWIP_HTTPD_SSI */
+#else /* LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS */
+    LWIP_ASSERT("SSI and DYNAMIC_HEADERS turned off but eof not reached", 0);
+#endif /* LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS */
   }
 
 #if LWIP_HTTPD_SSI
