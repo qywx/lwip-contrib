@@ -168,7 +168,7 @@ ping_recv(int s)
       inet_addr_to_ipaddr(&fromaddr, &from.sin_addr);
       LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
       ip_addr_debug_print(PING_DEBUG, &fromaddr);
-      LWIP_DEBUGF( PING_DEBUG, (" %lu ms\n", (sys_now() - ping_time)));
+      LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", (sys_now() - ping_time)));
 
       iphdr = (struct ip_hdr *)buf;
       iecho = (struct icmp_echo_hdr *)(buf + (IPH_HL(iphdr) * 4));
@@ -183,7 +183,7 @@ ping_recv(int s)
   }
 
   if (len == 0) {
-    LWIP_DEBUGF( PING_DEBUG, ("ping: recv - %lu ms - timeout\n", (sys_now()-ping_time)));
+    LWIP_DEBUGF( PING_DEBUG, ("ping: recv - %"U32_F" ms - timeout\n", (sys_now()-ping_time)));
   }
 
   /* do some ping result processing */
@@ -241,7 +241,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
     if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
       LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
       ip_addr_debug_print(PING_DEBUG, addr);
-      LWIP_DEBUGF( PING_DEBUG, (" %lu ms\n", (sys_now()-ping_time)));
+      LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", (sys_now()-ping_time)));
 
       /* do some ping result processing */
       PING_RESULT(1);
