@@ -14,7 +14,7 @@
  * @return index of the adapter or negative on error
  */
 int
-get_adapter_index_from_addr(U32 netaddr, char *guid, U32 guid_len)
+get_adapter_index_from_addr(u32_t netaddr, char *guid, u32_t guid_len)
 {
    pcap_if_t *alldevs;
    pcap_if_t *d;
@@ -34,9 +34,9 @@ get_adapter_index_from_addr(U32 netaddr, char *guid, U32 guid_len)
       pcap_addr_t *a;
       for(a = d->addresses; a != NULL; a = a->next) {
          if (a->addr->sa_family == AF_INET) {
-            U32 a_addr = ((struct sockaddr_in *)a->addr)->sin_addr.s_addr;
-            U32 a_netmask = ((struct sockaddr_in *)a->netmask)->sin_addr.s_addr;
-            U32 a_netaddr = a_addr & a_netmask;
+            u32_t a_addr = ((struct sockaddr_in *)a->addr)->sin_addr.s_addr;
+            u32_t a_netmask = ((struct sockaddr_in *)a->netmask)->sin_addr.s_addr;
+            u32_t a_netaddr = a_addr & a_netmask;
             if (a_netaddr == netaddr) {
                int ret = -1;
                char name[128];
