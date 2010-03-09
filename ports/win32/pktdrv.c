@@ -63,6 +63,7 @@
  */
 
 #include "pktdrv.h"
+#include "lwipcfg_msvc.h"
 
 #define WIN32_LEAN_AND_MEAN
 /* get the windows definitions of the following 4 functions out of the way */
@@ -144,7 +145,7 @@ get_adapter_list(char** adapter_list, int list_len, void* buffer, size_t buf_len
 
 /** Get the index of an adapter by its GUID
  *
- * @param GUID of the adapter
+ * @param adapter_guid GUID of the adapter
  * @return index of the adapter or negative on error
  */
 int
@@ -168,7 +169,6 @@ get_adapter_index(const char* adapter_guid)
   return -1;
 }
 
-
 /**
  * Open a network adapter and set it up for packet input
  *
@@ -183,7 +183,9 @@ void*
 init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg, enum link_adapter_event *linkstate)
 {
   char *AdapterList[MAX_NUM_ADAPTERS];
+#ifndef PACKET_LIB_QUIET
   int i;
+#endif /* PACKET_LIB_QUIET */
   char AdapterName[ADAPTER_NAME_LEN]; /* string that contains a list of the network adapters */
   int AdapterNum;
   PPACKET_OID_DATA ppacket_oid_data;
@@ -208,6 +210,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg, enum li
     free(pa);
     return NULL; /* no adapters found */
   }
+#ifndef PACKET_LIB_QUIET
   for (i = 0; i < AdapterNum; i++) {
     LPADAPTER lpAdapter;
     printf("%2i: %s\n", i, AdapterList[i]);
@@ -227,6 +230,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg, enum li
       lpAdapter = NULL;
     }
   }
+#endif /* PACKET_LIB_QUIET */
   /* invalid adapter index -> check this after printing the adapters */
   if (adapter_num < 0) {
     printf("Invalid adapter_num: %d\n", adapter_num);
@@ -239,7 +243,9 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg, enum li
     free(pa);
     return NULL;
   }
+#ifndef PACKET_LIB_QUIET
   printf("Using adapter_num: %d\n", adapter_num);
+#endif /* PACKET_LIB_QUIET */
   /* set up the selected adapter */
   pa->lpAdapter = PacketOpenAdapter(AdapterList[adapter_num]);
   if (!pa->lpAdapter || (pa->lpAdapter->hFile == INVALID_HANDLE_VALUE)) {
@@ -257,7 +263,7 @@ init_adapter(int adapter_num, char *mac_addr, input_fn input, void *arg, enum li
   ppacket_oid_data->Oid = OID_GEN_VENDOR_DESCRIPTION;
   ppacket_oid_data->Length = PACKET_OID_DATA_SIZE;
   if (PacketRequest(pa->lpAdapter, FALSE, ppacket_oid_data)) {
-    printf("USE: %s", ppacket_oid_data->Data);
+    printf("Using adapter: \"%s\"", ppacket_oid_data->Data);
   }
   /* get the MAC address of the selected adapter */
   ppacket_oid_data->Oid = OID_802_3_PERMANENT_ADDRESS;

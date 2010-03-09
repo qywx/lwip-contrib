@@ -86,6 +86,7 @@
 
 #include "netif/etharp.h"
 #include "pktdrv.h"
+#include "pcap_helper.h"
 
 /* include the port-dependent configuration */
 #include "lwipcfg_msvc.h"
@@ -124,6 +125,25 @@ low_level_init(struct netif *netif)
   int adapter_num = PACKET_LIB_ADAPTER_NR;
   enum link_adapter_event linkstate;
 
+#ifdef PACKET_LIB_GET_ADAPTER_NETADDRESS
+  ip_addr_t netaddr;
+#define GUID_LEN 128
+  char guid[GUID_LEN + 1];
+  memset(&guid, 0, sizeof(guid));
+  PACKET_LIB_GET_ADAPTER_NETADDRESS(&netaddr);
+  if (get_adapter_index_from_addr(ip4_addr_get_u32(&netaddr), guid, GUID_LEN) < 0) {
+     printf("ERROR initializing network adapter, failed to get GUID for network address %s\n", ip_ntoa(&netaddr));
+     LWIP_ASSERT("ERROR initializing network adapter!\n", 0);
+     return;
+  }
+  adapter_num = get_adapter_index(guid);
+  if (adapter_num < 0) {
+     printf("ERROR finding network adapter with GUID \"%s\"!\n", guid);
+     LWIP_ASSERT("ERROR initializing network adapter!\n", 0);
+     return;
+  }
+
+#else /* PACKET_LIB_GET_ADAPTER_NETADDRESS */
 #ifdef PACKET_LIB_ADAPTER_GUID
   /* get adapter index for guid string */
   adapter_num = get_adapter_index(PACKET_LIB_ADAPTER_GUID);
@@ -133,6 +153,7 @@ low_level_init(struct netif *netif)
     return;
   }
 #endif /* PACKET_LIB_ADAPTER_GUID */
+#endif /* PACKET_LIB_GET_ADAPTER_NETADDRESS */
 
   /* Do whatever else is needed to initialize interface. */
   if ((netif->state = init_adapter(adapter_num, adapter_mac_addr,
