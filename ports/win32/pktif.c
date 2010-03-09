@@ -133,13 +133,13 @@ low_level_init(struct netif *netif)
   PACKET_LIB_GET_ADAPTER_NETADDRESS(&netaddr);
   if (get_adapter_index_from_addr(ip4_addr_get_u32(&netaddr), guid, GUID_LEN) < 0) {
      printf("ERROR initializing network adapter, failed to get GUID for network address %s\n", ip_ntoa(&netaddr));
-     LWIP_ASSERT("ERROR initializing network adapter!\n", 0);
+     LWIP_ASSERT("ERROR initializing network adapter, failed to get GUID for network address!", 0);
      return;
   }
   adapter_num = get_adapter_index(guid);
   if (adapter_num < 0) {
      printf("ERROR finding network adapter with GUID \"%s\"!\n", guid);
-     LWIP_ASSERT("ERROR initializing network adapter!\n", 0);
+     LWIP_ASSERT("ERROR finding network adapter with expected GUID!", 0);
      return;
   }
 
@@ -159,7 +159,7 @@ low_level_init(struct netif *netif)
   if ((netif->state = init_adapter(adapter_num, adapter_mac_addr,
                       ethernetif_process_input, netif, &linkstate)) == NULL) {
     printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
-    LWIP_ASSERT("ERROR initializing network adapter!\n", 0);
+    LWIP_ASSERT("ERROR initializing network adapter!", 0);
     return;
   }
 
