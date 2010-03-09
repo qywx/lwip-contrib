@@ -60,5 +60,5 @@ get_adapter_index_from_addr(U32 netaddr, char *guid, U32 guid_len)
    printf("Network address not found.\n");
 
    pcap_freealldevs(alldevs);
-   return index;
+   return -1;
 }
