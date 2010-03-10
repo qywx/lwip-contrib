@@ -345,7 +345,7 @@ lwip_privmib_init(void)
 static u16_t
 sensorentry_length(void* addr_inf, u8_t level)
 {
-  struct sensor_inf* sensors = addr_inf;
+  struct sensor_inf *sensors = (struct sensor_inf *)addr_inf;
 
   if (level == 0)
   {
@@ -366,7 +366,7 @@ sensorentry_length(void* addr_inf, u8_t level)
 static s32_t
 sensorentry_idcmp(void* addr_inf, u8_t level, u16_t idx, s32_t sub_id)
 {
-  struct sensor_inf* sensors = addr_inf;
+  struct sensor_inf *sensors = (struct sensor_inf *)addr_inf;
   
   if (level == 0)
   {
@@ -396,7 +396,7 @@ sensorentry_idcmp(void* addr_inf, u8_t level, u16_t idx, s32_t sub_id)
 static void
 sensorentry_get_subid(void* addr_inf, u8_t level, u16_t idx, s32_t *sub_id)
 {
-  struct sensor_inf* sensors = addr_inf;
+  struct sensor_inf *sensors = (struct sensor_inf *)addr_inf;
 
   if (level == 0)
   {
@@ -489,7 +489,7 @@ static void
 sensorentry_get_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
 {
   s32_t i;
-  s32_t *temperature = value;
+  s32_t *temperature = (s32_t *)value;
 #if SENSORS_USE_FILES
   FILE* sensf;
   char senspath[sizeof(SENSORS_DIR)+1+SENSOR_NAME_LEN+1] = SENSORS_DIR"/";
@@ -566,7 +566,7 @@ static void
 sensorentry_set_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
 {
   s32_t i;
-  s32_t *temperature = value;
+  s32_t *temperature = (s32_t *)value;
 #if SENSORS_USE_FILES
   FILE* sensf;
   char senspath[sizeof(SENSORS_DIR)+1+SENSOR_NAME_LEN+1] = SENSORS_DIR"/";

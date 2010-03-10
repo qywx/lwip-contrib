@@ -110,7 +110,7 @@ echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
   /* commonly observed practive to call tcp_setprio(), why? */
   tcp_setprio(newpcb, TCP_PRIO_MIN);
 
-  es = mem_malloc(sizeof(struct echo_state));
+  es = (struct echo_state *)mem_malloc(sizeof(struct echo_state));
   if (es != NULL)
   {
     es->state = ES_ACCEPTED;
@@ -138,7 +138,7 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
   err_t ret_err;
 
   LWIP_ASSERT("arg != NULL",arg != NULL);
-  es = arg;
+  es = (struct echo_state *)arg;
   if (p == NULL)
   {
     /* remote host closed connection */
@@ -222,7 +222,7 @@ echo_error(void *arg, err_t err)
 
   LWIP_UNUSED_ARG(err);
 
-  es = arg;
+  es = (struct echo_state *)arg;
   if (es != NULL)
   {
     mem_free(es);
@@ -235,7 +235,7 @@ echo_poll(void *arg, struct tcp_pcb *tpcb)
   err_t ret_err;
   struct echo_state *es;
 
-  es = arg;
+  es = (struct echo_state *)arg;
   if (es != NULL)
   {
     if (es->p != NULL)
@@ -270,7 +270,7 @@ echo_sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
 
   LWIP_UNUSED_ARG(len);
 
-  es = arg;
+  es = (struct echo_state *)arg;
   es->retries = 0;
   
   if(es->p != NULL)

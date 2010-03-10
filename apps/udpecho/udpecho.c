@@ -64,7 +64,7 @@ udpecho_thread(void *arg)
       netbuf_copy(buf, buffer, buf->p->tot_len);
       buffer[buf->p->tot_len] = '\0';
       netconn_send(conn, buf);
-      printf("got %s\n", buffer);
+      LWIP_DEBUGF(LWIP_DBG_ON, ("got %s\n", buffer));
       netbuf_delete(buf);
     }
   }

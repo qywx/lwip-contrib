@@ -135,7 +135,7 @@ ping_send(int s, ip_addr_t *addr)
   size_t ping_size = sizeof(struct icmp_echo_hdr) + PING_DATA_SIZE;
   LWIP_ASSERT("ping_size is too big", ping_size <= 0xffff);
 
-  iecho = mem_malloc((mem_size_t)ping_size);
+  iecho = (struct icmp_echo_hdr *)mem_malloc((mem_size_t)ping_size);
   if (!iecho) {
     return ERR_MEM;
   }
@@ -163,7 +163,7 @@ ping_recv(int s)
   struct icmp_echo_hdr *iecho;
 
   while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, (socklen_t*)&fromlen)) > 0) {
-    if (len >= (sizeof(struct ip_hdr)+sizeof(struct icmp_echo_hdr))) {
+    if (len >= (int)(sizeof(struct ip_hdr)+sizeof(struct icmp_echo_hdr))) {
       ip_addr_t fromaddr;
       inet_addr_to_ipaddr(&fromaddr, &from.sin_addr);
       LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));

@@ -397,6 +397,7 @@ static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.link.err,
   &lwip_stats.link.cachehit,
 
+#if IPFRAG_STATS
   &lwip_stats.ip_frag.xmit,
   &lwip_stats.ip_frag.recv,
   &lwip_stats.ip_frag.fw,
@@ -409,6 +410,7 @@ static void *stat_ptrs[STAT_NUM] = {
   &lwip_stats.ip_frag.opterr,
   &lwip_stats.ip_frag.err,
   &lwip_stats.ip_frag.cachehit,
+#endif /* IPFRAG_STATS */
 
   &lwip_stats.ip.xmit,
   &lwip_stats.ip.recv,
@@ -1224,7 +1226,7 @@ com_usnd(struct command *com)
   len = (u16_t)tmp;
 
   buf = netbuf_new();
-  mem = netbuf_alloc(buf, len);
+  mem = (char *)netbuf_alloc(buf, len);
   if (mem == NULL) {
     sendstr("Could not allocate memory for sending."NEWLINE, com->conn);
     return ESUCCESS;

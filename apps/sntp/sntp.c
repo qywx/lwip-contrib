@@ -225,7 +225,7 @@
 #define SNTP_OFFSET_TRANSMIT_TIME   40
 
 /* number of seconds between 1900 and 1970 */
-#define DIFF_SEC_1900_1970         (2208988800)
+#define DIFF_SEC_1900_1970         (2208988800UL)
 
 /**
  * SNTP packet format (without optional fields)
@@ -594,7 +594,7 @@ sntp_send_request(ip_addr_t *server_addr)
   struct pbuf* p;
   p = pbuf_alloc(PBUF_TRANSPORT, SNTP_MSG_LEN, PBUF_RAM);
   if (p != NULL) {
-    struct sntp_msg *sntpmsg = p->payload;
+    struct sntp_msg *sntpmsg = (struct sntp_msg *)p->payload;
     LWIP_DEBUGF(SNTP_DEBUG_STATE, ("sntp_send_request: Sending request to server\n"));
     /* initialize request message */
     sntp_initialize_request(sntpmsg);
@@ -614,6 +614,7 @@ sntp_send_request(ip_addr_t *server_addr)
   }
 }
 
+#if SNTP_SERVER_DNS
 /**
  * DNS found callback when using DNS names as server address.
  */
@@ -633,6 +634,7 @@ sntp_dns_found(const char* hostname, ip_addr_t *ipaddr, void *arg)
     sntp_try_next_server(NULL);
   }
 }
+#endif /* SNTP_SERVER_DNS */
 
 /**
  * Send out an sntp request via raw API.

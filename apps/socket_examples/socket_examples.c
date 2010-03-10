@@ -9,6 +9,7 @@
 #include "lwip/sys.h"
 
 #include <string.h>
+#include <stdio.h>
 
 #ifndef SOCK_TARGET_HOST
 #define SOCK_TARGET_HOST  "192.168.1.1"

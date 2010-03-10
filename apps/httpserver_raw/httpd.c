@@ -1110,7 +1110,7 @@ http_parse_request(struct pbuf *p, struct http_state *hs)
   int i;
   /* default is request not supported, until it can be parsed */
   err_t request_supported = ERR_ARG;
-  int loop;
+  size_t loop;
   char *data;
   char *uri;
   struct fs_file *file = NULL;
