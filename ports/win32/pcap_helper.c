@@ -4,7 +4,6 @@
 /* get the windows definitions of the following 4 functions out of the way */
 #include <stdlib.h>
 #include <stdio.h>
-#include <windows.h>
 #define HAVE_REMOTE
 #include "pcap.h"
 
@@ -14,7 +13,7 @@
  * @return index of the adapter or negative on error
  */
 int
-get_adapter_index_from_addr(u32_t netaddr, char *guid, u32_t guid_len)
+get_adapter_index_from_addr(struct in_addr *netaddr, char *guid, size_t guid_len)
 {
    pcap_if_t *alldevs;
    pcap_if_t *d;
@@ -34,14 +33,20 @@ get_adapter_index_from_addr(u32_t netaddr, char *guid, u32_t guid_len)
       pcap_addr_t *a;
       for(a = d->addresses; a != NULL; a = a->next) {
          if (a->addr->sa_family == AF_INET) {
-            u32_t a_addr = ((struct sockaddr_in *)a->addr)->sin_addr.s_addr;
-            u32_t a_netmask = ((struct sockaddr_in *)a->netmask)->sin_addr.s_addr;
-            u32_t a_netaddr = a_addr & a_netmask;
-            if (a_netaddr == netaddr) {
+            ULONG a_addr = ((struct sockaddr_in *)a->addr)->sin_addr.s_addr;
+            ULONG a_netmask = ((struct sockaddr_in *)a->netmask)->sin_addr.s_addr;
+            ULONG a_netaddr = a_addr & a_netmask;
+            ULONG addr = (*netaddr).s_addr;
+            if (a_netaddr == addr) {
                int ret = -1;
                char name[128];
                char *start, *end;
-               strcpy(name, d->name);
+               size_t len = strlen(d->name);
+               if(len > 127) {
+                  len = 127;
+               }
+               memcpy(name, d->name, len);
+               name[len] = 0;
                start = strstr(name, "{");
                if (start != NULL) {
                   end = strstr(start, "}");
