@@ -130,6 +130,14 @@
 #define HTTPD_TCP_PRIO                      TCP_PRIO_MIN
 #endif
 
+/** Set this to 1 to enabled timing each file sent */
+#ifndef LWIP_HTTPD_TIMING
+#define LWIP_HTTPD_TIMING                   0
+#endif
+#ifndef HTTPD_DEBUG_TIMING
+#define HTTPD_DEBUG_TIMING                  LWIP_DBG_OFF
+#endif
+
 #ifndef true
 #define true ((u8_t)1)
 #endif
@@ -142,7 +150,14 @@
 #ifndef HTTP_IS_DATA_VOLATILE
 /** This was TI's check whether to let TCP copy data or not
 #define HTTP_IS_DATA_VOLATILE(hs) ((hs->file < (char *)0x20000000) ? 0 : TCP_WRITE_FLAG_COPY)*/
+#if LWIP_HTTPD_SSI
 #define HTTP_IS_DATA_VOLATILE(hs) TCP_WRITE_FLAG_COPY
+#else /* LWIP_HTTPD_SSI */
+/** Default: don't copy if the data is sent from file-system directly */
+#define HTTP_IS_DATA_VOLATILE(hs) (((hs->file != NULL) && (hs->handle != NULL) && (hs->file == \
+                                   (char*)hs->handle->data + hs->handle->len - hs->left)) \
+                                   ? 0 : TCP_WRITE_FLAG_COPY)
+#endif /* LWIP_HTTPD_SSI */
 #endif
 
 typedef struct
@@ -217,6 +232,9 @@ struct http_state {
                         current string */
   u16_t hdr_index;   /* The index of the hdr string currently being sent. */
 #endif /* LWIP_HTTPD_DYNAMIC_HEADERS */
+#if LWIP_HTTPD_TIMING
+  u32_t time_started;
+#endif /* LWIP_HTTPD_TIMING */
 };
 
 #if LWIP_HTTPD_SSI
@@ -267,6 +285,12 @@ http_state_free(struct http_state *hs)
 {
   if (hs != NULL) {
     if(hs->handle) {
+#if LWIP_HTTPD_TIMING
+      u32_t ms_needed = sys_now() - hs->time_started;
+      u32_t needed = LWIP_MAX(1, (ms_needed/100));
+      LWIP_DEBUGF(HTTPD_DEBUG_TIMING, ("httpd: needed %"U32_F" ms to send file of %d bytes -> %"U32_F" bytes/sec\n",
+        ms_needed, hs->handle->len, ((((u32_t)hs->handle->len) * 10) / needed)));
+#endif /* LWIP_HTTPD_TIMING */
       fs_close(hs->handle);
       hs->handle = NULL;
     }
@@ -1257,6 +1281,9 @@ http_parse_request(struct pbuf *p, struct http_state *hs)
       hs->left = file->len;
       hs->retries = 0;
       request_supported = ERR_OK;
+#if LWIP_HTTPD_TIMING
+      hs->time_started = sys_now();
+#endif /* LWIP_HTTPD_TIMING */
     } else {
       hs->handle = NULL;
       hs->file = NULL;
