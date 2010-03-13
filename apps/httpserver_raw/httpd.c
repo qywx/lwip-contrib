@@ -549,11 +549,12 @@ get_http_headers(struct http_state *pState, char *pszURI)
  * @param pcb the pcb to send data
  * @param hs connection state
  */
-static void
+static u8_t
 http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
 {
   err_t err;
   u16_t len;
+  u16_t mss;
   u8_t data_to_send = false;
 #if LWIP_HTTPD_DYNAMIC_HEADERS
   u16_t hdrlen, sendlen;
@@ -640,13 +641,13 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
     if (hs->handle == NULL) {
         /* No - close the connection. */
         http_close_conn(pcb, hs);
-        return;
+        return 0;
     }
     if(fs_bytes_left(hs->handle) <= 0) {
       /* We reached the end of the file so this request is done */
       LWIP_DEBUGF(HTTPD_DEBUG, ("End of file.\n"));
       http_close_conn(pcb, hs);
-      return;
+      return 0;
     }
 #if LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS
     /* Do we already have a send buffer allocated? */
@@ -655,7 +656,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
       count = hs->buf_len;
     } else {
       /* We don't have a send buffer so allocate one up to 2mss bytes long. */
-      count = 2 * pcb->mss;
+      count = 2 * tcp_mss(pcb);
       do {
         hs->buf = (char*)mem_malloc((mem_size_t)count);
         if (hs->buf != NULL) {
@@ -711,8 +712,9 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
         len = (u16_t)hs->left;
         LWIP_ASSERT("hs->left did not fit into u16_t!", (len == hs->left));
       }
-      if(len > (2*pcb->mss)) {
-        len = 2*pcb->mss;
+      mss = tcp_mss(pcb);
+      if(len > (2 * mss)) {
+        len = 2 * mss;
       }
 
       do {
@@ -756,8 +758,9 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
                       (hs->parsed - hs->file) <= 0xffff);
           len = (u16_t)(hs->parsed - hs->file);
         }
-        if(len > (2*pcb->mss)) {
-          len = 2*pcb->mss;
+        mss = tcp_mss(pcb);
+        if(len > (2 * mss)) {
+          len = 2 * mss;
         }
 
         do {
@@ -1060,8 +1063,8 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
                     (hs->parsed - hs->file) <= 0xffff);
         len = (u16_t)(hs->parsed - hs->file);
       }
-      if(len > (2*pcb->mss)) {
-        len = 2*pcb->mss;
+      if(len > (2 * tcp_mss(pcb))) {
+        len = 2 * tcp_mss(pcb);
       }
 
       do {
@@ -1081,13 +1084,8 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
   }
 #endif /* LWIP_HTTPD_SSI */
 
-  /* If we wrote anything to be sent, go ahead and send it now. */
-  if(data_to_send) {
-    LWIP_DEBUGF(HTTPD_DEBUG, ("tcp_output\n"));
-    tcp_output(pcb);
-  }
-
   LWIP_DEBUGF(HTTPD_DEBUG, ("send_data end.\n"));
+  return data_to_send;
 }
 
 /**
@@ -1380,7 +1378,11 @@ http_poll(void *arg, struct tcp_pcb *pcb)
      * cause the connection to close immediately. */
     if(hs && (hs->handle)) {
       LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: try to send more data\n"));
-      http_send_data(pcb, hs);
+      if(http_send_data(pcb, hs)) {
+        /* If we wrote anything to be sent, go ahead and send it now. */
+        LWIP_DEBUGF(HTTPD_DEBUG, ("tcp_output\n"));
+        tcp_output(pcb);
+      }
     }
   }
 
