@@ -195,6 +195,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
   unsigned char buffer[1600];
   unsigned char *ptr;
   struct eth_hdr *ethhdr;
+  u16_t tot_len = p->tot_len - ETH_PAD_SIZE;
 
 #if defined(LWIP_DEBUG) && LWIP_NETIF_TX_SINGLE_PBUF
   LWIP_ASSERT("p->next == NULL && p->len == p->tot_len", p->next == NULL && p->len == p->tot_len);
@@ -214,12 +215,17 @@ low_level_output(struct netif *netif, struct pbuf *p)
        variable. */
     /* send data from(q->payload, q->len); */
     LWIP_DEBUGF(NETIF_DEBUG, ("netif: send ptr %p q->payload %p q->len %i q->next %p\n", ptr, q->payload, (int)q->len, q->next));
-    memcpy(ptr, q->payload, q->len);
-    ptr += q->len;
+    if (q == p) {
+      memcpy(ptr, &((char*)q->payload)[ETH_PAD_SIZE], q->len - ETH_PAD_SIZE);
+      ptr += q->len - ETH_PAD_SIZE;
+    } else {
+      memcpy(ptr, q->payload, q->len);
+      ptr += q->len;
+    }
   }
 
   /* signal that packet should be sent(); */
-  if (packet_send(netif->state, buffer, p->tot_len) < 0) {
+  if (packet_send(netif->state, buffer, tot_len) < 0) {
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.drop);
     snmp_inc_ifoutdiscards(netif);
@@ -227,7 +233,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
   }
 
   LINK_STATS_INC(link.xmit);
-  snmp_add_ifoutoctets(netif, p->tot_len);
+  snmp_add_ifoutoctets(netif, tot_len);
   ethhdr = (struct eth_hdr *)p->payload;
   if ((ethhdr->dest.addr[0] & 1) != 0) {
     /* broadcast or multicast packet*/
@@ -254,20 +260,21 @@ low_level_input(struct netif *netif, void *packet, int packet_len)
   struct pbuf *p, *q;
   int start;
   int length = packet_len;
-  struct eth_hdr *ethhdr = (struct eth_hdr*)packet;
+  struct eth_addr *dest = (struct eth_addr*)packet;
+  struct eth_addr *src = dest + 1;
   int unicast;
 
   /* MAC filter: only let my MAC or non-unicast through */
-  unicast = ((ethhdr->dest.addr[0] & 0x01) == 0);
-  if (((memcmp(&ethhdr->dest, &netif->hwaddr, ETHARP_HWADDR_LEN)) && unicast) ||
+  unicast = ((dest->addr[0] & 0x01) == 0);
+  if (((memcmp(dest, &netif->hwaddr, ETHARP_HWADDR_LEN)) && unicast) ||
       /* and don't let feedback packets through (limitation in winpcap?) */
-      (!memcmp(&ethhdr->src, netif->hwaddr, ETHARP_HWADDR_LEN))) {
+      (!memcmp(src, netif->hwaddr, ETHARP_HWADDR_LEN))) {
     /* don't update counters here! */
     return NULL;
   }
 
   /* We allocate a pbuf chain of pbufs from the pool. */
-  p = pbuf_alloc(PBUF_RAW, (u16_t)length, PBUF_POOL);
+  p = pbuf_alloc(PBUF_RAW, (u16_t)length + ETH_PAD_SIZE, PBUF_POOL);
   LWIP_DEBUGF(NETIF_DEBUG, ("netif: recv length %i p->tot_len %i\n", length, (int)p->tot_len));
   
   if (p != NULL) {
@@ -275,14 +282,21 @@ low_level_input(struct netif *netif, void *packet, int packet_len)
        packet into the pbuf. */
     start=0;
     for (q = p; q != NULL; q = q->next) {
+      u16_t copy_len = q->len;
       /* Read enough bytes to fill this pbuf in the chain. The
          available data in the pbuf is given by the q->len
          variable. */
       /* read data into(q->payload, q->len); */
       LWIP_DEBUGF(NETIF_DEBUG, ("netif: recv start %i length %i q->payload %p q->len %i q->next %p\n", start, length, q->payload, (int)q->len, q->next));
-      memcpy(q->payload, &((char*)packet)[start], q->len);
-      start += q->len;
-      length -= q->len;
+      if (q == p) {
+        LWIP_ASSERT("q->len >= ETH_PAD_SIZE", q->len >= ETH_PAD_SIZE);
+        copy_len -= ETH_PAD_SIZE;
+        memcpy(&((char*)q->payload)[ETH_PAD_SIZE], &((char*)packet)[start], copy_len);
+      } else {
+        memcpy(q->payload, &((char*)packet)[start], copy_len);
+      }
+      start += copy_len;
+      length -= copy_len;
       if (length <= 0) {
         break;
       }
