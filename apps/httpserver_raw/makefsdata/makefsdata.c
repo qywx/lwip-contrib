@@ -35,7 +35,8 @@
 #define GETCWD(path, len)             GetCurrentDirectoryA(len, path)
 #define CHDIR(path)                   SetCurrentDirectoryA(path)
 
-#define NEWLINE "\r\n"
+#define NEWLINE     "\r\n"
+#define NEWLINE_LEN 2
 
 #else
 
@@ -74,10 +75,17 @@ static int payload_alingment_dummy_counter = 0;
 
 #define MAX_PATH_LEN 256
 
+#define COPY_BUFSIZE 1024
+
 int process_sub(FILE *data_file, FILE *struct_file);
 int process_file(FILE *data_file, FILE *struct_file, const char *filename);
 int file_write_http_header(FILE *data_file, const char *filename, int file_size);
-int file_put_ascii(FILE *file, const char* ascii_string, int len, int *i);
+int file_put_ascii(FILE *file, const char *ascii_string, int len, int *i);
+void concat_files(const char *file1, const char *file2, const char *targetfile);
+
+static unsigned char file_buffer_raw[COPY_BUFSIZE];
+/* 5 bytes per char + 3 bytes per line */
+static char file_buffer_c[COPY_BUFSIZE * 5 + ((COPY_BUFSIZE / HEX_BYTES_PER_LINE) * 3)];
 
 char curSubdir[MAX_PATH_LEN];
 char lastFileVar[MAX_PATH_LEN];
@@ -171,13 +179,35 @@ int main(int argc, char *argv[])
 
   CHDIR(appPath);
   /* append struct_file to data_file */
-  system("copy /b /y fsdata.tmp+fshdr.tmp fsdata.c");
+  printf(NEWLINE "Creating target file..." NEWLINE NEWLINE);
+  concat_files("fsdata.tmp", "fshdr.tmp", "fsdata.c");
 
   printf(NEWLINE "Processed %d files - done." NEWLINE NEWLINE, filesProcessed);
 
   return 0;
 }
 
+static void copy_file(const char *filename_in, FILE *fout)
+{
+  FILE *fin;
+  size_t len;
+  fin = fopen(filename_in, "r");
+
+  while((len = fread(file_buffer_raw, 1, COPY_BUFSIZE, fin)) > 0)
+  {
+    fwrite(file_buffer_raw, 1, len, fout);
+  }
+  fclose(fin);
+}
+
+void concat_files(const char *file1, const char *file2, const char *targetfile)
+{
+  FILE *fout;
+  fout = fopen(targetfile, "wb");
+  copy_file(file1, fout);
+  copy_file(file2, fout);
+  fclose(fout);
+}
 
 int process_sub(FILE *data_file, FILE *struct_file)
 {
@@ -239,13 +269,35 @@ int get_file_size(const char* filename)
   return file_size;
 }
 
+void process_file_data(const char *filename, FILE *data_file)
+{
+  FILE *source_file;
+  size_t len, written, i, src_off=0;
+
+  source_file = fopen(filename, "rb");
+
+  do {
+    size_t off = 0;
+    len = fread(file_buffer_raw, 1, COPY_BUFSIZE, source_file);
+    if (len > 0) {
+      for (i = 0; i < len; i++) {
+        sprintf(&file_buffer_c[off], "0x%02.2x,", file_buffer_raw[i]);
+        off += 5;
+        if ((++src_off % HEX_BYTES_PER_LINE) == 0) {
+          memcpy(&file_buffer_c[off], NEWLINE, NEWLINE_LEN);
+          off += NEWLINE_LEN;
+        }
+      }
+      written = fwrite(file_buffer_c, 1, off, data_file);
+    }
+  }while(len > 0);
+}
+
 int process_file(FILE *data_file, FILE *struct_file, const char *filename)
 {
   char *pch;
   char varname[MAX_PATH_LEN];
   int i = 0;
-  int ch;
-  FILE *sourceFile;
   char qualifiedName[MAX_PATH_LEN];
   int file_size;
 
@@ -290,11 +342,7 @@ int process_file(FILE *data_file, FILE *struct_file, const char *filename)
   /* write actual file contents */
   i = 0;
   fprintf(data_file, NEWLINE "/* raw file data (%d bytes) */" NEWLINE, file_size);
-  sourceFile = fopen(filename, "rb");
-  while ((ch = fgetc(sourceFile)) != EOF) {
-    char c = (char)ch;
-    file_put_ascii(data_file, &c, 1, &i);
-  }
+  process_file_data(filename, data_file);
   fprintf(data_file, "};" NEWLINE NEWLINE);
 
   return 0;
