@@ -1457,11 +1457,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\lwipopts.h"
+				RelativePath="..\lwippools.h"
 				>
 			</File>
 			<File
-				RelativePath="..\lwippools.h"
+				RelativePath="..\include\lwipopts.h"
 				>
 			</File>
 			<File
