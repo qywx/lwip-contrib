@@ -65,6 +65,8 @@
 #include "pktdrv.h"
 #include "lwipcfg_msvc.h"
 
+#pragma warning (disable: 4201) /* don't warn about union without name */
+
 #define WIN32_LEAN_AND_MEAN
 /* get the windows definitions of the following 4 functions out of the way */
 #include <stdlib.h>
