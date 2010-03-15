@@ -150,7 +150,7 @@
 
 /** SNTP macro to change system time and/or the update the RTC clock */
 #ifndef SNTP_SET_SYSTEM_TIME
-#define SNTP_SET_SYSTEM_TIME(sec)
+#define SNTP_SET_SYSTEM_TIME(sec) ((void)sec)
 #endif
 
 /** SNTP macro to change system time including microseconds */
