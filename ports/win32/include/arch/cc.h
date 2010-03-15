@@ -51,6 +51,7 @@ int fflush(FILE *stream);
 /** @todo fix some warnings: don't use #pragma if compiling with cygwin gcc */
 #ifndef __GNUC__
 #include <limits.h>
+#pragma warning (disable: 4244) /* disable conversion warning (implicit integer promotion!) */
 #pragma warning (disable: 4127) /* conditional expression is constant */
 #pragma warning (disable: 4996) /* 'strncpy' was declared deprecated */
 #pragma warning (disable: 4103) /* structure packing changed by including file */
