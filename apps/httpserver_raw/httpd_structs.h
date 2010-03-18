@@ -3,26 +3,31 @@
 
 #include "httpd.h"
 
+/** This string is passed in the HTTP header as "Server: " */
 #ifndef HTTPD_SERVER_AGENT
 #define HTTPD_SERVER_AGENT "lwIP/1.3.1 (http://savannah.nongnu.org/projects/lwip)"
 #endif
 
+/** Set this to 1 if you want to include code that creates HTTP headers
+ * at runtime. Default is off: HTTP headers are then created statically
+ * by the makefsdata tool. Static headers mean smaller code size, but
+ * the (readonly) fsdata will grow a bit as every file includes the HTTP
+ * header. */
 #ifndef LWIP_HTTPD_DYNAMIC_HEADERS
 #define LWIP_HTTPD_DYNAMIC_HEADERS 0
 #endif
 
 
 #if LWIP_HTTPD_DYNAMIC_HEADERS
-/*****************************************************************************
- * HTTP header strings for various filename extensions.
- *
- *****************************************************************************/
+/** This struct is used for a list of HTTP header strings for various
+ * filename extensions. */
 typedef struct
 {
-  const char *pszExtension;
-  unsigned long ulHeaderIndex;
+  const char *extension;
+  int headerIndex;
 } tHTTPHeader;
 
+/** A list of strings used in HTTP headers */
 static const char *g_psHTTPHeaderStrings[] =
 {
  "Content-type: text/html\r\n\r\n",
@@ -42,11 +47,16 @@ static const char *g_psHTTPHeaderStrings[] =
  "Content-type: text/plain\r\n\r\n",
  "HTTP/1.0 200 OK\r\n",
  "HTTP/1.0 404 File not found\r\n",
+ "HTTP/1.1 200 OK\r\n",
+ "HTTP/1.1 404 File not found\r\n",
+ "Content-Length: ",
+ "Connection: Close\r\n",
  "Server: "HTTPD_SERVER_AGENT"\r\n",
  "\r\n<html><body><h2>404: The requested file cannot be found."             \
    "</h2></body></html>\r\n"
 };
 
+/* Indexes into the g_psHTTPHeaderStrings array */
 #define HTTP_HDR_HTML           0  /* text/html */
 #define HTTP_HDR_SSI            1  /* text/html Expires... */
 #define HTTP_HDR_GIF            2  /* image/gif */
@@ -63,9 +73,14 @@ static const char *g_psHTTPHeaderStrings[] =
 #define HTTP_HDR_DEFAULT_TYPE   13 /* text/plain */
 #define HTTP_HDR_OK             14 /* 200 OK */
 #define HTTP_HDR_NOT_FOUND      15 /* 404 File not found */
-#define HTTP_HDR_SERVER         16 /* Server: HTTPD_SERVER_AGENT */
-#define DEFAULT_404_HTML        17 /* default 404 body */
+#define HTTP_HDR_OK_11          16 /* 200 OK */
+#define HTTP_HDR_NOT_FOUND_11   17 /* 404 File not found */
+#define HTTP_HDR_CONTENT_LENGTH 18 /* 200 OK (HTTP 1.1) */
+#define HTTP_HDR_CONN_CLOSE     19 /* 404 File not found (HTTP 1.1) */
+#define HTTP_HDR_SERVER         20 /* Server: HTTPD_SERVER_AGENT */
+#define DEFAULT_404_HTML        21 /* default 404 body */
 
+/** A list of extension-to-HTTP header strings */
 static tHTTPHeader g_psHTTPHeaders[] =
 {
  { "html", HTTP_HDR_HTML},

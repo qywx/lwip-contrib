@@ -507,9 +507,9 @@ get_http_headers(struct http_state *pState, char *pszURI)
         /* Now determine the content type and add the relevant header for that. */
         for(iLoop = 0; (iLoop < NUM_HTTP_HEADERS) && pszExt; iLoop++) {
             /* Have we found a matching extension? */
-            if(!strcmp(g_psHTTPHeaders[iLoop].pszExtension, pszExt)) {
+            if(!strcmp(g_psHTTPHeaders[iLoop].extension, pszExt)) {
                 pState->hdrs[2] =
-                  g_psHTTPHeaderStrings[g_psHTTPHeaders[iLoop].ulHeaderIndex];
+                  g_psHTTPHeaderStrings[g_psHTTPHeaders[iLoop].headerIndex];
                 break;
             }
         }
@@ -566,7 +566,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
 #if LWIP_HTTPD_DYNAMIC_HEADERS
   /* If we were passed a NULL state structure pointer, ignore the call. */
   if (hs == NULL) {
-      return;
+      return 0;
   }
 
   /* Assume no error until we find otherwise */
@@ -621,8 +621,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
        */
       if((hs->hdr_index < NUM_FILE_HDR_STRINGS) || !hs->file) {
         LWIP_DEBUGF(HTTPD_DEBUG, ("tcp_output\n"));
-        tcp_output(pcb);
-        return;
+        return 1;
       }
   }
 #else /* LWIP_HTTPD_DYNAMIC_HEADERS */
@@ -669,7 +668,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
       /* Did we get a send buffer? If not, return immediately. */
       if (hs->buf == NULL) {
         LWIP_DEBUGF(HTTPD_DEBUG, ("No buff\n"));
-        return;
+        return 0;
       }
     }
 
@@ -681,7 +680,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
       /* We reached the end of the file so this request is done */
       LWIP_DEBUGF(HTTPD_DEBUG, ("End of file.\n"));
       http_close_conn(pcb, hs);
-      return;
+      return 1;
     }
 
     /* Set up to send the block of data we just read */
@@ -779,11 +778,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
 
         /* If the send buffer is full, return now. */
         if(tcp_sndbuf(pcb) == 0) {
-          if(data_to_send) {
-            tcp_output(pcb);
-            LWIP_DEBUGF(HTTPD_DEBUG, ("Output\n"));
-          }
-          return;
+          return data_to_send;
         }
     }
 
@@ -1034,7 +1029,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
               if (err == ERR_OK) {
                 data_to_send = true;
                 hs->tag_index += len;
-                return;
+                return 1;
               }
             } else {
               /* We have sent all the insert data so go back to looking for
