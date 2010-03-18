@@ -32,17 +32,36 @@
 #ifndef __FS_H__
 #define __FS_H__
 
+#include "lwip/opt.h"
+
+/** HTTPD_PRECALCULATED_CHECKSUM==1: include precompiled checksums for
+ * predefined (MSS-sized) chunks of the files to prevent having to calculate
+ * the checksums at runtime. */
+#ifndef HTTPD_PRECALCULATED_CHECKSUM
+#define HTTPD_PRECALCULATED_CHECKSUM 0
+#endif
+
+#if HTTPD_PRECALCULATED_CHECKSUM
+struct fsdata_chksum {
+  u32_t offset;
+  u16_t chksum;
+  u16_t len;
+};
+#endif /* HTTPD_PRECALCULATED_CHECKSUM */
+
 struct fs_file {
   const char *data;
   int len;
   int index;
   void *pextension;
-  int http_header_included;
+#if HTTPD_PRECALCULATED_CHECKSUM
+  const struct fsdata_chksum *chksum;
+  u16_t chksum_count;
+#endif /* HTTPD_PRECALCULATED_CHECKSUM */
+  u8_t http_header_included;
 };
 
-/* file must be allocated by caller and will be filled in
-   by the function. */
-struct fs_file * fs_open(const char *name);
+struct fs_file *fs_open(const char *name);
 void fs_close(struct fs_file *file);
 int fs_read(struct fs_file *file, char *buffer, int count);
 int fs_bytes_left(struct fs_file *file);

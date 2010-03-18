@@ -29,6 +29,7 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
+#include "lwip/opt.h"
 #include "lwip/def.h"
 #include "fs.h"
 #include "fsdata.h"
@@ -44,7 +45,7 @@
 /* Define the file system memory allocation structure. */
 struct fs_table {
   struct fs_file file;
-  int inuse;
+  u8_t inuse;
 };
 
 /* Allocate file system memory */
@@ -97,6 +98,10 @@ fs_open(const char *name)
       file->index = f->len;
       file->pextension = NULL;
       file->http_header_included = f->http_header_included;
+#if HTTPD_PRECALCULATED_CHECKSUM
+      file->chksum_count = f->chksum_count;
+      file->chksum = f->chksum;
+#endif /* HTTPD_PRECALCULATED_CHECKSUM */
       return file;
     }
   }
@@ -125,7 +130,7 @@ fs_read(struct fs_file *file, char *buffer, int count)
     read = count;
   }
 
-  memcpy(buffer, (file->data + file->index), read);
+  MEMCPY(buffer, (file->data + file->index), read);
   file->index += read;
 
   return(read);
