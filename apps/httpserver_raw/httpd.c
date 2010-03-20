@@ -140,7 +140,13 @@
 #define LWIP_HTTPD_STRNSTR_PRIVATE          0
 #endif
 
-/** ==1: support HTTP request coming in in multiple packets/pbufs */
+/** Set this to one to show error pages when parsing a request fails instead
+    of simply closing the connection. */
+#ifndef LWIP_HTTPD_SUPPORT_EXTSTATUS
+#define LWIP_HTTPD_SUPPORT_EXTSTATUS        0
+#endif
+
+/** Set this to 1 to support HTTP request coming in in multiple packets/pbufs */
 #ifndef LWIP_HTTPD_SUPPORT_REQUESTLIST
 #define LWIP_HTTPD_SUPPORT_REQUESTLIST      0
 #endif
