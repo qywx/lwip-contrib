@@ -209,6 +209,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="etharp"
+			>
+			<File
+				RelativePath="..\..\..\..\lwip\test\unit\etharp\test_etharp.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\lwip\test\unit\etharp\test_etharp.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\..\..\..\lwip\test\unit\lwip_check.h"
 			>
