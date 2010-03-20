@@ -74,10 +74,7 @@
  *
  * @todo:
  * - don't use mem_malloc()
- * - use pbuf_strstr() where applicable
- * - support the request coming in in chained pbufs or multiple packets
  * - support POST! - to receive larger amounts of data (e.g. firmware update)
- * - replace sprintf() by using other calls
  * - split too long functions into multiple smaller functions
  * - implement 501 - not implemented page
  * - support more file types?
@@ -138,6 +135,36 @@
 #define HTTPD_DEBUG_TIMING                  LWIP_DBG_OFF
 #endif
 
+/** Set this to 1 on platforms where strnstr is not available */
+#ifndef LWIP_HTTPD_STRNSTR_PRIVATE
+#define LWIP_HTTPD_STRNSTR_PRIVATE          0
+#endif
+
+/** ==1: support HTTP request coming in in multiple packets/pbufs */
+#ifndef LWIP_HTTPD_SUPPORT_REQUESTLIST
+#define LWIP_HTTPD_SUPPORT_REQUESTLIST      0
+#endif
+
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+/** Number of rx pbufs to enqueue to parse an incoming request (up to the first
+    newline) */
+#ifndef LWIP_HTTPD_REQ_QUEUELEN
+#define LWIP_HTTPD_REQ_QUEUELEN             10
+#endif
+
+/** Number of (TCP payload-) bytes (in pbufs) to enqueue to parse and incoming
+    request (up to the first double-newline) */
+#ifndef LWIP_HTTPD_REQ_BUFSIZE
+#define LWIP_HTTPD_REQ_BUFSIZE              LWIP_HTTPD_MAX_REQ_LENGTH
+#endif
+
+/** Defines the maximum length of a HTTP request (copied from pbuf into this
+    a global buffer when pbuf- or packet-queues are received) */
+#ifndef LWIP_HTTPD_MAX_REQ_LENGTH
+#define LWIP_HTTPD_MAX_REQ_LENGTH           511
+#endif
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+
 #ifndef true
 #define true ((u8_t)1)
 #endif
@@ -145,6 +172,9 @@
 #ifndef false
 #define false ((u8_t)0)
 #endif
+
+/** Minimum length for a valid HTTP/0.9 request: "GET /\r\n" -> 7 bytes */
+#define MIN_REQ_LEN   7
 
 /** This checks whether tcp_write has to copy data or not */
 #ifndef HTTP_IS_DATA_VOLATILE
@@ -177,6 +207,11 @@ const default_filename g_psDefaultFilenames[] = {
 #define NUM_DEFAULT_FILENAMES (sizeof(g_psDefaultFilenames) /   \
                                sizeof(default_filename))
 
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+/** URI is copied here from HTTP request pbufs for simple parsing */
+static char httpd_req_buf[LWIP_HTTPD_MAX_REQ_LENGTH+1];
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+
 #if LWIP_HTTPD_DYNAMIC_HEADERS
 /* The number of individual strings that comprise the headers sent before each
  * requested file.
@@ -204,6 +239,11 @@ enum tag_check_state {
 struct http_state {
   struct fs_file *handle;
   char *file;       /* Pointer to first unsent byte in buf. */
+
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+  struct pbuf *req;
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+
 #if LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS
   char *buf;        /* File read buffer. */
   int buf_len;      /* Size of file read buffer, buf. */
@@ -237,6 +277,8 @@ struct http_state {
 #endif /* LWIP_HTTPD_TIMING */
 };
 
+static err_t httpd_find_file(struct http_state *hs, char *uri);
+
 #if LWIP_HTTPD_SSI
 /* SSI insert handler function pointer. */
 tSSIHandler g_pfnSSIHandler = NULL;
@@ -255,6 +297,24 @@ const char * const g_pcTagLeadOut = "-->";
 const tCGI *g_pCGIs = NULL;
 int g_iNumCGIs = 0;
 #endif /* LWIP_HTTPD_CGI */
+
+#if LWIP_HTTPD_STRNSTR_PRIVATE
+/** Like strstr but does not need 'buffer' to be NULL-terminated */
+static char*
+strnstr(const char* buffer, const char* token, size_t n)
+{
+  const char* p;
+  int tokenlen = strlen(token);
+  if (tokenlen == 0) {
+    return (char *)buffer;
+  }
+  for (p = buffer; *p && p + tokenlen <= buffer + n; p++) {
+    if (*p == *token && strncmp(p, token, tokenlen) == 0)
+      return (char *)p;
+  }
+  return NULL;
+} 
+#endif /* LWIP_HTTPD_STRNSTR_PRIVATE */
 
 /** Allocate a struct http_state. */
 static struct http_state*
@@ -434,12 +494,18 @@ get_tag_insert(struct http_state *hs)
 
   /* If we drop out, we were asked to serve a page which contains tags that
    * we don't have a handler for. Merely echo back the tags with an error
-   * marker.
-   *
-   * @todo: replace with multiple calls to strcat() or memcpy()
-   */
-  /*u*/snprintf(hs->tag_insert, (LWIP_HTTPD_MAX_TAG_INSERT_LEN + 1),
-           "<b>***UNKNOWN TAG %s***</b>", hs->tag_name);
+   * marker. */
+#define UNKNOWN_TAG1_TEXT "<b>***UNKNOWN TAG "
+#define UNKNOWN_TAG1_LEN  18
+#define UNKNOWN_TAG2_TEXT "***</b>"
+#define UNKNOWN_TAG2_LEN  7
+  len = LWIP_MIN(strlen(hs->tag_name),
+    LWIP_HTTPD_MAX_TAG_INSERT_LEN - (UNKNOWN_TAG1_LEN + UNKNOWN_TAG2_LEN));
+  MEMCPY(hs->tag_insert, UNKNOWN_TAG1_TEXT, UNKNOWN_TAG1_LEN);
+  MEMCPY(&hs->tag_insert[UNKNOWN_TAG1_LEN], hs->tag_name, len);
+  MEMCPY(&hs->tag_insert[UNKNOWN_TAG1_LEN + len], UNKNOWN_TAG2_TEXT, UNKNOWN_TAG2_LEN);
+  hs->tag_insert[UNKNOWN_TAG1_LEN + len + UNKNOWN_TAG2_LEN] = 0;
+
   len = strlen(hs->tag_insert);
   LWIP_ASSERT("len <= 0xffff", len <= 0xffff);
   hs->tag_insert_len = (u16_t)len;
@@ -1119,183 +1185,294 @@ http_get_404_file(char **uri)
  * @param p the received pbuf
  * @param hs the connection state
  * @return ERR_OK if request was OK and hs has been initialized correctly
+ *         ERR_INPROGRESS if request was OK so far but not fully received
  *         another err_t otherwise
  */
 static err_t
 http_parse_request(struct pbuf *p, struct http_state *hs)
 {
-  int i;
-  /* default is request not supported, until it can be parsed */
-  err_t request_supported = ERR_ARG;
-  size_t loop;
   char *data;
-  char *uri;
+  char *crlf;
+  u16_t data_len;
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+  u16_t clen;
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+
+  LWIP_ASSERT("p != NULL", p != NULL);
+  LWIP_ASSERT("hs != NULL", hs != NULL);
+
+  if ((hs->handle != NULL) || (hs->file != NULL)) {
+    LWIP_DEBUGF(HTTPD_DEBUG, ("Received data while sending a file\n"));
+    /* already sending a file */
+    /* @todo: abort? */
+    return ERR_USE;
+  }
+
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+
+  LWIP_DEBUGF(HTTPD_DEBUG, ("Received %"U16_F" bytes\n", p->tot_len));
+
+  /* first check allowed characters in this pbuf? */
+
+  /* enqueue the pbuf */
+  if (hs->req == NULL) {
+    LWIP_DEBUGF(HTTPD_DEBUG, ("First pbuf\n"));
+    hs->req = p;
+  } else {
+    LWIP_DEBUGF(HTTPD_DEBUG, ("pbuf enqueued\n"));
+    pbuf_cat(hs->req, p);
+  }
+
+  if (hs->req->next != NULL) {
+    data_len = LWIP_MIN(hs->req->tot_len, LWIP_HTTPD_MAX_REQ_LENGTH);
+    pbuf_copy_partial(hs->req, httpd_req_buf, data_len, 0);
+    data = httpd_req_buf;
+  } else
+#endif LWIP_HTTPD_SUPPORT_REQUESTLIST
+  {
+    data = (char *)p->payload;
+    data_len = p->len;
+    if (p->len != p->tot_len) {
+      LWIP_DEBUGF(HTTPD_DEBUG, ("Warning: incomplete header due to chained pbufs\n"));
+    }
+  }
+
+  /* received enough data for minimal request? */
+  if (data_len >= MIN_REQ_LEN) {
+    /* wait for CRLF before parsing anything */
+    crlf = strnstr(data, "\r\n", data_len);
+    if (crlf != NULL) {
+      char *sp1, *sp2;
+      u16_t left_len, uri_len;
+      LWIP_DEBUGF(HTTPD_DEBUG, ("CRLF received, parsing request\n"));
+      /* parse method */
+      if (!strncmp(data, "GET ", 4)) {
+        sp1 = data + 3;
+        /* received GET request */
+        LWIP_DEBUGF(HTTPD_DEBUG, ("Received GET request\"\n"));
+        /* @todo store request type? */
+#if LWIP_HTTPD_SUPPORT_POST
+      } else if (!strncmp(data, "POST ", 5)) {
+        sp1 = data + 4;
+        /* received GET request */
+        LWIP_DEBUGF(HTTPD_DEBUG, ("Received POST request (not implemented yet)\"\n"));
+        /* @todo store request type? */
+#if LWIP_HTTPD_SUPPORT_EXTSTATUS
+        /* return HTTP error 501 (not implemented) */
+        return httpd_find_file(hs, "501.html");
+#else /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
+        /* just close */
+        return ERR_ARG;
+#endif /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
+#endif /* LWIP_HTTPD_SUPPORT_POST */
+      } else {
+        /* null-terminate the METHOD (pbuf is freed anyway wen returning) */
+        data[4] = 0;
+        /* unsupported method! */
+        LWIP_DEBUGF(HTTPD_DEBUG, ("Unsupported request method (not implemented): \"%s\"\n",
+          data));
+#if LWIP_HTTPD_SUPPORT_EXTSTATUS
+        /* return HTTP error 501 (not implemented) */
+        return httpd_find_file(hs, "501.html");
+#else /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
+        /* just close */
+        return ERR_ARG;
+#endif /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
+      }
+      /* if we come here, method is OK, parse URI */
+      left_len = data_len - ((sp1 +1) - data);
+      sp2 = strnstr(sp1 + 1, " ", left_len);
+      if (sp2 == NULL) {
+        /* HTTP 0.9? */
+        sp2 = strnstr(sp1 + 1, "\r\n", left_len);
+      }
+      uri_len = sp2 - (sp1 + 1);
+      if ((sp2 != 0) && (sp2 > sp1)) {
+        char *uri = sp1 + 1;
+        /* null-terminate the METHOD (pbuf is freed anyway wen returning) */
+        *sp1 = 0;
+        uri[uri_len] = 0;
+        LWIP_DEBUGF(HTTPD_DEBUG, ("Received \"%s\" request for URI: \"%s\"\n",
+                    data, uri));
+        return httpd_find_file(hs, uri);
+      } else {
+        LWIP_DEBUGF(HTTPD_DEBUG, ("invalid URI\n"));
+        goto badrequest;
+      }
+    }
+
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+    clen = pbuf_clen(hs->req);
+    if ((hs->req->tot_len > LWIP_HTTPD_REQ_BUFSIZE) ||
+        (clen > LWIP_HTTPD_REQ_QUEUELEN))
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+    {
+badrequest:
+      LWIP_DEBUGF(HTTPD_DEBUG, ("bad request\n"));
+      /* request is too long */
+#if LWIP_HTTPD_SUPPORT_EXTSTATUS
+      /* return HTTP error 400 (bad request) */
+      return httpd_find_file(hs, "400.html");
+#else /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
+      /* just close */
+      return ERR_ARG;
+#endif /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
+    }
+  }
+  /* request not fully received (too short or CRLF is missing) */
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+  return ERR_INPROGRESS;
+#else /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+  return ERR_ARG;
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST*/
+}
+
+/** Try to find the file specified by uri and, if found, initialize hs
+ * accordingly.
+ *
+ * @param hs the connection state
+ * @param uri the HTTP header URI
+ * @return ERR_OK if file was found and hs has been initialized correctly
+ *         another err_t otherwise
+ */
+static err_t
+httpd_find_file(struct http_state *hs, char *uri)
+{
+  size_t loop;
   struct fs_file *file = NULL;
+  /* default is request not supported, until it can be parsed */
+  err_t file_found = ERR_ARG;
 #if LWIP_HTTPD_CGI
+  int i;
   int count;
   char *params;
 #endif /* LWIP_HTTPD_CGI */
 
-  data = (char*)p->payload;
-  /* @todo: using 'data' as string here is kind of unsafe... */
-  LWIP_DEBUGF(HTTPD_DEBUG, ("Request:\n%s\n", data));
-  /* @todo: support POST, check p->len, correctly handle multi-packet requests */
-  if (strncmp(data, "GET ", 4) == 0) {
-    /* GET is 3 characters plus one space */
-    uri = &data[4];
-    /*
-     * We have a GET request. Find the end of the URI by looking for the
-     * HTTP marker. We can't just use strstr to find this since the request
-     * came from an outside source and we can't be sure that it is
-     * correctly formed. We need to make sure that our search is bounded
-     * by the packet length so we do it manually. If we don't find " HTTP",
-     * assume the request is invalid and close the connection.
-     * @todo: use pbuf_strstr()
-     */
-    for(i = 4; i <= (p->len - 5); i++) {
-      if ((data[i] == ' ') && (data[i + 1] == 'H') &&
-          (data[i + 2] == 'T') && (data[i + 3] == 'T') &&
-          (data[i + 4] == 'P')) {
-        /* this NULL-terminates the URI string */
-        data[i] = 0;
+#if LWIP_HTTPD_SSI
+  /*
+   * By default, assume we will not be processing server-side-includes
+   * tags
+   */
+  hs->tag_check = false;
+#endif /* LWIP_HTTPD_SSI */
+
+  /* Have we been asked for the default root file? */
+  if((uri[0] == '/') &&  (uri[1] == 0)) {
+    /* Try each of the configured default filenames until we find one
+       that exists. */
+    for (loop = 0; loop < NUM_DEFAULT_FILENAMES; loop++) {
+      LWIP_DEBUGF(HTTPD_DEBUG, ("Looking for %s...\n", g_psDefaultFilenames[loop].name));
+      file = fs_open((char *)g_psDefaultFilenames[loop].name);
+      uri = (char *)g_psDefaultFilenames[loop].name;
+      if(file != NULL) {
+        LWIP_DEBUGF(HTTPD_DEBUG, ("Opened.\n"));
+#if LWIP_HTTPD_SSI
+        hs->tag_check = g_psDefaultFilenames[loop].shtml;
+#endif /* LWIP_HTTPD_SSI */
         break;
       }
     }
-    if(i > (p->len - 5)) {
-      /* We failed to find " HTTP" in the request so assume it is invalid */
-      LWIP_DEBUGF(HTTPD_DEBUG, ("Invalid GET request. Closing.\n"));
-      return ERR_ARG;
+    if (file == NULL) {
+      /* None of the default filenames exist so send back a 404 page */
+      file = http_get_404_file(&uri);
+#if LWIP_HTTPD_SSI
+      hs->tag_check = false;
+#endif /* LWIP_HTTPD_SSI */
+    }
+  } else {
+    /* No - we've been asked for a specific file. */
+#if LWIP_HTTPD_CGI
+    /* First, isolate the base URI (without any parameters) */
+    params = strchr(uri, '?');
+    if (params != NULL) {
+      /* URI contains parameters. NULL-terminate the base URI */
+      *params = '\0';
+      params++;
     }
 
-#if LWIP_HTTPD_SSI
-    /*
-     * By default, assume we will not be processing server-side-includes
-     * tags
-     */
-    hs->tag_check = false;
-#endif /* LWIP_HTTPD_SSI */
+    /* Does the base URI we have isolated correspond to a CGI handler? */
+    if (g_iNumCGIs && g_pCGIs) {
+      for (i = 0; i < g_iNumCGIs; i++) {
+        if (strcmp(uri, g_pCGIs[i].pcCGIName) == 0) {
+          /*
+           * We found a CGI that handles this URI so extract the
+           * parameters and call the handler.
+           */
+           count = extract_uri_parameters(hs, params);
+           uri = g_pCGIs[i].pfnCGIHandler(i, count, hs->params,
+                                          hs->param_vals);
+           break;
+        }
+      }
 
-    /* Have we been asked for the default root file? */
-    if((uri[0] == '/') &&  (uri[1] == 0)) {
-      /* Try each of the configured default filenames until we find one
-         that exists. */
-      for (loop = 0; loop < NUM_DEFAULT_FILENAMES; loop++) {
-        LWIP_DEBUGF(HTTPD_DEBUG, ("Looking for %s...\n", g_psDefaultFilenames[loop].name));
-        file = fs_open((char *)g_psDefaultFilenames[loop].name);
-        uri = (char *)g_psDefaultFilenames[loop].name;
-        if(file != NULL) {
-          LWIP_DEBUGF(HTTPD_DEBUG, ("Opened.\n"));
+      /* Did we handle this URL as a CGI? If not, reinstate the
+       * original URL and pass it to the file system directly. */
+      if (i == g_iNumCGIs) {
+        /* Replace the ? marker at the beginning of the parameters */
+        if (params != NULL) {
+           params--;
+          *params = '?';
+        }
+      }
+    }
+#endif /* LWIP_HTTPD_CGI */
+
+    LWIP_DEBUGF(HTTPD_DEBUG, ("Opening %s\n", uri));
+
+    file = fs_open(uri);
+    if (file == NULL) {
+      file = http_get_404_file(&uri);
+    }
 #if LWIP_HTTPD_SSI
-          hs->tag_check = g_psDefaultFilenames[loop].shtml;
-#endif /* LWIP_HTTPD_SSI */
+    else {
+      /*
+       * See if we have been asked for an shtml file and, if so,
+       * enable tag checking.
+       */
+      hs->tag_check = false;
+      for (loop = 0; loop < NUM_SHTML_EXTENSIONS; loop++) {
+        if (strstr(uri, g_pcSSIExtensions[loop])) {
+          hs->tag_check = true;
           break;
         }
       }
-      if (file == NULL) {
-        /* None of the default filenames exist so send back a 404 page */
-        file = http_get_404_file(&uri);
-#if LWIP_HTTPD_SSI
-        hs->tag_check = false;
-#endif /* LWIP_HTTPD_SSI */
-      }
-    } else {
-      /* No - we've been asked for a specific file. */
-#if LWIP_HTTPD_CGI
-      /* First, isolate the base URI (without any parameters) */
-      params = strchr(uri, '?');
-      if (params != NULL) {
-        /* URI contains parameters. NULL-terminate the base URI */
-        *params = '\0';
-        params++;
-      }
-
-      /* Does the base URI we have isolated correspond to a CGI handler? */
-      if (g_iNumCGIs && g_pCGIs) {
-        for (i = 0; i < g_iNumCGIs; i++) {
-          if (strcmp(uri, g_pCGIs[i].pcCGIName) == 0) {
-            /*
-             * We found a CGI that handles this URI so extract the
-             * parameters and call the handler.
-             */
-             count = extract_uri_parameters(hs, params);
-             uri = g_pCGIs[i].pfnCGIHandler(i, count, hs->params,
-                                            hs->param_vals);
-             break;
-          }
-        }
-
-        /* Did we handle this URL as a CGI? If not, reinstate the
-         * original URL and pass it to the file system directly. */
-        if (i == g_iNumCGIs) {
-          /* Replace the ? marker at the beginning of the parameters */
-          if (params != NULL) {
-             params--;
-            *params = '?';
-          }
-        }
-      }
-#endif /* LWIP_HTTPD_CGI */
-
-      LWIP_DEBUGF(HTTPD_DEBUG, ("Opening %s\n", uri));
-
-      file = fs_open(uri);
-      if (file == NULL) {
-        file = http_get_404_file(&uri);
-      }
-#if LWIP_HTTPD_SSI
-      else {
-        /*
-         * See if we have been asked for an shtml file and, if so,
-         * enable tag checking.
-         */
-        hs->tag_check = false;
-        for (loop = 0; loop < NUM_SHTML_EXTENSIONS; loop++) {
-          if (strstr(uri, g_pcSSIExtensions[loop])) {
-            hs->tag_check = true;
-            break;
-          }
-        }
-      }
-#endif /* LWIP_HTTPD_SSI */
     }
-
-    if (file != NULL) {
-      /* file opened, initialise struct http_state */
-#if LWIP_HTTPD_SSI
-      hs->tag_index = 0;
-      hs->tag_state = TAG_NONE;
-      hs->parsed = file->data;
-      hs->parse_left = file->len;
-      hs->tag_end = file->data;
 #endif /* LWIP_HTTPD_SSI */
-      hs->handle = file;
-      hs->file = (char*)file->data;
-      LWIP_ASSERT("File length must be positive!", (file->len >= 0));
-      hs->left = file->len;
-      hs->retries = 0;
-      request_supported = ERR_OK;
+  }
+
+  if (file != NULL) {
+    /* file opened, initialise struct http_state */
+#if LWIP_HTTPD_SSI
+    hs->tag_index = 0;
+    hs->tag_state = TAG_NONE;
+    hs->parsed = file->data;
+    hs->parse_left = file->len;
+    hs->tag_end = file->data;
+#endif /* LWIP_HTTPD_SSI */
+    hs->handle = file;
+    hs->file = (char*)file->data;
+    LWIP_ASSERT("File length must be positive!", (file->len >= 0));
+    hs->left = file->len;
+    hs->retries = 0;
+    file_found = ERR_OK;
 #if LWIP_HTTPD_TIMING
-      hs->time_started = sys_now();
+    hs->time_started = sys_now();
 #endif /* LWIP_HTTPD_TIMING */
-    } else {
-      hs->handle = NULL;
-      hs->file = NULL;
-      hs->left = 0;
-      hs->retries = 0;
-    }
+  } else {
+    hs->handle = NULL;
+    hs->file = NULL;
+    hs->left = 0;
+    hs->retries = 0;
+  }
 
 #if LWIP_HTTPD_DYNAMIC_HEADERS
-    /* Determine the HTTP headers to send based on the file extension of
-     * the requested URI. */
-    if (!hs->handle->http_header_included) {
-      get_http_headers(hs, uri);
-    }
-#endif /* LWIP_HTTPD_DYNAMIC_HEADERS */
-  } else {
-    /* @todo: return HTTP error 501 */
-    LWIP_DEBUGF(HTTPD_DEBUG, ("Invalid request/not implemented. Closing.\n"));
+  /* Determine the HTTP headers to send based on the file extension of
+   * the requested URI. */
+  if (hs->handle && !hs->handle->http_header_included) {
+    get_http_headers(hs, uri);
   }
-  return request_supported;
+#endif /* LWIP_HTTPD_DYNAMIC_HEADERS */
+  return file_found;
 }
 
 /**
@@ -1415,16 +1592,30 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 
   if (hs->handle == NULL) {
     parsed = http_parse_request(p, hs);
+    LWIP_ASSERT("http_parse_request: unexpected return value", parsed == ERR_OK
+      || parsed == ERR_INPROGRESS ||parsed == ERR_ARG || parsed == ERR_USE);
   } else {
     LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: already sending data\n"));
   }
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+  if (parsed != ERR_INPROGRESS) {
+    /* request fully parsed or error */
+    if (hs->req != NULL) {
+      pbuf_free(hs->req);
+      hs->req = NULL;
+    }
+  }
+#else /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
   pbuf_free(p);
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
   if (parsed == ERR_OK) {
     LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: data %p len %"S32_F"\n", hs->file, hs->left));
     http_send_data(pcb, hs);
-  } else if (parsed == ERR_ABRT) {
+  } else if (parsed == ERR_ARG) {
+    /* @todo: close on ERR_USE? */
     http_close_conn(pcb, hs);
   }
+
   return ERR_OK;
 }
 
