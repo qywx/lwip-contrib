@@ -73,12 +73,9 @@
  * the incoming CGI request.
  *
  * @todo:
- * - don't use mem_malloc()
- * - support POST! - to receive larger amounts of data (e.g. firmware update)
- * - split too long functions into multiple smaller functions
- * - implement 501 - not implemented page
+ * - don't use mem_malloc() (for SSI/dynamic headers)
+ * - split too long functions into multiple smaller functions?
  * - support more file types?
- * - review the code in terms of "lw"... -> for pure static pages, it should be as tiny as before...
  */
 #include "lwip/debug.h"
 #include "lwip/stats.h"
@@ -146,6 +143,11 @@
 #define LWIP_HTTPD_SUPPORT_EXTSTATUS        0
 #endif
 
+/** Set this to 0 to drop support for HTTP/0.9 clients (to save some bytes) */
+#ifndef LWIP_HTTPD_SUPPORT_V09
+#define LWIP_HTTPD_SUPPORT_V09              1
+#endif
+
 /** Set this to 1 to support HTTP request coming in in multiple packets/pbufs */
 #ifndef LWIP_HTTPD_SUPPORT_REQUESTLIST
 #define LWIP_HTTPD_SUPPORT_REQUESTLIST      0
@@ -164,12 +166,20 @@
 #define LWIP_HTTPD_REQ_BUFSIZE              LWIP_HTTPD_MAX_REQ_LENGTH
 #endif
 
-/** Defines the maximum length of a HTTP request (copied from pbuf into this
-    a global buffer when pbuf- or packet-queues are received) */
+/** Defines the maximum length of a HTTP request line (up to the first CRLF,
+    copied from pbuf into this a global buffer when pbuf- or packet-queues
+    are received - otherwise the input pbuf is used directly) */
 #ifndef LWIP_HTTPD_MAX_REQ_LENGTH
-#define LWIP_HTTPD_MAX_REQ_LENGTH           511
+#define LWIP_HTTPD_MAX_REQ_LENGTH           1023
 #endif
 #endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+
+/** Maximum length of the filename to send as response to a POST request,
+ * filled in by the application when a POST is finished.
+ */
+#ifndef LWIP_HTTPD_POST_MAX_RESPONSE_URI_LEN
+#define LWIP_HTTPD_POST_MAX_RESPONSE_URI_LEN 63
+#endif
 
 #ifndef true
 #define true ((u8_t)1)
@@ -181,6 +191,8 @@
 
 /** Minimum length for a valid HTTP/0.9 request: "GET /\r\n" -> 7 bytes */
 #define MIN_REQ_LEN   7
+
+#define CRLF "\r\n"
 
 /** This checks whether tcp_write has to copy data or not */
 #ifndef HTTP_IS_DATA_VOLATILE
@@ -214,9 +226,14 @@ const default_filename g_psDefaultFilenames[] = {
                                sizeof(default_filename))
 
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
-/** URI is copied here from HTTP request pbufs for simple parsing */
+/** HTTP request is copied here from pbufs for simple parsing */
 static char httpd_req_buf[LWIP_HTTPD_MAX_REQ_LENGTH+1];
 #endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+
+#if LWIP_HTTPD_SUPPORT_POST
+/** Filename for response file to send when POST is finished */
+static char http_post_response_filename[LWIP_HTTPD_POST_MAX_RESPONSE_URI_LEN+1];
+#endif /* LWIP_HTTPD_SUPPORT_POST */
 
 #if LWIP_HTTPD_DYNAMIC_HEADERS
 /* The number of individual strings that comprise the headers sent before each
@@ -281,9 +298,13 @@ struct http_state {
 #if LWIP_HTTPD_TIMING
   u32_t time_started;
 #endif /* LWIP_HTTPD_TIMING */
+#if LWIP_HTTPD_SUPPORT_POST
+  u32_t post_content_len_left;
+#endif /* LWIP_HTTPD_SUPPORT_POST*/
 };
 
-static err_t httpd_find_file(struct http_state *hs, char *uri);
+static err_t http_find_file(struct http_state *hs, const char *uri, int is_09);
+static err_t http_init_file(struct http_state *hs, struct fs_file *file, int is_09);
 
 #if LWIP_HTTPD_SSI
 /* SSI insert handler function pointer. */
@@ -1155,6 +1176,43 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
   return data_to_send;
 }
 
+#if LWIP_HTTPD_SUPPORT_EXTSTATUS
+/** Initialize a http connection with a file to send for an error message
+ *
+ * @param hs http connection state
+ * @param error_nr HTTP error number
+ * @return ERR_OK if file was found and hs has been initialized correctly
+ *         another err_t otherwise
+ */
+static err_t
+http_find_error_file(struct http_state *hs, u16_t error_nr)
+{
+  const char *uri1, *uri2;
+  struct fs_file *file;
+
+  if (error_nr == 501) {
+    uri1 = "/501.html";
+    uri2 = "/501.htm";
+  } else {
+    /* 400 (bad request is the default) */
+    uri1 = "/400.html";
+    uri2 = "/400.htm";
+  }
+  file = fs_open(uri1);
+  if (file == NULL) {
+    file = fs_open(uri2);
+    if (file == NULL) {
+      LWIP_DEBUGF(HTTPD_DEBUG, ("Error page for error %"U16_F" not found\n",
+        error_nr));
+      return ERR_ARG;
+    }
+  }
+  return http_init_file(hs, file, 0);
+}
+#else /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
+#define http_find_error_file(hs, error_nr) ERR_ARG
+#endif /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
+
 /**
  * Get the file struct for a 404 error page.
  * Tries some file names and returns NULL if none found.
@@ -1163,7 +1221,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
  * @return file struct for the error page or NULL no matching file was found
  */
 static struct fs_file *
-http_get_404_file(char **uri)
+http_get_404_file(const char **uri)
 {
   struct fs_file *file;
 
@@ -1184,6 +1242,132 @@ http_get_404_file(char **uri)
   return file;
 }
 
+#if LWIP_HTTPD_SUPPORT_POST
+/** Pass received POST body data to the application and correctly handle
+ * returning a response document or closing the connection.
+ * ATTENTION: The application is responsible for the pbuf now, so don't free it!
+ *
+ * @param hs http connection state
+ * @param p pbuf to pass to the application
+ * @return ERR_OK if passed successfully, another err_t if the response file
+ *         hasn't been found (after POST finished)
+ */
+static err_t
+http_post_rxpbuf(struct http_state *hs, struct pbuf *p)
+{
+  err_t err;
+
+  /* adjust remaining Content-Length */
+  if (hs->post_content_len_left < p->tot_len) {
+    hs->post_content_len_left = 0;
+  } else {
+    hs->post_content_len_left -= p->tot_len;
+  }
+  err = httpd_post_receive_data(hs, p);
+  if ((err != ERR_OK) || (hs->post_content_len_left == 0)) {
+    /* application error or POST finished */
+    /* NULL-terminate the buffer */
+    http_post_response_filename[0] = 0;
+    httpd_post_finished(hs, http_post_response_filename, LWIP_HTTPD_POST_MAX_RESPONSE_URI_LEN);
+    return http_find_file(hs, http_post_response_filename, 0);
+  }
+
+  return ERR_OK;
+}
+
+/** Handle a post request. Called from http_parse_request when method 'POST'
+ * is found.
+ *
+ * @param p The input pbuf (containing the POST header and body).
+ * @param hs The http connection state.
+ * @param data HTTP request (header and part of body) from input pbuf(s).
+ * @param data_len Size of 'data'.
+ * @param uri The HTTP URI parsed from input pbuf(s).
+ * @param uri_end Pointer to the end of 'uri' (here, the rest of the HTTP
+ *                header starts).
+ * @return ERR_OK: POST correctly parsed and accepted by the application.
+ *         ERR_INPROGRESS: POST not completely parsed (no error yet)
+ *         another err_t: Error parsing POST or denied by the application
+ */
+static err_t
+http_post_request(struct pbuf **inp, struct http_state *hs, char *data, u16_t data_len, char *uri, char *uri_end)
+{
+  /* @todo:
+     - parse content-length
+     - get data from this first packet
+     - call application callback with URI */
+  err_t err;
+  /* search for end-of-header (first double-CRLF) */
+  char* crlfcrlf = strnstr(uri_end + 1, CRLF CRLF, data_len - (uri_end + 1 - data));
+
+  if (crlfcrlf != NULL) {
+    /* search for "Content-Length: " */
+#define HTTP_HDR_CONTENT_LEN                "Content-Length: "
+#define HTTP_HDR_CONTENT_LEN_LEN            16
+#define HTTP_HDR_CONTENT_LEN_DIGIT_MAX_LEN  10
+#ifndef HTTP_MAX_POST_BODY_LEN
+#define HTTP_MAX_POST_BODY_LEN              (1024*1024*6) /* 6 MB */
+#endif
+    char *scontent_len = strnstr(uri_end + 1, HTTP_HDR_CONTENT_LEN, crlfcrlf - (uri_end + 1));
+    if (scontent_len != NULL) {
+      char *scontent_len_end = strnstr(scontent_len + HTTP_HDR_CONTENT_LEN_LEN, CRLF, HTTP_HDR_CONTENT_LEN_DIGIT_MAX_LEN);
+      if (scontent_len_end != NULL) {
+        int content_len;
+        char *conten_len_num = scontent_len + HTTP_HDR_CONTENT_LEN_LEN;
+        *scontent_len_end = 0;
+        content_len = atoi(conten_len_num);
+        if ((content_len > 0) && (content_len <= HTTP_MAX_POST_BODY_LEN)) {
+          /* adjust length of HTTP header passed to application */
+          u16_t hdr_len = LWIP_MIN(data_len, crlfcrlf + 4 - data);
+          http_post_response_filename[0] = 0;
+          err = httpd_post_begin(hs, uri, data, hdr_len, content_len,
+            http_post_response_filename, LWIP_HTTPD_POST_MAX_RESPONSE_URI_LEN);
+          if (err == ERR_OK) {
+            /* try to pass in data of the first pbuf(s) */
+            struct pbuf *q = *inp;
+            u16_t start_offset = hdr_len;
+
+            /* set the Content-Length to be received for this POST */
+            hs->post_content_len_left = (u32_t)content_len;
+
+            /* get to the pbuf where the body starts */
+            while((q != NULL) && (q->len <= start_offset)) {
+              struct pbuf *head = q;
+              start_offset -= q->len;
+              q = q->next;
+              /* free the head pbuf */
+              head->next = NULL;
+              pbuf_free(head);
+            }
+            *inp = NULL;
+            if (q != NULL) {
+              /* hide the remaining HTTP header */
+              pbuf_header(q, start_offset);
+              return http_post_rxpbuf(hs, q);
+            } else {
+              return ERR_OK;
+            }
+          } else {
+            /* return file passed from application */
+            return http_find_file(hs, http_post_response_filename, 0);
+          }
+        } else {
+          LWIP_DEBUGF(HTTPD_DEBUG, ("POST received invalid Content-Length: %s\n",
+            conten_len_num));
+          return ERR_ARG;
+        }
+      }
+    }
+  }
+  /* if we come here, the POST is incomplete */
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+  return ERR_INPROGRESS;
+#else /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+  return ERR_ARG;
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+}
+#endif /* LWIP_HTTPD_SUPPORT_POST */
+
 /**
  * When data has been received in the correct state, try to parse it
  * as a HTTP request.
@@ -1195,14 +1379,18 @@ http_get_404_file(char **uri)
  *         another err_t otherwise
  */
 static err_t
-http_parse_request(struct pbuf *p, struct http_state *hs)
+http_parse_request(struct pbuf **inp, struct http_state *hs)
 {
   char *data;
   char *crlf;
   u16_t data_len;
+  struct pbuf *p = *inp;
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
   u16_t clen;
 #endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+#if LWIP_HTTPD_SUPPORT_POST
+  err_t err;
+#endif /* LWIP_HTTPD_SUPPORT_POST */
 
   LWIP_ASSERT("p != NULL", p != NULL);
   LWIP_ASSERT("hs != NULL", hs != NULL);
@@ -1246,8 +1434,12 @@ http_parse_request(struct pbuf *p, struct http_state *hs)
   /* received enough data for minimal request? */
   if (data_len >= MIN_REQ_LEN) {
     /* wait for CRLF before parsing anything */
-    crlf = strnstr(data, "\r\n", data_len);
+    crlf = strnstr(data, CRLF, data_len);
     if (crlf != NULL) {
+#if LWIP_HTTPD_SUPPORT_POST
+      int is_post = 0;
+#endif /* LWIP_HTTPD_SUPPORT_POST */
+      int is_09 = 0;
       char *sp1, *sp2;
       u16_t left_len, uri_len;
       LWIP_DEBUGF(HTTPD_DEBUG, ("CRLF received, parsing request\n"));
@@ -1256,20 +1448,13 @@ http_parse_request(struct pbuf *p, struct http_state *hs)
         sp1 = data + 3;
         /* received GET request */
         LWIP_DEBUGF(HTTPD_DEBUG, ("Received GET request\"\n"));
-        /* @todo store request type? */
 #if LWIP_HTTPD_SUPPORT_POST
       } else if (!strncmp(data, "POST ", 5)) {
+        /* store request type */
+        is_post = 1;
         sp1 = data + 4;
         /* received GET request */
-        LWIP_DEBUGF(HTTPD_DEBUG, ("Received POST request (not implemented yet)\"\n"));
-        /* @todo store request type? */
-#if LWIP_HTTPD_SUPPORT_EXTSTATUS
-        /* return HTTP error 501 (not implemented) */
-        return httpd_find_file(hs, "501.html");
-#else /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
-        /* just close */
-        return ERR_ARG;
-#endif /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
+        LWIP_DEBUGF(HTTPD_DEBUG, ("Received POST request\n"));
 #endif /* LWIP_HTTPD_SUPPORT_POST */
       } else {
         /* null-terminate the METHOD (pbuf is freed anyway wen returning) */
@@ -1277,21 +1462,24 @@ http_parse_request(struct pbuf *p, struct http_state *hs)
         /* unsupported method! */
         LWIP_DEBUGF(HTTPD_DEBUG, ("Unsupported request method (not implemented): \"%s\"\n",
           data));
-#if LWIP_HTTPD_SUPPORT_EXTSTATUS
-        /* return HTTP error 501 (not implemented) */
-        return httpd_find_file(hs, "501.html");
-#else /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
-        /* just close */
-        return ERR_ARG;
-#endif /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
+        return http_find_error_file(hs, 501);
       }
       /* if we come here, method is OK, parse URI */
       left_len = data_len - ((sp1 +1) - data);
       sp2 = strnstr(sp1 + 1, " ", left_len);
+#if LWIP_HTTPD_SUPPORT_V09
       if (sp2 == NULL) {
-        /* HTTP 0.9? */
-        sp2 = strnstr(sp1 + 1, "\r\n", left_len);
+        /* HTTP 0.9: respond with correct protocol version */
+        sp2 = strnstr(sp1 + 1, CRLF, left_len);
+        is_09 = 1;
+#if LWIP_HTTPD_SUPPORT_POST
+        if (is_post) {
+          /* HTTP/0.9 does not support POST */
+          goto badrequest;
+        }
+#endif /* LWIP_HTTPD_SUPPORT_POST */
       }
+#endif /* LWIP_HTTPD_SUPPORT_V09 */
       uri_len = sp2 - (sp1 + 1);
       if ((sp2 != 0) && (sp2 > sp1)) {
         char *uri = sp1 + 1;
@@ -1300,37 +1488,51 @@ http_parse_request(struct pbuf *p, struct http_state *hs)
         uri[uri_len] = 0;
         LWIP_DEBUGF(HTTPD_DEBUG, ("Received \"%s\" request for URI: \"%s\"\n",
                     data, uri));
-        return httpd_find_file(hs, uri);
+#if LWIP_HTTPD_SUPPORT_POST
+        if (is_post) {
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+          struct pbuf **q = &hs->req;
+#else /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+          struct pbuf **q = inp;
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+          err = http_post_request(q, hs, data, data_len, uri, sp2);
+          if (err != ERR_OK) {
+            /* restore header for next try */
+            *sp1 = ' ';
+            *sp2 = ' ';
+            uri[uri_len] = ' ';
+          }
+          if (err == ERR_ARG) {
+            goto badrequest;
+          }
+          return err;
+        } else
+#endif /* LWIP_HTTPD_SUPPORT_POST */
+        {
+          return http_find_file(hs, uri, is_09);
+        }
       } else {
         LWIP_DEBUGF(HTTPD_DEBUG, ("invalid URI\n"));
-        goto badrequest;
       }
     }
+  }
 
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
-    clen = pbuf_clen(hs->req);
-    if ((hs->req->tot_len > LWIP_HTTPD_REQ_BUFSIZE) ||
-        (clen > LWIP_HTTPD_REQ_QUEUELEN))
+  clen = pbuf_clen(hs->req);
+  if ((hs->req->tot_len <= LWIP_HTTPD_REQ_BUFSIZE) &&
+    (clen <= LWIP_HTTPD_REQ_QUEUELEN)) {
+    /* request not fully received (too short or CRLF is missing) */
+    return ERR_INPROGRESS;
+  } else
 #endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
-    {
+  {
+#if LWIP_HTTPD_SUPPORT_POST
 badrequest:
-      LWIP_DEBUGF(HTTPD_DEBUG, ("bad request\n"));
-      /* request is too long */
-#if LWIP_HTTPD_SUPPORT_EXTSTATUS
-      /* return HTTP error 400 (bad request) */
-      return httpd_find_file(hs, "400.html");
-#else /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
-      /* just close */
-      return ERR_ARG;
-#endif /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
-    }
+#endif /* LWIP_HTTPD_SUPPORT_POST */
+    LWIP_DEBUGF(HTTPD_DEBUG, ("bad request\n"));
+    /* could not parse request */
+    return http_find_error_file(hs, 400);
   }
-  /* request not fully received (too short or CRLF is missing) */
-#if LWIP_HTTPD_SUPPORT_REQUESTLIST
-  return ERR_INPROGRESS;
-#else /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
-  return ERR_ARG;
-#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST*/
 }
 
 /** Try to find the file specified by uri and, if found, initialize hs
@@ -1338,16 +1540,16 @@ badrequest:
  *
  * @param hs the connection state
  * @param uri the HTTP header URI
+ * @param is_09 1 if the request is HTTP/0.9 (no HTTP headers in response)
  * @return ERR_OK if file was found and hs has been initialized correctly
  *         another err_t otherwise
  */
 static err_t
-httpd_find_file(struct http_state *hs, char *uri)
+http_find_file(struct http_state *hs, const char *uri, int is_09)
 {
   size_t loop;
   struct fs_file *file = NULL;
   /* default is request not supported, until it can be parsed */
-  err_t file_found = ERR_ARG;
 #if LWIP_HTTPD_CGI
   int i;
   int count;
@@ -1445,6 +1647,22 @@ httpd_find_file(struct http_state *hs, char *uri)
     }
 #endif /* LWIP_HTTPD_SSI */
   }
+  return http_init_file(hs, file, is_09);
+}
+
+/** Initialize a http connection with a file to send (if found).
+ * Called by http_find_file and http_find_error_file.
+ *
+ * @param hs http connection state
+ * @param file file structure to send (or NULL if not found)
+ * @param is_09 1 if the request is HTTP/0.9 (no HTTP headers in response)
+ * @return ERR_OK if file was found and hs has been initialized correctly
+ *         another err_t otherwise
+ */
+static err_t
+http_init_file(struct http_state *hs, struct fs_file *file, int is_09)
+{
+  err_t file_found = ERR_ARG;
 
   if (file != NULL) {
     /* file opened, initialise struct http_state */
@@ -1464,15 +1682,29 @@ httpd_find_file(struct http_state *hs, char *uri)
 #if LWIP_HTTPD_TIMING
     hs->time_started = sys_now();
 #endif /* LWIP_HTTPD_TIMING */
+#if !LWIP_HTTPD_DYNAMIC_HEADERS
+    LWIP_ASSERT("HTTP headers not included in file system", hs->handle->http_header_included);
+#endif /* !LWIP_HTTPD_DYNAMIC_HEADERS */
+#if LWIP_HTTPD_SUPPORT_V09
+    if (hs->handle->http_header_included && is_09) {
+      /* HTTP/0.9 responses are sent without HTTP header,
+         search for the end of the header. */
+      char *file_start = strnstr(hs->file, CRLF CRLF, hs->left);
+      if (file_start != NULL) {
+        size_t diff = file_start + 4 - hs->file;
+        hs->file += diff;
+        hs->left -= diff;
+      }
+    }
+#endif /* LWIP_HTTPD_SUPPORT_V09*/
   } else {
     hs->handle = NULL;
     hs->file = NULL;
     hs->left = 0;
     hs->retries = 0;
   }
-
 #if LWIP_HTTPD_DYNAMIC_HEADERS
-  /* Determine the HTTP headers to send based on the file extension of
+    /* Determine the HTTP headers to send based on the file extension of
    * the requested URI. */
   if (hs->handle && !hs->handle->http_header_included) {
     get_http_headers(hs, uri);
@@ -1596,32 +1828,53 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
     return ERR_OK;
   }
 
-  if (hs->handle == NULL) {
-    parsed = http_parse_request(p, hs);
-    LWIP_ASSERT("http_parse_request: unexpected return value", parsed == ERR_OK
-      || parsed == ERR_INPROGRESS ||parsed == ERR_ARG || parsed == ERR_USE);
-  } else {
-    LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: already sending data\n"));
-  }
+#if LWIP_HTTPD_SUPPORT_POST
+  if (hs->post_content_len_left > 0) {
+    /* this is data for a POST, pass the complete pbuf to the application */
+    http_post_rxpbuf(hs, p);
+    /* pbuf is passed to the application, don't free it! */
+    if (hs->post_content_len_left == 0) {
+      /* all data received, send response or close connection */
+      http_send_data(pcb, hs);
+    }
+    return ERR_OK;
+  } else
+#endif /* LWIP_HTTPD_SUPPORT_POST */
+  {
+    if (hs->handle == NULL) {
+      parsed = http_parse_request(&p, hs);
+      LWIP_ASSERT("http_parse_request: unexpected return value", parsed == ERR_OK
+        || parsed == ERR_INPROGRESS ||parsed == ERR_ARG || parsed == ERR_USE);
+    } else {
+      LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: already sending data\n"));
+    }
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
-  if (parsed != ERR_INPROGRESS) {
-    /* request fully parsed or error */
-    if (hs->req != NULL) {
-      pbuf_free(hs->req);
-      hs->req = NULL;
+    if (parsed != ERR_INPROGRESS) {
+      /* request fully parsed or error */
+      if (hs->req != NULL) {
+        pbuf_free(hs->req);
+        hs->req = NULL;
+      }
+    }
+#else /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+    if (p != NULL) {
+      /* pbuf not passed to application, free it now */
+      pbuf_free(p);
+    }
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+    if (parsed == ERR_OK) {
+#if LWIP_HTTPD_SUPPORT_POST
+      if (hs->post_content_len_left == 0)
+#endif /* LWIP_HTTPD_SUPPORT_POST */
+      {
+        LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: data %p len %"S32_F"\n", hs->file, hs->left));
+        http_send_data(pcb, hs);
+      }
+    } else if (parsed == ERR_ARG) {
+      /* @todo: close on ERR_USE? */
+      http_close_conn(pcb, hs);
     }
   }
-#else /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
-  pbuf_free(p);
-#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
-  if (parsed == ERR_OK) {
-    LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: data %p len %"S32_F"\n", hs->file, hs->left));
-    http_send_data(pcb, hs);
-  } else if (parsed == ERR_ARG) {
-    /* @todo: close on ERR_USE? */
-    http_close_conn(pcb, hs);
-  }
-
   return ERR_OK;
 }
 

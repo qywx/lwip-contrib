@@ -37,15 +37,24 @@
 #define __HTTPD_H__
 
 #include "lwip/opt.h"
+#include "lwip/err.h"
+#include "lwip/pbuf.h"
 
 void httpd_init(void);
 
+/** Set this to 1 to support CGI */
 #ifndef LWIP_HTTPD_CGI
-#define LWIP_HTTPD_CGI 0
+#define LWIP_HTTPD_CGI            0
 #endif
 
+/** Set this to 1 to support SSI (Server-Side-Includes) */
 #ifndef LWIP_HTTPD_SSI
-#define LWIP_HTTPD_SSI 0
+#define LWIP_HTTPD_SSI            0
+#endif
+
+/** Set this to 1 to support HTTP POST */
+#ifndef LWIP_HTTPD_SUPPORT_POST
+#define LWIP_HTTPD_SUPPORT_POST   0
 #endif
 
 
@@ -150,6 +159,50 @@ void http_set_ssi_handler(tSSIHandler pfnSSIHandler,
 #endif
 
 #endif /* LWIP_HTTPD_SSI */
+
+#if LWIP_HTTPD_SUPPORT_POST
+
+/* These functions must be implemented by the application */
+
+/** Called when a POST request has been received. The application can decide
+ * whether to accept it or not.
+ *
+ * @param connection Unique connection identifier, valid until httpd_post_end is called.
+ * @param uri The HTTP header URI receiving the POST request.
+ * @param http_request The raw HTTP request (the first packet, normally).
+ * @param http_request_len Size of 'http_request'.
+ * @param content_len Content-Length from HTTP header.
+ * @param response_uri Filename of response file, to be filled when denying the request
+ * @param response_uri_len Size of the 'response_uri' buffer.
+ * @return ERR_OK: Accept the POST request, data may be passed in
+ *         another err_t: Deny the POST request, send back 'bad request'.
+ */
+err_t httpd_post_begin(void *connection, const char *uri, const char *http_request,
+                       u16_t http_request_len, int content_len, char *response_uri,
+                       u16_t response_uri_len);
+
+/** Called for each pbuf of data that has been received for a POST.
+ * ATTENTION: The application is responsible for freeing the pbufs passed in!
+ *
+ * @param connection Unique connection identifier.
+ * @param p Received data.
+ * @return ERR_OK: Data accepted.
+ *         another err_t: Data denied, http_post_get_response_uri will be called.
+ */
+err_t httpd_post_receive_data(void *connection, struct pbuf *p);
+
+/** Called when all data is received or when the connection is closed.
+ * The application must return the filename/URI of a file to send in response
+ * to this POST request. If the response_uri buffer is untouched, a 404
+ * response is returned.
+ *
+ * @param connection Unique connection identifier.
+ * @param response_uri Filename of response file, to be filled when denying the request
+ * @param response_uri_len Size of the 'response_uri' buffer.
+ */
+void httpd_post_finished(void *connection, char *response_uri, u16_t response_uri_len);
+
+#endif /* LWIP_HTTPD_SUPPORT_POST */
 
 void httpd_init(void);
 
