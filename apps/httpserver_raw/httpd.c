@@ -85,6 +85,7 @@
 #include "fs.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 #ifndef HTTPD_DEBUG
 #define HTTPD_DEBUG         LWIP_DBG_OFF
@@ -305,6 +306,7 @@ struct http_state {
 
 static err_t http_find_file(struct http_state *hs, const char *uri, int is_09);
 static err_t http_init_file(struct http_state *hs, struct fs_file *file, int is_09);
+static err_t http_poll(void *arg, struct tcp_pcb *pcb);
 
 #if LWIP_HTTPD_SSI
 /* SSI insert handler function pointer. */
@@ -409,12 +411,16 @@ http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
   LWIP_DEBUGF(HTTPD_DEBUG, ("Closing connection %p\n", (void*)pcb));
 
   tcp_arg(pcb, NULL);
-  tcp_sent(pcb, NULL);
   tcp_recv(pcb, NULL);
+  tcp_err(pcb, NULL);
+  tcp_poll(pcb, NULL, 0);
+  tcp_sent(pcb, NULL);
   http_state_free(hs);
   err = tcp_close(pcb);
   if (err != ERR_OK) {
     LWIP_DEBUGF(HTTPD_DEBUG, ("Error %d closing %p\n", err, (void*)pcb));
+    /* error closing, try again later in poll */
+    tcp_poll(pcb, http_poll, HTTPD_POLL_INTERVAL);
   }
 }
 #if LWIP_HTTPD_CGI
@@ -1591,7 +1597,7 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
     /* No - we've been asked for a specific file. */
 #if LWIP_HTTPD_CGI
     /* First, isolate the base URI (without any parameters) */
-    params = strchr(uri, '?');
+    params = (char *)strchr(uri, '?');
     if (params != NULL) {
       /* URI contains parameters. NULL-terminate the base URI */
       *params = '\0';
@@ -1769,12 +1775,10 @@ http_poll(void *arg, struct tcp_pcb *pcb)
     (void*)pcb, (void*)hs, tcp_debug_state_str(pcb->state)));
 
   if (hs == NULL) {
-    if (pcb->state == ESTABLISHED) {
-      /* arg is null, close. */
-      LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: arg is NULL, close\n"));
-      http_close_conn(pcb, hs);
-      return ERR_OK;
-    }
+    /* arg is null, close. */
+    LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: arg is NULL, close\n"));
+    http_close_conn(pcb, hs);
+    return ERR_OK;
   } else {
     hs->retries++;
     if (hs->retries == HTTPD_MAX_RETRIES) {
@@ -1928,6 +1932,7 @@ httpd_init(void)
 
   pcb = tcp_new();
   LWIP_ASSERT("httpd_init: tcp_new failed", pcb != NULL);
+  tcp_setprio(pcb, HTTPD_TCP_PRIO);
   err = tcp_bind(pcb, IP_ADDR_ANY, HTTPD_SERVER_PORT);
   LWIP_ASSERT("httpd_init: tcp_bind failed", err == ERR_OK);
   pcb = tcp_listen(pcb);
