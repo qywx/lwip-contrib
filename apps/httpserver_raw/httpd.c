@@ -337,9 +337,10 @@ strnstr(const char* buffer, const char* token, size_t n)
   if (tokenlen == 0) {
     return (char *)buffer;
   }
-  for (p = buffer; *p && p + tokenlen <= buffer + n; p++) {
-    if (*p == *token && strncmp(p, token, tokenlen) == 0)
+  for (p = buffer; *p && (p + tokenlen <= buffer + n); p++) {
+    if ((*p == *token) && (strncmp(p, token, tokenlen) == 0)) {
       return (char *)p;
+    }
   }
   return NULL;
 } 
