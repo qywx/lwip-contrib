@@ -1438,7 +1438,7 @@ http_parse_request(struct pbuf **inp, struct http_state *hs)
     pbuf_copy_partial(hs->req, httpd_req_buf, data_len, 0);
     data = httpd_req_buf;
   } else
-#endif LWIP_HTTPD_SUPPORT_REQUESTLIST
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
   {
     data = (char *)p->payload;
     data_len = p->len;
