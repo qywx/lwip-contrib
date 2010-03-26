@@ -101,7 +101,7 @@ quit: quits."NEWLINE"";
 
 #define STAT_NUM (((5 + UDP_STATS) * 12) + (4) + (11 * 4) + (2 * 3))
 
-static char *stat_msgs[STAT_NUM] = {
+static const char *stat_msgs[STAT_NUM] = {
   "Link level * transmitted ",
   "           * received ",
   "             forwarded ",
@@ -232,7 +232,7 @@ static char *stat_msgs[STAT_NUM] = {
   "           * errors "
 };
 
-static char *stat_formats[STAT_NUM] = {
+static const char *stat_formats[STAT_NUM] = {
   U16_F, /* link xmit */
   U16_F, /* link recv */
   U16_F, /* link fw */ 
@@ -1365,6 +1365,9 @@ error(s8_t err, struct netconn *conn)
     break;
   case ETOOMANY:
     sendstr("## Too many arguments to command given"NEWLINE, conn);
+    break;
+  default:
+    LWIP_ASSERT("Unknown error", 0);
     break;
   }
 }
