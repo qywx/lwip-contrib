@@ -1354,7 +1354,7 @@ parse_command(struct command *com, u32_t len)
 }
 /*-----------------------------------------------------------------------------------*/
 static void
-error(s8_t err, struct netconn *conn)
+shell_error(s8_t err, struct netconn *conn)
 {
   switch (err) {
   case ESYNTAX:
@@ -1365,6 +1365,9 @@ error(s8_t err, struct netconn *conn)
     break;
   case ETOOMANY:
     sendstr("## Too many arguments to command given"NEWLINE, conn);
+    break;
+  case ECLOSED:
+    sendstr("## Connection closed"NEWLINE, conn);
     break;
   default:
     LWIP_ASSERT("Unknown error", 0);
@@ -1415,13 +1418,13 @@ shell_main(struct netconn *conn)
             com.conn = conn;
             err = com.exec(&com);
           }
-          if (err != ESUCCESS) {
-            error(err, conn);
-          }
           if (err == ECLOSED) {
             printf("Closed"NEWLINE);
-            error(err, conn);
+            shell_error(err, conn);
             goto close;
+          }
+          if (err != ESUCCESS) {
+            shell_error(err, conn);
           }
         } else {
           sendstr(NEWLINE NEWLINE
