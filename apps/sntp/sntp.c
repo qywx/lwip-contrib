@@ -39,9 +39,13 @@
 #include "lwip/timers.h"
 #include "lwip/udp.h"
 #include "lwip/dns.h"
+#include "lwip/ip_addr.h"
+#include "lwip/pbuf.h"
 
 #include <string.h>
 #include <time.h>
+
+#if LWIP_UDP
 
 /** This is simple "SNTP" client for socket or raw API.
  * It is a minimal implementation of SNTPv4 as specified in RFC 4330.
@@ -694,3 +698,5 @@ sntp_init(void)
 }
 
 #endif /* SNTP_SOCKET */
+
+#endif /* LWIP_UDP */

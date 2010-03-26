@@ -45,6 +45,8 @@
 #include "lwip/stats.h"
 #include "lwip/tcp.h"
 
+#if LWIP_TCP
+
 static struct tcp_pcb *echo_pcb;
 
 enum echo_states
@@ -354,3 +356,5 @@ echo_close(struct tcp_pcb *tpcb, struct echo_state *es)
   }  
   tcp_close(tpcb);
 }
+
+#endif /* LWIP_TCP */

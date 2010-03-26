@@ -87,6 +87,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#if LWIP_TCP
+
 #ifndef HTTPD_DEBUG
 #define HTTPD_DEBUG         LWIP_DBG_OFF
 #endif
@@ -1989,3 +1991,5 @@ http_set_cgi_handlers(const tCGI *cgis, int num_handlers)
   g_iNumCGIs = num_handlers;
 }
 #endif /* LWIP_HTTPD_CGI */
+
+#endif /* LWIP_TCP */
