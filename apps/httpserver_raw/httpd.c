@@ -135,7 +135,7 @@
 
 /** Set this to 1 on platforms where strnstr is not available */
 #ifndef LWIP_HTTPD_STRNSTR_PRIVATE
-#define LWIP_HTTPD_STRNSTR_PRIVATE          0
+#define LWIP_HTTPD_STRNSTR_PRIVATE          1
 #endif
 
 /** Set this to one to show error pages when parsing a request fails instead
@@ -348,7 +348,7 @@ strnstr(const char* buffer, const char* token, size_t n)
 
 /** Allocate a struct http_state. */
 static struct http_state*
-http_state_alloc()
+http_state_alloc(void)
 {
   struct http_state *ret;
 #if HTTPD_USE_MEM_POOL
