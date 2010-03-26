@@ -30,6 +30,8 @@
  *
  */
 
+#include "netif/tunif.h"
+
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -58,6 +60,8 @@
 #define TUNIF_DEBUG LWIP_DBG_OFF
 #endif
 
+#define IFCONFIG_CALL "/sbin/ifconfig tun0 inet %d.%d.%d.%d %d.%d.%d.%d"
+
 struct tunif {
   /* Add whatever per-interface state that is needed here. */
   int fd;
@@ -75,21 +79,21 @@ static void
 low_level_init(struct netif *netif)
 {
   struct tunif *tunif;
-  char buf[100];
+  char buf[sizeof(IFCONFIG_CALL) + 50];
 
-  tunif = netif->state;
-  
+  tunif = (struct tunif *)netif->state;
+
   /* Obtain MAC address from network interface. */
 
   /* Do whatever else is needed to initialize interface. */
-  
+
   tunif->fd = open("/dev/tun0", O_RDWR);
   LWIP_DEBUGF(TUNIF_DEBUG, ("tunif_init: fd %d\n", tunif->fd));
   if (tunif->fd == -1) {
     perror("tunif_init");
     exit(1);
   }
-  snprintf(buf, sizeof(buf), "/sbin/ifconfig tun0 inet %d.%d.%d.%d %d.%d.%d.%d",
+  sprintf(buf, IFCONFIG_CALL,
            ip4_addr1(&(netif->gw)),
            ip4_addr2(&(netif->gw)),
            ip4_addr3(&(netif->gw)),
@@ -98,7 +102,7 @@ low_level_init(struct netif *netif)
            ip4_addr2(&(netif->ip_addr)),
            ip4_addr3(&(netif->ip_addr)),
            ip4_addr4(&(netif->ip_addr)));
-  
+
   LWIP_DEBUGF(TUNIF_DEBUG, ("tunif_init: system(\"%s\");\n", buf));
   system(buf);
   sys_thread_new("tunif_thread", tunif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
@@ -121,23 +125,25 @@ low_level_output(struct tunif *tunif, struct pbuf *p)
   struct pbuf *q;
   char buf[1500];
   char *bufptr;
-  
+  int rnd_val;
+
   /* initiate transfer(); */
 
-  if (((double)rand()/(double)RAND_MAX) < 0.4) {
+  rnd_val = rand();
+  if (((double)rnd_val/(double)RAND_MAX) < 0.4) {
     printf("drop\n");
     return ERR_OK;
   }
-  
-  
+
+
   bufptr = &buf[0];
-  
+
   for(q = p; q != NULL; q = q->next) {
     /* Send the data from the pbuf to the interface, one pbuf at a
        time. The size of the data in each pbuf is kept in the ->len
-       variable. */    
+       variable. */
     /* send data from(q->payload, q->len); */
-    bcopy(q->payload, bufptr, q->len);
+    memcpy(q->payload, bufptr, q->len);
     bufptr += q->len;
   }
 
@@ -173,10 +179,10 @@ low_level_input(struct tunif *tunif)
     return NULL;
     }*/
 
-  
+
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
-  
+
   if (p != NULL) {
     /* We iterate over the pbuf chain until we have read the entire
        packet into the pbuf. */
@@ -186,7 +192,7 @@ low_level_input(struct tunif *tunif)
          available data in the pbuf is given by the q->len
          variable. */
       /* read data into(q->payload, q->len); */
-      bcopy(bufptr, q->payload, q->len);
+      memcpy(bufptr, q->payload, q->len);
       bufptr += q->len;
     }
     /* acknowledge that packet has been read(); */
@@ -194,7 +200,7 @@ low_level_input(struct tunif *tunif)
     /* drop packet(); */
   }
 
-  return p;  
+  return p;
 }
 /*-----------------------------------------------------------------------------------*/
 static void 
@@ -204,10 +210,10 @@ tunif_thread(void *arg)
   struct tunif *tunif;
   fd_set fdset;
   int ret;
-  
-  netif = arg;
-  tunif = netif->state;
-  
+
+  netif = (struct netif *)arg;
+  tunif = (struct tunif *)netif->state;
+
   while (1) {
     FD_ZERO(&fdset);
     FD_SET(tunif->fd, &fdset);
@@ -240,7 +246,7 @@ tunif_output(struct netif *netif, struct pbuf *p,
   struct tunif *tunif;
   LWIP_UNUSED_ARG(ipaddr);
 
-  tunif = netif->state;
+  tunif = (struct tunif *)netif->state;
 
   return low_level_output(tunif, p);
 
@@ -263,8 +269,8 @@ tunif_input(struct netif *netif)
   struct pbuf *p;
 
 
-  tunif = netif->state;
-  
+  tunif = (struct tunif *)netif->state;
+
   p = low_level_input(tunif);
 
   if (p == NULL) {
@@ -295,16 +301,17 @@ err_t
 tunif_init(struct netif *netif)
 {
   struct tunif *tunif;
-    
-  tunif = mem_malloc(sizeof(struct tunif));
-  if (!tunif)
-      return ERR_MEM;
+
+  tunif = (struct tunif *)mem_malloc(sizeof(struct tunif));
+  if (!tunif) {
+    return ERR_MEM;
+  }
   netif->state = tunif;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
   netif->output = tunif_output;
-  
-  
+
+
   low_level_init(netif);
   return ERR_OK;
 }

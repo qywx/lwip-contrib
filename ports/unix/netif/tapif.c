@@ -30,6 +30,8 @@
  *
  */
 
+#include "netif/tapif.h"
+
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -54,6 +56,8 @@
 #if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
 #include "netif/tcpdump.h"
 #endif /* LWIP_DEBUG && LWIP_TCPDUMP */
+
+#define IFCONFIG_BIN "/sbin/ifconfig "
 
 #if defined(linux)
 #include <sys/ioctl.h>
@@ -92,10 +96,10 @@ static void
 low_level_init(struct netif *netif)
 {
   struct tapif *tapif;
-  char buf[100];
+  char buf[sizeof(IFCONFIG_ARGS) + sizeof(IFCONFIG_BIN) + 50];
 
-  tapif = netif->state;
-  
+  tapif = (struct tapif *)netif->state;
+
   /* Obtain MAC address from network interface. */
 
   /* (We just fake an address...) */
@@ -107,7 +111,7 @@ low_level_init(struct netif *netif)
   tapif->ethaddr->addr[5] = 0x6;
 
   /* Do whatever else is needed to initialize interface. */
-  
+
   tapif->fd = open(DEVTAP, O_RDWR);
   LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: fd %d\n", tapif->fd));
   if(tapif->fd == -1) {
@@ -131,12 +135,12 @@ low_level_init(struct netif *netif)
   }
 #endif /* Linux */
 
-  snprintf(buf, sizeof(buf), "/sbin/ifconfig " IFCONFIG_ARGS,
+  sprintf(buf, IFCONFIG_BIN IFCONFIG_ARGS,
            ip4_addr1(&(netif->gw)),
            ip4_addr2(&(netif->gw)),
            ip4_addr3(&(netif->gw)),
            ip4_addr4(&(netif->gw)));
-  
+
   LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: system(\"%s\");\n", buf));
   system(buf);
   sys_thread_new("tapif_thread", tapif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
@@ -161,21 +165,21 @@ low_level_output(struct netif *netif, struct pbuf *p)
   char *bufptr;
   struct tapif *tapif;
 
-  tapif = netif->state;
-#if 0  
+  tapif = (struct tapif *)netif->state;
+#if 0
     if(((double)rand()/(double)RAND_MAX) < 0.2) {
     printf("drop output\n");
     return ERR_OK;
     }
-#endif 
+#endif
   /* initiate transfer(); */
-  
+
   bufptr = &buf[0];
-  
+
   for(q = p; q != NULL; q = q->next) {
     /* Send the data from the pbuf to the interface, one pbuf at a
        time. The size of the data in each pbuf is kept in the ->len
-       variable. */    
+       variable. */
     /* send data from(q->payload, q->len); */
     memcpy(bufptr, q->payload, q->len);
     bufptr += q->len;
@@ -213,10 +217,10 @@ low_level_input(struct tapif *tapif)
     return NULL;
     }
 #endif
-  
+
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
-  
+
   if(p != NULL) {
     /* We iterate over the pbuf chain until we have read the entire
        packet into the pbuf. */
@@ -234,20 +238,20 @@ low_level_input(struct tapif *tapif)
     /* drop packet(); */
   }
 
-  return p;  
+  return p;
 }
 /*-----------------------------------------------------------------------------------*/
-static void 
+static void
 tapif_thread(void *arg)
 {
   struct netif *netif;
   struct tapif *tapif;
   fd_set fdset;
   int ret;
-  
-  netif = arg;
-  tapif = netif->state;
-  
+
+  netif = (struct netif *)arg;
+  tapif = (struct tapif *)netif->state;
+
   while(1) {
     FD_ZERO(&fdset);
     FD_SET(tapif->fd, &fdset);
@@ -282,15 +286,15 @@ tapif_input(struct netif *netif)
   struct pbuf *p;
 
 
-  tapif = netif->state;
-  
+  tapif = (struct tapif *)netif->state;
+
   p = low_level_input(tapif);
 
   if(p == NULL) {
     LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: low_level_input returned NULL\n"));
     return;
   }
-  ethhdr = p->payload;
+  ethhdr = (struct eth_hdr *)p->payload;
 
   switch(htons(ethhdr->type)) {
   /* IP or ARP packet? */
@@ -327,10 +331,11 @@ err_t
 tapif_init(struct netif *netif)
 {
   struct tapif *tapif;
-    
-  tapif = mem_malloc(sizeof(struct tapif));
-  if (!tapif)
-      return ERR_MEM;
+
+  tapif = (struct tapif *)mem_malloc(sizeof(struct tapif));
+  if (!tapif) {
+    return ERR_MEM;
+  }
   netif->state = tapif;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
@@ -339,10 +344,10 @@ tapif_init(struct netif *netif)
   netif->mtu = 1500;
   /* hardware address length */
   netif->hwaddr_len = 6;
-  
+
   tapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
   low_level_init(netif);
-  
+
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/

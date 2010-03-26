@@ -41,7 +41,7 @@ struct list *
 list_new(int size)
 {
   struct list *list;
-  list = malloc(sizeof(struct list));
+  list = (struct list *)malloc(sizeof(struct list));
   list->first = list->last = NULL;
   list->size = size;
   list->elems = 0;
@@ -52,9 +52,9 @@ int
 list_push(struct list *list, void *data)
 {
   struct elem *elem;
-  
+
   if (list->elems < list->size) {
-    elem = malloc(sizeof(struct elem));
+    elem = (struct elem *)malloc(sizeof(struct elem));
     elem->data = data;
     elem->next = NULL;
     if (list->last != NULL) {
@@ -75,14 +75,14 @@ list_pop(struct list *list)
 {
   struct elem *elem;
   void *data;
-  
-  if (list->elems > 0) {    
+
+  if (list->elems > 0) {
     elem = list->first;
     if (elem == list->last) {
       list->last = elem->next;
     }
     list->first = elem->next;
-    
+
     list->elems--;
 
     data = elem->data;
@@ -116,7 +116,7 @@ int
 list_remove(struct list *list, void *elem)
 {
   struct elem *e, *p;
-  
+
   p = NULL;
   for(e = list->first; e != NULL; e = e->next) {
     if (e->data == elem) {
@@ -134,8 +134,8 @@ list_remove(struct list *list, void *elem)
       free(e);
       list->elems--;
       return 1;
-    } 
-    p = e;    
+    }
+    p = e;
   }
   return 0;
 }

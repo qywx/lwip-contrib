@@ -109,10 +109,10 @@ static struct option longopts[] = {
 
 static void init_netifs(void);
 
-void usage(void)
+static void usage(void)
 {
   unsigned char i;
-   
+
   printf("options:\n");
   for (i = 0; i < NUM_OPTS; i++) {
     printf("-%c --%s\n",longopts[i].val, longopts[i].name);
@@ -122,6 +122,7 @@ void usage(void)
 static void
 tcp_debug_timeout(void *data)
 {
+  LWIP_UNUSED_ARG(data);
 #if TCP_DEBUG
   tcp_debug_print_pcbs();
 #endif /* TCP_DEBUG */
@@ -132,7 +133,7 @@ static void
 tcpip_init_done(void *arg)
 {
   sys_sem_t *sem;
-  sem = arg;
+  sem = (sys_sem_t *)arg;
 
   init_netifs();
 
@@ -260,7 +261,7 @@ ping_send(int s, ip_addr_t *addr)
   struct icmp_echo_hdr *iecho;
   struct sockaddr_in to;
 
-  if (!(iecho = malloc(sizeof(struct icmp_echo_hdr))))
+  if (!(iecho = (struct icmp_echo_hdr *)malloc(sizeof(struct icmp_echo_hdr))))
     return;
 
   ICMPH_TYPE_SET(iecho,ICMP_ECHO);
@@ -285,6 +286,7 @@ ping_recv(int s, ip_addr_t *addr)
   socklen_t fromlen;
   int len;
   struct sockaddr_in from;
+  LWIP_UNUSED_ARG(addr);
 
   len = lwip_recvfrom(s, buf,sizeof(buf),0,(struct sockaddr*)&from,&fromlen);
 
@@ -295,6 +297,7 @@ static void
 ping_thread(void *arg)
 {
   int s;
+  LWIP_UNUSED_ARG(arg);
 
   if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
     return;
@@ -379,6 +382,7 @@ main_thread(void *arg)
 #if PPP_SUPPORT
   sio_fd_t ppp_sio;
 #endif
+  LWIP_UNUSED_ARG(arg);
 
   netif_init();
 

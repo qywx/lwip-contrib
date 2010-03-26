@@ -67,6 +67,7 @@ unsigned char debug_flags;
 static void
 tcp_timeout(void *data)
 {
+  LWIP_UNUSED_ARG(data);
 #if TCP_DEBUG
   tcp_debug_print_pcbs();
 #endif /* TCP_DEBUG */
@@ -80,7 +81,7 @@ tcpip_init_done(void *arg)
 {
   ip_addr_t ipaddr, netmask, gw;
   sys_sem_t *sem;
-  sem = arg;
+  sem = (sys_sem_t *)arg;
 
   IP4_ADDR(&gw, 192,168,1,1);
   IP4_ADDR(&ipaddr, 192,168,1,2);
@@ -108,6 +109,7 @@ static void
 main_thread(void *arg)
 {
   sys_sem_t sem;
+  LWIP_UNUSED_ARG(arg);
 
   if(sys_sem_new(&sem, 0) != ERR_OK) {
     LWIP_ASSERT("Failed to create semaphore", 0);
@@ -125,7 +127,7 @@ main_thread(void *arg)
 }
 /*-----------------------------------------------------------------------------------*/
 int
-main(int argc, char **argv)
+main(void)
 {
 #ifdef PERF
   perf_init("/tmp/client.perf");

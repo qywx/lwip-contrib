@@ -73,12 +73,13 @@ tcpdump(struct pbuf *p)
   if (file == NULL) {
     return;
   }
-#ifdef IPv4  
-  iphdr = p->payload;
+#ifdef IPv4
+  iphdr = (struct ip_hdr *)p->payload;
   switch (IPH_PROTO(iphdr)) {
-  case IP_PROTO_TCP:    
+#if LWIP_TCP
+  case IP_PROTO_TCP:
     tcphdr = (struct tcp_hdr *)((char *)iphdr + IP_HLEN);
-    
+
     pbuf_header(p, -IP_HLEN);
     if (inet_chksum_pseudo(p, (ip_addr_t *)&(iphdr->src),
 			  (ip_addr_t *)&(iphdr->dest),
@@ -91,7 +92,7 @@ tcpdump(struct pbuf *p)
 	    IP_PROTO_TCP, p->tot_len));*/
       fprintf(file, "!chksum ");
     }
-    
+
     i = 0;
     if (TCPH_FLAGS(tcphdr) & TCP_SYN) {
       flags[i++] = 'S';
@@ -108,10 +109,10 @@ tcpdump(struct pbuf *p)
     if (i == 0) {
       flags[i++] = '.';
     }
-    flags[i++] = 0;    
+    flags[i++] = 0;
 
-    
-    
+
+
     fprintf(file, "%d.%d.%d.%d.%u > %d.%d.%d.%d.%u: ",
 	    (int)(ntohl(iphdr->src.addr) >> 24) & 0xff,
 	    (int)(ntohl(iphdr->src.addr) >> 16) & 0xff,
@@ -124,7 +125,7 @@ tcpdump(struct pbuf *p)
 	    (int)(ntohl(iphdr->dest.addr) >> 0) & 0xff,
 	    ntohs(tcphdr->dest));
     offset = TCPH_OFFSET(tcphdr) >> 4;
-    
+
     len = ntohs(IPH_LEN(iphdr)) - offset * 4 - IP_HLEN;
     if (len != 0 || flags[0] != '.') {
       fprintf(file, "%s %u:%u(%u) ",
@@ -139,16 +140,17 @@ tcpdump(struct pbuf *p)
     }
     fprintf(file, "wnd %u\n",
 	    ntohs(tcphdr->wnd));
-    
+
     fflush(file);
-    
+
     pbuf_header(p, IP_HLEN);
     break;
-    
+#endif /* LWIP_TCP */
+
 #if LWIP_UDP
-  case IP_PROTO_UDP:    
+  case IP_PROTO_UDP:
     udphdr = (struct udp_hdr *)((char *)iphdr + IP_HLEN);
-    
+
     pbuf_header(p, -IP_HLEN);
     if (inet_chksum_pseudo(p, (ip_addr_t *)&(iphdr->src),
 			  (ip_addr_t *)&(iphdr->dest),
@@ -161,7 +163,7 @@ tcpdump(struct pbuf *p)
 	    IP_PROTO_TCP, p->tot_len));*/
       fprintf(file, "!chksum ");
     }
-    
+
     fprintf(file, "%d.%d.%d.%d.%u > %d.%d.%d.%d.%u: ",
 	    (int)(ntohl(iphdr->src.addr) >> 24) & 0xff,
 	    (int)(ntohl(iphdr->src.addr) >> 16) & 0xff,
@@ -176,12 +178,15 @@ tcpdump(struct pbuf *p)
     fprintf(file, "U ");
     len = ntohs(IPH_LEN(iphdr)) - sizeof(struct udp_hdr) - IP_HLEN;
     fprintf(file, " %d\n", len);
-    
+
     fflush(file);
-    
+
     pbuf_header(p, IP_HLEN);
     break;
 #endif /* LWIP_UDP */
+  default:
+    LWIP_DEBUGF(TCPDUMP_DEBUG, ("unhandled IP protocol: %d\n", (int)IPH_PROTO(iphdr)));
+    break;
 
   }
 #endif /* IPv4 */

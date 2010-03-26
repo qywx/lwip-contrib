@@ -69,7 +69,7 @@
 struct unixif_buf {
   struct pbuf *p;
   unsigned short len, tot_len;
-  void *payload;  
+  void *payload;
 };
 
 struct unixif {
@@ -81,7 +81,7 @@ struct unixif {
 
 /*-----------------------------------------------------------------------------------*/
 static int
-unix_socket_client(char *name)
+unix_socket_client(const char *name)
 {
   int fd, len;
   struct sockaddr_un unix_addr;
@@ -91,7 +91,7 @@ unix_socket_client(char *name)
     perror("unixif: unix_socket_client: socket");
     return(-1);
   }
-  
+
                                 /* fill socket address structure w/our address */
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
@@ -104,7 +104,7 @@ unix_socket_client(char *name)
   len = sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;
 #endif /* linux */
-  
+
   unlink(unix_addr.sun_path);             /* in case it already exists */
   if (bind(fd, (struct sockaddr *) &unix_addr,
 	   sizeof(struct sockaddr_un)) < 0) {
@@ -115,7 +115,7 @@ unix_socket_client(char *name)
     perror("unixif: unix_socket_client: socket");
     return(-1);
   }
-  
+
                                 /* fill socket address structure w/server's addr */
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
@@ -125,7 +125,7 @@ unix_socket_client(char *name)
     strlen(unix_addr.sun_path) + 1;  
   unix_addr.sun_len = len;
 #else
-  len = sizeof(unix_addr.sun_family) + strlen(unix_addr.sun_path) + 1;    
+  len = sizeof(unix_addr.sun_family) + strlen(unix_addr.sun_path) + 1;
 #endif /* linux */
   if (connect(fd, (struct sockaddr *) &unix_addr,
 	     sizeof(struct sockaddr_un)) < 0) {
@@ -137,7 +137,7 @@ unix_socket_client(char *name)
 
 /*-----------------------------------------------------------------------------------*/
 static int
-unix_socket_server(char *name)
+unix_socket_server(const char *name)
 {
   int fd, len;
   struct sockaddr_un unix_addr;
@@ -147,9 +147,9 @@ unix_socket_server(char *name)
     perror("unixif: unix_socket_server: socket");
     return(-1);
   }
-  
+
   unlink(name);   /* in case it already exists */
-  
+
   /* fill in socket address structure */
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
@@ -162,7 +162,7 @@ unix_socket_server(char *name)
   len = sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;
 #endif /* linux */
-  
+
   /* bind the name to the descriptor */
   if (bind(fd, (struct sockaddr *) &unix_addr,
 	   sizeof(struct sockaddr_un)) < 0) {
@@ -189,12 +189,12 @@ unixif_input_handler(void *data)
 {
   struct netif *netif;
   struct unixif *unixif;
-  char buf[4096], *bufptr;
+  char buf[1532], *bufptr;
   int len, plen, rlen;
   struct pbuf *p, *q;
 
-  netif = data;
-  unixif = netif->state;
+  netif = (struct netif *)data;
+  unixif = (struct unixif *)netif->state;
 
   len = read(unixif->fd, &plen, sizeof(int));
   if (len == -1) {
@@ -217,7 +217,7 @@ unixif_input_handler(void *data)
     }
     LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_irq_handler: read %d bytes\n", len));
     p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
-    
+
     if (p != NULL) {
       rlen = len;
       bufptr = buf;
@@ -235,7 +235,7 @@ unixif_input_handler(void *data)
     } else {
       LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_irq_handler: could not allocate pbuf\n"));
     }
-      
+
 
   }
 }
@@ -245,18 +245,18 @@ unixif_thread(void *arg)
 {
   struct netif *netif;
   struct unixif *unixif;
-  
+
   LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_thread: started.\n"));
 
-  netif = arg;
-  unixif = netif->state;
+  netif = (struct netif *)arg;
+  unixif = (struct unixif *)netif->state;
 
 
   while (1) {
     sys_sem_wait(&unixif->sem);
     unixif_input_handler(netif);
   }
-  
+
 }
 /*-----------------------------------------------------------------------------------*/
 static void 
@@ -265,16 +265,16 @@ unixif_thread2(void *arg)
   struct netif *netif;
   struct unixif *unixif;
   fd_set fdset;
-  
+
   LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_thread2: started.\n"));
 
-  netif = arg;
-  unixif = netif->state;
+  netif = (struct netif *)arg;
+  unixif = (struct unixif *)netif->state;
 
   while (1) {
     FD_ZERO(&fdset);
     FD_SET(unixif->fd, &fdset);
-  
+
     if (select(unixif->fd + 1, &fdset, NULL, NULL, NULL) > 0) {
       sys_sem_signal(&unixif->sem);
     }
@@ -288,9 +288,11 @@ unixif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 {
   struct unixif *unixif;
   struct unixif_buf *buf;
-  unixif = netif->state;
+  LWIP_UNUSED_ARG(ipaddr);
 
-  buf = malloc(sizeof(struct unixif_buf));
+  unixif = (struct unixif *)netif->state;
+
+  buf = (struct unixif_buf *)malloc(sizeof(struct unixif_buf));
   buf->p = p;
   buf->len = p->len;
   buf->tot_len = p->tot_len;
@@ -303,13 +305,13 @@ unixif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 		netif);
 
     LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output: first on list\n"));
-    
+
   } else {
     pbuf_ref(p);
     if (list_push(unixif->q, buf) == 0) {
 #ifdef UNIXIF_DROP_FIRST
       struct unixif_buf *buf2;
-      
+
       buf2 = list_pop(unixif->q);
       pbuf_free(buf2->p);
       free(buf2);
@@ -317,9 +319,9 @@ unixif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 #else
       free(buf);
       pbuf_free(p);
-      
+
       LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output: drop\n"));
-      
+
 #endif /* UNIXIF_DROP_FIRST */
       LINK_STATS_INC(link.drop);
 
@@ -333,8 +335,8 @@ unixif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 /*-----------------------------------------------------------------------------------*/
 static void
 unixif_output_timeout(void *arg)
-{  
-  struct pbuf *p, *q;  
+{
+  struct pbuf *p, *q;
   int i, j, len;
   unsigned short plen, ptot_len;
   struct unixif_buf *buf;
@@ -343,33 +345,33 @@ unixif_output_timeout(void *arg)
   struct unixif *unixif;
   char *data;
 
-  netif = arg;
-  unixif = netif->state;
+  netif = (struct netif *)arg;
+  unixif = (struct unixif *)netif->state;
 
   LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output_timeout\n"));
 
   /*  buf = unixif->q[0];
   unixif->q[0] = unixif->q[1];
   unixif->q[1] = NULL;*/
-  buf = list_pop(unixif->q);
-  
+  buf = (struct unixif_buf *)list_pop(unixif->q);
+
   p = buf->p;
 
   plen = p->len;
   ptot_len = p->tot_len;
   payload = p->payload;
-  
+
   p->len = buf->len;
   p->tot_len = buf->tot_len;
   p->payload = buf->payload;
-  
-  
+
+
   if (p->tot_len == 0) {
 
     LWIP_DEBUGF(UNIXIF_DEBUG, ("p->len!\n"));
     abort();
   }
-  data = malloc(p->tot_len);
+  data = (char *)malloc(p->tot_len);
 
   i = 0;
   for(q = p; q != NULL; q = q->next) {
@@ -381,13 +383,13 @@ unixif_output_timeout(void *arg)
 
   LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output: sending %d (%d) bytes\n",
 			p->len, p->tot_len));
-  
+
   len = p->tot_len;
   if (write(unixif->fd, &len, sizeof(int)) == -1) {
     perror("unixif_output: write");
     abort();
   }
-    
+
   if (write(unixif->fd, data, p->tot_len) == -1) {
     perror("unixif_output: write");
     abort();
@@ -402,7 +404,7 @@ unixif_output_timeout(void *arg)
   p->payload = payload;
 
   pbuf_free(p);
-    
+
   /*  if (unixif->q[0] != NULL) {
     sys_timeout(unixif->q[0]->tot_len * 8000 / UNIXIF_BPS,
 		unixif_output_timeout, netif);
@@ -429,10 +431,11 @@ unixif_init_server(struct netif *netif)
     abort();
   }
   LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_server: fd %d\n", fd));
-    
-  unixif = malloc(sizeof(struct unixif));
-  if (!unixif)
-      return ERR_MEM;
+
+  unixif = (struct unixif *)malloc(sizeof(struct unixif));
+  if (!unixif) {
+    return ERR_MEM;
+  }
   netif->state = unixif;
   netif->name[0] = 'u';
   netif->name[1] = 'n';
@@ -442,11 +445,11 @@ unixif_init_server(struct netif *netif)
   printf("Now run ./simnode.\n");
   len = sizeof(addr);
   fd2 = accept(fd, (struct sockaddr *)&addr, &len);
-  
+
   if (fd2 == -1) {
     perror("unixif_accept");
     abort();
-  } 
+  }
 
   LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_accept: %d\n", fd2));
 
@@ -463,14 +466,15 @@ err_t
 unixif_init_client(struct netif *netif)
 {
   struct unixif *unixif;
-  unixif = malloc(sizeof(struct unixif));
-  if (!unixif)
-      return ERR_MEM;
+  unixif = (struct unixif *)malloc(sizeof(struct unixif));
+  if (!unixif) {
+    return ERR_MEM;
+  }
   netif->state = unixif;
   netif->name[0] = 'u';
   netif->name[1] = 'n';
   netif->output = unixif_output;
-  
+
   unixif->fd = unix_socket_client("/tmp/unixif");
   if (unixif->fd == -1) {
     perror("unixif_init");
