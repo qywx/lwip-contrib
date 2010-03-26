@@ -223,7 +223,7 @@ unixif_input_handler(void *data)
       bufptr = buf;
       q = p;
       while (rlen > 0) {
-        bcopy(bufptr, q->payload, rlen > q->len? q->len: rlen);
+        memcpy(bufptr, q->payload, rlen > q->len? q->len: rlen);
         rlen -= q->len;
         bufptr += q->len;
         q = q->next;
