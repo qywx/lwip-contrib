@@ -40,7 +40,6 @@
 #include "lwip/err.h"
 #include "lwip/pbuf.h"
 
-void httpd_init(void);
 
 /** Set this to 1 to support CGI */
 #ifndef LWIP_HTTPD_CGI
