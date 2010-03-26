@@ -197,7 +197,7 @@ void sys_sem_signal(sys_sem_t *sem)
   LWIP_ASSERT("Error releasing semaphore", ret != 0);
 }
 
-sys_thread_t sys_thread_new(char *name, lwip_thread_fn function, void *arg, int stacksize, int prio)
+sys_thread_t sys_thread_new(const char *name, lwip_thread_fn function, void *arg, int stacksize, int prio)
 {
   struct threadlist *new_thread;
   HANDLE h;
