@@ -40,7 +40,7 @@
 #include "lwip/sys.h"
 
 /*-----------------------------------------------------------------------------------*/
-void 
+static void
 udpecho_thread(void *arg)
 {
   static struct netconn *conn;
