@@ -669,7 +669,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
   u16_t hdrlen, sendlen;
 #endif /* LWIP_HTTPD_DYNAMIC_HEADERS */
 
-  LWIP_DEBUGF(HTTPD_DEBUG, ("http_send_data: pcb=%p hs=%p left=%d\n", (void*)pcb,
+  LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_send_data: pcb=%p hs=%p left=%d\n", (void*)pcb,
     (void*)hs, hs != NULL ? hs->left : 0));
 
 #if LWIP_HTTPD_DYNAMIC_HEADERS
@@ -826,7 +826,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
       }
 
       do {
-        LWIP_DEBUGF(HTTPD_DEBUG, ("Sending %d bytes\n", len));
+        LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Sending %d bytes\n", len));
 
         /* If the data is being read from a buffer in RAM, we need to copy it
          * into the PCB. If it's in flash, however, we can avoid the copy since
@@ -1188,7 +1188,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
   }
 #endif /* LWIP_HTTPD_SSI */
 
-  LWIP_DEBUGF(HTTPD_DEBUG, ("send_data end.\n"));
+  LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("send_data end.\n"));
   return data_to_send;
 }
 
@@ -1321,9 +1321,6 @@ http_post_request(struct pbuf **inp, struct http_state *hs, char *data, u16_t da
 #define HTTP_HDR_CONTENT_LEN                "Content-Length: "
 #define HTTP_HDR_CONTENT_LEN_LEN            16
 #define HTTP_HDR_CONTENT_LEN_DIGIT_MAX_LEN  10
-#ifndef HTTP_MAX_POST_BODY_LEN
-#define HTTP_MAX_POST_BODY_LEN              (1024*1024*6) /* 6 MB */
-#endif
     char *scontent_len = strnstr(uri_end + 1, HTTP_HDR_CONTENT_LEN, crlfcrlf - (uri_end + 1));
     if (scontent_len != NULL) {
       char *scontent_len_end = strnstr(scontent_len + HTTP_HDR_CONTENT_LEN_LEN, CRLF, HTTP_HDR_CONTENT_LEN_DIGIT_MAX_LEN);
@@ -1332,7 +1329,7 @@ http_post_request(struct pbuf **inp, struct http_state *hs, char *data, u16_t da
         char *conten_len_num = scontent_len + HTTP_HDR_CONTENT_LEN_LEN;
         *scontent_len_end = 0;
         content_len = atoi(conten_len_num);
-        if ((content_len > 0) && (content_len <= HTTP_MAX_POST_BODY_LEN)) {
+        if (content_len > 0) {
           /* adjust length of HTTP header passed to application */
           u16_t hdr_len = LWIP_MIN(data_len, crlfcrlf + 4 - data);
           http_post_response_filename[0] = 0;
@@ -1458,19 +1455,19 @@ http_parse_request(struct pbuf **inp, struct http_state *hs)
       int is_09 = 0;
       char *sp1, *sp2;
       u16_t left_len, uri_len;
-      LWIP_DEBUGF(HTTPD_DEBUG, ("CRLF received, parsing request\n"));
+      LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("CRLF received, parsing request\n"));
       /* parse method */
       if (!strncmp(data, "GET ", 4)) {
         sp1 = data + 3;
         /* received GET request */
-        LWIP_DEBUGF(HTTPD_DEBUG, ("Received GET request\"\n"));
+        LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Received GET request\"\n"));
 #if LWIP_HTTPD_SUPPORT_POST
       } else if (!strncmp(data, "POST ", 5)) {
         /* store request type */
         is_post = 1;
         sp1 = data + 4;
         /* received GET request */
-        LWIP_DEBUGF(HTTPD_DEBUG, ("Received POST request\n"));
+        LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Received POST request\n"));
 #endif /* LWIP_HTTPD_SUPPORT_POST */
       } else {
         /* null-terminate the METHOD (pbuf is freed anyway wen returning) */
@@ -1585,11 +1582,11 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
     /* Try each of the configured default filenames until we find one
        that exists. */
     for (loop = 0; loop < NUM_DEFAULT_FILENAMES; loop++) {
-      LWIP_DEBUGF(HTTPD_DEBUG, ("Looking for %s...\n", g_psDefaultFilenames[loop].name));
+      LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Looking for %s...\n", g_psDefaultFilenames[loop].name));
       file = fs_open((char *)g_psDefaultFilenames[loop].name);
       uri = (char *)g_psDefaultFilenames[loop].name;
       if(file != NULL) {
-        LWIP_DEBUGF(HTTPD_DEBUG, ("Opened.\n"));
+        LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Opened.\n"));
 #if LWIP_HTTPD_SSI
         hs->tag_check = g_psDefaultFilenames[loop].shtml;
 #endif /* LWIP_HTTPD_SSI */
@@ -1641,7 +1638,7 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
     }
 #endif /* LWIP_HTTPD_CGI */
 
-    LWIP_DEBUGF(HTTPD_DEBUG, ("Opening %s\n", uri));
+    LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Opening %s\n", uri));
 
     file = fs_open(uri);
     if (file == NULL) {
@@ -1755,7 +1752,7 @@ http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 {
   struct http_state *hs = (struct http_state *)arg;
 
-  LWIP_DEBUGF(HTTPD_DEBUG, ("http_sent %p\n", (void*)pcb));
+  LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_sent %p\n", (void*)pcb));
 
   LWIP_UNUSED_ARG(len);
 
@@ -1781,7 +1778,7 @@ static err_t
 http_poll(void *arg, struct tcp_pcb *pcb)
 {
   struct http_state *hs = (struct http_state *)arg;
-  LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: pcb=%p hs=%p pcb_state=%s\n",
+  LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_poll: pcb=%p hs=%p pcb_state=%s\n",
     (void*)pcb, (void*)hs, tcp_debug_state_str(pcb->state)));
 
   if (hs == NULL) {
@@ -1801,10 +1798,10 @@ http_poll(void *arg, struct tcp_pcb *pcb)
      * it has not yet received a GET request, don't do this since it will
      * cause the connection to close immediately. */
     if(hs && (hs->handle)) {
-      LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: try to send more data\n"));
+      LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_poll: try to send more data\n"));
       if(http_send_data(pcb, hs)) {
         /* If we wrote anything to be sent, go ahead and send it now. */
-        LWIP_DEBUGF(HTTPD_DEBUG, ("tcp_output\n"));
+        LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("tcp_output\n"));
         tcp_output(pcb);
       }
     }
@@ -1822,7 +1819,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
   err_t parsed = ERR_ABRT;
   struct http_state *hs = (struct http_state *)arg;
-  LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: pcb=%p pbuf=%p err=%s\n", (void*)pcb,
+  LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_recv: pcb=%p pbuf=%p err=%s\n", (void*)pcb,
     (void*)p, lwip_strerr(err)));
 
   if (p != NULL) {
@@ -1836,7 +1833,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
     }
     if (hs == NULL) {
       /* this should not happen, only to be robust */
-      LWIP_DEBUGF(HTTPD_DEBUG, ("Error, http_recv: hs is NULL, abort\n"));
+      LWIP_DEBUGF(HTTPD_DEBUG, ("Error, http_recv: hs is NULL, close\n"));
     }
     http_close_conn(pcb, hs, 0);
     return ERR_OK;
@@ -1881,7 +1878,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
       if (hs->post_content_len_left == 0)
 #endif /* LWIP_HTTPD_SUPPORT_POST */
       {
-        LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: data %p len %"S32_F"\n", hs->file, hs->left));
+        LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_recv: data %p len %"S32_F"\n", hs->file, hs->left));
         http_send_data(pcb, hs);
       }
     } else if (parsed == ERR_ARG) {
