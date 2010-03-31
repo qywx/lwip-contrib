@@ -143,7 +143,7 @@ low_level_output(struct tunif *tunif, struct pbuf *p)
        time. The size of the data in each pbuf is kept in the ->len
        variable. */
     /* send data from(q->payload, q->len); */
-    memcpy(q->payload, bufptr, q->len);
+    memcpy(bufptr, q->payload, q->len);
     bufptr += q->len;
   }
 
@@ -192,7 +192,7 @@ low_level_input(struct tunif *tunif)
          available data in the pbuf is given by the q->len
          variable. */
       /* read data into(q->payload, q->len); */
-      memcpy(bufptr, q->payload, q->len);
+      memcpy(q->payload, bufptr, q->len);
       bufptr += q->len;
     }
     /* acknowledge that packet has been read(); */
