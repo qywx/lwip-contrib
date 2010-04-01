@@ -390,7 +390,7 @@ int process_file(FILE *data_file, FILE *struct_file, const char *filename)
   int file_size;
   u16_t http_hdr_chksum = 0;
   u16_t http_hdr_len = 0;
-  int chksum_count;
+  int chksum_count = 0;
 
   /* create qualified name (TODO: prepend slash or not?) */
   sprintf(qualifiedName,"%s/%s", curSubdir, filename);
@@ -454,7 +454,7 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
 {
   int i = 0;
   int response_type = HTTP_HDR_OK;
-  int file_type;
+  int file_type = HTTP_HDR_DEFAULT_TYPE;
   const char *cur_string;
   size_t cur_len;
   int written = 0;
