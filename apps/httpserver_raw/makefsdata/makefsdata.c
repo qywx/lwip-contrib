@@ -137,7 +137,8 @@ int main(int argc, char *argv[])
       } else if (strstr(argv[i], "-c")) {
         precalcChksum = 1;
       } else if((argv[i][1] == 'f') && (argv[i][2] == ':')) {
-        strcpy(targetfile, &argv[i][4]);
+        strcpy(targetfile, &argv[i][3]);
+        printf("Writing to file \"%s\"\n", targetfile);
       }
     } else {
       strcpy(path, argv[i]);
