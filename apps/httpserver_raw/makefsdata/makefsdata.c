@@ -115,6 +115,8 @@ int main(int argc, char *argv[])
   FILE *struct_file;
   int filesProcessed;
   int i;
+  char targetfile[MAX_PATH_LEN];
+  strcpy(targetfile, "fsdata.c");
 
   memset(path, 0, sizeof(path));
   memset(appPath, 0, sizeof(appPath));
@@ -125,14 +127,18 @@ int main(int argc, char *argv[])
 
   strcpy(path, "fs");
   for(i = 1; i < argc; i++) {
-    if (strstr(argv[i], "-s")) {
-      processSubs = 0;
-    } else if (strstr(argv[i], "-e")) {
-      includeHttpHeader = 0;
-    } else if (strstr(argv[i], "-11")) {
-      useHttp11 = 1;
-    } else if (strstr(argv[i], "-c")) {
-      precalcChksum = 1;
+    if (argv[i][0] == '-') {
+      if (strstr(argv[i], "-s")) {
+        processSubs = 0;
+      } else if (strstr(argv[i], "-e")) {
+        includeHttpHeader = 0;
+      } else if (strstr(argv[i], "-11")) {
+        useHttp11 = 1;
+      } else if (strstr(argv[i], "-c")) {
+        precalcChksum = 1;
+      } else if((argv[i][1] == 'f') && (argv[i][2] == ':')) {
+        strcpy(targetfile, &argv[i][4]);
+      }
     } else {
       strcpy(path, argv[i]);
     }
@@ -143,12 +149,13 @@ int main(int argc, char *argv[])
   if (!FINDFIRST_SUCCEEDED(fret)) {
     /* if no subdir named 'fs' (or the one which was given) exists, spout usage verbiage */
     printf(" Failed to open directory \"%s\"." NEWLINE NEWLINE, path);
-    printf(" Usage: htmlgen [targetdir] [-s] [-i]" NEWLINE NEWLINE);
+    printf(" Usage: htmlgen [targetdir] [-s] [-i] [-f:<filename>]" NEWLINE NEWLINE);
     printf("   targetdir: relative or absolute path to files to convert" NEWLINE);
     printf("   switch -s: toggle processing of subdirectories (default is on)" NEWLINE);
     printf("   switch -e: exclude HTTP header from file (header is created at runtime, default is off)" NEWLINE);
     printf("   switch -11: include HTTP 1.1 header (1.0 is default)" NEWLINE);
     printf("   switch -c: precalculate checksums for all pages (default is off)" NEWLINE);
+    printf("   switch -f: target filename (default is \"fsdata.c\")" NEWLINE);
     printf("   if targetdir not specified, htmlgen will attempt to" NEWLINE);
     printf("   process files in subdirectory 'fs'" NEWLINE);
     exit(-1);
@@ -202,7 +209,7 @@ int main(int argc, char *argv[])
   CHDIR(appPath);
   /* append struct_file to data_file */
   printf(NEWLINE "Creating target file..." NEWLINE NEWLINE);
-  concat_files("fsdata.tmp", "fshdr.tmp", "fsdata.c");
+  concat_files("fsdata.tmp", "fshdr.tmp", targetfile);
 
   /* if succeeded, delete the temporary files */
   remove("fsdata.tmp");
@@ -257,8 +264,8 @@ int process_sub(FILE *data_file, FILE *struct_file)
     if (FINDFIRST_SUCCEEDED(fret)) {
       do {
         const char *curName = FIND_T_FILENAME(fInfo);
-        if (strcmp(curName, ".") == 0) continue;
-        if (strcmp(curName, "..") == 0) continue;
+        if (curName == NULL) continue;
+        if (curName[0] == '.') continue;
         if (strcmp(curName, "CVS") == 0) continue;
         if (!FIND_T_IS_DIR(fInfo)) continue;
         CHDIR(curName);
