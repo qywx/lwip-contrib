@@ -65,6 +65,7 @@ static BOOL
 sio_setup(HANDLE fd)
 {
   COMMTIMEOUTS cto;
+  DCB dcb;
   memset(&cto, 0, sizeof(cto));
 
   if(!GetCommTimeouts(fd, &cto))
@@ -75,8 +76,36 @@ sio_setup(HANDLE fd)
   cto.ReadIntervalTimeout = 1;
   cto.ReadTotalTimeoutMultiplier = 0;
   cto.ReadTotalTimeoutConstant = 100; /* 10 ms */
-  return SetCommTimeouts(fd, &cto);
-  /* @todo: set up baudrate and other communication settings */
+  if(!SetCommTimeouts(fd, &cto)) {
+    return FALSE;
+  }
+
+  /* set up baudrate and other communication settings */
+  memset(&dcb, 0, sizeof(dcb));
+  /* Obtain the DCB structure for the device */
+  if (!GetCommState(fd, &dcb)) {
+    return FALSE;
+  }
+
+  /* Set the new data */
+  dcb.BaudRate = 115200;
+  dcb.ByteSize = 8;
+  dcb.StopBits = 0; /* ONESTOPBIT */
+  dcb.Parity   = 0; /* NOPARITY */
+  dcb.fParity  = 0; /* parity is not used */
+  /* do not use flow control */
+  dcb.fOutxDsrFlow = dcb.fDtrControl = 0;
+  dcb.fOutxCtsFlow = dcb.fRtsControl = 0;
+  dcb.fErrorChar = dcb.fNull = 0;
+  dcb.fInX = dcb.fOutX = 0;
+  dcb.XonChar = dcb.XoffChar = 0;
+  dcb.XonLim = dcb.XoffLim = 100;
+
+  /* Set the new DCB structure */
+  if (!SetCommState(fd, &dcb)) {
+    return FALSE;
+  }
+  return TRUE;
 }
 #endif /* SIO_USE_COMPORT */
 
