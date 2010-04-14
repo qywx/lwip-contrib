@@ -110,7 +110,11 @@
 #if NO_SYS
 #define NOTIFY_LINKSTATE(netif, linkfunc) linkfunc(netif)
 #else  /* NO_SYS*/
+#if LWIP_TCPIP_TIMEOUT
 #define NOTIFY_LINKSTATE(netif, linkfunc) tcpip_timeout(PHY_LINKUP_DELAY, (sys_timeout_handler)linkfunc, netif)
+#else /* LWIP_TCPIP_TIMEOUT */
+#define NOTIFY_LINKSTATE(netif, linkfunc) tcpip_callback((tcpip_callback_fn)linkfunc, netif)
+#endif /* LWIP_TCPIP_TIMEOUT */
 #endif /* NO_SYS*/
 
 /* Forward declarations. */
