@@ -87,7 +87,7 @@
 #include "netif/ppp_oe.h"
 #endif /* PPP_SUPPORT */
 
-#include "pktif.h"
+#include "pcapif.h"
 
 /* include the port-dependent configuration */
 #include "lwipcfg_msvc.h"
@@ -257,12 +257,12 @@ msvc_netif_init()
 
 #if NO_SYS
 #if LWIP_ARP
-  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ethernet_input));
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, pcapif_init, ethernet_input));
 #else /* LWIP_ARP */
-  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, ip_input));
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, pcapif_init, ip_input));
 #endif /* LWIP_ARP */
 #else  /* NO_SYS */
-  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, ethernetif_init, tcpip_input));
+  netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, pcapif_init, tcpip_input));
 #endif /* NO_SYS */
 #if LWIP_NETIF_STATUS_CALLBACK
   netif_set_status_callback(&netif, status_callback);
@@ -447,8 +447,16 @@ void main_loop()
 #endif /* NO_SYS */
 
 #if USE_ETHERNET
+#if !PCAPIF_RX_USE_THREAD
     /* check for packets and link status*/
-    ethernetif_poll(&netif);
+    pcapif_poll(&netif);
+    /* When pcapif_poll comes back, there are not packets, so sleep to
+       prevent 100% CPU load. Don't do this in an embedded system since it
+       increases latency! */
+    sys_msleep(1);
+#else /* !PCAPIF_RX_USE_THREAD */
+    sys_msleep(50);
+#endif /* !PCAPIF_RX_USE_THREAD */
 #else /* USE_ETHERNET */
 #if 0 /* set this to 1 if PPP_INPROC_OWNTHREAD==0 or not defined (see ppp.c) */
     /* try to read characters from serial line and pass them to PPPoS */
@@ -504,7 +512,7 @@ void main_loop()
       do
       {
 #if USE_ETHERNET
-        ethernetif_poll(&netif);
+        pcapif_poll(&netif);
 #else /* USE_ETHERNET */
         sys_msleep(50);
 #endif /* USE_ETHERNET */
@@ -514,7 +522,7 @@ void main_loop()
 #endif /* PPP_SUPPORT */
 #if USE_ETHERNET
   /* release the pcap library... */
-  ethernetif_shutdown(&netif);
+  pcapif_shutdown(&netif);
 #endif /* USE_ETHERNET */
 }
 
