@@ -99,7 +99,7 @@
 static u16_t ping_seq_num;
 static u32_t ping_time;
 #if !PING_USE_SOCKETS
-static struct raw_pcb *pcb;
+static struct raw_pcb *ping_pcb;
 #endif /* PING_USE_SOCKETS */
 
 /** Prepare a echo ICMP request */
@@ -236,7 +236,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
   LWIP_ASSERT("p != NULL", p != NULL);
 
   if (pbuf_header( p, -PBUF_IP_HLEN)==0) {
-    iecho = p->payload;
+    iecho = (struct icmp_echo_hdr *)p->payload;
 
     if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
       LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
@@ -270,7 +270,7 @@ ping_send(struct raw_pcb *raw, ip_addr_t *addr)
     return;
   }
   if ((p->len == p->tot_len) && (p->next == NULL)) {
-    iecho = p->payload;
+    iecho = (struct icmp_echo_hdr *)p->payload;
 
     ping_prepare_echo(iecho, (u16_t)ping_size);
 
@@ -296,24 +296,21 @@ ping_timeout(void *arg)
 static void
 ping_raw_init(void)
 {
-  pcb = raw_new(IP_PROTO_ICMP);
-  if (!pcb) {
-    return;
-  }
+  ping_pcb = raw_new(IP_PROTO_ICMP);
+  LWIP_ASSERT("ping_pcb != NULL", ping_pcb != NULL);
 
-  raw_recv(pcb, ping_recv, NULL);
-  raw_bind(pcb, IP_ADDR_ANY);
-  sys_timeout(PING_DELAY, ping_timeout, pcb);
+  raw_recv(ping_pcb, ping_recv, NULL);
+  raw_bind(ping_pcb, IP_ADDR_ANY);
+  sys_timeout(PING_DELAY, ping_timeout, ping_pcb);
 }
 
-#if !PING_USE_SOCKETS
 void
 ping_send_now()
 {
   ip_addr_t ping_target = PING_TARGET;
-  ping_send(pcb, &ping_target);
+  LWIP_ASSERT("ping_pcb != NULL", ping_pcb != NULL);
+  ping_send(ping_pcb, &ping_target);
 }
-#endif /* !PING_USE_SOCKETS */
 
 #endif /* PING_USE_SOCKETS */
 
