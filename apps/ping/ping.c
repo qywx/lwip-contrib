@@ -233,6 +233,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
   struct icmp_echo_hdr *iecho;
   LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(pcb);
+  LWIP_UNUSED_ARG(addr);
   LWIP_ASSERT("p != NULL", p != NULL);
 
   if (pbuf_header( p, -PBUF_IP_HLEN)==0) {
