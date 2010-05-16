@@ -307,7 +307,7 @@ struct http_state {
 };
 
 static err_t http_find_file(struct http_state *hs, const char *uri, int is_09);
-static err_t http_init_file(struct http_state *hs, struct fs_file *file, int is_09);
+static err_t http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const char *uri);
 static err_t http_poll(void *arg, struct tcp_pcb *pcb);
 
 #if LWIP_HTTPD_SSI
@@ -335,7 +335,7 @@ static char*
 strnstr(const char* buffer, const char* token, size_t n)
 {
   const char* p;
-  int tokenlen = strlen(token);
+  int tokenlen = (int)strlen(token);
   if (tokenlen == 0) {
     return (char *)buffer;
   }
@@ -1225,7 +1225,7 @@ http_find_error_file(struct http_state *hs, u16_t error_nr)
       return ERR_ARG;
     }
   }
-  return http_init_file(hs, file, 0);
+  return http_init_file(hs, file, 0, NULL);
 }
 #else /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
 #define http_find_error_file(hs, error_nr) ERR_ARG
@@ -1662,7 +1662,7 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
     }
 #endif /* LWIP_HTTPD_SSI */
   }
-  return http_init_file(hs, file, is_09);
+  return http_init_file(hs, file, is_09, uri);
 }
 
 /** Initialize a http connection with a file to send (if found).
@@ -1671,11 +1671,12 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
  * @param hs http connection state
  * @param file file structure to send (or NULL if not found)
  * @param is_09 1 if the request is HTTP/0.9 (no HTTP headers in response)
+ * @param uri the HTTP header URI
  * @return ERR_OK if file was found and hs has been initialized correctly
  *         another err_t otherwise
  */
 static err_t
-http_init_file(struct http_state *hs, struct fs_file *file, int is_09)
+http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const char *uri)
 {
   err_t file_found = ERR_ARG;
 
@@ -1708,7 +1709,7 @@ http_init_file(struct http_state *hs, struct fs_file *file, int is_09)
       if (file_start != NULL) {
         size_t diff = file_start + 4 - hs->file;
         hs->file += diff;
-        hs->left -= diff;
+        hs->left -= (u32_t)diff;
       }
     }
 #endif /* LWIP_HTTPD_SUPPORT_V09*/
@@ -1722,7 +1723,7 @@ http_init_file(struct http_state *hs, struct fs_file *file, int is_09)
     /* Determine the HTTP headers to send based on the file extension of
    * the requested URI. */
   if (hs->handle && !hs->handle->http_header_included) {
-    get_http_headers(hs, uri);
+    get_http_headers(hs, (char*)uri);
   }
 #endif /* LWIP_HTTPD_DYNAMIC_HEADERS */
   return file_found;
@@ -1929,26 +1930,36 @@ http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 }
 
 /**
- * Initialize the httpd: set up a listening PCB and bind it to the defined port
+ * Initialize the httpd with the specified local address.
  */
-void
-httpd_init(void)
+static void
+httpd_init_addr(ip_addr_t *local_addr)
 {
   struct tcp_pcb *pcb;
   err_t err;
 
-  LWIP_DEBUGF(HTTPD_DEBUG, ("httpd_init\n"));
-
   pcb = tcp_new();
   LWIP_ASSERT("httpd_init: tcp_new failed", pcb != NULL);
   tcp_setprio(pcb, HTTPD_TCP_PRIO);
-  err = tcp_bind(pcb, IP_ADDR_ANY, HTTPD_SERVER_PORT);
+  /* set SOF_REUSEADDR here to explicitly bind httpd to multiple interfaces */
+  err = tcp_bind(pcb, local_addr, HTTPD_SERVER_PORT);
   LWIP_ASSERT("httpd_init: tcp_bind failed", err == ERR_OK);
   pcb = tcp_listen(pcb);
   LWIP_ASSERT("httpd_init: tcp_listen failed", pcb != NULL);
   /* initialize callback arg and accept callback */
   tcp_arg(pcb, pcb);
   tcp_accept(pcb, http_accept);
+}
+
+/**
+ * Initialize the httpd: set up a listening PCB and bind it to the defined port
+ */
+void
+httpd_init(void)
+{
+  LWIP_DEBUGF(HTTPD_DEBUG, ("httpd_init\n"));
+
+  httpd_init_addr(IP_ADDR_ANY);
 }
 
 #if LWIP_HTTPD_SSI
