@@ -251,7 +251,7 @@ pcapif_init_adapter(int adapter_num, void *arg)
   
   pcap_if_t *alldevs;
   pcap_if_t *d;
-  pcap_if_t *used_adapter;
+  pcap_if_t *used_adapter = NULL;
 
   pa = (struct pcapif_private *)malloc(sizeof(struct pcapif_private));
   if (!pa) {
