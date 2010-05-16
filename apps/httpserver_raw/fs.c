@@ -62,6 +62,11 @@ struct fs_table {
 /* Allocate file system memory */
 struct fs_table fs_memory[LWIP_MAX_OPEN_FILES];
 
+#if LWIP_HTTPD_CUSTOM_FILES
+int fs_open_custom(struct fs_file *file, const char *name);
+void fs_close_custom(struct fs_file *file);
+#endif /* LWIP_HTTPD_CUSTOM_FILES */
+
 /*-----------------------------------------------------------------------------------*/
 static struct fs_file *
 fs_malloc(void)
@@ -102,6 +107,14 @@ fs_open(const char *name)
     return NULL;
   }
 
+#if LWIP_HTTPD_CUSTOM_FILES
+  if(fs_open_custom(file, name)) {
+    file->is_custom_file = 1;
+    return file;
+  }
+  file->is_custom_file = 0;
+#endif /* LWIP_HTTPD_CUSTOM_FILES */
+
   for(f = FS_ROOT; f != NULL; f = f->next) {
     if (!strcmp(name, (char *)f->name)) {
       file->data = (const char *)f->data;
@@ -124,6 +137,9 @@ fs_open(const char *name)
 void
 fs_close(struct fs_file *file)
 {
+  if (file->is_custom_file) {
+    fs_close_custom(file);
+  }
   fs_free(file);
 }
 /*-----------------------------------------------------------------------------------*/

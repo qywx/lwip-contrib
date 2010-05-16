@@ -34,11 +34,22 @@
 
 #include "lwip/opt.h"
 
+/** Set this to 1 and provide the functions:
+ * - "int fs_open_custom(struct fs_file *file, const char *name)"
+ *    Called first for every opened file to allow opening files
+ *    that are not included in fsdata(_custom).c
+ * - "void fs_close_custom(struct fs_file *file)"
+ *    Called to free resources allocated by fs_open_custom().
+ */
+#ifndef LWIP_HTTPD_CUSTOM_FILES
+#define LWIP_HTTPD_CUSTOM_FILES       0
+#endif
+
 /** HTTPD_PRECALCULATED_CHECKSUM==1: include precompiled checksums for
  * predefined (MSS-sized) chunks of the files to prevent having to calculate
  * the checksums at runtime. */
 #ifndef HTTPD_PRECALCULATED_CHECKSUM
-#define HTTPD_PRECALCULATED_CHECKSUM 0
+#define HTTPD_PRECALCULATED_CHECKSUM  0
 #endif
 
 #if HTTPD_PRECALCULATED_CHECKSUM
@@ -59,6 +70,9 @@ struct fs_file {
   u16_t chksum_count;
 #endif /* HTTPD_PRECALCULATED_CHECKSUM */
   u8_t http_header_included;
+#if LWIP_HTTPD_CUSTOM_FILES
+  u8_t is_custom_file;
+#endif /* LWIP_HTTPD_CUSTOM_FILES */
 };
 
 struct fs_file *fs_open(const char *name);
