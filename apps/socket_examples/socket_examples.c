@@ -40,7 +40,7 @@ sockex_nonblocking_connect(void *arg)
   memset(&addr, 0, sizeof(addr));
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(SOCK_TARGET_PORT);
+  addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
   addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
 
   /* first try blocking: */
@@ -238,7 +238,7 @@ sockex_testrecv(void *arg)
   memset(&addr, 0, sizeof(addr));
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(SOCK_TARGET_PORT);
+  addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
   addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
 
   /* first try blocking: */
@@ -394,7 +394,7 @@ sockex_testtwoselects(void *arg)
   memset(&addr, 0, sizeof(addr));
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
-  addr.sin_port = htons(SOCK_TARGET_PORT);
+  addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
   addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
 
   /* create the sockets */

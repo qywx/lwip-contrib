@@ -374,8 +374,8 @@ sntp_request(void *arg)
       /* prepare local address */
       memset(&local, 0, sizeof(local));
       local.sin_family      = AF_INET;
-      local.sin_port        = htons(INADDR_ANY);
-      local.sin_addr.s_addr = htonl(INADDR_ANY);
+      local.sin_port        = PP_HTONS(INADDR_ANY);
+      local.sin_addr.s_addr = PP_HTONL(INADDR_ANY);
 
       /* bind to local address */
       if (lwip_bind(sock, (struct sockaddr *)&local, sizeof(local)) == 0) {
@@ -389,7 +389,7 @@ sntp_request(void *arg)
         /* prepare SNTP server address */
         memset(&to, 0, sizeof(to));
         to.sin_family      = AF_INET;
-        to.sin_port        = htons(SNTP_PORT);
+        to.sin_port        = PP_HTONS(SNTP_PORT);
         inet_addr_from_ipaddr(&to.sin_addr, &sntp_server_address);
     
         /* send SNTP request to server */

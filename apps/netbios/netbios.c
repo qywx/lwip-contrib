@@ -271,9 +271,9 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u
     if (netif_default != NULL) {
       /* @todo: do we need to check answerRRs/authorityRRs/additionalRRs? */
       /* if the packet is a NetBIOS name query question */
-      if (((ntohs(netbios_hdr->flags) & NETB_HFLAG_OPCODE) == NETB_HFLAG_OPCODE_NAME_QUERY) &&
-          ((ntohs(netbios_hdr->flags) & NETB_HFLAG_RESPONSE) == 0) &&
-           (ntohs(netbios_hdr->questions) == 1)) {
+      if (((netbios_hdr->flags & PP_NTOHS(NETB_HFLAG_OPCODE)) == PP_NTOHS(NETB_HFLAG_OPCODE_NAME_QUERY)) &&
+          ((netbios_hdr->flags & PP_NTOHS(NETB_HFLAG_RESPONSE)) == 0) &&
+           (netbios_hdr->questions == PP_NTOHS(1))) {
         /* decode the NetBIOS name */
         netbios_name_decoding( (char*)(netbios_name_hdr->encname), netbios_name, sizeof(netbios_name));
         /* if the packet is for us */
@@ -287,12 +287,12 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u
 
             /* prepare NetBIOS header response */
             resp->resp_hdr.trans_id      = netbios_hdr->trans_id;
-            resp->resp_hdr.flags         = htons(NETB_HFLAG_RESPONSE |
+            resp->resp_hdr.flags         = PP_HTONS(NETB_HFLAG_RESPONSE |
                                                  NETB_HFLAG_OPCODE_NAME_QUERY |
                                                  NETB_HFLAG_AUTHORATIVE |
                                                  NETB_HFLAG_RECURS_DESIRED);
             resp->resp_hdr.questions     = 0;
-            resp->resp_hdr.answerRRs     = htons(1);
+            resp->resp_hdr.answerRRs     = PP_HTONS(1);
             resp->resp_hdr.authorityRRs  = 0;
             resp->resp_hdr.additionalRRs = 0;
 
@@ -301,9 +301,9 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u
             resp->resp_name.nametype     = netbios_name_hdr->nametype;
             resp->resp_name.type         = netbios_name_hdr->type;
             resp->resp_name.cls          = netbios_name_hdr->cls;
-            resp->resp_name.ttl          = htonl(NETBIOS_NAME_TTL);
-            resp->resp_name.datalen      = htons(sizeof(resp->resp_name.flags)+sizeof(resp->resp_name.addr));
-            resp->resp_name.flags        = htons(NETB_NFLAG_NODETYPE_BNODE);
+            resp->resp_name.ttl          = PP_HTONL(NETBIOS_NAME_TTL);
+            resp->resp_name.datalen      = PP_HTONS(sizeof(resp->resp_name.flags)+sizeof(resp->resp_name.addr));
+            resp->resp_name.flags        = PP_HTONS(NETB_NFLAG_NODETYPE_BNODE);
             ip_addr_copy(resp->resp_name.addr, netif_default->ip_addr);
 
             /* send the NetBIOS response */

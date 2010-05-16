@@ -129,7 +129,7 @@ rtp_send_packets( int sock, struct sockaddr_in* to)
   rtphdr = (struct rtp_hdr*)rtp_send_packet;
   rtphdr->version     = RTP_VERSION;
   rtphdr->payloadtype = 0;
-  rtphdr->ssrc        = htonl(RTP_SSRC);
+  rtphdr->ssrc        = PP_HTONL(RTP_SSRC);
   rtphdr->timestamp   = htonl(ntohl(rtphdr->timestamp) + RTP_TIMESTAMP_INCREMENT);
 
   /* send RTP stream packets */
@@ -179,15 +179,15 @@ rtp_send_thread(void *arg)
       /* prepare local address */
       memset(&local, 0, sizeof(local));
       local.sin_family      = AF_INET;
-      local.sin_port        = htons(INADDR_ANY);
-      local.sin_addr.s_addr = htonl(INADDR_ANY);
+      local.sin_port        = PP_HTONS(INADDR_ANY);
+      local.sin_addr.s_addr = PP_HTONL(INADDR_ANY);
 
       /* bind to local address */
       if (bind(sock, (struct sockaddr *)&local, sizeof(local)) == 0) {
         /* prepare RTP stream address */
         memset(&to, 0, sizeof(to));
         to.sin_family      = AF_INET;
-        to.sin_port        = htons(RTP_STREAM_PORT);
+        to.sin_port        = PP_HTONS(RTP_STREAM_PORT);
         to.sin_addr.s_addr = rtp_stream_address;
 
         /* send RTP packets */
@@ -236,8 +236,8 @@ rtp_recv_thread(void *arg)
       /* prepare local address */
       memset(&local, 0, sizeof(local));
       local.sin_family      = AF_INET;
-      local.sin_port        = htons(RTP_STREAM_PORT);
-      local.sin_addr.s_addr = htonl(INADDR_ANY);
+      local.sin_port        = PP_HTONS(RTP_STREAM_PORT);
+      local.sin_addr.s_addr = PP_HTONL(INADDR_ANY);
 
       /* bind to local address */
       if (bind(sock, (struct sockaddr *)&local, sizeof(local)) == 0) {
@@ -247,7 +247,7 @@ rtp_recv_thread(void *arg)
 
         /* prepare multicast "ip_mreq" struct */
         ipmreq.imr_multiaddr.s_addr = rtp_stream_address;
-        ipmreq.imr_interface.s_addr = htonl(INADDR_ANY);
+        ipmreq.imr_interface.s_addr = PP_HTONL(INADDR_ANY);
 
         /* join multicast group */
         if (setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP, &ipmreq, sizeof(ipmreq)) == 0) {
