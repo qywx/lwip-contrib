@@ -406,13 +406,9 @@ http_state_free(struct http_state *hs)
  *
  * @param pcb the tcp pcb to reset callbacks
  * @param hs connection state to free
- * @param linger: - 1 when closing because all data is sent (let TCP transmit
- *                  unacked data)
- *                - 0 when closing because of an error (RST is sent when
- *                  unsent data is present)
  */
 static void
-http_close_conn(struct tcp_pcb *pcb, struct http_state *hs, int linger)
+http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
 {
   err_t err;
   LWIP_DEBUGF(HTTPD_DEBUG, ("Closing connection %p\n", (void*)pcb));
@@ -423,12 +419,8 @@ http_close_conn(struct tcp_pcb *pcb, struct http_state *hs, int linger)
   tcp_poll(pcb, NULL, 0);
   tcp_sent(pcb, NULL);
   http_state_free(hs);
-  /* @todo: this isn't optimal, but necessary, until linger is implemented */
-  if (linger) {
-     err = tcp_shutdown(pcb, 1, 1);
-  } else {
-   err = tcp_close(pcb);
-  }
+
+  err = tcp_close(pcb);
   if (err != ERR_OK) {
     LWIP_DEBUGF(HTTPD_DEBUG, ("Error %d closing %p\n", err, (void*)pcb));
     /* error closing, try again later in poll */
@@ -750,13 +742,14 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
     /* Do we have a valid file handle? */
     if (hs->handle == NULL) {
         /* No - close the connection. */
-        http_close_conn(pcb, hs, 0);
+        http_close_conn(pcb, hs);
         return 0;
     }
     if(fs_bytes_left(hs->handle) <= 0) {
-      /* We reached the end of the file so this request is done */
+      /* We reached the end of the file so this request is done.
+       * @todo: don't close here for HTTP/1.1? */
       LWIP_DEBUGF(HTTPD_DEBUG, ("End of file.\n"));
-      http_close_conn(pcb, hs, 1);
+      http_close_conn(pcb, hs);
       return 0;
     }
 #if LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS
@@ -788,9 +781,10 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
 
     count = fs_read(hs->handle, hs->buf, count);
     if(count < 0) {
-      /* We reached the end of the file so this request is done */
+      /* We reached the end of the file so this request is done.
+       * @todo: don't close here for HTTP/1.1? */
       LWIP_DEBUGF(HTTPD_DEBUG, ("End of file.\n"));
-      http_close_conn(pcb, hs, 0);
+      http_close_conn(pcb, hs);
       return 1;
     }
 
@@ -1140,7 +1134,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
               if (err == ERR_OK) {
                 data_to_send = true;
                 hs->tag_index += len;
-                return 1;
+                /* Don't return here: keep on sending data */
               }
             } else {
               /* We have sent all the insert data so go back to looking for
@@ -1190,6 +1184,14 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
   }
 #endif /* LWIP_HTTPD_SSI */
 
+  if((hs->left == 0) && (fs_bytes_left(hs->handle) <= 0)) {
+    /* We reached the end of the file so this request is done.
+     * This adds the FIN flag right into the last data segment.
+     * @todo: don't close here for HTTP/1.1? */
+    LWIP_DEBUGF(HTTPD_DEBUG, ("End of file.\n"));
+    http_close_conn(pcb, hs);
+    return 0;
+  }
   LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("send_data end.\n"));
   return data_to_send;
 }
@@ -1725,6 +1727,8 @@ http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const cha
   if (hs->handle && !hs->handle->http_header_included) {
     get_http_headers(hs, (char*)uri);
   }
+#else /* LWIP_HTTPD_DYNAMIC_HEADERS */
+  LWIP_UNUSED_ARG(uri);
 #endif /* LWIP_HTTPD_DYNAMIC_HEADERS */
   return file_found;
 }
@@ -1787,13 +1791,13 @@ http_poll(void *arg, struct tcp_pcb *pcb)
   if (hs == NULL) {
     /* arg is null, close. */
     LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: arg is NULL, close\n"));
-    http_close_conn(pcb, hs, 0);
+    http_close_conn(pcb, hs);
     return ERR_OK;
   } else {
     hs->retries++;
     if (hs->retries == HTTPD_MAX_RETRIES) {
       LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: too many retries, close\n"));
-      http_close_conn(pcb, hs, 0);
+      http_close_conn(pcb, hs);
       return ERR_OK;
     }
 
@@ -1838,7 +1842,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
       /* this should not happen, only to be robust */
       LWIP_DEBUGF(HTTPD_DEBUG, ("Error, http_recv: hs is NULL, close\n"));
     }
-    http_close_conn(pcb, hs, 0);
+    http_close_conn(pcb, hs);
     return ERR_OK;
   }
 
@@ -1886,7 +1890,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
       }
     } else if (parsed == ERR_ARG) {
       /* @todo: close on ERR_USE? */
-      http_close_conn(pcb, hs, 0);
+      http_close_conn(pcb, hs);
     }
   }
   return ERR_OK;
