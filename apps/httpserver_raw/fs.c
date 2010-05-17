@@ -137,9 +137,11 @@ fs_open(const char *name)
 void
 fs_close(struct fs_file *file)
 {
+#if LWIP_HTTPD_CUSTOM_FILES
   if (file->is_custom_file) {
     fs_close_custom(file);
   }
+#endif /* LWIP_HTTPD_CUSTOM_FILES */
   fs_free(file);
 }
 /*-----------------------------------------------------------------------------------*/
