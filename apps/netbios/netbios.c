@@ -129,7 +129,7 @@ struct netbios_name_hdr {
   PACK_STRUCT_FIELD(u32_t ttl);
   PACK_STRUCT_FIELD(u16_t datalen);
   PACK_STRUCT_FIELD(u16_t flags);
-  PACK_STRUCT_FIELD(ip_addr_t addr);
+  PACK_STRUCT_FIELD(ip_addr_p_t addr);
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
