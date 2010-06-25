@@ -485,7 +485,7 @@ com_send(struct command *com)
 {
   int i;
   err_t err;
-  int len;
+  size_t len;
   
   i = strtol(com->args[0], NULL, 10);
 
