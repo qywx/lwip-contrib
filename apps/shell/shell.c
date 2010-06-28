@@ -390,18 +390,18 @@ com_acpt(struct command *com)
 /*-----------------------------------------------------------------------------------*/
 #if LWIP_STATS
 static void
-com_stat_write_mem(struct netconn *conn, struct stats_mem *elem, int index)
+com_stat_write_mem(struct netconn *conn, struct stats_mem *elem, int i)
 {
   u16_t len;
   char buf[100];
   size_t slen;
 
 #if LWIP_DEBUG
-  LWIP_UNUSED_ARG(index);
+  LWIP_UNUSED_ARG(i);
   slen = strlen(elem->name);
   netconn_write(conn, elem->name, slen, NETCONN_COPY);
 #else /*  LWIP_DEBUG */
-  len = (u16_t)sprintf(buf, "%d", index);
+  len = (u16_t)sprintf(buf, "%d", i);
   slen = strlen(buf);
   netconn_write(conn, buf, slen, NETCONN_COPY);
 #endif /*  LWIP_DEBUG */
