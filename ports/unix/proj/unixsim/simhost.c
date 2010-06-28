@@ -119,6 +119,7 @@ static void usage(void)
   }
 }
 
+#if 0
 static void
 tcp_debug_timeout(void *data)
 {
@@ -128,6 +129,7 @@ tcp_debug_timeout(void *data)
 #endif /* TCP_DEBUG */
   sys_timeout(5000, tcp_debug_timeout, NULL);
 }
+#endif
 
 static void
 tcpip_init_done(void *arg)
