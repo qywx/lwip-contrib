@@ -18,10 +18,11 @@ get_adapter_index_from_addr(struct in_addr *netaddr, char *guid, size_t guid_len
    pcap_if_t *alldevs;
    pcap_if_t *d;
    char errbuf[PCAP_ERRBUF_SIZE+1];
-   char source[PCAP_ERRBUF_SIZE+1];
+   char source[] = "rpcap://";
    int index = 0;
 
    memset(guid, 0, guid_len);
+   memset(errbuf, 0, sizeof(errbuf));
 
    /* Retrieve the interfaces list */
    if (pcap_findalldevs_ex(source, NULL, &alldevs, errbuf) == -1) {
