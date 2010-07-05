@@ -126,6 +126,9 @@ fs_open(const char *name)
       file->chksum_count = f->chksum_count;
       file->chksum = f->chksum;
 #endif /* HTTPD_PRECALCULATED_CHECKSUM */
+#if LWIP_HTTPD_FILE_STATE
+      file->state = fs_state_init(file, name);
+#endif /* #if LWIP_HTTPD_FILE_STATE */
       return file;
     }
   }
@@ -142,6 +145,9 @@ fs_close(struct fs_file *file)
     fs_close_custom(file);
   }
 #endif /* LWIP_HTTPD_CUSTOM_FILES */
+#if LWIP_HTTPD_FILE_STATE
+  fs_state_free(file, file->state);
+#endif /* #if LWIP_HTTPD_FILE_STATE */
   fs_free(file);
 }
 /*-----------------------------------------------------------------------------------*/

@@ -88,7 +88,7 @@
  * request being ignored.
  *
  */
-typedef char *(*tCGIHandler)(int iIndex, int iNumParams, char *pcParam[],
+typedef const char *(*tCGIHandler)(int iIndex, int iNumParams, char *pcParam[],
                              char *pcValue[]);
 
 /*
@@ -112,6 +112,14 @@ void http_set_cgi_handlers(const tCGI *pCGIs, int iNumHandlers);
 #endif /* LWIP_HTTPD_CGI */
 
 #if LWIP_HTTPD_SSI
+
+/** LWIP_HTTPD_SSI_MULTIPART==1: SSI handler function is called with 2 more
+ * arguments indicating a counter for insert string that are too long to be
+ * inserted at once: the SSI handler function must then set 'next_tag_part'
+ * which will be passed back to it in the next call. */
+#ifndef LWIP_HTTPD_SSI_MULTIPART
+#define LWIP_HTTPD_SSI_MULTIPART    0
+#endif
 
 /*
  * Function pointer for the SSI tag handler callback.
@@ -142,7 +150,14 @@ void http_set_cgi_handlers(const tCGI *pCGIs, int iNumHandlers);
  * output JavaScript code must do so in an encapsulated way, sending the whole
  * HTML <script>...</script> section as a single include.
  */
-typedef u16_t (*tSSIHandler)(int iIndex, char *pcInsert, int iInsertLen);
+typedef u16_t (*tSSIHandler)(int iIndex, char *pcInsert, int iInsertLen
+#if LWIP_HTTPD_SSI_MULTIPART
+                             , u16_t current_tag_part, u16_t *next_tag_part
+#endif /* LWIP_HTTPD_SSI_MULTIPART */
+#if LWIP_HTTPD_FILE_STATE
+                             , void *connection_state
+#endif /* LWIP_HTTPD_FILE_STATE */
+                             );
 
 void http_set_ssi_handler(tSSIHandler pfnSSIHandler,
                           const char **ppcTags, int iNumTags);
@@ -166,19 +181,24 @@ void http_set_ssi_handler(tSSIHandler pfnSSIHandler,
 /** Called when a POST request has been received. The application can decide
  * whether to accept it or not.
  *
- * @param connection Unique connection identifier, valid until httpd_post_end is called.
+ * @param connection Unique connection identifier, valid until httpd_post_end
+ *        is called.
  * @param uri The HTTP header URI receiving the POST request.
  * @param http_request The raw HTTP request (the first packet, normally).
  * @param http_request_len Size of 'http_request'.
  * @param content_len Content-Length from HTTP header.
- * @param response_uri Filename of response file, to be filled when denying the request
+ * @param response_uri Filename of response file, to be filled when denying the
+ *        request
  * @param response_uri_len Size of the 'response_uri' buffer.
+ * @param post_auto_wnd Set this to 0 to let the callback code handle window
+ *        updates by calling 'httpd_post_data_recved' (to throttle rx speed)
+ *        default is 1 (httpd handles window updates automatically)
  * @return ERR_OK: Accept the POST request, data may be passed in
  *         another err_t: Deny the POST request, send back 'bad request'.
  */
 err_t httpd_post_begin(void *connection, const char *uri, const char *http_request,
                        u16_t http_request_len, int content_len, char *response_uri,
-                       u16_t response_uri_len);
+                       u16_t response_uri_len, u8_t *post_auto_wnd);
 
 /** Called for each pbuf of data that has been received for a POST.
  * ATTENTION: The application is responsible for freeing the pbufs passed in!
@@ -200,6 +220,14 @@ err_t httpd_post_receive_data(void *connection, struct pbuf *p);
  * @param response_uri_len Size of the 'response_uri' buffer.
  */
 void httpd_post_finished(void *connection, char *response_uri, u16_t response_uri_len);
+
+#ifndef LWIP_HTTPD_POST_MANUAL_WND
+#define LWIP_HTTPD_POST_MANUAL_WND  0
+#endif
+
+#if LWIP_HTTPD_POST_MANUAL_WND
+void httpd_post_data_recved(void *connection, u16_t recved_len);
+#endif /* LWIP_HTTPD_POST_MANUAL_WND */
 
 #endif /* LWIP_HTTPD_SUPPORT_POST */
 
