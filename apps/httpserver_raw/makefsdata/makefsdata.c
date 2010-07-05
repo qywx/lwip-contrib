@@ -503,7 +503,7 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
     file_ext++;
   }
   if((file_ext == NULL) || (*file_ext == 0)) {
-    printf("failed to get extension for file \"%s\", using default.", filename);
+    printf("failed to get extension for file \"%s\", using default.\n", filename);
   } else {
     for(j = 0; j < NUM_HTTP_HEADERS; j++) {
       if(!strcmp(file_ext, g_psHTTPHeaders[j].extension)) {
@@ -512,7 +512,7 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
       }
     }
     if (j >= NUM_HTTP_HEADERS) {
-      printf("failed to get file type for extension \"%s\", using default.", file_ext);
+      printf("failed to get file type for extension \"%s\", using default.\n", file_ext);
       file_type = HTTP_HDR_DEFAULT_TYPE;
     }
   }
