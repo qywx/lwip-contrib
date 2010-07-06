@@ -1437,9 +1437,9 @@ http_post_request(struct tcp_pcb *pcb, struct pbuf **inp, struct http_state *hs,
             /* try to pass in data of the first pbuf(s) */
             struct pbuf *q = *inp;
             u16_t start_offset = hdr_len;
-
+#if LWIP_HTTPD_POST_MANUAL_WND
             hs->no_auto_wnd = !post_auto_wnd;
-
+#endif /* LWIP_HTTPD_POST_MANUAL_WND */
             /* set the Content-Length to be received for this POST */
             hs->post_content_len_left = (u32_t)content_len;
 
