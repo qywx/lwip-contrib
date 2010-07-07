@@ -31,8 +31,7 @@ typedef struct
 static const char *g_psHTTPHeaderStrings[] =
 {
  "Content-type: text/html\r\n\r\n",
- "Content-type: text/html\r\nExpires: Fri, 10 Apr 2008 14:00:00 GMT\r\n"    \
-   "Pragma: no-cache\r\n\r\n",
+ "Content-type: text/html\r\nExpires: Fri, 10 Apr 2008 14:00:00 GMT\r\nPragma: no-cache\r\n\r\n",
  "Content-type: image/gif\r\n\r\n",
  "Content-type: image/png\r\n\r\n",
  "Content-type: image/jpeg\r\n\r\n",
@@ -47,13 +46,16 @@ static const char *g_psHTTPHeaderStrings[] =
  "Content-type: text/plain\r\n\r\n",
  "HTTP/1.0 200 OK\r\n",
  "HTTP/1.0 404 File not found\r\n",
+ "HTTP/1.0 400 Bad Request\r\n",
+ "HTTP/1.0 501 Not Implemented\r\n",
  "HTTP/1.1 200 OK\r\n",
  "HTTP/1.1 404 File not found\r\n",
+ "HTTP/1.1 400 Bad Request\r\n",
+ "HTTP/1.1 501 Not Implemented\r\n",
  "Content-Length: ",
  "Connection: Close\r\n",
  "Server: "HTTPD_SERVER_AGENT"\r\n",
- "\r\n<html><body><h2>404: The requested file cannot be found."             \
-   "</h2></body></html>\r\n"
+ "\r\n<html><body><h2>404: The requested file cannot be found.</h2></body></html>\r\n"
 };
 
 /* Indexes into the g_psHTTPHeaderStrings array */
@@ -73,12 +75,16 @@ static const char *g_psHTTPHeaderStrings[] =
 #define HTTP_HDR_DEFAULT_TYPE   13 /* text/plain */
 #define HTTP_HDR_OK             14 /* 200 OK */
 #define HTTP_HDR_NOT_FOUND      15 /* 404 File not found */
-#define HTTP_HDR_OK_11          16 /* 200 OK */
-#define HTTP_HDR_NOT_FOUND_11   17 /* 404 File not found */
-#define HTTP_HDR_CONTENT_LENGTH 18 /* 200 OK (HTTP 1.1) */
-#define HTTP_HDR_CONN_CLOSE     19 /* 404 File not found (HTTP 1.1) */
-#define HTTP_HDR_SERVER         20 /* Server: HTTPD_SERVER_AGENT */
-#define DEFAULT_404_HTML        21 /* default 404 body */
+#define HTTP_HDR_BAD_REQUEST    16 /* 400 Bad request */
+#define HTTP_HDR_NOT_IMPL       17 /* 501 Not Implemented */
+#define HTTP_HDR_OK_11          18 /* 200 OK */
+#define HTTP_HDR_NOT_FOUND_11   19 /* 404 File not found */
+#define HTTP_HDR_BAD_REQUEST_11 20 /* 400 Bad request */
+#define HTTP_HDR_NOT_IMPL_11    21 /* 501 Not Implemented */
+#define HTTP_HDR_CONTENT_LENGTH 22 /* Content-Length: (HTTP 1.1)*/
+#define HTTP_HDR_CONN_CLOSE     23 /* Connection: Close (HTTP 1.1) */
+#define HTTP_HDR_SERVER         24 /* Server: HTTPD_SERVER_AGENT */
+#define DEFAULT_404_HTML        25 /* default 404 body */
 
 /** A list of extension-to-HTTP header strings */
 static tHTTPHeader g_psHTTPHeaders[] =

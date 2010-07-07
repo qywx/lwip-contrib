@@ -471,10 +471,20 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
   }
 
   fprintf(data_file, NEWLINE "/* HTTP header */");
-  if (strstr(filename, "404")) {
+  if (strstr(filename, "404") == filename) {
     response_type = HTTP_HDR_NOT_FOUND;
     if (useHttp11) {
       response_type = HTTP_HDR_NOT_FOUND_11;
+    }
+  } else if (strstr(filename, "400") == filename) {
+    response_type = HTTP_HDR_BAD_REQUEST;
+    if (useHttp11) {
+      response_type = HTTP_HDR_BAD_REQUEST_11;
+    }
+  } else if (strstr(filename, "501") == filename) {
+    response_type = HTTP_HDR_NOT_IMPL;
+    if (useHttp11) {
+      response_type = HTTP_HDR_NOT_IMPL_11;
     }
   }
   cur_string = g_psHTTPHeaderStrings[response_type];

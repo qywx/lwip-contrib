@@ -672,6 +672,10 @@ get_http_headers(struct http_state *pState, char *pszURI)
        the 200 OK header. */
     if (strstr(pszURI, "404")) {
       pState->hdrs[0] = g_psHTTPHeaderStrings[HTTP_HDR_NOT_FOUND];
+    } else if (strstr(pszURI, "400")) {
+      pState->hdrs[0] = g_psHTTPHeaderStrings[HTTP_HDR_BAD_REQUEST];
+    } else if (strstr(pszURI, "501")) {
+      pState->hdrs[0] = g_psHTTPHeaderStrings[HTTP_HDR_NOT_IMPL];
     } else {
       pState->hdrs[0] = g_psHTTPHeaderStrings[HTTP_HDR_OK];
     }
