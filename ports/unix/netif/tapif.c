@@ -346,6 +346,9 @@ tapif_init(struct netif *netif)
   netif->hwaddr_len = 6;
 
   tapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
+
+  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
+
   low_level_init(netif);
 
   return ERR_OK;
