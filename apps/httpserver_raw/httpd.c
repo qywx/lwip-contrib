@@ -190,6 +190,13 @@
 #define LWIP_HTTPD_SSI_INCLUDE_TAG           1
 #endif
 
+/** Set this to 1 to call tcp_abort when tcp_close fails with memory error.
+ * This can be used to prevent consuming all memory in situations where the
+ * HTTP server has low priority compared to other communication. */
+#ifndef LWIP_HTTPD_ABORT_ON_CLOSE_MEM_ERROR
+#define LWIP_HTTPD_ABORT_ON_CLOSE_MEM_ERROR  0
+#endif
+
 #ifndef true
 #define true ((u8_t)1)
 #endif
@@ -474,21 +481,23 @@ http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
  * @param pcb the tcp pcb to reset callbacks
  * @param hs connection state to free
  */
-static void
+static err_t
 http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
 {
   err_t err;
   LWIP_DEBUGF(HTTPD_DEBUG, ("Closing connection %p\n", (void*)pcb));
 
 #if LWIP_HTTPD_SUPPORT_POST
-  if ((hs->post_content_len_left != 0)
+  if (hs != NULL) {
+    if ((hs->post_content_len_left != 0)
 #if LWIP_HTTPD_POST_MANUAL_WND
-     || ((hs->no_auto_wnd != 0) && (hs->unrecved_bytes != 0))
+       || ((hs->no_auto_wnd != 0) && (hs->unrecved_bytes != 0))
 #endif /* LWIP_HTTPD_POST_MANUAL_WND */
-     ) {
-    /* make sure the post code knows that the connection is closed */
-    http_post_response_filename[0] = 0;
-    httpd_post_finished(hs, http_post_response_filename, LWIP_HTTPD_POST_MAX_RESPONSE_URI_LEN);
+       ) {
+      /* make sure the post code knows that the connection is closed */
+      http_post_response_filename[0] = 0;
+      httpd_post_finished(hs, http_post_response_filename, LWIP_HTTPD_POST_MAX_RESPONSE_URI_LEN);
+    }
   }
 #endif /* LWIP_HTTPD_SUPPORT_POST*/
 
@@ -498,7 +507,9 @@ http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
   tcp_err(pcb, NULL);
   tcp_poll(pcb, NULL, 0);
   tcp_sent(pcb, NULL);
-  http_state_free(hs);
+  if(hs != NULL) {
+    http_state_free(hs);
+  }
 
   err = tcp_close(pcb);
   if (err != ERR_OK) {
@@ -506,6 +517,7 @@ http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
     /* error closing, try again later in poll */
     tcp_poll(pcb, http_poll, HTTPD_POLL_INTERVAL);
   }
+  return err;
 }
 #if LWIP_HTTPD_CGI
 /**
@@ -1712,11 +1724,10 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
 {
   size_t loop;
   struct fs_file *file = NULL;
-  /* default is request not supported, until it can be parsed */
+  char *params;
 #if LWIP_HTTPD_CGI
   int i;
   int count;
-  char *params;
 #endif /* LWIP_HTTPD_CGI */
 
 #if LWIP_HTTPD_SSI
@@ -1752,7 +1763,6 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
     }
   } else {
     /* No - we've been asked for a specific file. */
-#if LWIP_HTTPD_CGI
     /* First, isolate the base URI (without any parameters) */
     params = (char *)strchr(uri, '?');
     if (params != NULL) {
@@ -1761,6 +1771,7 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
       params++;
     }
 
+#if LWIP_HTTPD_CGI
     /* Does the base URI we have isolated correspond to a CGI handler? */
     if (g_iNumCGIs && g_pCGIs) {
       for (i = 0; i < g_iNumCGIs; i++) {
@@ -1773,16 +1784,6 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
            uri = g_pCGIs[i].pfnCGIHandler(i, count, hs->params,
                                           hs->param_vals);
            break;
-        }
-      }
-
-      /* Did we handle this URL as a CGI? If not, reinstate the
-       * original URL and pass it to the file system directly. */
-      if (i == g_iNumCGIs) {
-        /* Replace the ? marker at the beginning of the parameters */
-        if (params != NULL) {
-           params--;
-          *params = '?';
         }
       }
     }
@@ -1932,9 +1933,17 @@ http_poll(void *arg, struct tcp_pcb *pcb)
     (void*)pcb, (void*)hs, tcp_debug_state_str(pcb->state)));
 
   if (hs == NULL) {
+    err_t closed;
     /* arg is null, close. */
     LWIP_DEBUGF(HTTPD_DEBUG, ("http_poll: arg is NULL, close\n"));
-    http_close_conn(pcb, hs);
+    closed = http_close_conn(pcb, hs);
+    LWIP_UNUSED_ARG(closed);
+#if LWIP_HTTPD_ABORT_ON_CLOSE_MEM_ERROR
+    if (closed == ERR_MEM) {
+       tcp_abort(pcb);
+       return ERR_ABRT;
+    }
+#endif /* LWIP_HTTPD_ABORT_ON_CLOSE_MEM_ERROR */
     return ERR_OK;
   } else {
     hs->retries++;
@@ -2114,6 +2123,10 @@ httpd_init_addr(ip_addr_t *local_addr)
 void
 httpd_init(void)
 {
+#if HTTPD_USE_MEM_POOL
+  LWIP_ASSERT("memp_sizes[MEMP_HTTPD_STATE] >= sizeof(http_state)",
+     memp_sizes[MEMP_HTTPD_STATE] >= sizeof(http_state));
+#endif
   LWIP_DEBUGF(HTTPD_DEBUG, ("httpd_init\n"));
 
   httpd_init_addr(IP_ADDR_ANY);
