@@ -102,6 +102,9 @@ quit: quits."NEWLINE"";
 #if LWIP_STATS
 static char padding_10spaces[] = "          ";
 
+#define PROTOCOL_STATS (LINK_STATS && ETHARP_STATS && IPFRAG_STATS && IP_STATS && ICMP_STATS && UDP_STATS && TCP_STATS)
+
+#if PROTOCOL_STATS
 static const char* shell_stat_proto_names[] = {
 #if LINK_STATS
   "LINK      ",
@@ -126,9 +129,7 @@ static const char* shell_stat_proto_names[] = {
 #endif
   "last"
 };
-#define PROTOCOL_STATS (LINK_STATS && ETHARP_STATS && IPFRAG_STATS && IP_STATS && ICMP_STATS && UDP_STATS && TCP_STATS)
 
-#if PROTOCOL_STATS
 static struct stats_proto* shell_stat_proto_stats[] = {
 #if LINK_STATS
   &lwip_stats.link,
@@ -396,7 +397,7 @@ com_stat_write_mem(struct netconn *conn, struct stats_mem *elem, int i)
   char buf[100];
   size_t slen;
 
-#if LWIP_DEBUG
+#ifdef LWIP_DEBUG
   LWIP_UNUSED_ARG(i);
   slen = strlen(elem->name);
   netconn_write(conn, elem->name, slen, NETCONN_COPY);
