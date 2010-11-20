@@ -457,7 +457,7 @@ http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
    LWIP_ASSERT("length != NULL", length != NULL);
    len = *length;
    do {
-     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Sending %d bytes\n", len));
+     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Trying go send %d bytes\n", len));
      err = tcp_write(pcb, ptr, len, apiflags);
      if (err == ERR_MEM) {
        if ((tcp_sndbuf(pcb) == 0) ||
@@ -467,8 +467,15 @@ http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
        } else {
          len /= 2;
        }
+       LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Send failed, trying less\n", len));
      }
    } while ((err == ERR_MEM) && (len > 1));
+
+   if (err == ERR_OK) {
+     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Sent %d bytes\n", len));
+   } else {
+     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Send failed with err %d (\"%s\")\n", err, lwip_strerr(err)));
+   }
 
    *length = len;
    return err;
