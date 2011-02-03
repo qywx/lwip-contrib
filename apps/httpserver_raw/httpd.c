@@ -467,7 +467,8 @@ http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
        } else {
          len /= 2;
        }
-       LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Send failed, trying less\n", len));
+       LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, 
+                   ("Send failed, trying less (%d bytes)\n", len));
      }
    } while ((err == ERR_MEM) && (len > 1));
 
