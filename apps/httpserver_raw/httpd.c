@@ -276,7 +276,7 @@ static char http_post_response_filename[LWIP_HTTPD_POST_MAX_RESPONSE_URI_LEN+1];
 
 #define HTTPD_LAST_TAG_PART 0xFFFF
 
-const char *g_pcSSIExtensions[] = {
+const char * const g_pcSSIExtensions[] = {
   ".shtml", ".shtm", ".ssi", ".xml"
 };
 
@@ -365,8 +365,8 @@ const char * const g_pcTagLeadOut = "-->";
 
 #if LWIP_HTTPD_CGI
 /* CGI handler information */
-const tCGI *g_pCGIs = NULL;
-int g_iNumCGIs = 0;
+const tCGI *g_pCGIs;
+int g_iNumCGIs;
 #endif /* LWIP_HTTPD_CGI */
 
 #if LWIP_HTTPD_STRNSTR_PRIVATE

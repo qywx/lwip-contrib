@@ -28,7 +28,7 @@ typedef struct
 } tHTTPHeader;
 
 /** A list of strings used in HTTP headers */
-static const char *g_psHTTPHeaderStrings[] =
+static const char * const g_psHTTPHeaderStrings[] =
 {
  "Content-type: text/html\r\n\r\n",
  "Content-type: text/html\r\nExpires: Fri, 10 Apr 2008 14:00:00 GMT\r\nPragma: no-cache\r\n\r\n",
@@ -87,7 +87,7 @@ static const char *g_psHTTPHeaderStrings[] =
 #define DEFAULT_404_HTML        25 /* default 404 body */
 
 /** A list of extension-to-HTTP header strings */
-static tHTTPHeader g_psHTTPHeaders[] =
+const static tHTTPHeader g_psHTTPHeaders[] =
 {
  { "html", HTTP_HDR_HTML},
  { "htm",  HTTP_HDR_HTML},
