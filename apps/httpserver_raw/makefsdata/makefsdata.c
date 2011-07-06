@@ -64,7 +64,7 @@
 #define LWIP_HTTPD_DYNAMIC_HEADERS 1
 #include "../httpd_structs.h"
 
-#include "../../../../lwip/src/core/ipv4/inet_chksum.c"
+#include "../../../../lwip/src/core/inet_chksum.c"
 #include "../../../../lwip/src/core/def.c"
 
 /** (Your server name here) */
