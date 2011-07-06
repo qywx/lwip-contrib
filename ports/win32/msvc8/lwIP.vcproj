@@ -790,15 +790,11 @@
 							>
 						</File>
 						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\inet_chksum.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\ip4.h"
 							>
 						</File>
 						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\ip.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\ip_addr.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\ip4_addr.h"
 							>
 						</File>
 						<File
@@ -884,6 +880,10 @@
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\include\lwip\err.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\inet_chksum.h"
 						>
 					</File>
 					<File
