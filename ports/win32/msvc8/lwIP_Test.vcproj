@@ -45,7 +45,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\include,..,..\..\.."
+				AdditionalIncludeDirectories="&quot;$(LWIP_DIR)\src\include&quot;;&quot;$(LWIP_DIR)\src\include\ipv4&quot;;&quot;$(LWIP_DIR)\src\include\ipv6&quot;;..\include;..;..\..\.."
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -135,7 +135,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\include,..,..\..\.."
+				AdditionalIncludeDirectories="&quot;$(LWIP_DIR)\src\include&quot;;&quot;$(LWIP_DIR)\src\include\ipv4&quot;;&quot;$(LWIP_DIR)\src\include\ipv6&quot;;..\include;..;..\..\.."
 				PreprocessorDefinitions="_CONSOLE;WIN32;_DEBUG;LWIP_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"

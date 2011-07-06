@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\include,.."
+				AdditionalIncludeDirectories="&quot;$(LWIP_DIR)\src\include&quot;;&quot;$(LWIP_DIR)\src\include\ipv4&quot;;&quot;$(LWIP_DIR)\src\include\ipv6&quot;;..\include;.."
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -113,7 +113,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(LWIP_DIR)\src\include,$(LWIP_DIR)\src\include\ipv4,..\include,.."
+				AdditionalIncludeDirectories="&quot;$(LWIP_DIR)\src\include&quot;;&quot;$(LWIP_DIR)\src\include\ipv4&quot;;&quot;$(LWIP_DIR)\src\include\ipv6&quot;;..\include;.."
 				PreprocessorDefinitions="_LIB;WIN32;_DEBUG;LWIP_DEBUG"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -466,6 +466,10 @@
 					>
 				</File>
 				<File
+					RelativePath="$(LWIP_DIR)\src\core\inet_chksum.c"
+					>
+				</File>
+				<File
 					RelativePath="$(LWIP_DIR)\src\core\init.c"
 					>
 				</File>
@@ -533,19 +537,11 @@
 						>
 					</File>
 					<File
-						RelativePath="$(LWIP_DIR)\src\core\ipv4\inet.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv4\ip4.c"
 						>
 					</File>
 					<File
-						RelativePath="$(LWIP_DIR)\src\core\ipv4\inet_chksum.c"
-						>
-					</File>
-					<File
-						RelativePath="$(LWIP_DIR)\src\core\ipv4\ip.c"
-						>
-					</File>
-					<File
-						RelativePath="$(LWIP_DIR)\src\core\ipv4\ip_addr.c"
+						RelativePath="$(LWIP_DIR)\src\core\ipv4\ip4_addr.c"
 						>
 					</File>
 					<File
@@ -557,84 +553,40 @@
 					Name="ipv6"
 					>
 					<File
+						RelativePath="$(LWIP_DIR)\src\core\ipv6\dhcp6.c"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\core\ipv6\ethip6.c"
+						>
+					</File>
+					<File
 						RelativePath="$(LWIP_DIR)\src\core\ipv6\icmp6.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\core\ipv6\inet6.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\core\ipv6\ip6.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\core\ipv6\ip6_addr.c"
 						>
-						<FileConfiguration
-							Name="Release|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
-						<FileConfiguration
-							Name="Debug|Win32"
-							ExcludedFromBuild="true"
-							>
-							<Tool
-								Name="VCCLCompilerTool"
-							/>
-						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\core\ipv6\ip6_frag.c"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\core\ipv6\mld6.c"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\core\ipv6\nd6.c"
+						>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\core\ipv6\README"
@@ -862,84 +814,40 @@
 						Name="lwip"
 						>
 						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\icmp.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\dhcp6.h"
 							>
-							<FileConfiguration
-								Name="Release|Win32"
-								ExcludedFromBuild="true"
-								>
-								<Tool
-									Name="VCCustomBuildTool"
-								/>
-							</FileConfiguration>
-							<FileConfiguration
-								Name="Debug|Win32"
-								ExcludedFromBuild="true"
-								>
-								<Tool
-									Name="VCCustomBuildTool"
-								/>
-							</FileConfiguration>
 						</File>
 						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\inet.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ethip6.h"
 							>
-							<FileConfiguration
-								Name="Release|Win32"
-								ExcludedFromBuild="true"
-								>
-								<Tool
-									Name="VCCustomBuildTool"
-								/>
-							</FileConfiguration>
-							<FileConfiguration
-								Name="Debug|Win32"
-								ExcludedFromBuild="true"
-								>
-								<Tool
-									Name="VCCustomBuildTool"
-								/>
-							</FileConfiguration>
 						</File>
 						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ip.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\icmp6.h"
 							>
-							<FileConfiguration
-								Name="Release|Win32"
-								ExcludedFromBuild="true"
-								>
-								<Tool
-									Name="VCCustomBuildTool"
-								/>
-							</FileConfiguration>
-							<FileConfiguration
-								Name="Debug|Win32"
-								ExcludedFromBuild="true"
-								>
-								<Tool
-									Name="VCCustomBuildTool"
-								/>
-							</FileConfiguration>
 						</File>
 						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ip_addr.h"
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\inet6.h"
 							>
-							<FileConfiguration
-								Name="Release|Win32"
-								ExcludedFromBuild="true"
-								>
-								<Tool
-									Name="VCCustomBuildTool"
-								/>
-							</FileConfiguration>
-							<FileConfiguration
-								Name="Debug|Win32"
-								ExcludedFromBuild="true"
-								>
-								<Tool
-									Name="VCCustomBuildTool"
-								/>
-							</FileConfiguration>
+						</File>
+						<File
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ip6.h"
+							>
+						</File>
+						<File
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ip6_addr.h"
+							>
+						</File>
+						<File
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ip6_frag.h"
+							>
+						</File>
+						<File
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\mld6.h"
+							>
+						</File>
+						<File
+							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\nd6.h"
+							>
 						</File>
 					</Filter>
 				</Filter>
@@ -1457,11 +1365,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\lwippools.h"
+				RelativePath="..\include\lwipopts.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\lwipopts.h"
+				RelativePath="..\lwippools.h"
 				>
 			</File>
 			<File
