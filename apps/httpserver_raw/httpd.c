@@ -77,9 +77,9 @@
  * - split too long functions into multiple smaller functions?
  * - support more file types?
  */
+#include "httpd.h"
 #include "lwip/debug.h"
 #include "lwip/stats.h"
-#include "httpd.h"
 #include "httpd_structs.h"
 #include "lwip/tcp.h"
 #include "fs.h"
@@ -771,7 +771,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
 #endif /* LWIP_HTTPD_DYNAMIC_HEADERS */
 
   LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_send_data: pcb=%p hs=%p left=%d\n", (void*)pcb,
-    (void*)hs, hs != NULL ? hs->left : 0));
+    (void*)hs, hs != NULL ? (int)hs->left : 0));
 
 #if LWIP_HTTPD_SUPPORT_POST && LWIP_HTTPD_POST_MANUAL_WND
   if (hs->unrecved_bytes != 0) {
@@ -975,7 +975,7 @@ http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
       }
     }
 
-    LWIP_DEBUGF(HTTPD_DEBUG, ("State %d, %d left\n", hs->tag_state, hs->parse_left));
+    LWIP_DEBUGF(HTTPD_DEBUG, ("State %d, %d left\n", hs->tag_state, (int)hs->parse_left));
 
     /* We have sent all the data that was already parsed so continue parsing
      * the buffer contents looking for SSI tags. */
