@@ -604,6 +604,8 @@ sntp_send_request(ip_addr_t *server_addr)
     sntp_initialize_request(sntpmsg);
     /* send request */
     udp_sendto(sntp_pcb, p, server_addr, SNTP_PORT);
+    /* free the pbuf after sending it */
+    pbuf_free(p);
     /* set up receive timeout: try next server or retry on timeout */
     sys_timeout((u32_t)SNTP_RECV_TIMEOUT, sntp_try_next_server, NULL);
 #if SNTP_CHECK_RESPONSE >= 1
