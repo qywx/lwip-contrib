@@ -1,5 +1,5 @@
-#ifndef __PKTIF_H__
-#define __PKTIF_H__
+#ifndef __PCAPIF_H__
+#define __PCAPIF_H__
 
 #include "lwip/err.h"
 

@@ -65,6 +65,7 @@
 #include "lwip/snmp.h"
 #include "lwip/tcpip.h"
 #include "lwip/timers.h"
+#include "lwip/ethip6.h"
 
 #include "netif/etharp.h"
 
@@ -449,13 +450,12 @@ pcapif_input_thread(void *arg)
 {
   struct netif *netif = (struct netif *)arg;
   struct pcapif_private *pa = (struct pcapif_private*)netif->state;
-  int ret;
   do
   {
-    ret = pcap_loop(pa->adapter, -1, pcapif_input, (u_char*)pa);
-    if (ret < 0)
-    {
-      sys_msleep(1);
+    struct pcap_pkthdr pkt_header;
+    const u_char *packet = pcap_next(pa->adapter, &pkt_header);
+    if(packet != NULL) {
+      pcapif_input((u_char*)pa, &pkt_header, packet);
     }
   } while (pa->rx_run);
   pa->rx_running = 0;
@@ -531,10 +531,10 @@ pcapif_low_level_init(struct netif *netif)
 #if PCAPIF_RX_USE_THREAD
   pa->rx_run = 1;
   pa->rx_running = 1;
-  sys_thread_new("pktif_rxthread", pcapif_input_thread, netif, 0, 0);
+  sys_thread_new("pcapif_rxthread", pcapif_input_thread, netif, 0, 0);
 #endif
 
-  LWIP_DEBUGF(NETIF_DEBUG, ("pktif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
+  LWIP_DEBUGF(NETIF_DEBUG, ("pcapif: eth_addr %02X%02X%02X%02X%02X%02X\n",netif->hwaddr[0],netif->hwaddr[1],netif->hwaddr[2],netif->hwaddr[3],netif->hwaddr[4],netif->hwaddr[5]));
 }
 
 /** low_level_output():
@@ -618,10 +618,13 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
   struct eth_addr *dest = (struct eth_addr*)packet;
   struct eth_addr *src = dest + 1;
   int unicast;
+  const u8_t bcast[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+  const u8_t mcast[] = {0x01, 0x00, 0x5e};
 
   /* MAC filter: only let my MAC or non-unicast through (pcap receives loopback traffic, too) */
   unicast = ((dest->addr[0] & 0x01) == 0);
-  if (((memcmp(dest, &netif->hwaddr, ETHARP_HWADDR_LEN)) && unicast) ||
+  if ((memcmp(dest, &netif->hwaddr, ETHARP_HWADDR_LEN) &&
+        memcmp(dest, mcast, 3) && memcmp(dest, bcast, 6)) ||
       /* and don't let feedback packets through (limitation in winpcap?) */
       (!memcmp(src, netif->hwaddr, ETHARP_HWADDR_LEN))) {
     /* don't update counters here! */
@@ -717,8 +720,14 @@ pcapif_init(struct netif *netif)
   netif->linkoutput = pcapif_low_level_output;
 #if LWIP_ARP
   netif->output = etharp_output;
+#if LWIP_IPV6
+  netif->output_ip6 = ethip6_output;
+#endif /* LWIP_IPV6 */
 #else /* LWIP_ARP */
   netif->output = NULL; /* not used for PPPoE */
+#if LWIP_IPV6
+  netif->output_ip6 = NULL; /* not used for PPPoE */
+#endif /* LWIP_IPV6 */
 #endif /* LWIP_ARP */
 #if LWIP_NETIF_HOSTNAME
   /* Initialize interface hostname */
