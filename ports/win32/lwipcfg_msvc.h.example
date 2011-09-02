@@ -15,6 +15,10 @@
 /*#define PACKET_LIB_GET_ADAPTER_NETADDRESS(addr) IP4_ADDR((addr), 192,168,1,0)*/
 /*#define PACKET_LIB_QUIET*/
 
+/* If these 2 are not defined, the corresponding config setting is used */
+/* #define USE_DHCP    0 */
+/* #define USE_AUTOIP  0 */
+
 #define LWIP_PORT_INIT_IPADDR(addr)   IP4_ADDR((addr), 192,168,1,200)
 #define LWIP_PORT_INIT_GW(addr)       IP4_ADDR((addr), 192,168,1,1)
 #define LWIP_PORT_INIT_NETMASK(addr)  IP4_ADDR((addr), 255,255,255,0)
@@ -43,3 +47,6 @@
  * otherwise the raw api server will be used. */
 /*#define LWIP_TCPECHO_APP_NETCONN   */
 #define LWIP_UDPECHO_APP              0
+
+/* define this to your custom application-init function */
+/* #define LWIP_APP_INIT my_app_init() */
