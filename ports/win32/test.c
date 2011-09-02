@@ -101,6 +101,13 @@
 #define USE_ETHERNET_TCPIP  !PPP_SUPPORT
 #endif
 
+#ifndef USE_DHCP
+#define USE_DHCP    LWIP_DHCP
+#endif
+#ifndef USE_AUTOIP
+#define USE_AUTOIP  LWIP_AUTOIP
+#endif
+
 
 /* globales variables for netifs */
 #if USE_ETHERNET
@@ -197,11 +204,11 @@ void link_callback(struct netif *netif)
 {
   if (netif_is_link_up(netif)) {
     printf("link_callback==UP\n");
-#if LWIP_DHCP
+#if USE_DHCP
     if (netif->dhcp != NULL) {
       dhcp_renew(netif);
     }
-#endif /* LWIP_DHCP */
+#endif /* USE_DHCP */
   } else {
     printf("link_callback==DOWN\n");
   }
@@ -243,16 +250,16 @@ msvc_netif_init()
   ip_addr_set_zero(&ipaddr);
   ip_addr_set_zero(&netmask);
 #if USE_ETHERNET_TCPIP
-#if LWIP_DHCP
+#if USE_DHCP
   printf("Starting lwIP, local interface IP is dhcp-enabled\n");
-#elif LWIP_AUTOIP
+#elif USE_AUTOIP
   printf("Starting lwIP, local interface IP is autoip-enabled\n");
-#else /* LWIP_AUTOIP */
+#else /* USE_DHCP */
   LWIP_PORT_INIT_GW(&gw);
   LWIP_PORT_INIT_IPADDR(&ipaddr);
   LWIP_PORT_INIT_NETMASK(&netmask);
   printf("Starting lwIP, local interface IP is %s\n", ip_ntoa(&ipaddr));
-#endif /* LWIP_DHCP */
+#endif /* USE_DHCP */
 #endif /* USE_ETHERNET_TCPIP */
 
 #if NO_SYS
@@ -263,6 +270,12 @@ msvc_netif_init()
 #endif /* LWIP_ARP */
 #else  /* NO_SYS */
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, pcapif_init, tcpip_input));
+#if LWIP_IPV6
+  netif_create_ip6_linklocal_address(&netif, 1);
+  printf("ip6 linklocal address: ");
+  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, &netif.ip6_addr[0]);
+  printf("\n");
+#endif /* LWIP_IPV6 */
 #endif /* NO_SYS */
 #if LWIP_NETIF_STATUS_CALLBACK
   netif_set_status_callback(&netif, status_callback);
@@ -277,12 +290,14 @@ msvc_netif_init()
 #endif /* LWIP_AUTOIP */
 #if LWIP_DHCP
   dhcp_set_struct(&netif, &netif_dhcp);
-  dhcp_start(&netif);
-#elif LWIP_AUTOIP
-  autoip_start(&netif);
-#else /* LWIP_DHCP */
-  netif_set_up(&netif);
 #endif /* LWIP_DHCP */
+#if USE_DHCP
+  dhcp_start(&netif);
+#elif USE_AUTOIP
+  autoip_start(&netif);
+#else /* USE_DHCP */
+  netif_set_up(&netif);
+#endif /* USE_DHCP */
 #else /* USE_ETHERNET_TCPIP */
   /* Use ethernet for PPPoE only */
   netif.flags &= ~(NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP); /* no ARP */
@@ -373,6 +388,9 @@ apps_init()
 #if LWIP_SOCKET_EXAMPLES_APP && LWIP_SOCKET
   socket_examples_init();
 #endif /* LWIP_SOCKET_EXAMPLES_APP && LWIP_SOCKET */
+#ifdef LWIP_APP_INIT
+  LWIP_APP_INIT();
+#endif
 }
 
 /* This function initializes this lwIP test. When NO_SYS=1, this is done in
