@@ -98,9 +98,6 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -185,9 +182,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -331,6 +325,14 @@
 				</File>
 				<File
 					RelativePath="..\..\..\apps\shell\shell.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\smtp\smtp.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\apps\smtp\smtp.h"
 					>
 				</File>
 				<File
