@@ -1665,34 +1665,38 @@ http_parse_request(struct pbuf **inp, struct http_state *hs, struct tcp_pcb *pcb
 #endif /* LWIP_HTTPD_SUPPORT_V09 */
       uri_len = sp2 - (sp1 + 1);
       if ((sp2 != 0) && (sp2 > sp1)) {
-        char *uri = sp1 + 1;
-        /* null-terminate the METHOD (pbuf is freed anyway wen returning) */
-        *sp1 = 0;
-        uri[uri_len] = 0;
-        LWIP_DEBUGF(HTTPD_DEBUG, ("Received \"%s\" request for URI: \"%s\"\n",
-                    data, uri));
+        /* for > 0.9, wait for double-CRLF (end of HTTP headers) before parsing
+           the request */
+        if (is_09 || strnstr(data, CRLF CRLF, data_len) != NULL) {
+          char *uri = sp1 + 1;
+          /* null-terminate the METHOD (pbuf is freed anyway when returning) */
+          *sp1 = 0;
+          uri[uri_len] = 0;
+          LWIP_DEBUGF(HTTPD_DEBUG, ("Received \"%s\" request for URI: \"%s\"\n",
+                      data, uri));
 #if LWIP_HTTPD_SUPPORT_POST
-        if (is_post) {
+          if (is_post) {
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
-          struct pbuf **q = &hs->req;
+            struct pbuf **q = &hs->req;
 #else /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
-          struct pbuf **q = inp;
+            struct pbuf **q = inp;
 #endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
-          err = http_post_request(pcb, q, hs, data, data_len, uri, sp2);
-          if (err != ERR_OK) {
-            /* restore header for next try */
-            *sp1 = ' ';
-            *sp2 = ' ';
-            uri[uri_len] = ' ';
-          }
-          if (err == ERR_ARG) {
-            goto badrequest;
-          }
-          return err;
-        } else
+            err = http_post_request(pcb, q, hs, data, data_len, uri, sp2);
+            if (err != ERR_OK) {
+              /* restore header for next try */
+              *sp1 = ' ';
+              *sp2 = ' ';
+              uri[uri_len] = ' ';
+            }
+            if (err == ERR_ARG) {
+              goto badrequest;
+            }
+            return err;
+          } else
 #endif /* LWIP_HTTPD_SUPPORT_POST */
-        {
-          return http_find_file(hs, uri, is_09);
+          {
+            return http_find_file(hs, uri, is_09);
+          }
         }
       } else {
         LWIP_DEBUGF(HTTPD_DEBUG, ("invalid URI\n"));
