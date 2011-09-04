@@ -65,6 +65,10 @@ struct fs_table fs_memory[LWIP_MAX_OPEN_FILES];
 #if LWIP_HTTPD_CUSTOM_FILES
 int fs_open_custom(struct fs_file *file, const char *name);
 void fs_close_custom(struct fs_file *file);
+#if LWIP_HTTPD_FS_ASYNC_READ
+u8_t fs_canread_custom(struct fs_file *file);
+u8_t fs_wait_read_custom(struct fs_file *file, fs_wait_cb callback_fn, void *callback_arg);
+#endif /* LWIP_HTTPD_FS_ASYNC_READ */
 #endif /* LWIP_HTTPD_CUSTOM_FILES */
 
 /*-----------------------------------------------------------------------------------*/
@@ -151,14 +155,27 @@ fs_close(struct fs_file *file)
   fs_free(file);
 }
 /*-----------------------------------------------------------------------------------*/
+#if LWIP_HTTPD_DYNAMIC_FILE_READ
+#if LWIP_HTTPD_FS_ASYNC_READ
+int
+fs_read_async(struct fs_file *file, char *buffer, int count, fs_wait_cb callback_fn, void *callback_arg)
+#else /* LWIP_HTTPD_FS_ASYNC_READ */
 int
 fs_read(struct fs_file *file, char *buffer, int count)
+#endif /* LWIP_HTTPD_FS_ASYNC_READ */
 {
   int read;
 
   if(file->index == file->len) {
-    return -1;
+    return FS_READ_EOF;
   }
+#if LWIP_HTTPD_FS_ASYNC_READ && LWIP_HTTPD_CUSTOM_FILES
+  if (!fs_canread_custom(file)) {
+    if (fs_wait_read_custom(file, callback_fn, callback_arg)) {
+      return FS_READ_DELAYED;
+    }
+  }
+#endif /* LWIP_HTTPD_FS_ASYNC_READ && LWIP_HTTPD_CUSTOM_FILES */
 
   read = file->len - file->index;
   if(read > count) {
@@ -170,8 +187,27 @@ fs_read(struct fs_file *file, char *buffer, int count)
 
   return(read);
 }
+#endif /* LWIP_HTTPD_DYNAMIC_FILE_READ */
 /*-----------------------------------------------------------------------------------*/
-int fs_bytes_left(struct fs_file *file)
+#if LWIP_HTTPD_FS_ASYNC_READ
+int
+fs_is_file_ready(struct fs_file *file, fs_wait_cb callback_fn, void *callback_arg)
+{
+  if (file != NULL) {
+#if LWIP_HTTPD_FS_ASYNC_READ && LWIP_HTTPD_CUSTOM_FILES
+    if (!fs_canread_custom(file)) {
+      if (fs_wait_read_custom(file, callback_fn, callback_arg)) {
+        return 0;
+      }
+    }
+#endif /* LWIP_HTTPD_FS_ASYNC_READ && LWIP_HTTPD_CUSTOM_FILES */
+  }
+  return 1;
+}
+#endif /* LWIP_HTTPD_FS_ASYNC_READ */
+/*-----------------------------------------------------------------------------------*/
+int
+fs_bytes_left(struct fs_file *file)
 {
   return file->len - file->index;
 }
