@@ -45,6 +45,14 @@
 #define LWIP_HTTPD_CUSTOM_FILES       0
 #endif
 
+/** Set this to 1 to support fs_read() to dynamically read file data.
+ * Without this (default=off), only one-block files are supported,
+ * and the contents must be ready after fs_open().
+ */
+#ifndef LWIP_HTTPD_DYNAMIC_FILE_READ
+#define LWIP_HTTPD_DYNAMIC_FILE_READ  0
+#endif
+
 /** Set this to 1 to include an application state argument per file
  * that is opened. This allows to keep a state per connection/file.
  */
@@ -58,6 +66,16 @@
 #ifndef HTTPD_PRECALCULATED_CHECKSUM
 #define HTTPD_PRECALCULATED_CHECKSUM  0
 #endif
+
+/** LWIP_HTTPD_FS_ASYNC_READ==1: support asynchronous read operations
+ * (fs_read_async returns FS_READ_DELAYED and calls a callback when finished).
+ */
+#ifndef LWIP_HTTPD_FS_ASYNC_READ
+#define LWIP_HTTPD_FS_ASYNC_READ      0
+#endif
+
+#define FS_READ_EOF     -1
+#define FS_READ_DELAYED -2
 
 #if HTTPD_PRECALCULATED_CHECKSUM
 struct fsdata_chksum {
@@ -85,9 +103,22 @@ struct fs_file {
 #endif /* LWIP_HTTPD_FILE_STATE */
 };
 
+#if LWIP_HTTPD_FS_ASYNC_READ
+typedef void (*fs_wait_cb)(void *arg);
+#endif /* LWIP_HTTPD_FS_ASYNC_READ */
+
 struct fs_file *fs_open(const char *name);
 void fs_close(struct fs_file *file);
+#if LWIP_HTTPD_DYNAMIC_FILE_READ
+#if LWIP_HTTPD_FS_ASYNC_READ
+int fs_read_async(struct fs_file *file, char *buffer, int count, fs_wait_cb callback_fn, void *callback_arg);
+#else /* LWIP_HTTPD_FS_ASYNC_READ */
 int fs_read(struct fs_file *file, char *buffer, int count);
+#endif /* LWIP_HTTPD_FS_ASYNC_READ */
+#endif /* LWIP_HTTPD_DYNAMIC_FILE_READ */
+#if LWIP_HTTPD_FS_ASYNC_READ
+int fs_is_file_ready(struct fs_file *file, fs_wait_cb callback_fn, void *callback_arg);
+#endif /* LWIP_HTTPD_FS_ASYNC_READ */
 int fs_bytes_left(struct fs_file *file);
 
 #if LWIP_HTTPD_FILE_STATE

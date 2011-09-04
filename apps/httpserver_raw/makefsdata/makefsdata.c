@@ -62,6 +62,7 @@
 
 /* define this to get the header variables we use to build HTTP headers */
 #define LWIP_HTTPD_DYNAMIC_HEADERS 1
+#define LWIP_HTTPD_SSI             1
 #include "../httpd_structs.h"
 
 #include "../../../../lwip/src/core/inet_chksum.c"
@@ -103,6 +104,7 @@ char hdr_buf[4096];
 unsigned char processSubs = 1;
 unsigned char includeHttpHeader = 1;
 unsigned char useHttp11 = 0;
+unsigned char supportSsi = 1;
 unsigned char precalcChksum = 0;
 
 int main(int argc, char *argv[])
@@ -134,6 +136,8 @@ int main(int argc, char *argv[])
         includeHttpHeader = 0;
       } else if (strstr(argv[i], "-11")) {
         useHttp11 = 1;
+      } else if (strstr(argv[i], "-nossi")) {
+        supportSsi = 0;
       } else if (strstr(argv[i], "-c")) {
         precalcChksum = 1;
       } else if((argv[i][1] == 'f') && (argv[i][2] == ':')) {
@@ -155,6 +159,7 @@ int main(int argc, char *argv[])
     printf("   switch -s: toggle processing of subdirectories (default is on)" NEWLINE);
     printf("   switch -e: exclude HTTP header from file (header is created at runtime, default is off)" NEWLINE);
     printf("   switch -11: include HTTP 1.1 header (1.0 is default)" NEWLINE);
+    printf("   switch -nossi: no support for SSI (cannot calculate Content-Length for SSI)" NEWLINE);
     printf("   switch -c: precalculate checksums for all pages (default is off)" NEWLINE);
     printf("   switch -f: target filename (default is \"fsdata.c\")" NEWLINE);
     printf("   if targetdir not specified, htmlgen will attempt to" NEWLINE);
@@ -463,6 +468,17 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
   u16_t acc;
   const char *file_ext;
   int j;
+  u8_t keepalive = useHttp11;
+
+  if (keepalive) {
+    size_t loop;
+    for (loop = 0; loop < NUM_SHTML_EXTENSIONS; loop++) {
+      if (strstr(filename, g_pcSSIExtensions[loop])) {
+        /* no keepalive connection for SSI files */
+        keepalive = 0;
+      }
+    }
+  }
 
   memset(hdr_buf, 0, sizeof(hdr_buf));
   
@@ -529,28 +545,38 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
 
   if (useHttp11) {
     char intbuf[MAX_PATH_LEN];
+    int content_len = file_size;
     memset(intbuf, 0, sizeof(intbuf));
 
-    cur_string = g_psHTTPHeaderStrings[HTTP_HDR_CONTENT_LENGTH];
-    cur_len = strlen(cur_string);
-    fprintf(data_file, NEWLINE "/* \"%s%d\r\n\" (%d+ bytes) */" NEWLINE, cur_string, file_size, cur_len+2);
-    written += file_put_ascii(data_file, cur_string, cur_len, &i);
-    if (precalcChksum) {
-      memcpy(&hdr_buf[hdr_len], cur_string, cur_len);
-      hdr_len += cur_len;
+    if (!keepalive) {
+      content_len *= 2;
+    }
+    {
+      cur_string = g_psHTTPHeaderStrings[HTTP_HDR_CONTENT_LENGTH];
+      cur_len = strlen(cur_string);
+      fprintf(data_file, NEWLINE "/* \"%s%d\r\n\" (%d+ bytes) */" NEWLINE, cur_string, content_len, cur_len+2);
+      written += file_put_ascii(data_file, cur_string, cur_len, &i);
+      if (precalcChksum) {
+        memcpy(&hdr_buf[hdr_len], cur_string, cur_len);
+        hdr_len += cur_len;
+      }
+
+      _itoa(content_len, intbuf, 10);
+      strcat(intbuf, "\r\n");
+      cur_len = strlen(intbuf);
+      written += file_put_ascii(data_file, intbuf, cur_len, &i);
+      i = 0;
+      if (precalcChksum) {
+        memcpy(&hdr_buf[hdr_len], intbuf, cur_len);
+        hdr_len += cur_len;
+      }
     }
 
-    _itoa(file_size, intbuf, 10);
-    strcat(intbuf, "\r\n");
-    cur_len = strlen(intbuf);
-    written += file_put_ascii(data_file, intbuf, cur_len, &i);
-    i = 0;
-    if (precalcChksum) {
-      memcpy(&hdr_buf[hdr_len], intbuf, cur_len);
-      hdr_len += cur_len;
+    if (keepalive) {
+      cur_string = g_psHTTPHeaderStrings[HTTP_HDR_CONN_KEEPALIVE];
+    } else {
+      cur_string = g_psHTTPHeaderStrings[HTTP_HDR_CONN_CLOSE];
     }
-
-    cur_string = g_psHTTPHeaderStrings[HTTP_HDR_CONN_CLOSE];
     cur_len = strlen(cur_string);
     fprintf(data_file, NEWLINE "/* \"%s\" (%d bytes) */" NEWLINE, cur_string, cur_len);
     written += file_put_ascii(data_file, cur_string, cur_len, &i);
