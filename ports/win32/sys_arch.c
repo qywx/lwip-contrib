@@ -90,6 +90,7 @@ void sys_arch_unprotect(u32_t pval)
 
 void msvc_sys_init()
 {
+  srand(time(0));
   sys_init_timing();
   InitSysArchProtect();
 }
