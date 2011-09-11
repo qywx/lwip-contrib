@@ -470,6 +470,18 @@ pcapif_low_level_init(struct netif *netif)
   int adapter_num = PACKET_LIB_ADAPTER_NR;
   struct pcapif_private *pa;
 
+  /* If 'state' is != NULL at this point, we assume it is an 'int' giving
+     the index of the adapter to use (+ 1 because 0==NULL is invalid).
+     This can be used to instantiate multiple PCAP drivers. */
+  if (netif->state != NULL) {
+    adapter_num = ((int)netif->state) - 1;
+    if (adapter_num < 0) {
+      printf("ERROR: invalid adapter index \"%d\"!\n", adapter_num);
+      LWIP_ASSERT("ERROR initializing network adapter!\n", 0);
+      return;
+    }
+  }
+
 #ifdef PACKET_LIB_GET_ADAPTER_NETADDRESS
   ip_addr_t netaddr;
 #define GUID_LEN 128
@@ -503,7 +515,7 @@ pcapif_low_level_init(struct netif *netif)
   /* Do whatever else is needed to initialize interface. */
   pa = pcapif_init_adapter(adapter_num, netif);
   if (pa == NULL) {
-    printf("ERROR initializing network adapter %d!\n", PACKET_LIB_ADAPTER_NR);
+    printf("ERROR initializing network adapter %d!\n", adapter_num);
     LWIP_ASSERT("ERROR initializing network adapter!", 0);
     return;
   }
