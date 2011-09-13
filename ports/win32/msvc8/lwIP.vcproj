@@ -1255,6 +1255,24 @@
 						</FileConfiguration>
 					</File>
 					<File
+						RelativePath="$(LWIP_DIR)\src\netif\ppp\ppp_impl.h"
+						>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCustomBuildTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCustomBuildTool"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\ppp_oe.c"
 						>
 					</File>
