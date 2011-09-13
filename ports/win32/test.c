@@ -81,8 +81,7 @@
 
 #if PPP_SUPPORT
 /* PPP includes */
-#include "../netif/ppp/ppp.h"
-#include "../netif/ppp/lcp.h"
+#include "../netif/ppp/ppp_impl.h"
 #include "lwip/sio.h"
 #include "netif/ppp_oe.h"
 #endif /* PPP_SUPPORT */
@@ -523,11 +522,11 @@ void main_loop()
       started = sys_now();
       do
       {
-#if USE_ETHERNET
+#if USE_ETHERNET && !PCAPIF_RX_USE_THREAD
         pcapif_poll(&netif);
-#else /* USE_ETHERNET */
+#else /* USE_ETHERNET && !PCAPIF_RX_USE_THREAD */
         sys_msleep(50);
-#endif /* USE_ETHERNET */
+#endif /* USE_ETHERNET && !PCAPIF_RX_USE_THREAD */
         /* @todo: need a better check here: only wait until PPP is down */
       } while(sys_now() - started < 5000);
     }
