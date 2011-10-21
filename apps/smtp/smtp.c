@@ -27,6 +27,7 @@
 
 #include "smtp.h"
 
+#if LWIP_TCP
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
 #include "lwip/tcp.h"
@@ -1306,3 +1307,4 @@ smtp_process(void *arg, struct tcp_pcb *pcb, struct pbuf *p)
     }
   }
 }
+#endif /* LWIP_TCP */
