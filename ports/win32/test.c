@@ -86,19 +86,35 @@
 #include "netif/ppp_oe.h"
 #endif /* PPP_SUPPORT */
 
-#include "pcapif.h"
-
 /* include the port-dependent configuration */
 #include "lwipcfg_msvc.h"
 
-/** Use an ethernet adapter? By default only if PPP is not used. */
+/** Define this to 1 to enable a PCAP interface as default interface. */
+#ifndef USE_PCAPIF
+#define USE_PCAPIF 1
+#endif
+
+/** Define this to 1 or 2 to support 1 or 2 SLIP interfaces. */
+#ifndef USE_SLIPIF
+#define USE_SLIPIF 0
+#endif
+
+/** Use an ethernet adapter? Default to enabled if PCAPIF or PPPoE are used. */
 #ifndef USE_ETHERNET
-#define USE_ETHERNET  (!PPP_SUPPORT || PPPOE_SUPPORT)
+#define USE_ETHERNET  (USE_PCAPIF || PPPOE_SUPPORT)
 #endif
-/** Use an ethernet adapter for TCP/IP? By default only if PPP is not used. */
+
+/** Use an ethernet adapter for TCP/IP? By default only if PCAPIF is used. */
 #ifndef USE_ETHERNET_TCPIP
-#define USE_ETHERNET_TCPIP  !PPP_SUPPORT
+#define USE_ETHERNET_TCPIP  (USE_PCAPIF)
 #endif
+
+#if USE_ETHERNET
+#include "pcapif.h"
+#endif /* USE_ETHERNET */
+#if USE_SLIPIF
+#include <netif/slipif.h>
+#endif /* USE_SLIPIF */
 
 #ifndef USE_DHCP
 #define USE_DHCP    LWIP_DHCP
@@ -106,7 +122,6 @@
 #ifndef USE_AUTOIP
 #define USE_AUTOIP  LWIP_AUTOIP
 #endif
-
 
 /* globales variables for netifs */
 #if USE_ETHERNET
@@ -127,6 +142,12 @@ int ppp_desc = -1;
 u8_t sio_idx = 0;
 sio_fd_t ppp_sio;
 #endif /* PPP_SUPPORT */
+#if USE_SLIPIF
+struct netif slipif1;
+#if USE_SLIPIF > 1
+struct netif slipif2;
+#endif /* USE_SLIPIF > 1 */
+#endif /* USE_SLIPIF */
 
 
 #if PPP_SUPPORT
@@ -221,6 +242,14 @@ msvc_netif_init()
 #if USE_ETHERNET
   ip_addr_t ipaddr, netmask, gw;
 #endif /* USE_ETHERNET */
+#if USE_SLIPIF
+  u8_t num_slip1 = 0;
+  ip_addr_t ipaddr_slip1, netmask_slip1, gw_slip1;
+#if USE_SLIPIF > 1
+  u8_t num_slip2 = 1;
+  ip_addr_t ipaddr_slip2, netmask_slip2, gw_slip2;
+#endif /* USE_SLIPIF > 1 */
+#endif /* USE_SLIPIF */
 
 #if PPP_SUPPORT
   const char *username = NULL, *password = NULL;
@@ -309,6 +338,56 @@ msvc_netif_init()
 #endif /* PPP_SUPPORT && PPPOE_SUPPORT */
 
 #endif /* USE_ETHERNET */
+#if USE_SLIPIF
+  LWIP_PORT_INIT_SLIP1_IPADDR(&ipaddr_slip1);
+  LWIP_PORT_INIT_SLIP1_GW(&gw_slip1);
+  LWIP_PORT_INIT_SLIP1_NETMASK(&netmask_slip1);
+  printf("Starting lwIP slipif, local interface IP is %s\n", ip_ntoa(&ipaddr_slip1));
+#if SIO_USE_COMPORT
+  num_slip1++; /* COM ports cannot be 0-based */
+#endif
+  netif_add(&slipif1, &ipaddr_slip1, &netmask_slip1, &gw_slip1, &num_slip1, slipif_init, ip_input);
+#if !USE_ETHERNET
+  netif_set_default(&slipif1);
+#endif /* !USE_ETHERNET */
+#if LWIP_IPV6
+  netif_create_ip6_linklocal_address(&slipif1, 1);
+  printf("SLIP ip6 linklocal address: ");
+  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, &slipif1.ip6_addr[0]);
+  printf("\n");
+#endif /* LWIP_IPV6 */
+#if LWIP_NETIF_STATUS_CALLBACK
+  netif_set_status_callback(&slipif1, status_callback);
+#endif /* LWIP_NETIF_STATUS_CALLBACK */
+#if LWIP_NETIF_LINK_CALLBACK
+  netif_set_link_callback(&slipif1, link_callback);
+#endif /* LWIP_NETIF_LINK_CALLBACK */
+  netif_set_up(&slipif1);
+
+#if USE_SLIPIF > 1
+  LWIP_PORT_INIT_SLIP2_IPADDR(&ipaddr_slip2);
+  LWIP_PORT_INIT_SLIP2_GW(&gw_slip2);
+  LWIP_PORT_INIT_SLIP2_NETMASK(&netmask_slip2);
+  printf("Starting lwIP SLIP if #2, local interface IP is %s\n", ip_ntoa(&ipaddr_slip2));
+#if SIO_USE_COMPORT
+  num_slip2++; /* COM ports cannot be 0-based */
+#endif
+  netif_add(&slipif2, &ipaddr_slip2, &netmask_slip2, &gw_slip2, &num_slip2, slipif_init, ip_input);
+#if LWIP_IPV6
+  netif_create_ip6_linklocal_address(&slipif1, 1);
+  printf("SLIP2 ip6 linklocal address: ");
+  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, &slipif2.ip6_addr[0]);
+  printf("\n");
+#endif /* LWIP_IPV6 */
+#if LWIP_NETIF_STATUS_CALLBACK
+  netif_set_status_callback(&slipif2, status_callback);
+#endif /* LWIP_NETIF_STATUS_CALLBACK */
+#if LWIP_NETIF_LINK_CALLBACK
+  netif_set_link_callback(&slipif2, link_callback);
+#endif /* LWIP_NETIF_LINK_CALLBACK */
+  netif_set_up(&slipif2);
+#endif /* USE_SLIPIF > 1*/
+#endif /* USE_SLIPIF */
 }
 
 #if LWIP_DNS_APP && LWIP_DNS
@@ -488,10 +567,16 @@ void main_loop()
     }
 
 #endif /* USE_ETHERNET */
-#if !LWIP_NETIF_LOOPBACK_MULTITHREADING
+#if USE_SLIPIF
+    slipif_poll(&slipif1);
+#if USE_SLIPIF > 1
+    slipif_poll(&slipif2);
+#endif /* USE_SLIPIF > 1 */
+#endif /* USE_SLIPIF */
+#if ENABLE_LOOPBACK && !LWIP_NETIF_LOOPBACK_MULTITHREADING
     /* check for loopback packets on all netifs */
     netif_poll_all();
-#endif /* !LWIP_NETIF_LOOPBACK_MULTITHREADING */
+#endif /* ENABLE_LOOPBACK && !LWIP_NETIF_LOOPBACK_MULTITHREADING */
 #if PPP_SUPPORT
     {
     int do_hup = 0;
