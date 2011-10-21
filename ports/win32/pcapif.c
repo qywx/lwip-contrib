@@ -292,6 +292,10 @@ pcapif_init_adapter(int adapter_num, void *arg)
           desc += 17;
         }
         len = LWIP_MIN(len, ADAPTER_DESC_LEN-1);
+        while ((desc[len-1] == ' ') || (desc[len-1] == '\t')) {
+          /* don't copy trailing whitespace */
+          len--;
+        }
         strncpy(pa->description, desc, len);
         pa->description[len] = 0;
       } else {
@@ -306,7 +310,7 @@ pcapif_init_adapter(int adapter_num, void *arg)
     char *desc = d->description;
     char descBuf[128];
     size_t len;
-    const char* devname = d->name;;
+    const char* devname = d->name;
     if (d->name == NULL) {
       devname = "<unnamed>";
     } else {
@@ -330,6 +334,10 @@ pcapif_init_adapter(int adapter_num, void *arg)
         desc += 17;
       }
       len = LWIP_MIN(len, 127);
+      while ((desc[len-1] == ' ') || (desc[len-1] == '\t')) {
+        /* don't copy trailing whitespace */
+        len--;
+      }
       strncpy(descBuf, desc, len);
       descBuf[len] = 0;
       printf("     Desc: \"%s\"\n", descBuf);
