@@ -37,6 +37,8 @@
 #include <sys/time.h>
 #include <limits.h>
 
+#define LWIP_TIMEVAL_PRIVATE 0
+
 /* Define platform endianness */
 #ifndef BYTE_ORDER
 #define BYTE_ORDER LITTLE_ENDIAN
