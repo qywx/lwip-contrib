@@ -392,6 +392,4 @@
 
 /* Misc */
 
-#define LWIP_TIMEVAL_PRIVATE 0
-
 #endif /* __LWIPOPTS_H__ */
