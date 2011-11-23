@@ -639,14 +639,21 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
   struct eth_addr *src = dest + 1;
   int unicast;
   const u8_t bcast[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-  const u8_t mcast[] = {0x01, 0x00, 0x5e};
+  const u8_t ipv4mcast[] = {0x01, 0x00, 0x5e};
+  const u8_t ipv6mcast[] = {0x33, 0x33};
+
+  /* Don't let feedback packets through (limitation in winpcap?) */
+  if(!memcmp(src, netif->hwaddr, ETHARP_HWADDR_LEN)) {
+    /* don't update counters here! */
+    return NULL;
+  }
 
   /* MAC filter: only let my MAC or non-unicast through (pcap receives loopback traffic, too) */
-  unicast = ((dest->addr[0] & 0x01) == 0);
-  if ((memcmp(dest, &netif->hwaddr, ETHARP_HWADDR_LEN) &&
-        memcmp(dest, mcast, 3) && memcmp(dest, bcast, 6)) ||
-      /* and don't let feedback packets through (limitation in winpcap?) */
-      (!memcmp(src, netif->hwaddr, ETHARP_HWADDR_LEN))) {
+  unicast = ((dest->addr[0] & 0x01) == 0);  
+  if (memcmp(dest, &netif->hwaddr, ETHARP_HWADDR_LEN) &&
+    (memcmp(dest, ipv4mcast, 3) || ((dest->addr[3] & 0x80) != 0)) && 
+    memcmp(dest, ipv6mcast, 2) &&
+    memcmp(dest, bcast, 6)) {
     /* don't update counters here! */
     return NULL;
   }
