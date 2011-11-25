@@ -44,7 +44,7 @@
 
 #else
 
-#define FIND_T                        struct fflbk
+#define FIND_T                        struct ffblk
 #define FIND_T_FILENAME(fInfo)        (fInfo.ff_name)
 #define FIND_T_IS_DIR(fInfo)          ((fInfo.ff_attrib & FA_DIREC) == FA_DIREC)
 #define FIND_T_IS_FILE(fInfo)         (1)
@@ -65,8 +65,8 @@
 #define LWIP_HTTPD_SSI             1
 #include "../httpd_structs.h"
 
-#include "../../../../lwip/src/core/inet_chksum.c"
-#include "../../../../lwip/src/core/def.c"
+#include "../core/inet_chksum.c"
+#include "../core/def.c"
 
 /** (Your server name here) */
 const char *serverID = "Server: "HTTPD_SERVER_AGENT"\r\n";
