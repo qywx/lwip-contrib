@@ -44,7 +44,7 @@
 
 #else
 
-#define FIND_T                        struct fflbk
+#define FIND_T                        struct ffblk
 #define FIND_T_FILENAME(fInfo)        (fInfo.ff_name)
 #define FIND_T_IS_DIR(fInfo)          ((fInfo.ff_attrib & FA_DIREC) == FA_DIREC)
 #define FIND_T_IS_FILE(fInfo)         (1)
