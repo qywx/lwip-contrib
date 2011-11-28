@@ -37,15 +37,15 @@
 
 /** Set this to 1 to include "fsdata_custom.c" instead of "fsdata.c" for the
  * file system (to prevent changing the file included in CVS) */
-#ifndef HTTPD_USE_CUSTUM_FSDATA
-#define HTTPD_USE_CUSTUM_FSDATA 0
+#ifndef HTTPD_USE_CUSTOM_FSDATA
+#define HTTPD_USE_CUSTOM_FSDATA 0
 #endif
 
-#if HTTPD_USE_CUSTUM_FSDATA
+#if HTTPD_USE_CUSTOM_FSDATA
 #include "fsdata_custom.c"
-#else /* HTTPD_USE_CUSTUM_FSDATA */
+#else /* HTTPD_USE_CUSTOM_FSDATA */
 #include "fsdata.c"
-#endif /* HTTPD_USE_CUSTUM_FSDATA */
+#endif /* HTTPD_USE_CUSTOM_FSDATA */
 
 /*-----------------------------------------------------------------------------------*/
 /* Define the number of open files that we can support. */
