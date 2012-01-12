@@ -375,6 +375,7 @@ struct http_state {
 #if LWIP_HTTPD_POST_MANUAL_WND
   u32_t unrecved_bytes;
   u8_t no_auto_wnd;
+  u8_t post_finished;
 #endif /* LWIP_HTTPD_POST_MANUAL_WND */
 #endif /* LWIP_HTTPD_SUPPORT_POST*/
 };
@@ -1620,6 +1621,14 @@ http_get_404_file(const char **uri)
 static err_t
 http_handle_post_finished(struct http_state *hs)
 {
+#if LWIP_HTTPD_POST_MANUAL_WND
+  /* Prevent multiple calls to httpd_post_finished, since it might have already
+     been called before from httpd_post_data_recved(). */
+  if (hs->post_finished) {
+    return ERR_OK;
+  }
+  hs->post_finished = 1;
+#endif /* LWIP_HTTPD_POST_MANUAL_WND */
   /* application error or POST finished */
   /* NULL-terminate the buffer */
   http_post_response_filename[0] = 0;
