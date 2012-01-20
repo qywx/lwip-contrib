@@ -60,11 +60,18 @@ udpecho_thread(void *arg)
     if (err == ERR_OK) {
       addr = netbuf_fromaddr(buf);
       port = netbuf_fromport(buf);
-      netconn_connect(conn, addr, port);
-      netbuf_copy(buf, buffer, buf->p->tot_len);
-      buffer[buf->p->tot_len] = '\0';
-      netconn_send(conn, buf);
-      LWIP_DEBUGF(LWIP_DBG_ON, ("got %s\n", buffer));
+      // no need netconn_connect here, since the netbuf contains the address
+      if(netbuf_copy(buf, buffer, buf->p->tot_len) != buf->p->tot_len) {
+        LWIP_DEBUGF(LWIP_DBG_ON, ("netbuf_copy failed\n"));
+      } else {
+        buffer[buf->p->tot_len] = '\0';
+        err = netconn_send(conn, buf);
+        if(err != ERR_OK) {
+          LWIP_DEBUGF(LWIP_DBG_ON, ("netconn_send failed: %d\n", (int)err));
+        } else {
+          LWIP_DEBUGF(LWIP_DBG_ON, ("got %s\n", buffer));
+        }
+      }
       netbuf_delete(buf);
     }
   }
