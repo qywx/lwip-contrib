@@ -374,8 +374,8 @@ sys_sem_new(struct sys_sem **sem, u8_t count)
 static u32_t
 cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
 {
-  int tdiff;
-  unsigned long sec, usec;
+  time_t tdiff;
+  time_t sec, usec;
   struct timeval rtime1, rtime2;
   struct timespec ts;
   int retval;
@@ -404,12 +404,11 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
       if (tdiff <= 0) {
         return 0;
       }
-
-      return tdiff;
+      return (u32_t)tdiff;
     }
   } else {
     pthread_cond_wait(cond, mutex);
-    return SYS_ARCH_TIMEOUT;
+    return 0;
   }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -438,7 +437,7 @@ sys_arch_sem_wait(struct sys_sem **s, u32_t timeout)
   }
   sem->c--;
   pthread_mutex_unlock(&(sem->mutex));
-  return time_needed;
+  return (u32_t)time_needed;
 }
 /*-----------------------------------------------------------------------------------*/
 void
