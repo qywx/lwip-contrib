@@ -384,7 +384,9 @@ static err_t http_close_conn(struct tcp_pcb *pcb, struct http_state *hs);
 static err_t http_find_file(struct http_state *hs, const char *uri, int is_09);
 static err_t http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const char *uri);
 static err_t http_poll(void *arg, struct tcp_pcb *pcb);
+#if LWIP_HTTPD_FS_ASYNC_READ
 static void http_continue(void *connection);
+#endif /* LWIP_HTTPD_FS_ASYNC_READ */
 
 #if LWIP_HTTPD_SSI
 /* SSI insert handler function pointer. */
@@ -1806,6 +1808,7 @@ void httpd_post_data_recved(void *connection, u16_t recved_len)
 
 #endif /* LWIP_HTTPD_SUPPORT_POST */
 
+#if LWIP_HTTPD_FS_ASYNC_READ
 /** Try to send more data if file has been blocked before
  * This is a callback function passed to fs_read_async().
  */
@@ -1823,6 +1826,7 @@ http_continue(void *connection)
     }
   }
 }
+#endif /* LWIP_HTTPD_FS_ASYNC_READ */
 
 /**
  * When data has been received in the correct state, try to parse it
