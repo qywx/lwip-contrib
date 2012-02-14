@@ -73,7 +73,7 @@ NETIFFILES=$(LWIPDIR)/netif/etharp.c
 ARCHFILES=$(wildcard $(LWIPARCH)/*.c $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tunif.c $(LWIPARCH)/netif/unixif.c $(LWIPARCH)/netif/list.c $(LWIPARCH)/netif/tcpdump.c)
 
 # LWIPFILES: All the above.
-LWIPFILES=$(COREFILES) $(CORE4FILES) $(APIFILES) $(NETIFFILES) $(ARCHFILES)
+LWIPFILES=$(COREFILES) $(CORE4FILES) $(CORE6FILES) $(APIFILES) $(NETIFFILES) $(ARCHFILES)
 LWIPFILESW=$(wildcard $(LWIPFILES))
 LWIPOBJS=$(notdir $(LWIPFILESW:.c=.o))
 
