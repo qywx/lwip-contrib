@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\check;..\..\..\..\check\src;&quot;$(LWIP_DIR)\src\include&quot;;&quot;$(LWIP_DIR)\src\include\ipv4&quot;;&quot;$(LWIP_DIR)\src\include\ipv6&quot;;..\include;.."
+				AdditionalIncludeDirectories="..\check;..\..\..\..\check\src;&quot;$(LWIP_DIR)\test\unit&quot;;&quot;$(LWIP_DIR)\src\include&quot;;&quot;$(LWIP_DIR)\src\include\ipv4&quot;;&quot;$(LWIP_DIR)\src\include\ipv6&quot;;..\include;.."
 				PreprocessorDefinitions="_LIB;WIN32;_DEBUG;LWIP_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -110,9 +110,9 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="..\check;..\..\..\..\check\src;&quot;$(LWIP_DIR)\src\include&quot;;&quot;$(LWIP_DIR)\src\include\ipv4&quot;;&quot;$(LWIP_DIR)\src\include\ipv6&quot;;..\include;.."
+				AdditionalIncludeDirectories="..\check;..\..\..\..\check\src;&quot;$(LWIP_DIR)\test\unit&quot;;&quot;$(LWIP_DIR)\src\include&quot;;&quot;$(LWIP_DIR)\src\include\ipv4&quot;;&quot;$(LWIP_DIR)\src\include\ipv6&quot;;..\include;.."
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="4"
 				DebugInformationFormat="3"
@@ -229,6 +229,10 @@
 		</File>
 		<File
 			RelativePath="..\..\..\..\lwip\test\unit\lwip_unittests.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\..\..\lwip\test\unit\lwipopts.h"
 			>
 		</File>
 	</Files>
