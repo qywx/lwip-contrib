@@ -33,6 +33,7 @@
 #define __FS_H__
 
 #include "lwip/opt.h"
+#include "lwip/err.h"
 
 /** Set this to 1 and provide the functions:
  * - "int fs_open_custom(struct fs_file *file, const char *name)"
@@ -107,7 +108,7 @@ struct fs_file {
 typedef void (*fs_wait_cb)(void *arg);
 #endif /* LWIP_HTTPD_FS_ASYNC_READ */
 
-struct fs_file *fs_open(const char *name);
+err_t fs_open(struct fs_file *file, const char *name);
 void fs_close(struct fs_file *file);
 #if LWIP_HTTPD_DYNAMIC_FILE_READ
 #if LWIP_HTTPD_FS_ASYNC_READ

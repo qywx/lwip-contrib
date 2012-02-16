@@ -48,19 +48,6 @@
 #endif /* HTTPD_USE_CUSTOM_FSDATA */
 
 /*-----------------------------------------------------------------------------------*/
-/* Define the number of open files that we can support. */
-#ifndef LWIP_MAX_OPEN_FILES
-#define LWIP_MAX_OPEN_FILES     10
-#endif
-
-/* Define the file system memory allocation structure. */
-struct fs_table {
-  struct fs_file file;
-  u8_t inuse;
-};
-
-/* Allocate file system memory */
-struct fs_table fs_memory[LWIP_MAX_OPEN_FILES];
 
 #if LWIP_HTTPD_CUSTOM_FILES
 int fs_open_custom(struct fs_file *file, const char *name);
@@ -72,54 +59,24 @@ u8_t fs_wait_read_custom(struct fs_file *file, fs_wait_cb callback_fn, void *cal
 #endif /* LWIP_HTTPD_CUSTOM_FILES */
 
 /*-----------------------------------------------------------------------------------*/
-static struct fs_file *
-fs_malloc(void)
+err_t
+fs_open(struct fs_file *file, const char *name)
 {
-  int i;
-  for(i = 0; i < LWIP_MAX_OPEN_FILES; i++) {
-    if(fs_memory[i].inuse == 0) {
-      fs_memory[i].inuse = 1;
-      return(&fs_memory[i].file);
-    }
-  }
-  return(NULL);
-}
-
-/*-----------------------------------------------------------------------------------*/
-static void
-fs_free(struct fs_file *file)
-{
-  int i;
-  for(i = 0; i < LWIP_MAX_OPEN_FILES; i++) {
-    if(&fs_memory[i].file == file) {
-      fs_memory[i].inuse = 0;
-      break;
-    }
-  }
-  return;
-}
-
-/*-----------------------------------------------------------------------------------*/
-struct fs_file *
-fs_open(const char *name)
-{
-  struct fs_file *file;
   const struct fsdata_file *f;
 
-  file = fs_malloc();
-  if(file == NULL) {
-    return NULL;
+  if ((file == NULL) || (name == NULL)) {
+     return ERR_ARG;
   }
 
 #if LWIP_HTTPD_CUSTOM_FILES
-  if(fs_open_custom(file, name)) {
+  if (fs_open_custom(file, name)) {
     file->is_custom_file = 1;
-    return file;
+    return ERR_OK;
   }
   file->is_custom_file = 0;
 #endif /* LWIP_HTTPD_CUSTOM_FILES */
 
-  for(f = FS_ROOT; f != NULL; f = f->next) {
+  for (f = FS_ROOT; f != NULL; f = f->next) {
     if (!strcmp(name, (char *)f->name)) {
       file->data = (const char *)f->data;
       file->len = f->len;
@@ -133,11 +90,11 @@ fs_open(const char *name)
 #if LWIP_HTTPD_FILE_STATE
       file->state = fs_state_init(file, name);
 #endif /* #if LWIP_HTTPD_FILE_STATE */
-      return file;
+      return ERR_OK;
     }
   }
-  fs_free(file);
-  return NULL;
+  /* file not found */
+  return ERR_VAL;
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -152,7 +109,7 @@ fs_close(struct fs_file *file)
 #if LWIP_HTTPD_FILE_STATE
   fs_state_free(file, file->state);
 #endif /* #if LWIP_HTTPD_FILE_STATE */
-  fs_free(file);
+  LWIP_UNUSED_ARG(file);
 }
 /*-----------------------------------------------------------------------------------*/
 #if LWIP_HTTPD_DYNAMIC_FILE_READ
@@ -169,13 +126,18 @@ fs_read(struct fs_file *file, char *buffer, int count)
   if(file->index == file->len) {
     return FS_READ_EOF;
   }
-#if LWIP_HTTPD_FS_ASYNC_READ && LWIP_HTTPD_CUSTOM_FILES
+#if LWIP_HTTPD_FS_ASYNC_READ
+#if LWIP_HTTPD_CUSTOM_FILES
   if (!fs_canread_custom(file)) {
     if (fs_wait_read_custom(file, callback_fn, callback_arg)) {
       return FS_READ_DELAYED;
     }
   }
-#endif /* LWIP_HTTPD_FS_ASYNC_READ && LWIP_HTTPD_CUSTOM_FILES */
+#else /* LWIP_HTTPD_CUSTOM_FILES */
+  LWIP_UNUSED_ARG(callback_fn);
+  LWIP_UNUSED_ARG(callback_arg);
+#endif /* LWIP_HTTPD_CUSTOM_FILES */
+#endif /* LWIP_HTTPD_FS_ASYNC_READ */
 
   read = file->len - file->index;
   if(read > count) {
@@ -194,13 +156,18 @@ int
 fs_is_file_ready(struct fs_file *file, fs_wait_cb callback_fn, void *callback_arg)
 {
   if (file != NULL) {
-#if LWIP_HTTPD_FS_ASYNC_READ && LWIP_HTTPD_CUSTOM_FILES
+#if LWIP_HTTPD_FS_ASYNC_READ
+#if LWIP_HTTPD_CUSTOM_FILES
     if (!fs_canread_custom(file)) {
       if (fs_wait_read_custom(file, callback_fn, callback_arg)) {
         return 0;
       }
     }
-#endif /* LWIP_HTTPD_FS_ASYNC_READ && LWIP_HTTPD_CUSTOM_FILES */
+#else /* LWIP_HTTPD_CUSTOM_FILES */
+    LWIP_UNUSED_ARG(callback_fn);
+    LWIP_UNUSED_ARG(callback_arg);
+#endif /* LWIP_HTTPD_CUSTOM_FILES */
+#endif /* LWIP_HTTPD_FS_ASYNC_READ */
   }
   return 1;
 }

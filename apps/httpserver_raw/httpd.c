@@ -337,6 +337,7 @@ struct http_state {
 #if LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED
   struct http_state *next;
 #endif /* LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED */
+  struct fs_file file_handle;
   struct fs_file *handle;
   char *file;       /* Pointer to first unsent byte in buf. */
 
@@ -381,8 +382,9 @@ struct http_state {
 };
 
 static err_t http_close_conn(struct tcp_pcb *pcb, struct http_state *hs);
+static err_t http_close_or_abort_conn(struct tcp_pcb *pcb, struct http_state *hs, u8_t abort);
 static err_t http_find_file(struct http_state *hs, const char *uri, int is_09);
-static err_t http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const char *uri);
+static err_t http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const char *uri, u8_t tag_check);
 static err_t http_poll(void *arg, struct tcp_pcb *pcb);
 #if LWIP_HTTPD_FS_ASYNC_READ
 static void http_continue(void *connection);
@@ -451,7 +453,8 @@ http_kill_oldest_connection(u8_t ssi_required)
   if (hs_free_next != NULL) {
     LWIP_ASSERT("hs_free_next->next != NULL", hs_free_next->next != NULL);
     LWIP_ASSERT("hs_free_next->next->pcb != NULL", hs_free_next->next->pcb != NULL);
-    http_close_conn(hs_free_next->next->pcb, hs_free_next->next); /* this also unlinks the http_state from the list */
+    /* send RST when killing a connection because of memory shortage */
+    http_close_or_abort_conn(hs_free_next->next->pcb, hs_free_next->next, 1); /* this also unlinks the http_state from the list */
   }
 }
 #endif /* LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED */
@@ -634,14 +637,14 @@ http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
 }
 
 /**
- * The connection shall be actively closed.
+ * The connection shall be actively closed (using RST to close from fault states).
  * Reset the sent- and recv-callbacks.
  *
  * @param pcb the tcp pcb to reset callbacks
  * @param hs connection state to free
  */
 static err_t
-http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
+http_close_or_abort_conn(struct tcp_pcb *pcb, struct http_state *hs, u8_t abort)
 {
   err_t err;
   LWIP_DEBUGF(HTTPD_DEBUG, ("Closing connection %p\n", (void*)pcb));
@@ -666,10 +669,14 @@ http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
   tcp_err(pcb, NULL);
   tcp_poll(pcb, NULL, 0);
   tcp_sent(pcb, NULL);
-  if(hs != NULL) {
+  if (hs != NULL) {
     http_state_free(hs);
   }
 
+  if (abort) {
+    tcp_abort(pcb);
+    return ERR_OK;
+  }
   err = tcp_close(pcb);
   if (err != ERR_OK) {
     LWIP_DEBUGF(HTTPD_DEBUG, ("Error %d closing %p\n", err, (void*)pcb));
@@ -677,6 +684,19 @@ http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
     tcp_poll(pcb, http_poll, HTTPD_POLL_INTERVAL);
   }
   return err;
+}
+
+/**
+ * The connection shall be actively closed.
+ * Reset the sent- and recv-callbacks.
+ *
+ * @param pcb the tcp pcb to reset callbacks
+ * @param hs connection state to free
+ */
+static err_t
+http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
+{
+   return http_close_or_abort_conn(pcb, hs, 0);
 }
 
 /** End of file: either close the connection (Connection: close) or
@@ -1555,7 +1575,7 @@ static err_t
 http_find_error_file(struct http_state *hs, u16_t error_nr)
 {
   const char *uri1, *uri2, *uri3;
-  struct fs_file *file;
+  err_t err;
 
   if (error_nr == 501) {
     uri1 = "/501.html";
@@ -1567,19 +1587,19 @@ http_find_error_file(struct http_state *hs, u16_t error_nr)
     uri2 = "/400.htm";
     uri3 = "/400.shtml";
   }
-  file = fs_open(uri1);
-  if (file == NULL) {
-    file = fs_open(uri2);
-    if (file == NULL) {
-      file = fs_open(uri3);
-      if (file == NULL) {
+  err = fs_open(&hs->file_handle, uri1);
+  if (err != ERR_OK) {
+    err = fs_open(&hs->file_handle, uri2);
+    if (err != ERR_OK) {
+      err = fs_open(&hs->file_handle, uri3);
+      if (err != ERR_OK) {
         LWIP_DEBUGF(HTTPD_DEBUG, ("Error page for error %"U16_F" not found\n",
           error_nr));
         return ERR_ARG;
       }
     }
   }
-  return http_init_file(hs, file, 0, NULL);
+  return http_init_file(hs, &hs->file_handle, 0, NULL, 0);
 }
 #else /* LWIP_HTTPD_SUPPORT_EXTSTATUS */
 #define http_find_error_file(hs, error_nr) ERR_ARG
@@ -1593,30 +1613,31 @@ http_find_error_file(struct http_state *hs, u16_t error_nr)
  * @return file struct for the error page or NULL no matching file was found
  */
 static struct fs_file *
-http_get_404_file(const char **uri)
+http_get_404_file(struct http_state *hs, const char **uri)
 {
-  struct fs_file *file;
+  err_t err;
 
   *uri = "/404.html";
-  file = fs_open(*uri);
-  if(file == NULL) {
+  err = fs_open(&hs->file_handle, *uri);
+  if (err != ERR_OK) {
     /* 404.html doesn't exist. Try 404.htm instead. */
     *uri = "/404.htm";
-    file = fs_open(*uri);
-    if(file == NULL) {
+    err = fs_open(&hs->file_handle, *uri);
+    if (err != ERR_OK) {
       /* 404.htm doesn't exist either. Try 404.shtml instead. */
       *uri = "/404.shtml";
-      file = fs_open(*uri);
-      if(file == NULL) {
+      err = fs_open(&hs->file_handle, *uri);
+      if (err != ERR_OK) {
         /* 404.htm doesn't exist either. Indicate to the caller that it should
          * send back a default 404 page.
          */
         *uri = NULL;
+        return NULL;
       }
     }
   }
 
-  return file;
+  return &hs->file_handle;
 }
 
 #if LWIP_HTTPD_SUPPORT_POST
@@ -2020,14 +2041,16 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
   size_t loop;
   struct fs_file *file = NULL;
   char *params;
+  err_t err;
 #if LWIP_HTTPD_CGI
   int i;
   int count;
 #endif /* LWIP_HTTPD_CGI */
-#if LWIP_HTTPD_SSI
+#if !LWIP_HTTPD_SSI
+  const
+#endif /* !LWIP_HTTPD_SSI */
   /* By default, assume we will not be processing server-side-includes tags */
   u8_t tag_check = 0;
-#endif /* LWIP_HTTPD_SSI */
 
   /* Have we been asked for the default root file? */
   if((uri[0] == '/') &&  (uri[1] == 0)) {
@@ -2035,9 +2058,10 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
        that exists. */
     for (loop = 0; loop < NUM_DEFAULT_FILENAMES; loop++) {
       LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Looking for %s...\n", g_psDefaultFilenames[loop].name));
-      file = fs_open((char *)g_psDefaultFilenames[loop].name);
+      err = fs_open(&hs->file_handle, (char *)g_psDefaultFilenames[loop].name);
       uri = (char *)g_psDefaultFilenames[loop].name;
-      if(file != NULL) {
+      if(err == ERR_OK) {
+        file = &hs->file_handle;
         LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Opened.\n"));
 #if LWIP_HTTPD_SSI
         tag_check = g_psDefaultFilenames[loop].shtml;
@@ -2047,7 +2071,7 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
     }
     if (file == NULL) {
       /* None of the default filenames exist so send back a 404 page */
-      file = http_get_404_file(&uri);
+      file = http_get_404_file(hs, &uri);
 #if LWIP_HTTPD_SSI
       tag_check = 0;
 #endif /* LWIP_HTTPD_SSI */
@@ -2082,9 +2106,11 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
 
     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Opening %s\n", uri));
 
-    file = fs_open(uri);
-    if (file == NULL) {
-      file = http_get_404_file(&uri);
+    err = fs_open(&hs->file_handle, uri);
+    if (err == ERR_OK) {
+       file = &hs->file_handle;
+    } else {
+      file = http_get_404_file(hs, &uri);
     }
 #if LWIP_HTTPD_SSI
     if (file != NULL) {
@@ -2100,21 +2126,7 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
     }
 #endif /* LWIP_HTTPD_SSI */
   }
-#if LWIP_HTTPD_SSI
-  if (file && tag_check) {
-    struct http_ssi_state *ssi = http_ssi_state_alloc();
-    if (ssi != NULL) {
-      ssi->tag_index = 0;
-      ssi->tag_state = TAG_NONE;
-      ssi->parsed = file->data;
-      ssi->parse_left = file->len;
-      ssi->tag_end = file->data;
-      hs->ssi = ssi;
-    }
-  }
-#endif /* LWIP_HTTPD_SSI */
-
-  return http_init_file(hs, file, is_09, uri);
+  return http_init_file(hs, file, is_09, uri, tag_check);
 }
 
 /** Initialize a http connection with a file to send (if found).
@@ -2124,14 +2136,30 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
  * @param file file structure to send (or NULL if not found)
  * @param is_09 1 if the request is HTTP/0.9 (no HTTP headers in response)
  * @param uri the HTTP header URI
+ * @param tag_check enable SSI tag checking
  * @return ERR_OK if file was found and hs has been initialized correctly
  *         another err_t otherwise
  */
 static err_t
-http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const char *uri)
+http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const char *uri, u8_t tag_check)
 {
   if (file != NULL) {
     /* file opened, initialise struct http_state */
+#if LWIP_HTTPD_SSI
+    if (tag_check) {
+      struct http_ssi_state *ssi = http_ssi_state_alloc();
+      if (ssi != NULL) {
+        ssi->tag_index = 0;
+        ssi->tag_state = TAG_NONE;
+        ssi->parsed = file->data;
+        ssi->parse_left = file->len;
+        ssi->tag_end = file->data;
+        hs->ssi = ssi;
+      }
+    }
+#else /* LWIP_HTTPD_SSI */
+    LWIP_UNUSED_ARG(tag_check);
+#endif /* LWIP_HTTPD_SSI */
     hs->handle = file;
     hs->file = (char*)file->data;
     LWIP_ASSERT("File length must be positive!", (file->len >= 0));
