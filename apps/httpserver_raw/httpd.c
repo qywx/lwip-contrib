@@ -163,14 +163,14 @@
 
 /** Set this to 1 to support HTTP request coming in in multiple packets/pbufs */
 #ifndef LWIP_HTTPD_SUPPORT_REQUESTLIST
-#define LWIP_HTTPD_SUPPORT_REQUESTLIST      0
+#define LWIP_HTTPD_SUPPORT_REQUESTLIST      1
 #endif
 
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
 /** Number of rx pbufs to enqueue to parse an incoming request (up to the first
     newline) */
 #ifndef LWIP_HTTPD_REQ_QUEUELEN
-#define LWIP_HTTPD_REQ_QUEUELEN             10
+#define LWIP_HTTPD_REQ_QUEUELEN             5
 #endif
 
 /** Number of (TCP payload-) bytes (in pbufs) to enqueue to parse and incoming
@@ -183,7 +183,7 @@
     copied from pbuf into this a global buffer when pbuf- or packet-queues
     are received - otherwise the input pbuf is used directly) */
 #ifndef LWIP_HTTPD_MAX_REQ_LENGTH
-#define LWIP_HTTPD_MAX_REQ_LENGTH           1023
+#define LWIP_HTTPD_MAX_REQ_LENGTH           LWIP_MIN(1023, (LWIP_HTTPD_REQ_QUEUELEN * PBUF_POOL_BUFSIZE))
 #endif
 #endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
 
@@ -1124,7 +1124,7 @@ http_send_data_nonssi(struct tcp_pcb *pcb, struct http_state *hs)
     LWIP_ASSERT("hs->left did not fit into u16_t!", (len == hs->left));
   }
   mss = tcp_mss(pcb);
-  if(len > (2 * mss)) {
+  if (len > (2 * mss)) {
     len = 2 * mss;
   }
 
