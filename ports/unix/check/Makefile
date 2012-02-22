@@ -33,7 +33,7 @@ CODEDIR=../../../../lwip
 LWIPDIR=$(CODEDIR)/src
 
 LDFLAGS:=$(LDFLAGS) -lcheck
-CFLAGS:=$(CFLAGS) -I/usr/include/check \
+CFLAGS:=$(CFLAGS) -I/usr/include/check -I$(LWIPDIR)/../test/unit \
 	-I$(LWIPDIR)/include -I$(LWIPDIR)/include/ipv4 \
 	-I$(LWIPDIR)/include/ipv6 -Iunix/include -I. -I../include
 
@@ -58,7 +58,7 @@ TESTFILES=$(TESTDIR)/lwip_unittests.c $(TESTDIR)/udp/test_udp.c $(TESTDIR)/ethar
 	$(TESTDIR)/tcp/test_tcp_oos.c $(TESTDIR)/tcp/test_tcp.c $(TESTDIR)/core/test_mem.c
 TESTOBJS=$(TESTFILES:.c=.o)
 
-%.o: %.c Makefile lwipopts.h
+%.o: %.c Makefile $(TESTDIR)/lwipopts.h
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 all: lwip_unittests
