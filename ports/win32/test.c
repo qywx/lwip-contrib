@@ -270,12 +270,6 @@ msvc_netif_init()
 #endif /* LWIP_ARP */
 #else  /* NO_SYS */
   netif_set_default(netif_add(&netif, &ipaddr, &netmask, &gw, NULL, pcapif_init, tcpip_input));
-#if LWIP_IPV6
-  netif_create_ip6_linklocal_address(&netif, 1);
-  printf("ip6 linklocal address: ");
-  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, &netif.ip6_addr[0]);
-  printf("\n");
-#endif /* LWIP_IPV6 */
 #endif /* NO_SYS */
 #if LWIP_NETIF_STATUS_CALLBACK
   netif_set_status_callback(&netif, status_callback);
