@@ -687,6 +687,22 @@
 								Name="VCCLCompilerTool"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug unittests|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release unittests|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\core\ipv6\inet6.c"
@@ -701,6 +717,22 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Debug|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug unittests|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release unittests|Win32"
 							ExcludedFromBuild="true"
 							>
 							<Tool
@@ -727,6 +759,22 @@
 								Name="VCCLCompilerTool"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug unittests|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release unittests|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\core\ipv6\ip6_addr.c"
@@ -741,6 +789,22 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Debug|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Debug unittests|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release unittests|Win32"
 							ExcludedFromBuild="true"
 							>
 							<Tool
@@ -1311,11 +1375,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\lwippools.h"
+				RelativePath="..\include\lwipopts.h"
 				>
 			</File>
 			<File
-				RelativePath="..\include\lwipopts.h"
+				RelativePath="..\lwippools.h"
 				>
 			</File>
 			<File

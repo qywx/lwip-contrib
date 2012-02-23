@@ -344,12 +344,6 @@ msvc_netif_init()
 #if !USE_ETHERNET
   netif_set_default(&slipif1);
 #endif /* !USE_ETHERNET */
-#if LWIP_IPV6
-  netif_create_ip6_linklocal_address(&slipif1, 1);
-  printf("SLIP ip6 linklocal address: ");
-  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, &slipif1.ip6_addr[0]);
-  printf("\n");
-#endif /* LWIP_IPV6 */
 #if LWIP_NETIF_STATUS_CALLBACK
   netif_set_status_callback(&slipif1, status_callback);
 #endif /* LWIP_NETIF_STATUS_CALLBACK */
@@ -367,12 +361,6 @@ msvc_netif_init()
   num_slip2++; /* COM ports cannot be 0-based */
 #endif
   netif_add(&slipif2, &ipaddr_slip2, &netmask_slip2, &gw_slip2, &num_slip2, slipif_init, ip_input);
-#if LWIP_IPV6
-  netif_create_ip6_linklocal_address(&slipif1, 1);
-  printf("SLIP2 ip6 linklocal address: ");
-  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, &slipif2.ip6_addr[0]);
-  printf("\n");
-#endif /* LWIP_IPV6 */
 #if LWIP_NETIF_STATUS_CALLBACK
   netif_set_status_callback(&slipif2, status_callback);
 #endif /* LWIP_NETIF_STATUS_CALLBACK */
