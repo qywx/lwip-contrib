@@ -154,7 +154,7 @@ get_adapter_index_from_addr(struct in_addr *netaddr, char *guid, size_t guid_len
    memset(guid, 0, guid_len);
 
    /* Retrieve the interfaces list */
-   if (pcap_findalldevs_ex(PCAP_SRC_IF_STRING, NULL, &alldevs, errbuf) == -1) {
+   if (pcap_findalldevs(&alldevs, errbuf) == -1) {
       printf("Error in pcap_findalldevs: %s\n", errbuf);
       return -1;
    }
@@ -398,9 +398,10 @@ pcapif_init_adapter(int adapter_num, void *arg)
 
 #if PCAPIF_HANDLE_LINKSTATE
 void
-pcapif_check_linkstate(void *netif)
+pcapif_check_linkstate(void *netif_ptr)
 {
-  struct pcapif_private *pa = (struct pcapif_private*)((struct netif *)netif)->state;
+  struct netif *netif = (struct netif*)netif_ptr;
+  struct pcapif_private *pa = (struct pcapif_private*)netif->state;
   enum pcapifh_link_event le;
 
   le = pcapifh_linkstate_get(pa->link_state);
