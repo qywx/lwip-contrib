@@ -28,7 +28,7 @@ struct pcapifh_linkstate {
 
 struct pcapifh_linkstate* pcapifh_linkstate_init(const char *adapter_name)
 {
-  struct pcapifh_linkstate* state = malloc(sizeof(struct pcapifh_linkstate));
+  struct pcapifh_linkstate* state = (struct pcapifh_linkstate*)malloc(sizeof(struct pcapifh_linkstate));
   if (state != NULL) {
     memset(state, 0, sizeof(struct pcapifh_linkstate));
     state->ppacket_oid_data = (PPACKET_OID_DATA)malloc(sizeof(PACKET_OID_DATA) + sizeof(NDIS_MEDIA_STATE));
