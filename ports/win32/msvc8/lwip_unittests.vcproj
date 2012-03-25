@@ -223,6 +223,18 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="dhcp"
+			>
+			<File
+				RelativePath="..\..\..\..\lwip\test\unit\dhcp\test_dhcp.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\lwip\test\unit\dhcp\test_dhcp.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\..\..\..\lwip\test\unit\lwip_check.h"
 			>
