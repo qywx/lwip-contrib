@@ -97,6 +97,10 @@ low_level_init(struct netif *netif)
   mintapif->ethaddr->addr[4] = 5;
   mintapif->ethaddr->addr[5] = 6;
 
+  /* device capabilities */
+  /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
+  netif->flags |= NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
+
   /* Do whatever else is needed to initialize interface. */  
   
   mintapif->fd = open(DEVTAP, O_RDWR);
