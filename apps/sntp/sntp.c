@@ -121,6 +121,13 @@
 #define SNTP_STARTUP_DELAY          0
 #endif
 
+/** If you want the startup delay to be a function, define this
+ * to a function (including the brackets) and define SNTP_STARTUP_DELAY to 1.
+ */
+#ifndef SNTP_STARTUP_DELAY_FUNC
+#define SNTP_STARTUP_DELAY_FUNC     SNTP_STARTUP_DELAY
+#endif
+
 /** SNTP receive timeout - in milliseconds
  * Also used as retry timeout - this shouldn't be too low.
  * Default is 3 seconds.
@@ -571,7 +578,7 @@ sntp_request(void *arg)
 
 /**
  * Initialize this module.
- * Send out request instantly or after SNTP_STARTUP_DELAY.
+ * Send out request instantly or after SNTP_STARTUP_DELAY(_FUNC).
  */
 void
 sntp_init(void)
@@ -583,7 +590,7 @@ sntp_init(void)
     if (sntp_pcb != NULL) {
       udp_recv(sntp_pcb, sntp_recv, NULL);
 #if SNTP_STARTUP_DELAY
-      sys_timeout((u32_t)SNTP_STARTUP_DELAY, sntp_request, NULL);
+      sys_timeout((u32_t)SNTP_STARTUP_DELAY_FUNC, sntp_request, NULL);
 #else
       sntp_request(NULL);
 #endif
