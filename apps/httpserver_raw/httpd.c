@@ -1729,7 +1729,6 @@ http_post_request(struct pbuf **inp, struct http_state *hs,
       if (scontent_len_end != NULL) {
         int content_len;
         char *conten_len_num = scontent_len + HTTP_HDR_CONTENT_LEN_LEN;
-        *scontent_len_end = 0;
         content_len = atoi(conten_len_num);
         if (content_len > 0) {
           /* adjust length of HTTP header passed to application */
