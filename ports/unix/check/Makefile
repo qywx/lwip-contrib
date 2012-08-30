@@ -55,7 +55,7 @@ LWIPOBJS=$(LWIPFILES:.c=.o)
 
 TESTDIR=$(CODEDIR)/test/unit
 TESTFILES=$(TESTDIR)/lwip_unittests.c $(TESTDIR)/udp/test_udp.c $(TESTDIR)/etharp/test_etharp.c $(TESTDIR)/tcp/tcp_helper.c \
-	$(TESTDIR)/tcp/test_tcp_oos.c $(TESTDIR)/tcp/test_tcp.c $(TESTDIR)/core/test_mem.c $(TESTDIR)/dhcp/test_dhcp.c
+	$(TESTDIR)/tcp/test_tcp_oos.c $(TESTDIR)/tcp/test_tcp.c $(TESTDIR)/core/test_mem.c $(TESTDIR)/dhcp/test_dhcp.c $(TESTDIR)/core/test_pbuf.c
 TESTOBJS=$(TESTFILES:.c=.o)
 
 %.o: %.c Makefile $(TESTDIR)/lwipopts.h
