@@ -124,7 +124,7 @@ tcpdump(struct pbuf *p)
 	    (int)(ntohl(iphdr->dest.addr) >> 8) & 0xff,
 	    (int)(ntohl(iphdr->dest.addr) >> 0) & 0xff,
 	    ntohs(tcphdr->dest));
-    offset = TCPH_OFFSET(tcphdr) >> 4;
+    offset = TCPH_HDRLEN(tcphdr);
 
     len = ntohs(IPH_LEN(iphdr)) - offset * 4 - IP_HLEN;
     if (len != 0 || flags[0] != '.') {
