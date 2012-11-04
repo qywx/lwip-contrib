@@ -33,7 +33,7 @@ CODEDIR=../../../../lwip
 LWIPDIR=$(CODEDIR)/src
 
 LDFLAGS:=$(LDFLAGS) -lcheck
-CFLAGS:=$(CFLAGS) -I/usr/include/check -I$(LWIPDIR)/../test/unit \
+CFLAGS:=$(CFLAGS) -DLWIP_UNIX_EMPTY_ASSERT -I/usr/include/check -I$(LWIPDIR)/../test/unit \
 	-I$(LWIPDIR)/include -I$(LWIPDIR)/include/ipv4 \
 	-I$(LWIPDIR)/include/ipv6 -Iunix/include -I. -I../include
 
