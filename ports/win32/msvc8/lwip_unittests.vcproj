@@ -170,6 +170,14 @@
 				RelativePath="..\..\..\..\lwip\test\unit\core\test_mem.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\..\lwip\test\unit\core\test_pbuf.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\lwip\test\unit\core\test_pbuf.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="tcp"
