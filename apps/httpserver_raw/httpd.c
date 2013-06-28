@@ -1683,7 +1683,11 @@ http_post_rxpbuf(struct http_state *hs, struct pbuf *p)
     hs->post_content_len_left -= p->tot_len;
   }
   err = httpd_post_receive_data(hs, p);
-  if ((err != ERR_OK) || (hs->post_content_len_left == 0)) {
+  if (err != ERR_OK) {
+    /* Ignore remaining content in case of application error */
+    hs->post_content_len_left = 0;
+  }
+  if (hs->post_content_len_left == 0) {
 #if LWIP_HTTPD_SUPPORT_POST && LWIP_HTTPD_POST_MANUAL_WND
     if (hs->unrecved_bytes != 0) {
        return ERR_OK;
