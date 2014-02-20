@@ -1787,6 +1787,11 @@ http_post_request(struct pbuf **inp, struct http_state *hs,
         }
       }
     }
+    /* If we come here, headers are fully received (double-crlf), but Content-Length
+       was not included. Since this is currently the only supported method, we have
+       to fail in this case! */
+    LWIP_DEBUGF(HTTPD_DEBUG, ("Error when parsing Content-Length\n"));
+    return ERR_ARG;
   }
   /* if we come here, the POST is incomplete */
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
