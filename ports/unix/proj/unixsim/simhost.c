@@ -389,8 +389,6 @@ main_thread(void *arg)
 #endif
   LWIP_UNUSED_ARG(arg);
 
-  netif_init();
-
   if(sys_sem_new(&sem, 0) != ERR_OK) {
     LWIP_ASSERT("Failed to create semaphore", 0);
   }
