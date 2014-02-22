@@ -199,7 +199,7 @@ enum smtp_session_state {
   SMTP_CLOSED
 };
 
-#if LWIP_DEBUG
+#ifdef LWIP_DEBUG
 /** State-to-string table for debugging */
 const char *smtp_state_str[] = {
   "SMTP_NULL",
@@ -299,7 +299,7 @@ static void   smtp_send_body(struct smtp_session *s, struct tcp_pcb *pcb);
 static void   smtp_process(void *arg, struct tcp_pcb *pcb, struct pbuf *p);
 
 
-#if LWIP_DEBUG
+#ifdef LWIP_DEBUG
 /** Convert an smtp result to a string */
 const char*
 smtp_result_str(u8_t smtp_result)
