@@ -657,11 +657,12 @@ http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
 
   if (err == ERR_OK) {
     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Sent %d bytes\n", len));
+    *length = len;
   } else {
     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Send failed with err %d (\"%s\")\n", err, lwip_strerr(err)));
+    *length = 0;
   }
 
-  *length = len;
   return err;
 }
 
@@ -1012,9 +1013,6 @@ http_send_headers(struct tcp_pcb *pcb, struct http_state *hs)
     if ((err == ERR_OK) && (old_sendlen != sendlen)) {
       /* Remember that we added some more data to be transmitted. */
       data_to_send = HTTP_DATA_TO_SEND_CONTINUE;
-    } else if (err != ERR_OK) {
-       /* special case: http_write does not try to send 1 byte */
-      sendlen = 0;
     }
 
     /* Fix up the header position for the next time round. */
