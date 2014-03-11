@@ -123,13 +123,13 @@
 #endif
 
 /** Priority for tcp pcbs created by HTTPD (very low by default).
- *  Lower priorities get killed first when running out of memroy.
+ *  Lower priorities get killed first when running out of memory.
  */
 #ifndef HTTPD_TCP_PRIO
 #define HTTPD_TCP_PRIO                      TCP_PRIO_MIN
 #endif
 
-/** Set this to 1 to enabled timing each file sent */
+/** Set this to 1 to enable timing each file sent */
 #ifndef LWIP_HTTPD_TIMING
 #define LWIP_HTTPD_TIMING                   0
 #endif
@@ -254,6 +254,20 @@
 #define HTTP_IS_TAG_VOLATILE(ptr) TCP_WRITE_FLAG_COPY
 #endif
 #endif /* LWIP_HTTPD_SSI */
+
+/* By default, the httpd is limited to send 2*pcb->mss to keep resource usage low
+   when http is not an important protocol in the device. */
+#ifndef HTTPD_LIMIT_SENDING_TO_2MSS
+#define HTTPD_LIMIT_SENDING_TO_2MSS 1
+#endif
+
+/* Define this to a function that returns the maximum amount of data to enqueue.
+   The function have this signature: u16_t fn(struct tcp_pcb* pcb); */
+#ifndef HTTPD_MAX_WRITE_LEN
+#if HTTPD_LIMIT_SENDING_TO_2MSS
+#define HTTPD_MAX_WRITE_LEN(pcb)    (2 * tcp_mss(pcb))
+#endif
+#endif
 
 /* Return values for http_send_*() */
 #define HTTP_DATA_TO_SEND_BREAK    2
@@ -606,37 +620,49 @@ http_state_free(struct http_state *hs)
 static err_t
 http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
 {
-   u16_t len;
-   err_t err;
-   LWIP_ASSERT("length != NULL", length != NULL);
-   len = *length;
-   if (len == 0) {
-     return ERR_OK;
-   }
-   do {
-     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Trying go send %d bytes\n", len));
-     err = tcp_write(pcb, ptr, len, apiflags);
-     if (err == ERR_MEM) {
-       if ((tcp_sndbuf(pcb) == 0) ||
-           (tcp_sndqueuelen(pcb) >= TCP_SND_QUEUELEN)) {
-         /* no need to try smaller sizes */
-         len = 1;
-       } else {
-         len /= 2;
-       }
-       LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, 
-                   ("Send failed, trying less (%d bytes)\n", len));
-     }
-   } while ((err == ERR_MEM) && (len > 1));
+  u16_t len, max_len;
+  err_t err;
+  LWIP_ASSERT("length != NULL", length != NULL);
+  len = *length;
+  if (len == 0) {
+    return ERR_OK;
+  }
+  /* We cannot send more data than space available in the send buffer. */
+  max_len = tcp_sndbuf(pcb);
+  if (max_len < len) {
+    len = max_len;
+  }
+#ifdef HTTPD_MAX_WRITE_LEN
+  /* Additional limitation: e.g. don't enqueue more than 2*mss at once */
+  max_len = HTTPD_MAX_WRITE_LEN(pcb);
+  if(len > max_len) {
+    len = max_len;
+  }
+#endif /* HTTPD_MAX_WRITE_LEN */
+  do {
+    LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Trying go send %d bytes\n", len));
+    err = tcp_write(pcb, ptr, len, apiflags);
+    if (err == ERR_MEM) {
+      if ((tcp_sndbuf(pcb) == 0) ||
+        (tcp_sndqueuelen(pcb) >= TCP_SND_QUEUELEN)) {
+          /* no need to try smaller sizes */
+          len = 1;
+      } else {
+        len /= 2;
+      }
+      LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, 
+        ("Send failed, trying less (%d bytes)\n", len));
+    }
+  } while ((err == ERR_MEM) && (len > 1));
 
-   if (err == ERR_OK) {
-     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Sent %d bytes\n", len));
-   } else {
-     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Send failed with err %d (\"%s\")\n", err, lwip_strerr(err)));
-   }
+  if (err == ERR_OK) {
+    LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Sent %d bytes\n", len));
+  } else {
+    LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Send failed with err %d (\"%s\")\n", err, lwip_strerr(err)));
+  }
 
-   *length = len;
-   return err;
+  *length = len;
+  return err;
 }
 
 /**
@@ -1046,7 +1072,11 @@ http_check_eof(struct tcp_pcb *pcb, struct http_state *hs)
     count = hs->buf_len;
   } else {
     /* We don't have a send buffer so allocate one up to 2mss bytes long. */
+#ifdef HTTPD_MAX_WRITE_LEN
+    count = HTTPD_MAX_WRITE_LEN(pcb);
+#else /* HTTPD_MAX_WRITE_LEN */
     count = 2 * tcp_mss(pcb);
+#endif /* HTTPD_MAX_WRITE_LEN */
     do {
       hs->buf = (char*)mem_malloc((mem_size_t)count);
       if (hs->buf != NULL) {
@@ -1109,24 +1139,11 @@ http_send_data_nonssi(struct tcp_pcb *pcb, struct http_state *hs)
 {
   err_t err;
   u16_t len;
-  u16_t mss;
   u8_t data_to_send = 0;
 
   /* We are not processing an SHTML file so no tag checking is necessary.
    * Just send the data as we received it from the file. */
-
-  /* We cannot send more data than space available in the send
-     buffer. */
-  if (tcp_sndbuf(pcb) < hs->left) {
-    len = tcp_sndbuf(pcb);
-  } else {
-    len = (u16_t)hs->left;
-    LWIP_ASSERT("hs->left did not fit into u16_t!", (len == hs->left));
-  }
-  mss = tcp_mss(pcb);
-  if (len > (2 * mss)) {
-    len = 2 * mss;
-  }
+  len = (u16_t)LWIP_MIN(hs->left, 0xffff);
 
   err = http_write(pcb, hs->file, &len, HTTP_IS_DATA_VOLATILE(hs));
   if (err == ERR_OK) {
@@ -1149,7 +1166,6 @@ http_send_data_ssi(struct tcp_pcb *pcb, struct http_state *hs)
 {
   err_t err = ERR_OK;
   u16_t len;
-  u16_t mss;
   u8_t data_to_send = 0;
 
   struct http_ssi_state *ssi = hs->ssi;
@@ -1164,19 +1180,7 @@ http_send_data_ssi(struct tcp_pcb *pcb, struct http_state *hs)
 
   /* Do we have remaining data to send before parsing more? */
   if(ssi->parsed > hs->file) {
-    /* We cannot send more data than space available in the send
-       buffer. */
-    if (tcp_sndbuf(pcb) < (ssi->parsed - hs->file)) {
-      len = tcp_sndbuf(pcb);
-    } else {
-      LWIP_ASSERT("Data size does not fit into u16_t!",
-                  (ssi->parsed - hs->file) <= 0xffff);
-      len = (u16_t)(ssi->parsed - hs->file);
-    }
-    mss = tcp_mss(pcb);
-    if(len > (2 * mss)) {
-      len = 2 * mss;
-    }
+    len = (u16_t)LWIP_MIN(ssi->parsed - hs->file, 0xffff);
 
     err = http_write(pcb, hs->file, &len, HTTP_IS_DATA_VOLATILE(hs));
     if (err == ERR_OK) {
@@ -1196,7 +1200,6 @@ http_send_data_ssi(struct tcp_pcb *pcb, struct http_state *hs)
   /* We have sent all the data that was already parsed so continue parsing
    * the buffer contents looking for SSI tags. */
   while((ssi->parse_left) && (err == ERR_OK)) {
-    /* @todo: somewhere in this loop, 'len' should grow again... */
     if (len == 0) {
       return data_to_send;
     }
@@ -1344,14 +1347,10 @@ http_send_data_ssi(struct tcp_pcb *pcb, struct http_state *hs)
             if (ssi->tag_end > hs->file) {
               /* How much of the data can we send? */
 #if LWIP_HTTPD_SSI_INCLUDE_TAG
-              if(len > ssi->tag_end - hs->file) {
-                len = (u16_t)(ssi->tag_end - hs->file);
-              }
+              len = (u16_t)LWIP_MIN(ssi->tag_end - hs->file, 0xffff);
 #else /* LWIP_HTTPD_SSI_INCLUDE_TAG*/
-              if(len > ssi->tag_started - hs->file) {
-                /* we would include the tag in sending */
-                len = (u16_t)(ssi->tag_started - hs->file);
-              }
+              /* we would include the tag in sending */
+              len = (u16_t)LWIP_MIN(ssi->tag_started - hs->file, 0xffff);
 #endif /* LWIP_HTTPD_SSI_INCLUDE_TAG*/
 
               err = http_write(pcb, hs->file, &len, HTTP_IS_DATA_VOLATILE(hs));
@@ -1390,15 +1389,11 @@ http_send_data_ssi(struct tcp_pcb *pcb, struct http_state *hs)
         if(ssi->tag_end > hs->file) {
           /* How much of the data can we send? */
 #if LWIP_HTTPD_SSI_INCLUDE_TAG
-          if(len > ssi->tag_end - hs->file) {
-            len = (u16_t)(ssi->tag_end - hs->file);
-          }
+          len = (u16_t)LWIP_MIN(ssi->tag_end - hs->file, 0xffff);
 #else /* LWIP_HTTPD_SSI_INCLUDE_TAG*/
           LWIP_ASSERT("hs->started >= hs->file", ssi->tag_started >= hs->file);
-          if (len > ssi->tag_started - hs->file) {
-            /* we would include the tag in sending */
-            len = (u16_t)(ssi->tag_started - hs->file);
-          }
+          /* we would include the tag in sending */
+          len = (u16_t)LWIP_MIN(ssi->tag_started - hs->file, 0xffff);
 #endif /* LWIP_HTTPD_SSI_INCLUDE_TAG*/
           if (len != 0) {
             err = http_write(pcb, hs->file, &len, HTTP_IS_DATA_VOLATILE(hs));
@@ -1432,9 +1427,7 @@ http_send_data_ssi(struct tcp_pcb *pcb, struct http_state *hs)
           if(ssi->tag_index < ssi->tag_insert_len) {
             /* We are sending the insert string itself. How much of the
              * insert can we send? */
-            if(len > (ssi->tag_insert_len - ssi->tag_index)) {
-              len = (ssi->tag_insert_len - ssi->tag_index);
-            }
+            len = (ssi->tag_insert_len - ssi->tag_index);
 
             /* Note that we set the copy flag here since we only have a
              * single tag insert buffer per connection. If we don't do
@@ -1471,18 +1464,7 @@ http_send_data_ssi(struct tcp_pcb *pcb, struct http_state *hs)
    * file data to send so send it now. In TAG_SENDING state, we've already
    * handled this so skip the send if that's the case. */
   if((ssi->tag_state != TAG_SENDING) && (ssi->parsed > hs->file)) {
-    /* We cannot send more data than space available in the send
-       buffer. */
-    if (tcp_sndbuf(pcb) < (ssi->parsed - hs->file)) {
-      len = tcp_sndbuf(pcb);
-    } else {
-      LWIP_ASSERT("Data size does not fit into u16_t!",
-                  (ssi->parsed - hs->file) <= 0xffff);
-      len = (u16_t)(ssi->parsed - hs->file);
-    }
-    if(len > (2 * tcp_mss(pcb))) {
-      len = 2 * tcp_mss(pcb);
-    }
+    len = (u16_t)LWIP_MIN(ssi->parsed - hs->file, 0xffff);
 
     err = http_write(pcb, hs->file, &len, HTTP_IS_DATA_VOLATILE(hs));
     if (err == ERR_OK) {
