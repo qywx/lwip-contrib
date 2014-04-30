@@ -98,6 +98,7 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
 int file_put_ascii(FILE *file, const char *ascii_string, int len, int *i);
 int s_put_ascii(char *buf, const char *ascii_string, int len, int *i);
 void concat_files(const char *file1, const char *file2, const char *targetfile);
+static int check_path(char* path, size_t size);
 
 static unsigned char file_buffer_raw[COPY_BUFSIZE];
 /* 5 bytes per char + 3 bytes per line */
@@ -158,6 +159,11 @@ int main(int argc, char *argv[])
       strncpy(path, argv[i], sizeof(path)-1);
       path[sizeof(path)-1] = 0;
     }
+  }
+
+  if(!check_path(path, sizeof(path))) {
+    printf("Invalid path: \"%s\"." NEWLINE);
+    exit(-1);
   }
 
   /* if command line param or subdir named 'fs' not found spout usage verbiage */
@@ -245,6 +251,29 @@ int main(int argc, char *argv[])
   }
 
   return 0;
+}
+
+static int check_path(char* path, size_t size)
+{
+  size_t slen;
+  if (path[0] == 0) {
+    /* empty */
+    return 0;
+  }
+  slen = strlen(path);
+  if (slen >= size) {
+    /* not NULL-terminated */
+    return 0;
+  }
+  while ((slen > 0) && ((path[slen] == '\\') || (path[slen] == '/'))) {
+    /* path should not end with trailing backslash */
+    path[slen] = 0;
+    slen--;
+  }
+  if (slen == 0) {
+    return 0;
+  }
+  return 1;
 }
 
 static void copy_file(const char *filename_in, FILE *fout)
