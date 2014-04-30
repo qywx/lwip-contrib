@@ -1,6 +1,10 @@
 #ifndef __PCAPIF_H__
 #define __PCAPIF_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "lwip/err.h"
 
 /** Set to 1 to let rx use an own thread (only for NO_SYS==0).
@@ -21,4 +25,8 @@ void  pcapif_shutdown(struct netif *netif);
 void  pcapif_poll    (struct netif *netif);
 #endif /* !PCAPIF_RX_USE_THREAD */
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* __PCAPIF_H__ */

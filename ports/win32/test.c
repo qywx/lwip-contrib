@@ -158,7 +158,7 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
 
   switch(errCode) {
     case PPPERR_NONE: {             /* No error. */
-      struct ppp_addrs *ppp_addrs = arg;
+      struct ppp_addrs *ppp_addrs = (struct ppp_addrs *)arg;
 
       printf("pppLinkStatusCallback: PPPERR_NONE\n");
       printf(" our_ipaddr=%s\n", ip_ntoa(&ppp_addrs->our_ipaddr));
