@@ -236,7 +236,7 @@ u32_t sio_read(sio_fd_t fd, u8_t* data, u32_t len)
   DWORD dwNbBytesReadden = 0;
   LWIP_DEBUGF(SIO_DEBUG, ("sio_read()...\n"));
   ret = ReadFile((HANDLE)(fd), data, len, &dwNbBytesReadden, NULL);
-  LWIP_DEBUGF(SIO_DEBUG, ("sio_read()=%lu bytes -> \n", dwNbBytesReadden, ret));
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_read()=%lu bytes -> %d\n", dwNbBytesReadden, ret));
   return dwNbBytesReadden;
 }
 
