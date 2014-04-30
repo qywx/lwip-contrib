@@ -510,7 +510,7 @@ sensorentry_get_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
     fclose(sensf);
   }
 #else /* SENSORS_USE_FILES */
-  if (i <= SENSOR_COUNT) {
+  if (i < SENSOR_COUNT) {
     *temperature = sensor_values[i];
   }
 #endif /* SENSORS_USE_FILES */
@@ -587,7 +587,7 @@ sensorentry_set_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
     fclose(sensf);
   }
 #else /* SENSORS_USE_FILES */
-  if (i <= SENSOR_COUNT) {
+  if (i < SENSOR_COUNT) {
     sensor_values[i] = *temperature;
   }
 #endif /* SENSORS_USE_FILES */

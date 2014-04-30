@@ -379,7 +379,7 @@ pcapif_init_adapter(int adapter_num, void *arg)
 #endif
                                errbuf);           /* error buffer */
   if (pa->adapter == NULL) {
-    printf("\nUnable to open the adapter. %s is not supported by WinPcap\n", d->name);
+    printf("\nUnable to open the adapter. %s is not supported by WinPcap\n", used_adapter->name);
     /* Free the device list */
     pcap_freealldevs(alldevs);
     free(pa);

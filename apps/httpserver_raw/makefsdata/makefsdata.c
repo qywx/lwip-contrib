@@ -150,11 +150,13 @@ int main(int argc, char *argv[])
       } else if (strstr(argv[i], "-c")) {
         precalcChksum = 1;
       } else if((argv[i][1] == 'f') && (argv[i][2] == ':')) {
-        strcpy(targetfile, &argv[i][3]);
+        strncpy(targetfile, &argv[i][3], sizeof(targetfile) - 1);
+        targetfile[sizeof(targetfile) - 1] = 0;
         printf("Writing to file \"%s\"\n", targetfile);
       }
     } else {
-      strcpy(path, argv[i]);
+      strncpy(path, argv[i], sizeof(path)-1);
+      path[sizeof(path)-1] = 0;
     }
   }
 
@@ -227,8 +229,12 @@ int main(int argc, char *argv[])
   concat_files("fsdata.tmp", "fshdr.tmp", targetfile);
 
   /* if succeeded, delete the temporary files */
-  remove("fsdata.tmp");
-  remove("fshdr.tmp"); 
+  if (remove("fsdata.tmp") != 0) {
+    printf("Warning: failed to delete fsdata.tmp\n");
+  }
+  if (remove("fshdr.tmp") != 0) {
+    printf("Warning: failed to delete fshdr.tmp\n");
+  }
 
   printf(NEWLINE "Processed %d files - done." NEWLINE NEWLINE, filesProcessed);
 
@@ -276,26 +282,34 @@ int process_sub(FILE *data_file, FILE *struct_file)
   FIND_T fInfo;
   FIND_RET_T fret;
   int filesProcessed = 0;
-  char oldSubdir[MAX_PATH_LEN];
 
   if (processSubs) {
     /* process subs recursively */
-    strcpy(oldSubdir, curSubdir);
+    size_t sublen = strlen(curSubdir);
+    size_t freelen = sizeof(curSubdir) - sublen - 1;
+    LWIP_ASSERT("sublen < sizeof(curSubdir)", sublen < sizeof(curSubdir));
     fret = FINDFIRST_DIR("*", &fInfo);
     if (FINDFIRST_SUCCEEDED(fret)) {
       do {
         const char *curName = FIND_T_FILENAME(fInfo);
-        if (curName == NULL) continue;
-        if (curName[0] == '.') continue;
-        if (strcmp(curName, "CVS") == 0) continue;
-        if (!FIND_T_IS_DIR(fInfo)) continue;
-        CHDIR(curName);
-        strcat(curSubdir, "/");
-        strcat(curSubdir, curName);
-        printf(NEWLINE "processing subdirectory %s/..." NEWLINE, curSubdir);
-        filesProcessed += process_sub(data_file, struct_file);
-        CHDIR("..");
-        strcpy(curSubdir, oldSubdir);
+        if ((curName[0] == '.') || (strcmp(curName, "CVS") == 0)) {
+          continue;
+        }
+        if (!FIND_T_IS_DIR(fInfo)) {
+          continue;
+        }
+        if (freelen > 0) {
+           CHDIR(curName);
+           strncat(curSubdir, "/", freelen);
+           strncat(curSubdir, curName, freelen - 1);
+           curSubdir[sizeof(curSubdir) - 1] = 0;
+           printf(NEWLINE "processing subdirectory %s/..." NEWLINE, curSubdir);
+           filesProcessed += process_sub(data_file, struct_file);
+           CHDIR("..");
+           curSubdir[sublen] = 0;
+        } else {
+           printf("WARNING: cannot process sub due to path length restrictions: \"%s/%s\"\n", curSubdir, curName);
+        }
       } while (FINDNEXT_SUCCEEDED(FINDNEXT(fret, &fInfo)));
     }
   }
@@ -339,6 +353,10 @@ void process_file_data(const char *filename, FILE *data_file)
   size_t len, written, i, src_off=0;
 
   source_file = fopen(filename, "rb");
+  if (source_file == NULL) {
+    printf("Failed to open file \"%s\"\n", filename);
+    exit(-1);
+  }
 
   do {
     size_t off = 0;
@@ -376,7 +394,7 @@ int write_checksums(FILE *struct_file, const char *filename, const char *varname
 
   memset(file_buffer_raw, 0xab, sizeof(file_buffer_raw));
   f = fopen(filename, "rb");
-  if (f == INVALID_HANDLE_VALUE) {
+  if (f == NULL) {
     printf("Failed to open file \"%s\"\n", filename);
     exit(-1);
   }
@@ -600,9 +618,11 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
   }
 
   file_ext = filename;
-  while(strstr(file_ext, ".") != NULL) {
-    file_ext = strstr(file_ext, ".");
-    file_ext++;
+  if (file_ext != NULL) {
+    while(strstr(file_ext, ".") != NULL) {
+      file_ext = strstr(file_ext, ".");
+      file_ext++;
+    }
   }
   if((file_ext == NULL) || (*file_ext == 0)) {
     printf("failed to get extension for file \"%s\", using default.\n", filename);

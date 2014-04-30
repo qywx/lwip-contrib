@@ -385,10 +385,14 @@ smtp_set_auth(const char* username, const char* pass)
 #endif /* SMTP_SUPPORT_AUTH_LOGIN || SMTP_SUPPORT_AUTH_PLAIN */
   }
   *smtp_auth_plain = 0;
-  smtp_username = smtp_auth_plain + 1;
-  strcpy(smtp_username, username);
-  smtp_pass = smtp_auth_plain + uname_len + 2;
-  strcpy(smtp_pass, pass);
+  if (username != NULL) {
+    smtp_username = smtp_auth_plain + 1;
+    strcpy(smtp_username, username);
+  }
+  if (pass != NULL) {
+    smtp_pass = smtp_auth_plain + uname_len + 2;
+    strcpy(smtp_pass, pass);
+  }
   smtp_auth_plain_len = uname_len + pass_len + 2;
 
   return ERR_OK;
