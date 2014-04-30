@@ -41,5 +41,6 @@ enum mintapif_signal {
 
 err_t mintapif_init(struct netif *netif);
 int mintapif_select(struct netif *netif);
+enum mintapif_signal mintapif_wait(struct netif *netif, u16_t time);
 
 #endif /* __MINTAPIF_H__ */

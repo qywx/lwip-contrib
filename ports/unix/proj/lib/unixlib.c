@@ -61,7 +61,7 @@ tcpip_init_done(void *arg)
 {
   ip_addr_t ipaddr, netmask, gateway;
   sys_sem_t *sem;
-  sem = arg;
+  sem = (sys_sem_t *)arg;
 
   /*
     CHANGE THESE to suit your own network configuration:

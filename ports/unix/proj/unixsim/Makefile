@@ -39,13 +39,13 @@ CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -DLWIP_DEBUG -pedantic -Werror \
 	-Wparentheses -Wsequence-point -Wswitch-default \
 	-Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast \
 	-Wc++-compat -Wwrite-strings -Wold-style-definition \
-	-Wmissing-prototypes -Wredundant-decls -Wnested-externs
+	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address
 # not used for now but interesting:
 # -Wpacked
 # -Wunreachable-code
 # -ansi
 # -std=c89
-LDFLAGS=-lpthread -lutil
+LDFLAGS=-pthread -lutil
 CONTRIBDIR=../../../..
 LWIPARCH=$(CONTRIBDIR)/ports/unix
 ARFLAGS=rs

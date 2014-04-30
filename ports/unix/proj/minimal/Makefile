@@ -35,7 +35,11 @@ CC=gcc
 #To compile for cygwin: make ARCH=cygwin
 #To compile for openbsd: make ARCH=openbsd
 ARCH=openbsd
-CFLAGS=-g -Wall -pedantic -D$(ARCH) -DIPv4 -Os -fpack-struct -DLWIP_DEBUG
+CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -Os -DLWIP_DEBUG -pedantic -Werror \
+	-Wparentheses -Wsequence-point -Wswitch-default \
+	-Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast \
+	-Wc++-compat -Wwrite-strings -Wold-style-definition \
+	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address
 ARFLAGS=rs
 
 CONTRIBDIR=../../../..
@@ -47,7 +51,8 @@ LWIPDIR=$(CONTRIBDIR)/../lwip/src
 
 CFLAGS:=$(CFLAGS) \
 	-I$(LWIPDIR)/include -I$(LWIPARCH)/include -I$(LWIPDIR)/include/ipv4 \
-	-I$(LWIPDIR)/include/ipv6 -I. -I$(CONTRIBDIR)/apps/snmp_private_mib
+	-I$(LWIPDIR)/include/ipv6 -I. -I$(CONTRIBDIR)/apps/snmp_private_mib \
+	-I$(CONTRIBDIR)/apps/tcpecho_raw
 
 # COREFILES, CORE4FILES: The minimum set of files needed for lwIP.
 COREFILES=$(LWIPDIR)/core/def.c $(LWIPDIR)/core/dhcp.c $(LWIPDIR)/core/dns.c \
@@ -82,7 +87,7 @@ LWIPFILESW=$(wildcard $(LWIPFILES))
 LWIPOBJS=$(notdir $(LWIPFILESW:.c=.o))
 
 # APPFILES
-APPFILES=echo.c timer.c
+APPFILES=../../../../apps/tcpecho_raw/echo.c timer.c
 
 LWIPLIB=liblwip4.a
 APPLIB=liblwipapps.a
