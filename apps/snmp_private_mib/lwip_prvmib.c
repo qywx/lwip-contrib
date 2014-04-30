@@ -298,13 +298,13 @@ lwip_privmib_init(void)
             if (isdigit(dp->d_name[0]))
             {
               struct mib_list_node *dummy;
-              unsigned char index;
+              unsigned char idx;
               
-              index = dp->d_name[0] - '0';
-              snmp_mib_node_insert(&sensor_addr_inf.sensor_list_rn,index,&dummy);
+              idx = dp->d_name[0] - '0';
+              snmp_mib_node_insert(&sensor_addr_inf.sensor_list_rn,idx,&dummy);
 
-              strncpy(&sensor_addr_inf.sensor_files[index][0],dp->d_name,SENSOR_NAME_LEN);
-              printf("%s\n", sensor_addr_inf.sensor_files[index]);
+              strncpy(&sensor_addr_inf.sensor_files[idx][0],dp->d_name,SENSOR_NAME_LEN);
+              printf("%s\n", sensor_addr_inf.sensor_files[idx]);
             }
             cp += dp->d_reclen;
           }
@@ -319,14 +319,14 @@ lwip_privmib_init(void)
 #else /* SENSORS_USE_FILES && SENSORS_SEARCH_FILES */
   for (i = 0; i < SENSOR_COUNT; i++) {
     struct mib_list_node *dummy;
-    s32_t index = i;
+    s32_t idx = i;
     char name[256];
     sprintf(name, "%d.txt", i);
 
-    snmp_mib_node_insert(&sensor_addr_inf.sensor_list_rn, index, &dummy);
+    snmp_mib_node_insert(&sensor_addr_inf.sensor_list_rn, idx, &dummy);
 
-    strncpy(&sensor_addr_inf.sensor_files[index][0], name, SENSOR_NAME_LEN);
-    printf("%s\n", sensor_addr_inf.sensor_files[index]);
+    strncpy(&sensor_addr_inf.sensor_files[idx][0], name, SENSOR_NAME_LEN);
+    printf("%s\n", sensor_addr_inf.sensor_files[idx]);
 #if !SENSORS_USE_FILES
     /* initialize sensor value to != zero */
     sensor_values[i] = 11 * (i+1);

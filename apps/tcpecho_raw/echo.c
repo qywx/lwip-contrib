@@ -45,6 +45,7 @@
 #include "lwip/debug.h"
 #include "lwip/stats.h"
 #include "lwip/tcp.h"
+#include "echo.h"
 
 #if LWIP_TCP
 
