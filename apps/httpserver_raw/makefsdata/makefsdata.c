@@ -38,9 +38,7 @@
 
 #define GETCWD(path, len)             GetCurrentDirectoryA(len, path)
 #define CHDIR(path)                   SetCurrentDirectoryA(path)
-
-#define NEWLINE     "\r\n"
-#define NEWLINE_LEN 2
+#define CHDIR_SUCCEEDED(ret)          (ret == TRUE)
 
 #else
 
@@ -57,8 +55,12 @@
 
 #define GETCWD(path, len)             getcwd(path, len)
 #define CHDIR(path)                   chdir(path)
+#define CHDIR_SUCCEEDED(ret)          (ret == 0)
 
 #endif
+
+#define NEWLINE     "\r\n"
+#define NEWLINE_LEN 2
 
 /* define this to get the header variables we use to build HTTP headers */
 #define LWIP_HTTPD_DYNAMIC_HEADERS 1
@@ -98,7 +100,6 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
 int file_put_ascii(FILE *file, const char *ascii_string, int len, int *i);
 int s_put_ascii(char *buf, const char *ascii_string, int len, int *i);
 void concat_files(const char *file1, const char *file2, const char *targetfile);
-static int check_path(char* path, size_t size);
 
 static unsigned char file_buffer_raw[COPY_BUFSIZE];
 /* 5 bytes per char + 3 bytes per line */
@@ -119,8 +120,6 @@ struct file_entry* last_file = NULL;
 
 int main(int argc, char *argv[])
 {
-  FIND_T fInfo;
-  FIND_RET_T fret;
   char path[MAX_PATH_LEN];
   char appPath[MAX_PATH_LEN];
   FILE *data_file;
@@ -161,14 +160,9 @@ int main(int argc, char *argv[])
     }
   }
 
-  if(!check_path(path, sizeof(path))) {
-    printf("Invalid path: \"%s\"." NEWLINE);
-    exit(-1);
-  }
-
+  GETCWD(appPath, MAX_PATH_LEN);
   /* if command line param or subdir named 'fs' not found spout usage verbiage */
-  fret = FINDFIRST_DIR(path, &fInfo);
-  if (!FINDFIRST_SUCCEEDED(fret)) {
+  if (!CHDIR_SUCCEEDED(CHDIR(path))) {
     /* if no subdir named 'fs' (or the one which was given) exists, spout usage verbiage */
     printf(" Failed to open directory \"%s\"." NEWLINE NEWLINE, path);
     printf(" Usage: htmlgen [targetdir] [-s] [-i] [-f:<filename>]" NEWLINE NEWLINE);
@@ -183,6 +177,7 @@ int main(int argc, char *argv[])
     printf("   process files in subdirectory 'fs'" NEWLINE);
     exit(-1);
   }
+  CHDIR(appPath);
 
   printf("HTTP %sheader will %s statically included." NEWLINE,
     (includeHttpHeader ? (useHttp11 ? "1.1 " : "1.0 ") : ""),
@@ -196,7 +191,6 @@ int main(int argc, char *argv[])
     printf("..." NEWLINE NEWLINE);
   }
 
-  GETCWD(appPath, MAX_PATH_LEN);
   data_file = fopen("fsdata.tmp", "wb");
   if (data_file == NULL) {
     printf("Failed to create file \"fsdata.tmp\"\n");
@@ -205,6 +199,7 @@ int main(int argc, char *argv[])
   struct_file = fopen("fshdr.tmp", "wb");
   if (struct_file == NULL) {
     printf("Failed to create file \"fshdr.tmp\"\n");
+    fclose(data_file);
     exit(-1);
   }
 
@@ -251,29 +246,6 @@ int main(int argc, char *argv[])
   }
 
   return 0;
-}
-
-static int check_path(char* path, size_t size)
-{
-  size_t slen;
-  if (path[0] == 0) {
-    /* empty */
-    return 0;
-  }
-  slen = strlen(path);
-  if (slen >= size) {
-    /* not NULL-terminated */
-    return 0;
-  }
-  while ((slen > 0) && ((path[slen] == '\\') || (path[slen] == '/'))) {
-    /* path should not end with trailing backslash */
-    path[slen] = 0;
-    slen--;
-  }
-  if (slen == 0) {
-    return 0;
-  }
-  return 1;
 }
 
 static void copy_file(const char *filename_in, FILE *fout)
