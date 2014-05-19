@@ -29,9 +29,9 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef __SHELL_H__
-#define __SHELL_H__
+#ifndef LWIP_SHELL_H__
+#define LWIP_SHELL_H__
 
 void shell_init(void);
 
-#endif /* __SHELL_H__ */
+#endif /* LWIP_SHELL_H__ */

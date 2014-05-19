@@ -29,8 +29,8 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef __LWIPOPTS_H__
-#define __LWIPOPTS_H__
+#ifndef LWIP_LWIPOPTS_H__
+#define LWIP_LWIPOPTS_H__
 
 #define LWIP_DBG_MIN_LEVEL 0
 #define LWIP_COMPAT_SOCKETS 1
@@ -308,4 +308,4 @@ a lot of data that needs to be copied, this should be set high. */
 
 #endif /* PPP_SUPPORT > 0 */
 
-#endif /* __LWIPOPTS_H__ */
+#endif /* LWIP_LWIPOPTS_H__ */

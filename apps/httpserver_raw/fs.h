@@ -29,8 +29,8 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef __FS_H__
-#define __FS_H__
+#ifndef LWIP_FS_H__
+#define LWIP_FS_H__
 
 #include "lwip/opt.h"
 #include "lwip/err.h"
@@ -129,4 +129,4 @@ void *fs_state_init(struct fs_file *file, const char *name);
 void fs_state_free(struct fs_file *file, void *state);
 #endif /* #if LWIP_HTTPD_FILE_STATE */
 
-#endif /* __FS_H__ */
+#endif /* LWIP_FS_H__ */

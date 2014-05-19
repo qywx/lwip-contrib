@@ -1,6 +1,6 @@
-#ifndef __NETBIOS_H__
-#define __NETBIOS_H__
+#ifndef LWIP_NETBIOS_H__
+#define LWIP_NETBIOS_H__
 
 void netbios_init(void);
 
-#endif /* __NETBIOS_H__ */
+#endif /* LWIP_NETBIOS_H__ */

@@ -1,5 +1,5 @@
-#ifndef __SNTP_H__
-#define __SNTP_H__
+#ifndef LWIP_SNTP_H__
+#define LWIP_SNTP_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,4 +12,4 @@ void sntp_stop(void);
 }
 #endif
 
-#endif /* __SNTP_H__ */
+#endif /* LWIP_SNTP_H__ */
