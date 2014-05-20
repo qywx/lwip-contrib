@@ -27,8 +27,8 @@
  * This file is part of the lwIP TCP/IP stack.
  * 
  */
-#ifndef LWIP_ECHO_H__
-#define LWIP_ECHO_H__
+#ifndef LWIP_ECHO_H
+#define LWIP_ECHO_H
 
 void echo_init(void);
 

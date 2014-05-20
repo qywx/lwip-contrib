@@ -29,8 +29,8 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef LWIP_ARCH_CC_H__
-#define LWIP_ARCH_CC_H__
+#ifndef LWIP_ARCH_CC_H
+#define LWIP_ARCH_CC_H
 
 #include <stdio.h> /* printf, fflush, FILE */
 #include <stdlib.h> /* abort */
@@ -101,4 +101,4 @@ u32_t dns_lookup_external_hosts_file(const char *name);
 
 #define LWIP_RAND() ((u32_t)rand())
 
-#endif /* LWIP_ARCH_CC_H__ */
+#endif /* LWIP_ARCH_CC_H */

@@ -1,5 +1,5 @@
-#ifndef LWIP_PCAPIF_H__
-#define LWIP_PCAPIF_H__
+#ifndef LWIP_PCAPIF_H
+#define LWIP_PCAPIF_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,4 +29,4 @@ void  pcapif_poll    (struct netif *netif);
 }
 #endif
 
-#endif /* LWIP_PCAPIF_H__ */
+#endif /* LWIP_PCAPIF_H */

@@ -29,8 +29,8 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef LWIP_LWIPOPTS_H__
-#define LWIP_LWIPOPTS_H__
+#ifndef LWIP_LWIPOPTS_H
+#define LWIP_LWIPOPTS_H
 
 #define NO_SYS                     0
 #define LWIP_SOCKET               (NO_SYS==0)
@@ -282,4 +282,4 @@ a lot of data that needs to be copied, this should be set high. */
 
 #endif /* PPP_SUPPORT */
 
-#endif /* LWIP_LWIPOPTS_H__ */
+#endif /* LWIP_LWIPOPTS_H */

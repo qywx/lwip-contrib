@@ -1,5 +1,5 @@
-#ifndef LWIP_PCAPIF_HELPER_H__
-#define LWIP_PCAPIF_HELPER_H__
+#ifndef LWIP_PCAPIF_HELPER_H
+#define LWIP_PCAPIF_HELPER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,4 +22,4 @@ void pcapifh_linkstate_close(struct pcapifh_linkstate* state);
 }
 #endif
 
-#endif /* LWIP_PCAPIF_HELPER_H__ */
+#endif /* LWIP_PCAPIF_HELPER_H */
