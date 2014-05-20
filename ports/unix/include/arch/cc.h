@@ -29,8 +29,8 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef LWIP_ARCH_CC_H__
-#define LWIP_ARCH_CC_H__
+#ifndef LWIP_ARCH_CC_H
+#define LWIP_ARCH_CC_H
 
 /* Include some files for defining library routines */
 #include <string.h>
@@ -91,4 +91,4 @@ typedef unsigned long mem_ptr_t;
 
 #define LWIP_RAND() ((u32_t)rand())
 
-#endif /* LWIP_ARCH_CC_H__ */
+#endif /* LWIP_ARCH_CC_H */

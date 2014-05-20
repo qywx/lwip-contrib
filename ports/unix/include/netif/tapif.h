@@ -29,11 +29,11 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef LWIP_TAPIF_H__
-#define LWIP_TAPIF_H__
+#ifndef LWIP_TAPIF_H
+#define LWIP_TAPIF_H
 
 #include "lwip/netif.h"
 
 err_t tapif_init(struct netif *netif);
 
-#endif /* LWIP_TAPIF_H__ */
+#endif /* LWIP_TAPIF_H */

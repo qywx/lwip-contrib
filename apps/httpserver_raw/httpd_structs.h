@@ -1,5 +1,5 @@
-#ifndef LWIP_HTTPD_STRUCTS_H__
-#define LWIP_HTTPD_STRUCTS_H__
+#ifndef LWIP_HTTPD_STRUCTS_H
+#define LWIP_HTTPD_STRUCTS_H
 
 #include "httpd.h"
 
@@ -122,4 +122,4 @@ static const char * const g_pcSSIExtensions[] = {
 #define NUM_SHTML_EXTENSIONS (sizeof(g_pcSSIExtensions) / sizeof(const char *))
 #endif /* LWIP_HTTPD_SSI */
 
-#endif /* LWIP_HTTPD_STRUCTS_H__ */
+#endif /* LWIP_HTTPD_STRUCTS_H */

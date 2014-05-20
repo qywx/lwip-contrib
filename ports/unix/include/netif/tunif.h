@@ -29,8 +29,8 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef LWIP_TUNIF_H__
-#define LWIP_TUNIF_H__
+#ifndef LWIP_TUNIF_H
+#define LWIP_TUNIF_H
 
 #include "lwip/netif.h"
 
@@ -38,4 +38,4 @@
 
 err_t tunif_init(struct netif *netif);
 
-#endif /* LWIP_TUNIF_H__ */
+#endif /* LWIP_TUNIF_H */

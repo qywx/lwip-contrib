@@ -29,8 +29,8 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef LWIP_ARCH_SYS_ARCH_H__
-#define LWIP_ARCH_SYS_ARCH_H__
+#ifndef LWIP_ARCH_SYS_ARCH_H
+#define LWIP_ARCH_SYS_ARCH_H
 
 #include <errno.h>
 
@@ -55,5 +55,5 @@ typedef struct sys_mbox *sys_mbox_t;
 struct sys_thread;
 typedef struct sys_thread * sys_thread_t;
 
-#endif /* LWIP_ARCH_SYS_ARCH_H__ */
+#endif /* LWIP_ARCH_SYS_ARCH_H */
 

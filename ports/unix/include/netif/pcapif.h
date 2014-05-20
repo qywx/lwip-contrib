@@ -29,11 +29,11 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#ifndef LWIP_PCAPIF_H__
-#define LWIP_PCAPIF_H__
+#ifndef LWIP_PCAPIF_H
+#define LWIP_PCAPIF_H
 
 #include "lwip/netif.h"
 
 err_t pcapif_init(struct netif *netif);
 
-#endif /* LWIP_PCAPIF_H__ */
+#endif /* LWIP_PCAPIF_H */
