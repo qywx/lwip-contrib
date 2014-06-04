@@ -751,6 +751,7 @@ smtp_tcp_connected(void *arg, struct tcp_pcb *pcb, err_t err)
   if (err == ERR_OK) {
     LWIP_DEBUGF(SMTP_DEBUG_STATE, ("smtp_connected: Waiting for 220\n"));
   } else {
+    /* shouldn't happen, but we still check 'err', only to be sure */
     LWIP_DEBUGF(SMTP_DEBUG_WARN, ("smtp_connected: %d\n", (int)err));
     smtp_close(arg, pcb, SMTP_RESULT_ERR_CONNECT, 0, err);
   }
