@@ -399,18 +399,12 @@ void dns_found(const char *name, ip_addr_t *addr, void *arg)
 
 void dns_dorequest(void *arg)
 {
-  const char* dnsname = "3com.com";
+  char* dnsname = "3com.com";
   ip_addr_t dnsresp;
-  err_t err;
-  if (arg != NULL) {
-     dnsname = (const char*)arg;
-  }
+  LWIP_UNUSED_ARG(arg);
  
-  err = dns_gethostbyname(dnsname, &dnsresp, dns_found, 0);
-  if (err == ERR_OK) {
+  if (dns_gethostbyname(dnsname, &dnsresp, dns_found, 0) == ERR_OK) {
     dns_found(dnsname, &dnsresp, 0);
-  } else {
-    printf("dns_dorequest(): dns_gethostbyname(%s) returned error: %d\n", dnsname, err);
   }
 }
 #endif /* LWIP_DNS_APP && LWIP_DNS */
@@ -421,11 +415,7 @@ apps_init()
 {
 #if LWIP_DNS_APP && LWIP_DNS
   /* wait until the netif is up (for dhcp, autoip or ppp) */
-  sys_timeout(500, dns_dorequest, NULL);
-  sys_timeout(500, dns_dorequest, "3com.com");
-  sys_timeout(500, dns_dorequest, "3com.com");
-  sys_timeout(500, dns_dorequest, "www.gmx.de");
-  sys_timeout(500, dns_dorequest, "www.GMX.de");
+  sys_timeout(5000, dns_dorequest, NULL);
 #endif /* LWIP_DNS_APP && LWIP_DNS */
 
 #if LWIP_CHARGEN_APP && LWIP_SOCKET
