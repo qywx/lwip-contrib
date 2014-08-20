@@ -1,5 +1,5 @@
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C++ Express 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lwIP_test", "lwIP_Test.vcproj", "{8CC0CE51-32CF-4585-BFAF-A9343BC5A96D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{6F44E49E-9F21-4144-91EC-53B92AEF62CE} = {6F44E49E-9F21-4144-91EC-53B92AEF62CE}

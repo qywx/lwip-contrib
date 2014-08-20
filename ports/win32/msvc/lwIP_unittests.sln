@@ -1,5 +1,5 @@
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lwip_unittests", "lwip_unittests.vcproj", "{6CCABAA4-F86F-4119-AFF8-43C9A4A234C2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{EBB156DC-01BF-47B2-B69C-1A750B6B5F09} = {EBB156DC-01BF-47B2-B69C-1A750B6B5F09}

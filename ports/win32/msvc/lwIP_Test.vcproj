@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="9,00"
 	Name="lwIP_test"
 	ProjectGUID="{8CC0CE51-32CF-4585-BFAF-A9343BC5A96D}"
 	RootNamespace="lwIP_test"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -77,6 +78,8 @@
 				AdditionalLibraryDirectories="$(PCAP_DIR)\Lib"
 				ProgramDatabaseFile=".\Release/test.pdb"
 				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -163,6 +166,8 @@
 				AdditionalLibraryDirectories="$(PCAP_DIR)\Lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
