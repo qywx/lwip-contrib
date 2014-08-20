@@ -574,6 +574,12 @@ http_state_eof(struct http_state *hs)
     hs->ssi = NULL;
   }
 #endif /* LWIP_HTTPD_SSI */
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+  if (hs->req) {
+    pbuf_free(hs->req);
+    hs->req = NULL;
+  }
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
 }
 
 /** Free a struct http_state.
@@ -2342,6 +2348,8 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
         || parsed == ERR_INPROGRESS ||parsed == ERR_ARG || parsed == ERR_USE);
     } else {
       LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: already sending data\n"));
+      /* already sending but still receiving data, we might want to RST here? */
+      pbuf_free(p);
     }
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
     if (parsed != ERR_INPROGRESS) {
