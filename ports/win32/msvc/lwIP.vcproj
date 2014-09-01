@@ -775,86 +775,6 @@
 				Name="include"
 				>
 				<Filter
-					Name="ipv4"
-					>
-					<Filter
-						Name="lwip"
-						>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\autoip.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\icmp.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\igmp.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\inet.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\ip4.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\ip4_addr.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv4\lwip\ip_frag.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
-					Name="ipv6"
-					>
-					<Filter
-						Name="lwip"
-						>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\dhcp6.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ethip6.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\icmp6.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\inet6.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ip6.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ip6_addr.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\ip6_frag.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\mld6.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\ipv6\lwip\nd6.h"
-							>
-						</File>
-					</Filter>
-				</Filter>
-				<Filter
 					Name="lwip"
 					>
 					<File
@@ -870,6 +790,10 @@
 						>
 					</File>
 					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\autoip.h"
+						>
+					</File>
+					<File
 						RelativePath="$(LWIP_DIR)\src\include\lwip\debug.h"
 						>
 					</File>
@@ -882,11 +806,39 @@
 						>
 					</File>
 					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\dhcp6.h"
+						>
+					</File>
+					<File
 						RelativePath="$(LWIP_DIR)\src\include\lwip\dns.h"
 						>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\include\lwip\err.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\ethip6.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\icmp.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\icmp6.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\igmp.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\inet.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\inet6.h"
 						>
 					</File>
 					<File
@@ -902,7 +854,27 @@
 						>
 					</File>
 					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\ip4.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\ip4_addr.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\ip6.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\ip6_addr.h"
+						>
+					</File>
+					<File
 						RelativePath="$(LWIP_DIR)\src\include\lwip\ip_addr.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\ip_frag.h"
 						>
 					</File>
 					<File
@@ -915,6 +887,14 @@
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\include\lwip\memp_std.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\mld6.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\lwip\nd6.h"
 						>
 					</File>
 					<File
@@ -1005,35 +985,19 @@
 				<Filter
 					Name="netif"
 					>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\netif\etharp.h"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\netif\slipif.h"
+						>
+					</File>
 					<Filter
 						Name="ppp"
 						>
-						<Filter
-							Name="polarssl"
-							>
-							<File
-								RelativePath="$(LWIP_DIR)\src\include\netif\ppp\polarssl\des.h"
-								>
-							</File>
-							<File
-								RelativePath="$(LWIP_DIR)\src\include\netif\ppp\polarssl\md4.h"
-								>
-							</File>
-							<File
-								RelativePath="$(LWIP_DIR)\src\include\netif\ppp\polarssl\md5.h"
-								>
-							</File>
-							<File
-								RelativePath="$(LWIP_DIR)\src\include\netif\ppp\polarssl\sha1.h"
-								>
-							</File>
-						</Filter>
 						<File
 							RelativePath="$(LWIP_DIR)\src\include\netif\ppp\ccp.h"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\include\netif\ppp\chap_ms.h"
 							>
 						</File>
 						<File
@@ -1042,6 +1006,10 @@
 						</File>
 						<File
 							RelativePath="$(LWIP_DIR)\src\include\netif\ppp\chap-new.h"
+							>
+						</File>
+						<File
+							RelativePath="$(LWIP_DIR)\src\include\netif\ppp\chap_ms.h"
 							>
 						</File>
 						<File
@@ -1108,19 +1076,35 @@
 							RelativePath="$(LWIP_DIR)\src\include\netif\ppp\vj.h"
 							>
 						</File>
+						<Filter
+							Name="polarssl"
+							>
+							<File
+								RelativePath="$(LWIP_DIR)\src\include\netif\ppp\polarssl\des.h"
+								>
+							</File>
+							<File
+								RelativePath="$(LWIP_DIR)\src\include\netif\ppp\polarssl\md4.h"
+								>
+							</File>
+							<File
+								RelativePath="$(LWIP_DIR)\src\include\netif\ppp\polarssl\md5.h"
+								>
+							</File>
+							<File
+								RelativePath="$(LWIP_DIR)\src\include\netif\ppp\polarssl\sha1.h"
+								>
+							</File>
+						</Filter>
 					</Filter>
-					<File
-						RelativePath="$(LWIP_DIR)\src\include\netif\etharp.h"
-						>
-					</File>
-					<File
-						RelativePath="$(LWIP_DIR)\src\include\netif\slipif.h"
-						>
-					</File>
 				</Filter>
 				<Filter
 					Name="posix"
 					>
+					<File
+						RelativePath="$(LWIP_DIR)\src\include\posix\netdb.h"
+						>
+					</File>
 					<Filter
 						Name="sys"
 						>
@@ -1129,10 +1113,6 @@
 							>
 						</File>
 					</Filter>
-					<File
-						RelativePath="$(LWIP_DIR)\src\include\posix\netdb.h"
-						>
-					</File>
 				</Filter>
 			</Filter>
 			<Filter
@@ -1185,26 +1165,6 @@
 				<Filter
 					Name="ppp"
 					>
-					<Filter
-						Name="polarssl"
-						>
-						<File
-							RelativePath="$(LWIP_DIR)\src\netif\ppp\polarssl\des.c"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\netif\ppp\polarssl\md4.c"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\netif\ppp\polarssl\md5.c"
-							>
-						</File>
-						<File
-							RelativePath="$(LWIP_DIR)\src\netif\ppp\polarssl\sha1.c"
-							>
-						</File>
-					</Filter>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\auth.c"
 						>
@@ -1214,15 +1174,15 @@
 						>
 					</File>
 					<File
-						RelativePath="$(LWIP_DIR)\src\netif\ppp\chap_ms.c"
-						>
-					</File>
-					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\chap-md5.c"
 						>
 					</File>
 					<File
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\chap-new.c"
+						>
+					</File>
+					<File
+						RelativePath="$(LWIP_DIR)\src\netif\ppp\chap_ms.c"
 						>
 					</File>
 					<File
@@ -1293,6 +1253,26 @@
 						RelativePath="$(LWIP_DIR)\src\netif\ppp\vj.c"
 						>
 					</File>
+					<Filter
+						Name="polarssl"
+						>
+						<File
+							RelativePath="$(LWIP_DIR)\src\netif\ppp\polarssl\des.c"
+							>
+						</File>
+						<File
+							RelativePath="$(LWIP_DIR)\src\netif\ppp\polarssl\md4.c"
+							>
+						</File>
+						<File
+							RelativePath="$(LWIP_DIR)\src\netif\ppp\polarssl\md5.c"
+							>
+						</File>
+						<File
+							RelativePath="$(LWIP_DIR)\src\netif\ppp\polarssl\sha1.c"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>

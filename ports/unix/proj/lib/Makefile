@@ -46,8 +46,7 @@ CFLAGS=-g -Wall -DIPv4 -DLWIP_DEBUG -fPIC -pedantic -Werror \
 	-Wredundant-decls -Wnested-externs -Wno-address
 
 CFLAGS:=$(CFLAGS) \
-	-I$(LWIPDIR)/include -I$(LWIPARCH)/include -I$(LWIPDIR)/include/ipv4 \
-	-I$(LWIPDIR)/include/ipv6 -I$(LWIPDIR) -I.
+	-I$(LWIPDIR)/include -I$(LWIPARCH)/include -I$(LWIPDIR) -I.
 
 # COREFILES, CORE4FILES: The minimum set of files needed for lwIP.
 COREFILES=$(LWIPDIR)/core/def.c $(LWIPDIR)/core/dhcp.c $(LWIPDIR)/core/dns.c \
