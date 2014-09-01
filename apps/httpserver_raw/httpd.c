@@ -455,11 +455,16 @@ http_kill_oldest_connection(u8_t ssi_required)
   struct http_state *hs = http_connections;
   struct http_state *hs_free_next = NULL;
   while(hs && hs->next) {
+#if LWIP_HTTPD_SSI
     if (ssi_required) {
       if (hs->next->ssi != NULL) {
         hs_free_next = hs;
       }
-    } else {
+    } else
+#else /* LWIP_HTTPD_SSI */
+    LWIP_UNUSED_ARG(ssi_required);
+#endif /* LWIP_HTTPD_SSI */
+    {
       hs_free_next = hs;
     }
     hs = hs->next;
@@ -2450,8 +2455,10 @@ httpd_init(void)
 #if HTTPD_USE_MEM_POOL
   LWIP_ASSERT("memp_sizes[MEMP_HTTPD_STATE] >= sizeof(http_state)",
      memp_sizes[MEMP_HTTPD_STATE] >= sizeof(http_state));
+#if LWIP_HTTPD_SSI
   LWIP_ASSERT("memp_sizes[MEMP_HTTPD_SSI_STATE] >= sizeof(http_ssi_state)",
      memp_sizes[MEMP_HTTPD_SSI_STATE] >= sizeof(http_ssi_state));
+#endif
 #endif
   LWIP_DEBUGF(HTTPD_DEBUG, ("httpd_init\n"));
 
