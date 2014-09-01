@@ -556,7 +556,7 @@ smtp_send_mail_static(const char *from, const char* to, const char* subject,
   struct smtp_session* s;
   size_t len;
 
-  s = mem_malloc(sizeof(struct smtp_session));
+  s = (struct smtp_session*)mem_malloc(sizeof(struct smtp_session));
   if (s == NULL) {
     return ERR_MEM;
   }
@@ -604,7 +604,7 @@ smtp_send_mail_static(const char *from, const char* to, const char* subject,
 void
 smtp_send_mail_int(void *arg)
 {
-  struct smtp_send_request *req = arg;
+  struct smtp_send_request *req = (struct smtp_send_request*)arg;
   err_t err;
 
   LWIP_ASSERT("smtp_send_mail_int: no argument given", arg != NULL);
@@ -699,7 +699,7 @@ smtp_tcp_err(void *arg, err_t err)
   LWIP_UNUSED_ARG(err);
   if (arg != NULL) {
     LWIP_DEBUGF(SMTP_DEBUG_WARN_STATE, ("smtp_tcp_err: connection reset by remote host\n"));
-    smtp_free(arg, SMTP_RESULT_ERR_CLOSED, 0, err);
+    smtp_free((struct smtp_session*)arg, SMTP_RESULT_ERR_CLOSED, 0, err);
   }
 }
 
@@ -708,7 +708,7 @@ static err_t
 smtp_tcp_poll(void *arg, struct tcp_pcb *pcb)
 {
   if (arg != NULL) {
-    struct smtp_session *s = arg;
+    struct smtp_session *s = (struct smtp_session*)arg;
     if (s->timer != 0) {
       s->timer--;
     }
