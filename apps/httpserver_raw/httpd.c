@@ -95,8 +95,9 @@
 #define HTTPD_DEBUG         LWIP_DBG_OFF
 #endif
 
-/** Set this to 1 and add the next line to lwippools.h to use a memp pool
- * for allocating struct http_state instead of the heap:
+/** Set this to 1, set MEMP_USE_CUSTOM_POOLS to 1 and add the next line to
+ * lwippools.h to use a memp pool for allocating struct http_state instead of
+ * the heap:
  *
  * LWIP_MEMPOOL(HTTPD_STATE, 20, 100, "HTTPD_STATE")
  */
@@ -1706,7 +1707,7 @@ http_post_rxpbuf(struct http_state *hs, struct pbuf *p)
  *         another err_t: Error parsing POST or denied by the application
  */
 static err_t
-http_post_request(struct pbuf **inp, struct http_state *hs,
+http_post_request(struct pbuf *inp, struct http_state *hs,
                   char *data, u16_t data_len, char *uri, char *uri_end)
 {
   err_t err;
@@ -1736,7 +1737,7 @@ http_post_request(struct pbuf **inp, struct http_state *hs,
             http_post_response_filename, LWIP_HTTPD_POST_MAX_RESPONSE_URI_LEN, &post_auto_wnd);
           if (err == ERR_OK) {
             /* try to pass in data of the first pbuf(s) */
-            struct pbuf *q = *inp;
+            struct pbuf *q = inp;
             u16_t start_offset = hdr_len;
 #if LWIP_HTTPD_POST_MANUAL_WND
             hs->no_auto_wnd = !post_auto_wnd;
@@ -1746,14 +1747,9 @@ http_post_request(struct pbuf **inp, struct http_state *hs,
 
             /* get to the pbuf where the body starts */
             while((q != NULL) && (q->len <= start_offset)) {
-              struct pbuf *head = q;
               start_offset -= q->len;
               q = q->next;
-              /* free the head pbuf */
-              head->next = NULL;
-              pbuf_free(head);
             }
-            *inp = NULL;
             if (q != NULL) {
               /* hide the remaining HTTP header */
               pbuf_header(q, -(s16_t)start_offset);
@@ -1763,6 +1759,7 @@ http_post_request(struct pbuf **inp, struct http_state *hs,
                 hs->unrecved_bytes = q->tot_len;
               }
 #endif /* LWIP_HTTPD_POST_MANUAL_WND */
+              pbuf_ref(q);
               return http_post_rxpbuf(hs, q);
             } else {
               return ERR_OK;
@@ -1863,12 +1860,12 @@ http_continue(void *connection)
  *         another err_t otherwise
  */
 static err_t
-http_parse_request(struct pbuf **inp, struct http_state *hs, struct tcp_pcb *pcb)
+http_parse_request(struct pbuf *inp, struct http_state *hs, struct tcp_pcb *pcb)
 {
   char *data;
   char *crlf;
   u16_t data_len;
-  struct pbuf *p = *inp;
+  struct pbuf *p = inp;
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
   u16_t clen;
 #endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
@@ -1901,6 +1898,9 @@ http_parse_request(struct pbuf **inp, struct http_state *hs, struct tcp_pcb *pcb
     LWIP_DEBUGF(HTTPD_DEBUG, ("pbuf enqueued\n"));
     pbuf_cat(hs->req, p);
   }
+  /* increase pbuf ref counter as it is freed when we return but we want to
+     keep it on the req list */
+  pbuf_ref(p);
 
   if (hs->req->next != NULL) {
     data_len = LWIP_MIN(hs->req->tot_len, LWIP_HTTPD_MAX_REQ_LENGTH);
@@ -1983,9 +1983,9 @@ http_parse_request(struct pbuf **inp, struct http_state *hs, struct tcp_pcb *pcb
 #if LWIP_HTTPD_SUPPORT_POST
           if (is_post) {
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
-            struct pbuf **q = &hs->req;
+            struct pbuf *q = hs->req;
 #else /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
-            struct pbuf **q = inp;
+            struct pbuf *q = inp;
 #endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
             err = http_post_request(q, hs, data, data_len, uri, sp2);
             if (err != ERR_OK) {
@@ -2348,7 +2348,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 #endif /* LWIP_HTTPD_SUPPORT_POST */
   {
     if (hs->handle == NULL) {
-      parsed = http_parse_request(&p, hs, pcb);
+      parsed = http_parse_request(p, hs, pcb);
       LWIP_ASSERT("http_parse_request: unexpected return value", parsed == ERR_OK
         || parsed == ERR_INPROGRESS ||parsed == ERR_ARG || parsed == ERR_USE);
     } else {
@@ -2364,12 +2364,8 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
         hs->req = NULL;
       }
     }
-#else /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
-    if (p != NULL) {
-      /* pbuf not passed to application, free it now */
-      pbuf_free(p);
-    }
 #endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+    pbuf_free(p);
     if (parsed == ERR_OK) {
 #if LWIP_HTTPD_SUPPORT_POST
       if (hs->post_content_len_left == 0)
@@ -2452,12 +2448,14 @@ httpd_init_addr(ip_addr_t *local_addr)
 void
 httpd_init(void)
 {
+#if MEMP_MEM_MALLOC || MEM_USE_POOLS
 #if HTTPD_USE_MEM_POOL
   LWIP_ASSERT("memp_sizes[MEMP_HTTPD_STATE] >= sizeof(http_state)",
      memp_sizes[MEMP_HTTPD_STATE] >= sizeof(http_state));
 #if LWIP_HTTPD_SSI
   LWIP_ASSERT("memp_sizes[MEMP_HTTPD_SSI_STATE] >= sizeof(http_ssi_state)",
      memp_sizes[MEMP_HTTPD_SSI_STATE] >= sizeof(http_ssi_state));
+#endif
 #endif
 #endif
   LWIP_DEBUGF(HTTPD_DEBUG, ("httpd_init\n"));
