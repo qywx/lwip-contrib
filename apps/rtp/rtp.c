@@ -99,8 +99,8 @@
 #endif
 PACK_STRUCT_BEGIN
 struct rtp_hdr {
-  PACK_STRUCT_FIELD(u8_t  version);
-  PACK_STRUCT_FIELD(u8_t  payloadtype);
+  PACK_STRUCT_FLD_8(u8_t  version);
+  PACK_STRUCT_FLD_8(u8_t  payloadtype);
   PACK_STRUCT_FIELD(u16_t seqNum);
   PACK_STRUCT_FIELD(u32_t timestamp);
   PACK_STRUCT_FIELD(u32_t ssrc);

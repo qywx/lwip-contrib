@@ -238,17 +238,17 @@
 #endif
 PACK_STRUCT_BEGIN
 struct sntp_msg {
- PACK_STRUCT_FIELD(u8_t           li_vn_mode);
- PACK_STRUCT_FIELD(u8_t           stratum);
- PACK_STRUCT_FIELD(u8_t           poll);
- PACK_STRUCT_FIELD(u8_t           precision);
- PACK_STRUCT_FIELD(u32_t          root_delay);
- PACK_STRUCT_FIELD(u32_t          root_dispersion);
- PACK_STRUCT_FIELD(u32_t          reference_identifier);
- PACK_STRUCT_FIELD(u32_t          reference_timestamp[2]);
- PACK_STRUCT_FIELD(u32_t          originate_timestamp[2]);
- PACK_STRUCT_FIELD(u32_t          receive_timestamp[2]);
- PACK_STRUCT_FIELD(u32_t          transmit_timestamp[2]);
+  PACK_STRUCT_FLD_8(u8_t           li_vn_mode);
+  PACK_STRUCT_FLD_8(u8_t           stratum);
+  PACK_STRUCT_FLD_8(u8_t           poll);
+  PACK_STRUCT_FLD_8(u8_t           precision);
+  PACK_STRUCT_FIELD(u32_t          root_delay);
+  PACK_STRUCT_FIELD(u32_t          root_dispersion);
+  PACK_STRUCT_FIELD(u32_t          reference_identifier);
+  PACK_STRUCT_FIELD(u32_t          reference_timestamp[2]);
+  PACK_STRUCT_FIELD(u32_t          originate_timestamp[2]);
+  PACK_STRUCT_FIELD(u32_t          receive_timestamp[2]);
+  PACK_STRUCT_FIELD(u32_t          transmit_timestamp[2]);
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES

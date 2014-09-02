@@ -122,14 +122,14 @@ PACK_STRUCT_END
 #endif
 PACK_STRUCT_BEGIN
 struct netbios_name_hdr {
-  PACK_STRUCT_FIELD(u8_t  nametype);
-  PACK_STRUCT_FIELD(u8_t  encname[(NETBIOS_NAME_LEN*2)+1]);
+  PACK_STRUCT_FLD_8(u8_t  nametype);
+  PACK_STRUCT_FLD_8(u8_t  encname[(NETBIOS_NAME_LEN*2)+1]);
   PACK_STRUCT_FIELD(u16_t type);
   PACK_STRUCT_FIELD(u16_t cls);
   PACK_STRUCT_FIELD(u32_t ttl);
   PACK_STRUCT_FIELD(u16_t datalen);
   PACK_STRUCT_FIELD(u16_t flags);
-  PACK_STRUCT_FIELD(ip_addr_p_t addr);
+  PACK_STRUCT_FLD_S(ip_addr_p_t addr);
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
@@ -158,7 +158,7 @@ netbios_name_decoding( char *name_enc, char *name_dec, int name_dec_len)
   char *pname;
   char  cname;
   char  cnbname;
-  int   index = 0;
+  int   idx = 0;
 
   LWIP_UNUSED_ARG(name_dec_len);
 
@@ -195,9 +195,9 @@ netbios_name_decoding( char *name_enc, char *name_dec, int name_dec_len)
     pname++;
 
     /* Do we have room to store the character? */
-    if (index < NETBIOS_NAME_LEN) {
+    if (idx < NETBIOS_NAME_LEN) {
       /* Yes - store the character. */
-      name_dec[index++] = (cnbname!=' '?cnbname:'\0');
+      name_dec[idx++] = (cnbname!=' '?cnbname:'\0');
     }
   }
 
@@ -212,7 +212,7 @@ netbios_name_encoding(char *name_enc, char *name_dec, int name_dec_len)
   char         *pname;
   char          cname;
   unsigned char ucname;
-  int           index = 0;
+  int           idx = 0;
   
   /* Start encoding netbios name. */
   pname = name_enc;
@@ -231,25 +231,25 @@ netbios_name_encoding(char *name_enc, char *name_dec, int name_dec_len)
     }
 
     /* Do we have room to store the character? */
-    if (index >= name_dec_len) {
+    if (idx >= name_dec_len) {
       return -1;
     }
 
     /* Yes - store the character. */
     ucname = cname;
-    name_dec[index++] = ('A'+((ucname>>4) & 0x0F));
-    name_dec[index++] = ('A'+( ucname     & 0x0F));
+    name_dec[idx++] = ('A'+((ucname>>4) & 0x0F));
+    name_dec[idx++] = ('A'+( ucname     & 0x0F));
     pname++;
   }
 
   /* Fill with "space" coding */
-  for (;index<name_dec_len-1;) {
-    name_dec[index++] = 'C';
-    name_dec[index++] = 'A';
+  for (;idx < name_dec_len - 1;) {
+    name_dec[idx++] = 'C';
+    name_dec[idx++] = 'A';
   }
 
   /* Terminate string */
-  name_dec[index]='\0';
+  name_dec[idx] = '\0';
 
   return 0;
 }
