@@ -811,7 +811,7 @@ smtp_base64_encode(char* target, size_t target_len, const char* source, size_t s
   size_t i;
   s8_t j;
   size_t target_idx = 0;
-  size_t longer = 3 - (source_len % 3);
+  size_t longer = (source_len % 3) ? (3 - (source_len % 3)) : 0;
   size_t source_len_b64 = source_len + longer;
   size_t len = (((source_len_b64) * 4) / 3);
   u8_t x = 5;
