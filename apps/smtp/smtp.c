@@ -14,8 +14,9 @@
  * static void my_smtp_test(void)
  * {
  *   smtp_set_server_addr("mymailserver.org");
+ *   -> set both username and password as NULL if no auth needed
  *   smtp_set_auth("username", "password");
- *   smtp_send_mail("recipient", "sender", "subject", "body", my_smtp_result_fn,
+ *   smtp_send_mail("sender", "recipient", "subject", "body", my_smtp_result_fn,
  *                  some_argument);
  * }
  *
