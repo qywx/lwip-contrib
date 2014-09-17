@@ -39,7 +39,7 @@ LWIPDIR=$(CONTRIBDIR)/../lwip/src
 
 CCDEP=gcc
 CC=gcc
-CFLAGS=-g -Wall -DIPv4 -DLWIP_DEBUG -fPIC -pedantic -Werror \
+CFLAGS=-g -Wall -DLWIP_DEBUG -fPIC -pedantic -Werror \
 	-Wparentheses -Wsequence-point -Wswitch-default \
 	-Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast \
 	-Wc++-compat -Wwrite-strings -Wold-style-definition \

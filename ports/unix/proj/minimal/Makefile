@@ -35,7 +35,7 @@ CC=gcc
 #To compile for cygwin: make ARCH=cygwin
 #To compile for openbsd: make ARCH=openbsd
 ARCH=openbsd
-CFLAGS=-g -Wall -D$(ARCH) -DIPv4 -Os -DLWIP_DEBUG -pedantic -Werror \
+CFLAGS=-g -Wall -D$(ARCH) -Os -DLWIP_DEBUG -pedantic -Werror \
 	-Wparentheses -Wsequence-point -Wswitch-default \
 	-Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast \
 	-Wc++-compat -Wwrite-strings -Wold-style-definition \

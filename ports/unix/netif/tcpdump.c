@@ -73,7 +73,6 @@ tcpdump(struct pbuf *p)
   if (file == NULL) {
     return;
   }
-#ifdef IPv4
   iphdr = (struct ip_hdr *)p->payload;
   switch (IPH_PROTO(iphdr)) {
 #if LWIP_TCP
@@ -184,7 +183,6 @@ tcpdump(struct pbuf *p)
     break;
 
   }
-#endif /* IPv4 */
 }
 /*-----------------------------------------------------------------------------------*/
 
