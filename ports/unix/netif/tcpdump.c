@@ -61,14 +61,16 @@ void
 tcpdump(struct pbuf *p)
 {
   struct ip_hdr *iphdr;
-  struct tcp_hdr *tcphdr;
 #if LWIP_UDP
   struct udp_hdr *udphdr;
 #endif
+#if LWIP_TCP
+  struct tcp_hdr *tcphdr;
   char flags[5];
   int i;
   int len;
-  int offset;
+  int offset
+#endif;
 
   if (file == NULL) {
     return;
@@ -163,8 +165,8 @@ tcpdump(struct pbuf *p)
             (int)(ntohl(iphdr->src.addr) >> 16) & 0xff,
             (int)(ntohl(iphdr->src.addr) >> 8) & 0xff,
             (int)(ntohl(iphdr->src.addr) >> 0) & 0xff,
-            ntohs(udphdr->src),
             (int)(ntohl(iphdr->dest.addr) >> 24) & 0xff,
+            ntohs(udphdr->src),
             (int)(ntohl(iphdr->dest.addr) >> 16) & 0xff,
             (int)(ntohl(iphdr->dest.addr) >> 8) & 0xff,
             (int)(ntohl(iphdr->dest.addr) >> 0) & 0xff,
