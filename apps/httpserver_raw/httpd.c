@@ -1025,6 +1025,9 @@ http_send_headers(struct tcp_pcb *pcb, struct http_state *hs)
     if ((err == ERR_OK) && (old_sendlen != sendlen)) {
       /* Remember that we added some more data to be transmitted. */
       data_to_send = HTTP_DATA_TO_SEND_CONTINUE;
+    } else if (err != ERR_OK) {
+       /* special case: http_write does not try to send 1 byte */
+      sendlen = 0;
     }
 
     /* Fix up the header position for the next time round. */
