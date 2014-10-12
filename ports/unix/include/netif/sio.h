@@ -1,5 +1,5 @@
-#ifndef SIO_H
-#define SIO_H
+#ifndef SIO_UNIX_H
+#define SIO_UNIX_H
 
 #include "lwip/sys.h"
 #include "lwip/netif.h"
