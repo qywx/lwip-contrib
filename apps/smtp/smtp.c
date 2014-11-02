@@ -790,7 +790,7 @@ smtp_dns_found(const char* hostname, ip_addr_t *ipaddr, void *arg)
 }
 #endif /* LWIP_DNS */
 
-#if SMTP_SUPPORT_AUTH_AUTH || SMTP_SUPPORT_AUTH_LOGIN
+#if SMTP_SUPPORT_AUTH_PLAIN || SMTP_SUPPORT_AUTH_LOGIN
 
 /** Table 6-bit-index-to-ASCII used for base64-encoding */
 const u8_t base64_table[] = {
@@ -837,7 +837,7 @@ smtp_base64_encode(char* target, size_t target_len, const char* source, size_t s
   }
   return len;
 }
-#endif /* SMTP_SUPPORT_AUTH_AUTH || SMTP_SUPPORT_AUTH_LOGIN */
+#endif /* SMTP_SUPPORT_AUTH_PLAIN || SMTP_SUPPORT_AUTH_LOGIN */
 
 /** Parse pbuf to see if it contains the beginning of an answer.
  * If so, it returns the contained response code as number between 1 and 999.
@@ -931,7 +931,7 @@ smtp_prepare_helo(struct smtp_session *s, u16_t *tx_buf_len, struct tcp_pcb *pcb
   return SMTP_HELO;
 }
 
-#if SMTP_SUPPORT_AUTH_AUTH || SMTP_SUPPORT_AUTH_LOGIN
+#if SMTP_SUPPORT_AUTH_PLAIN || SMTP_SUPPORT_AUTH_LOGIN
 /** Parse last server response (in rx_buf) for supported authentication method,
  * create data to send out (to tx_buf), set tx_data_len correctly
  * and return the next state.
@@ -987,7 +987,7 @@ smtp_prepare_auth_or_mail(struct smtp_session *s, u16_t *tx_buf_len)
   /* server didnt's send correct keywords for AUTH, try sending directly */
   return smtp_prepare_mail(s, tx_buf_len);
 }
-#endif /* SMTP_SUPPORT_AUTH_AUTH || SMTP_SUPPORT_AUTH_LOGIN */
+#endif /* SMTP_SUPPORT_AUTH_PLAIN || SMTP_SUPPORT_AUTH_LOGIN */
 
 #if SMTP_SUPPORT_AUTH_LOGIN
 /** Send base64-encoded username */
@@ -1209,7 +1209,7 @@ smtp_process(void *arg, struct tcp_pcb *pcb, struct pbuf *p)
   case(SMTP_HELO):
     /* wait for 250 */
     if (response_code == 250) {
-#if SMTP_SUPPORT_AUTH_AUTH || SMTP_SUPPORT_AUTH_LOGIN
+#if SMTP_SUPPORT_AUTH_PLAIN || SMTP_SUPPORT_AUTH_LOGIN
       /* then send AUTH or MAIL */
       next_state = smtp_prepare_auth_or_mail(s, &tx_buf_len);
     }
@@ -1218,7 +1218,7 @@ smtp_process(void *arg, struct tcp_pcb *pcb, struct pbuf *p)
   case(SMTP_AUTH_PLAIN):
     /* wait for 235 */
     if (response_code == 235) {
-#endif /* SMTP_SUPPORT_AUTH_AUTH || SMTP_SUPPORT_AUTH_LOGIN */
+#endif /* SMTP_SUPPORT_AUTH_PLAIN || SMTP_SUPPORT_AUTH_LOGIN */
       /* send MAIL */
       next_state = smtp_prepare_mail(s, &tx_buf_len);
     }
