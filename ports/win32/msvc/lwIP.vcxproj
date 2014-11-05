@@ -1,0 +1,398 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug unittests|Win32">
+      <Configuration>Debug unittests</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release unittests|Win32">
+      <Configuration>Release unittests</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2CC276FA-B226-49C9-8F82-7FCD5A228E28}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">.\$(Configuration)\unittests\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">.\$(Configuration)\$(ProjectName)\unittests\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">.\$(Configuration)\unittests\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">.\$(Configuration)\$(ProjectName)\unittests\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>$(LWIP_DIR)\src\include;$(LWIP_DIR)\src\include\ipv4;$(LWIP_DIR)\src\include\ipv6;..\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0407</Culture>
+    </ResourceCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(LWIP_DIR)\src\include;$(LWIP_DIR)\src\include\ipv4;$(LWIP_DIR)\src\include\ipv6;..\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_LIB;WIN32;_DEBUG;LWIP_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0407</Culture>
+    </ResourceCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(LWIP_DIR)\test\unit;$(LWIP_DIR)\src\include;$(LWIP_DIR)\src\include\ipv4;$(LWIP_DIR)\src\include\ipv6;..\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_LIB;WIN32;_DEBUG;LWIP_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0407</Culture>
+    </ResourceCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>$(LWIP_DIR)\test\unit;$(LWIP_DIR)\src\include;$(LWIP_DIR)\src\include\ipv4;$(LWIP_DIR)\src\include\ipv6;..\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0407</Culture>
+    </ResourceCompile>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="$(LWIP_DIR)\doc\contrib.txt">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="$(LWIP_DIR)\doc\FILES">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="$(LWIP_DIR)\doc\rawapi.txt">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="$(LWIP_DIR)\doc\savannah.txt">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="$(LWIP_DIR)\doc\snmp_agent.txt">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="$(LWIP_DIR)\doc\sys_arch.txt">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="$(LWIP_DIR)\src\core\ipv6\README">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="$(LWIP_DIR)\src\netif\FILES">
+      <FileType>Document</FileType>
+    </CustomBuildStep>
+    <CustomBuildStep Include="..\lwipcfg_msvc.h.example">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <None Include="$(LWIP_DIR)\CHANGELOG" />
+    <None Include="$(LWIP_DIR)\COPYING" />
+    <None Include="$(LWIP_DIR)\FILES" />
+    <None Include="$(LWIP_DIR)\README" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(LWIP_DIR)\src\api\api_lib.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\api\api_msg.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\api\err.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\api\netbuf.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\api\netdb.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\api\netifapi.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\api\pppapi.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\api\sockets.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\api\tcpip.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\def.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\dhcp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\dns.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\inet_chksum.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\init.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\mem.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\memp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\netif.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\pbuf.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\raw.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\stats.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\sys.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\tcp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\tcp_in.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\tcp_out.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\timers.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\udp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\autoip.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\icmp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\igmp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4_addr.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip_frag.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\dhcp6.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\ethip6.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\icmp6.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\inet6.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\ip6.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\ip6_addr.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\ip6_frag.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\mld6.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\nd6.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\snmp\asn1_dec.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\snmp\asn1_enc.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\snmp\mib2.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\snmp\mib_structs.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\snmp\msg_in.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\snmp\msg_out.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\etharp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ethernetif.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\slipif.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\auth.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\ccp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\chap-md5.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\chap-new.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\chap_ms.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\demand.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\eap.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\ecp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\eui64.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\fsm.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\ipcp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\ipv6cp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\lcp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\magic.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\multilink.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\ppp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppcrypt.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppoe.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppol2tp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\upap.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\utils.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\vj.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\des.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\md4.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\md5.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\sha1.c" />
+    <ClCompile Include="..\sio.c" />
+    <ClCompile Include="..\sys_arch.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\api.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\api_msg.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\arch.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\autoip.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\debug.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\def.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\dhcp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\dhcp6.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\dns.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\err.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ethip6.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\icmp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\icmp6.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\igmp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\inet.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\inet6.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\inet_chksum.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\init.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip4.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip4_addr.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip6.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip6_addr.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip_addr.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip_frag.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\mem.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\memp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\memp_std.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\mld6.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\nd6.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\netbuf.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\netdb.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\netif.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\netifapi.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\opt.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\pbuf.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\pppapi.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\raw.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\sio.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp_asn1.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp_msg.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp_structs.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\sockets.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\stats.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\sys.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcp_impl.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcpip.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\timers.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\udp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\etharp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\slipif.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ccp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\chap-md5.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\chap-new.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\chap_ms.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\eap.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ecp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\eui64.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\fsm.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ipcp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ipv6cp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\lcp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\magic.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ppp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ppp_impl.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppcrypt.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppdebug.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppoe.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppol2tp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\upap.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\vj.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\des.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\md4.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\md5.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\sha1.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\posix\netdb.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\posix\sys\socket.h" />
+    <ClInclude Include="..\include\arch\bpstruct.h" />
+    <ClInclude Include="..\include\arch\cc.h" />
+    <ClInclude Include="..\include\arch\epstruct.h" />
+    <ClInclude Include="..\lwipcfg_msvc.h" />
+    <ClInclude Include="..\include\lwipopts.h" />
+    <ClInclude Include="..\lwippools.h" />
+    <ClInclude Include="..\include\arch\perf.h" />
+    <ClInclude Include="..\include\arch\sys_arch.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
