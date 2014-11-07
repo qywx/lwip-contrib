@@ -89,7 +89,7 @@ static const char * const g_psHTTPHeaderStrings[] =
 #define DEFAULT_404_HTML        26 /* default 404 body */
 
 /** A list of extension-to-HTTP header strings */
-const static tHTTPHeader g_psHTTPHeaders[] =
+static const tHTTPHeader g_psHTTPHeaders[] =
 {
  { "html", HTTP_HDR_HTML},
  { "htm",  HTTP_HDR_HTML},
