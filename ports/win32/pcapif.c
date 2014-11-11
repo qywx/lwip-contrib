@@ -34,6 +34,9 @@
  *
  */
 
+/* include the port-dependent configuration */
+#include "lwipcfg_msvc.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -68,9 +71,6 @@
 #include "lwip/ethip6.h"
 
 #include "netif/etharp.h"
-
-/* include the port-dependent configuration */
-#include "lwipcfg_msvc.h"
 
 /* For compatibility with old pcap */
 #ifndef PCAP_OPENFLAG_PROMISCUOUS
@@ -479,6 +479,11 @@ pcapif_low_level_init(struct netif *netif)
   u8_t my_mac_addr[ETHARP_HWADDR_LEN] = LWIP_MAC_ADDR_BASE;
   int adapter_num = PACKET_LIB_ADAPTER_NR;
   struct pcapif_private *pa;
+#ifdef PACKET_LIB_GET_ADAPTER_NETADDRESS
+  ip_addr_t netaddr;
+#define GUID_LEN 128
+  char guid[GUID_LEN + 1];
+#endif /* PACKET_LIB_GET_ADAPTER_NETADDRESS */
 
   /* If 'state' is != NULL at this point, we assume it is an 'int' giving
      the index of the adapter to use (+ 1 because 0==NULL is invalid).
@@ -493,9 +498,6 @@ pcapif_low_level_init(struct netif *netif)
   }
 
 #ifdef PACKET_LIB_GET_ADAPTER_NETADDRESS
-  ip_addr_t netaddr;
-#define GUID_LEN 128
-  char guid[GUID_LEN + 1];
   memset(&guid, 0, sizeof(guid));
   PACKET_LIB_GET_ADAPTER_NETADDRESS(&netaddr);
   if (get_adapter_index_from_addr((struct in_addr *)&netaddr, guid, GUID_LEN) < 0) {
