@@ -2454,10 +2454,10 @@ httpd_init(void)
 #if MEMP_MEM_MALLOC || MEM_USE_POOLS
 #if HTTPD_USE_MEM_POOL
   LWIP_ASSERT("memp_sizes[MEMP_HTTPD_STATE] >= sizeof(http_state)",
-     memp_sizes[MEMP_HTTPD_STATE] >= sizeof(http_state));
+     memp_sizes[MEMP_HTTPD_STATE] >= sizeof(struct http_state));
 #if LWIP_HTTPD_SSI
   LWIP_ASSERT("memp_sizes[MEMP_HTTPD_SSI_STATE] >= sizeof(http_ssi_state)",
-     memp_sizes[MEMP_HTTPD_SSI_STATE] >= sizeof(http_ssi_state));
+     memp_sizes[MEMP_HTTPD_SSI_STATE] >= sizeof(struct http_ssi_state));
 #endif
 #endif
 #endif
