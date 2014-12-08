@@ -77,6 +77,11 @@
 #define PCAP_OPENFLAG_PROMISCUOUS     1
 #endif
 
+/** Set this to 0 to receive all multicast ethernet destination addresses */
+#ifndef PCAPIF_FILTER_GROUP_ADDRESSES
+#define PCAPIF_FILTER_GROUP_ADDRESSES 1
+#endif
+
 /* Define those to better describe your network interface.
    For now, we use 'e0', 'e1', 'e2' and so on */
 #define IFNAME0                       'e'
@@ -113,6 +118,8 @@
 
 #endif /* PCAPIF_HANDLE_LINKSTATE */
 
+#define ETH_MIN_FRAME_LEN      60U
+#define ETH_MAX_FRAME_LEN      1518U
 
 #define ADAPTER_NAME_LEN       128
 #define ADAPTER_DESC_LEN       128
@@ -568,7 +575,7 @@ static err_t
 pcapif_low_level_output(struct netif *netif, struct pbuf *p)
 {
   struct pbuf *q;
-  unsigned char buffer[1520];
+  unsigned char buffer[ETH_MAX_FRAME_LEN + ETH_PAD_SIZE];
   unsigned char *buf = buffer;
   unsigned char *ptr;
   struct eth_hdr *ethhdr;
@@ -580,7 +587,7 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
 #endif
 
   /* initiate transfer */
-  if (p->len == p->tot_len) {
+  if ((p->len == p->tot_len) && (p->len >= ETH_MIN_FRAME_LEN)) {
     /* no pbuf chain, don't have to copy -> faster */
     buf = &((unsigned char*)p->payload)[ETH_PAD_SIZE];
   } else {
@@ -606,6 +613,12 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
         ptr += q->len;
       }
     }
+  }
+
+  if (tot_len < ETH_MIN_FRAME_LEN) {
+    /* ensure minimal frame length */
+    memset(&buf[tot_len], 0, ETH_MIN_FRAME_LEN - tot_len);
+    tot_len = ETH_MIN_FRAME_LEN;
   }
 
   /* signal that packet should be sent */
@@ -641,9 +654,11 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
   struct eth_addr *dest = (struct eth_addr*)packet;
   struct eth_addr *src = dest + 1;
   int unicast;
+#if PCAPIF_FILTER_GROUP_ADDRESSES
   const u8_t bcast[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
   const u8_t ipv4mcast[] = {0x01, 0x00, 0x5e};
   const u8_t ipv6mcast[] = {0x33, 0x33};
+#endif /* PCAPIF_FILTER_GROUP_ADDRESSES */
 
   /* Don't let feedback packets through (limitation in winpcap?) */
   if(!memcmp(src, netif->hwaddr, ETHARP_HWADDR_LEN)) {
@@ -652,11 +667,16 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
   }
 
   /* MAC filter: only let my MAC or non-unicast through (pcap receives loopback traffic, too) */
-  unicast = ((dest->addr[0] & 0x01) == 0);  
+  unicast = ((dest->addr[0] & 0x01) == 0);
   if (memcmp(dest, &netif->hwaddr, ETHARP_HWADDR_LEN) &&
+#if PCAPIF_FILTER_GROUP_ADDRESSES
     (memcmp(dest, ipv4mcast, 3) || ((dest->addr[3] & 0x80) != 0)) && 
     memcmp(dest, ipv6mcast, 2) &&
-    memcmp(dest, bcast, 6)) {
+    memcmp(dest, bcast, 6)
+#else /* PCAPIF_FILTER_GROUP_ADDRESSES */
+     unicast
+#endif /* PCAPIF_FILTER_GROUP_ADDRESSES */
+    ) {
     /* don't update counters here! */
     return NULL;
   }
