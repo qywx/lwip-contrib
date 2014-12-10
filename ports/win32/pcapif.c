@@ -587,7 +587,7 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
 #endif
 
   /* initiate transfer */
-  if ((p->len == p->tot_len) && (p->len >= ETH_MIN_FRAME_LEN)) {
+  if ((p->len == p->tot_len) && (p->len >= ETH_MIN_FRAME_LEN + ETH_PAD_SIZE)) {
     /* no pbuf chain, don't have to copy -> faster */
     buf = &((unsigned char*)p->payload)[ETH_PAD_SIZE];
   } else {
