@@ -584,7 +584,7 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
 {
   int i = 0;
   int response_type = HTTP_HDR_OK;
-  int file_type = HTTP_HDR_DEFAULT_TYPE;
+  const char* file_type;
   const char *cur_string;
   size_t cur_len;
   int written = 0;
@@ -656,10 +656,11 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
   }
   if((file_ext == NULL) || (*file_ext == 0)) {
     printf("failed to get extension for file \"%s\", using default.\n", filename);
+    file_type = HTTP_HDR_DEFAULT_TYPE;
   } else {
     for(j = 0; j < NUM_HTTP_HEADERS; j++) {
       if(!strcmp(file_ext, g_psHTTPHeaders[j].extension)) {
-        file_type = g_psHTTPHeaders[j].headerIndex;
+        file_type = g_psHTTPHeaders[j].content_type;
         break;
       }
     }
@@ -713,7 +714,7 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
     }
   }
 
-  cur_string = g_psHTTPHeaderStrings[file_type];
+  cur_string = file_type;
   cur_len = strlen(cur_string);
   fprintf(data_file, NEWLINE "/* \"%s\" (%d bytes) */" NEWLINE, cur_string, cur_len);
   written += file_put_ascii(data_file, cur_string, cur_len, &i);

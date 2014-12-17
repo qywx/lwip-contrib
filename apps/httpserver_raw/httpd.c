@@ -958,8 +958,7 @@ get_http_headers(struct http_state *pState, char *pszURI)
     for(iLoop = 0; (iLoop < NUM_HTTP_HEADERS) && pszExt; iLoop++) {
       /* Have we found a matching extension? */
       if(!strcmp(g_psHTTPHeaders[iLoop].extension, pszExt)) {
-        pState->hdrs[2] =
-          g_psHTTPHeaderStrings[g_psHTTPHeaders[iLoop].headerIndex];
+        pState->hdrs[2] = g_psHTTPHeaders[iLoop].content_type;
         break;
       }
     }
@@ -981,7 +980,7 @@ get_http_headers(struct http_state *pState, char *pszURI)
     /* Did we find a matching extension? */
     if(iLoop == NUM_HTTP_HEADERS) {
       /* No - use the default, plain text file type. */
-      pState->hdrs[2] = g_psHTTPHeaderStrings[HTTP_HDR_DEFAULT_TYPE];
+      pState->hdrs[2] = HTTP_HDR_DEFAULT_TYPE;
     }
 
     /* Set up to send the first header string. */
