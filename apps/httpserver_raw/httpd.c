@@ -401,6 +401,7 @@ static err_t http_close_or_abort_conn(struct tcp_pcb *pcb, struct http_state *hs
 static err_t http_find_file(struct http_state *hs, const char *uri, int is_09);
 static err_t http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const char *uri, u8_t tag_check);
 static err_t http_poll(void *arg, struct tcp_pcb *pcb);
+static u8_t http_check_eof(struct tcp_pcb *pcb, struct http_state *hs);
 #if LWIP_HTTPD_FS_ASYNC_READ
 static void http_continue(void *connection);
 #endif /* LWIP_HTTPD_FS_ASYNC_READ */
@@ -1011,6 +1012,7 @@ http_send_headers(struct tcp_pcb *pcb, struct http_state *hs)
   while(len && (hs->hdr_index < NUM_FILE_HDR_STRINGS) && sendlen) {
     const void *ptr;
     u16_t old_sendlen;
+    u8_t apiflags;
     /* How much do we have to send from the current header? */
     hdrlen = (u16_t)strlen(hs->hdrs[hs->hdr_index]);
 
@@ -1018,10 +1020,14 @@ http_send_headers(struct tcp_pcb *pcb, struct http_state *hs)
     sendlen = (len < (hdrlen - hs->hdr_pos)) ? len : (hdrlen - hs->hdr_pos);
 
     /* Send this amount of data or as much as we can given memory
-    * constraints. */
+     * constraints. */
     ptr = (const void *)(hs->hdrs[hs->hdr_index] + hs->hdr_pos);
     old_sendlen = sendlen;
-    err = http_write(pcb, ptr, &sendlen, HTTP_IS_HDR_VOLATILE(hs, ptr));
+    apiflags = HTTP_IS_HDR_VOLATILE(hs, ptr);
+    if (hs->hdr_index < NUM_FILE_HDR_STRINGS - 1) {
+      apiflags |= TCP_WRITE_FLAG_MORE;
+    }
+    err = http_write(pcb, ptr, &sendlen, apiflags);
     if ((err == ERR_OK) && (old_sendlen != sendlen)) {
       /* Remember that we added some more data to be transmitted. */
       data_to_send = HTTP_DATA_TO_SEND_CONTINUE;
@@ -1040,6 +1046,13 @@ http_send_headers(struct tcp_pcb *pcb, struct http_state *hs)
       hs->hdr_index++;
       hs->hdr_pos = 0;
     }
+  }
+
+  if ((hs->hdr_index >= NUM_FILE_HDR_STRINGS) && (hs->file == NULL)) {
+    /* When we are at the end of the headers, check for data to send
+     * instead of waiting for ACK from remote side to continue
+     * (which would happen when sending files from async read). */
+    http_check_eof(pcb, hs);
   }
   /* If we get here and there are still header bytes to send, we send
    * the header information we just wrote immediately. If there are no
@@ -1062,8 +1075,12 @@ http_send_headers(struct tcp_pcb *pcb, struct http_state *hs)
 static u8_t
 http_check_eof(struct tcp_pcb *pcb, struct http_state *hs)
 {
+  int bytes_left;
 #if LWIP_HTTPD_DYNAMIC_FILE_READ
   int count;
+#ifdef HTTPD_MAX_WRITE_LEN
+  int max_write_len;
+#endif /* HTTPD_MAX_WRITE_LEN */
 #endif /* LWIP_HTTPD_DYNAMIC_FILE_READ */
 
   /* Do we have a valid file handle? */
@@ -1072,7 +1089,8 @@ http_check_eof(struct tcp_pcb *pcb, struct http_state *hs)
     http_eof(pcb, hs);
     return 0;
   }
-  if (fs_bytes_left(hs->handle) <= 0) {
+  bytes_left = fs_bytes_left(hs->handle);
+  if (bytes_left <= 0) {
     /* We reached the end of the file so this request is done. */
     LWIP_DEBUGF(HTTPD_DEBUG, ("End of file.\n"));
     http_eof(pcb, hs);
@@ -1084,11 +1102,17 @@ http_check_eof(struct tcp_pcb *pcb, struct http_state *hs)
     /* Yes - get the length of the buffer */
     count = hs->buf_len;
   } else {
-    /* We don't have a send buffer so allocate one up to 2mss bytes long. */
+    /* We don't have a send buffer so allocate one now */
+    count = tcp_sndbuf(pcb);
+    if(bytes_left < count) {
+      count = bytes_left;
+    }
 #ifdef HTTPD_MAX_WRITE_LEN
-    count = HTTPD_MAX_WRITE_LEN(pcb);
-#else /* HTTPD_MAX_WRITE_LEN */
-    count = 2 * tcp_mss(pcb);
+    /* Additional limitation: e.g. don't enqueue more than 2*mss at once */
+    max_write_len = HTTPD_MAX_WRITE_LEN(pcb);
+    if (count > max_write_len) {
+      count = max_write_len;
+    }
 #endif /* HTTPD_MAX_WRITE_LEN */
     do {
       hs->buf = (char*)mem_malloc((mem_size_t)count);
