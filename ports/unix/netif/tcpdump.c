@@ -69,8 +69,8 @@ tcpdump(struct pbuf *p)
   char flags[5];
   int i;
   int len;
-  int offset
-#endif;
+  int offset;
+#endif
 
   if (file == NULL) {
     return;
