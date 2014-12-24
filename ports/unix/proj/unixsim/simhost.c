@@ -143,57 +143,78 @@ tcpip_init_done(void *arg)
 }
 
 #if PPP_SUPPORT
-void 
-pppLinkStatusCallback(void *ctx, int errCode, void *arg)
+static void
+ppp_link_status_cb(ppp_pcb *pcb, int err_code, void *ctx)
 {
-    switch(errCode) {
+    LWIP_UNUSED_ARG(ctx);
+
+    switch(err_code) {
     case PPPERR_NONE:               /* No error. */
         {
-        struct ppp_addrs *ppp_addrs = arg;
-
-        printf("pppLinkStatusCallback: PPPERR_NONE");
-        printf(" our_ipaddr=%s", _inet_ntoa(ppp_addrs->our_ipaddr.addr));
-        printf(" his_ipaddr=%s", _inet_ntoa(ppp_addrs->his_ipaddr.addr));
-        printf(" netmask=%s", _inet_ntoa(ppp_addrs->netmask.addr));
-        printf(" dns1=%s", _inet_ntoa(ppp_addrs->dns1.addr));
-        printf(" dns2=%s\n", _inet_ntoa(ppp_addrs->dns2.addr));
+        struct ppp_addrs *ppp_addrs = ppp_addrs(pcb);
+        fprintf(stderr, "ppp_link_status_cb: PPPERR_NONE\n\r");
+        fprintf(stderr, "   our_ipaddr  = %s\n\r", ip_ntoa(&ppp_addrs->our_ipaddr));
+        fprintf(stderr, "   his_ipaddr  = %s\n\r", ip_ntoa(&ppp_addrs->his_ipaddr));
+        fprintf(stderr, "   netmask     = %s\n\r", ip_ntoa(&ppp_addrs->netmask));
+        fprintf(stderr, "   dns1        = %s\n\r", ip_ntoa(&ppp_addrs->dns1));
+        fprintf(stderr, "   dns2        = %s\n\r", ip_ntoa(&ppp_addrs->dns2));
+#if PPP_IPV6_SUPPORT
+        fprintf(stderr, "   our6_ipaddr = %s\n\r", ip6addr_ntoa(&ppp_addrs->our6_ipaddr));
+        fprintf(stderr, "   his6_ipaddr = %s\n\r", ip6addr_ntoa(&ppp_addrs->his6_ipaddr));
+#endif /* PPP_IPV6_SUPPORT */
         }
         break;
 
     case PPPERR_PARAM:             /* Invalid parameter. */
-        printf("pppLinkStatusCallback: PPPERR_PARAM\n");
+        printf("ppp_link_status_cb: PPPERR_PARAM\n");
         break;
 
     case PPPERR_OPEN:              /* Unable to open PPP session. */
-        printf("pppLinkStatusCallback: PPPERR_OPEN\n");
+        printf("ppp_link_status_cb: PPPERR_OPEN\n");
         break;
 
     case PPPERR_DEVICE:            /* Invalid I/O device for PPP. */
-        printf("pppLinkStatusCallback: PPPERR_DEVICE\n");
+        printf("ppp_link_status_cb: PPPERR_DEVICE\n");
         break;
 
     case PPPERR_ALLOC:             /* Unable to allocate resources. */
-        printf("pppLinkStatusCallback: PPPERR_ALLOC\n");
+        printf("ppp_link_status_cb: PPPERR_ALLOC\n");
         break;
 
     case PPPERR_USER:              /* User interrupt. */
-        printf("pppLinkStatusCallback: PPPERR_USER\n");
+        printf("ppp_link_status_cb: PPPERR_USER\n");
         break;
 
     case PPPERR_CONNECT:           /* Connection lost. */
-        printf("pppLinkStatusCallback: PPPERR_CONNECT\n");
+        printf("ppp_link_status_cb: PPPERR_CONNECT\n");
         break;
 
     case PPPERR_AUTHFAIL:          /* Failed authentication challenge. */
-        printf("pppLinkStatusCallback: PPPERR_AUTHFAIL\n");
+        printf("ppp_link_status_cb: PPPERR_AUTHFAIL\n");
         break;
 
     case PPPERR_PROTOCOL:          /* Failed to meet protocol. */
-        printf("pppLinkStatusCallback: PPPERR_PROTOCOL\n");
+        printf("ppp_link_status_cb: PPPERR_PROTOCOL\n");
+        break;
+
+    case PPPERR_PEERDEAD:          /* Connection timeout. */
+        printf("ppp_link_status_cb: PPPERR_PEERDEAD\n");
+        break;
+
+    case PPPERR_IDLETIMEOUT:       /* Idle Timeout. */
+        printf("ppp_link_status_cb: PPPERR_IDLETIMEOUT\n");
+        break;
+
+    case PPPERR_CONNECTTIME:       /* PPPERR_CONNECTTIME. */
+        printf("ppp_link_status_cb: PPPERR_CONNECTTIME\n");
+        break;
+
+    case PPPERR_LOOPBACK:          /* Connection timeout. */
+        printf("ppp_link_status_cb: PPPERR_LOOPBACK\n");
         break;
 
     default:
-        printf("pppLinkStatusCallback: unknown errCode %d\n", errCode);
+        printf("ppp_link_status_cb: unknown errCode %d\n", err_code);
         break;
     }
 }
@@ -322,7 +343,8 @@ static void
 init_netifs(void)
 {
 #if PPP_SUPPORT
-  pppInit();
+  sio_fd_t ppp_sio;
+  ppp_pcb *ppp;
 #if PPP_PTY_TEST
   ppp_sio = sio_open(2);
 #else
@@ -334,11 +356,18 @@ init_netifs(void)
       exit(1);
   }
 
+  ppp = ppp_new();
+  if (!ppp)
+  {
+      printf("Could not create PPP control interface");
+      exit(1);
+  }
 #ifdef LWIP_PPP_CHAP_TEST
-  pppSetAuth(PPPAUTHTYPE_CHAP, "lwip", "mysecret");
+  ppp_set_auth(ppp, PPPAUTHTYPE_CHAP, "lwip", "mysecret");
 #endif
 
-  pppOpen(ppp_sio, pppLinkStatusCallback, NULL);
+  ppp_over_serial_create(ppp, ppp_sio, ppp_link_status_cb, NULL);
+  ppp_open(ppp, 0);
 #endif /* PPP_SUPPORT */
   
 #if LWIP_DHCP
@@ -384,9 +413,6 @@ static void
 main_thread(void *arg)
 {
   sys_sem_t sem;
-#if PPP_SUPPORT
-  sio_fd_t ppp_sio;
-#endif
   LWIP_UNUSED_ARG(arg);
 
   if(sys_sem_new(&sem, 0) != ERR_OK) {
