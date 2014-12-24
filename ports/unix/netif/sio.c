@@ -99,6 +99,7 @@ static int sio_init( char * device, int devnum, sio_status_t * siostat )
 #endif
 	int fd;
 	LWIP_UNUSED_ARG(siostat);
+	LWIP_UNUSED_ARG(devnum);
 
 	/* open the device to be non-blocking (read will return immediately) */
 	fd = open( device, O_RDWR | O_NOCTTY | O_NONBLOCK );
@@ -278,6 +279,7 @@ u32_t sio_read(sio_status_t * siostat, u8_t *buf, u32_t size)
 
 void sio_read_abort(sio_status_t * siostat)
 {
+    LWIP_UNUSED_ARG(siostat);
     printf("sio_read_abort: not yet implemented for unix\n");
 }
 #endif /* PPP_SUPPORT */

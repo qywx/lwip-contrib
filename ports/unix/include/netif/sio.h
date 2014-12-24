@@ -78,5 +78,29 @@ sio_status_t * sio_open( int devnum );
 */
 void sio_change_baud( sioBaudrates baud, sio_status_t * siostat );
 
+#if PPP_SUPPORT
+/**
+*	Write buffer to serial port
+* @param 	siostat siostatus struct, contains sio instance data, given by sio_open
+* @param 	buf	output buffer
+* @param 	size	output buffer size
+*/
+u32_t sio_write(sio_status_t * siostat, u8_t *buf, u32_t size);
+
+/**
+*	Read buffer from serial port
+* @param 	siostat siostatus struct, contains sio instance data, given by sio_open
+* @param 	buf	input buffer
+* @param 	size	input buffer size
+*/
+u32_t sio_read(sio_status_t * siostat, u8_t *buf, u32_t size);
+
+/**
+*	Flush serial port input buffer
+* @param 	siostat siostatus struct, contains sio instance data, given by sio_open
+*/
+void sio_read_abort(sio_status_t * siostat);
+#endif /* PPP_SUPPORT */
+
 #endif
 

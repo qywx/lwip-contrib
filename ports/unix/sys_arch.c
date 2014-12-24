@@ -580,18 +580,3 @@ sys_jiffies(void)
     usec /= 1000000L / HZ;
     return HZ * sec + usec;
 }
-
-#if PPP_DEBUG
-
-#include <stdarg.h>
-
-void ppp_trace(int level, const char *format, ...)
-{
-    va_list args;
-
-    (void)level;
-    va_start(args, format);
-    vprintf(format, args);
-    va_end(args);
-}
-#endif
