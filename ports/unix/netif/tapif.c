@@ -65,16 +65,13 @@
 #include <linux/if.h>
 #include <linux/if_tun.h>
 #define DEVTAP "/dev/net/tun"
-#define NETMASK_ARGS "netmask %d.%d.%d.%d"
-#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
+#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d"
 #elif defined(openbsd)
 #define DEVTAP "/dev/tun0"
-#define NETMASK_ARGS "netmask %d.%d.%d.%d"
-#define IFCONFIG_ARGS "tun0 inet %d.%d.%d.%d " NETMASK_ARGS " link0"
+#define IFCONFIG_ARGS "tun0 inet %d.%d.%d.%d link0"
 #else /* others */
 #define DEVTAP "/dev/tap0"
-#define NETMASK_ARGS "netmask %d.%d.%d.%d"
-#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
+#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d"
 #endif
 
 #define IFNAME0 't'
@@ -140,18 +137,10 @@ low_level_init(struct netif *netif)
 #endif /* Linux */
 
   sprintf(buf, IFCONFIG_BIN IFCONFIG_ARGS,
-           ip4_addr1(&(netif->ip_addr)),
-           ip4_addr2(&(netif->ip_addr)),
-           ip4_addr3(&(netif->ip_addr)),
-           ip4_addr4(&(netif->ip_addr))
-#ifdef NETMASK_ARGS
-           ,
-           ip4_addr1(&(netif->netmask)),
-           ip4_addr2(&(netif->netmask)),
-           ip4_addr3(&(netif->netmask)),
-           ip4_addr4(&(netif->netmask))
-#endif /* NETMASK_ARGS */
-           );
+           ip4_addr1(&(netif->gw)),
+           ip4_addr2(&(netif->gw)),
+           ip4_addr3(&(netif->gw)),
+           ip4_addr4(&(netif->gw)));
 
   LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: system(\"%s\");\n", buf));
   system(buf);
