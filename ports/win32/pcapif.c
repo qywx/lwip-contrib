@@ -99,6 +99,15 @@
 #define PCAPIF_HANDLE_LINKSTATE       1
 #endif
 
+/** This can be used when netif->state is used for something else in your
+ * application (e.g. when wrapping a class around this interface). Just
+ * make sure this define returns the state pointer set by
+ * pcapif_low_level_init() (e.g. by using an offset or a callback).
+ */
+#ifndef PCAPIF_GET_STATE_PTR
+#define PCAPIF_GET_STATE_PTR(netif)   ((netif)->state)
+#endif
+
 #if PCAPIF_HANDLE_LINKSTATE
 #include "pcapif_helper.h"
 
@@ -408,7 +417,7 @@ void
 pcapif_check_linkstate(void *netif_ptr)
 {
   struct netif *netif = (struct netif*)netif_ptr;
-  struct pcapif_private *pa = (struct pcapif_private*)netif->state;
+  struct pcapif_private *pa = (struct pcapif_private*)PCAPIF_GET_STATE_PTR(netif);
   enum pcapifh_link_event le;
 
   le = pcapifh_linkstate_get(pa->link_state);
@@ -439,7 +448,7 @@ pcapif_check_linkstate(void *netif_ptr)
 void
 pcapif_shutdown(struct netif *netif)
 {
-  struct pcapif_private *pa = (struct pcapif_private*)netif->state;
+  struct pcapif_private *pa = (struct pcapif_private*)PCAPIF_GET_STATE_PTR(netif);
   if (pa) {
 #if PCAPIF_RX_USE_THREAD
     pa->rx_run = 0;
@@ -465,7 +474,7 @@ static void
 pcapif_input_thread(void *arg)
 {
   struct netif *netif = (struct netif *)arg;
-  struct pcapif_private *pa = (struct pcapif_private*)netif->state;
+  struct pcapif_private *pa = (struct pcapif_private*)PCAPIF_GET_STATE_PTR(netif);
   do
   {
     struct pcap_pkthdr pkt_header;
@@ -580,7 +589,7 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
   unsigned char *ptr;
   struct eth_hdr *ethhdr;
   u16_t tot_len = p->tot_len - ETH_PAD_SIZE;
-  struct pcapif_private *pa = (struct pcapif_private*)netif->state;
+  struct pcapif_private *pa = (struct pcapif_private*)PCAPIF_GET_STATE_PTR(netif);
 
 #if defined(LWIP_DEBUG) && LWIP_NETIF_TX_SINGLE_PBUF
   LWIP_ASSERT("p->next == NULL && p->len == p->tot_len", p->next == NULL && p->len == p->tot_len);
@@ -800,7 +809,7 @@ pcapif_init(struct netif *netif)
 void
 pcapif_poll(struct netif *netif)
 {
-  struct pcapif_private *pa = (struct pcapif_private*)netif->state;
+  struct pcapif_private *pa = (struct pcapif_private*)PCAPIF_GET_STATE_PTR(netif);
 
   int ret;
   do
