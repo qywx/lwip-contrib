@@ -19,6 +19,43 @@
 #define SOCK_TARGET_PORT  80
 #endif
 
+#ifndef SOCK_TARGET_MAXHTTPPAGESIZE
+#define SOCK_TARGET_MAXHTTPPAGESIZE 1024
+#endif
+
+#ifndef SOCKET_EXAMPLES_RUN_PARALLEL
+#define SOCKET_EXAMPLES_RUN_PARALLEL 0
+#endif
+
+const u8_t cmpbuf[8] = {0xab, 0xab, 0xab, 0xab, 0xab, 0xab, 0xab, 0xab};
+
+/* a helper struct to ensure memory before/after fd_set is not touched */
+typedef struct _xx
+{
+  u8_t buf1[8];
+  fd_set readset;
+  u8_t buf2[8];
+  fd_set writeset;
+  u8_t buf3[8];
+  fd_set errset;
+  u8_t buf4[8];
+} fdsets;
+
+#define INIT_FDSETS(sets) do { \
+  memset((sets)->buf1, 0xab, 8); \
+  memset((sets)->buf2, 0xab, 8); \
+  memset((sets)->buf3, 0xab, 8); \
+  memset((sets)->buf4, 0xab, 8); \
+}while(0)
+
+#define CHECK_FDSETS(sets) do { \
+  LWIP_ASSERT("buf1 fail", !memcmp((sets)->buf1, cmpbuf, 8)); \
+  LWIP_ASSERT("buf2 fail", !memcmp((sets)->buf2, cmpbuf, 8)); \
+  LWIP_ASSERT("buf3 fail", !memcmp((sets)->buf3, cmpbuf, 8)); \
+  LWIP_ASSERT("buf4 fail", !memcmp((sets)->buf4, cmpbuf, 8)); \
+}while(0)
+
+
 /** This is an example function that tests
     blocking- and nonblocking connect. */
 static void
@@ -28,12 +65,11 @@ sockex_nonblocking_connect(void *arg)
   int ret;
   u32_t opt;
   struct sockaddr_in addr;
-  fd_set readset;
-  fd_set writeset;
-  fd_set errset;
+  fdsets sets;
   struct timeval tv;
   u32_t ticks_a, ticks_b;
   int err;
+  INIT_FDSETS(&sets);
 
   LWIP_UNUSED_ARG(arg);
   /* set up address to connect to */
@@ -114,35 +150,43 @@ sockex_nonblocking_connect(void *arg)
   err = errno;
   LWIP_ASSERT("errno == EINPROGRESS", err == EINPROGRESS);
 
-  FD_ZERO(&readset);
-  FD_SET(s, &readset);
-  FD_ZERO(&writeset);
-  FD_SET(s, &writeset);
-  FD_ZERO(&errset);
-  FD_SET(s, &errset);
+  CHECK_FDSETS(&sets);
+  FD_ZERO(&sets.readset);
+  CHECK_FDSETS(&sets);
+  FD_SET(s, &sets.readset);
+  CHECK_FDSETS(&sets);
+  FD_ZERO(&sets.writeset);
+  CHECK_FDSETS(&sets);
+  FD_SET(s, &sets.writeset);
+  CHECK_FDSETS(&sets);
+  FD_ZERO(&sets.errset);
+  CHECK_FDSETS(&sets);
+  FD_SET(s, &sets.errset);
+  CHECK_FDSETS(&sets);
   tv.tv_sec = 0;
   tv.tv_usec = 0;
   /* select without waiting should fail */
-  ret = lwip_select(s + 1, &readset, &writeset, &errset, &tv);
+  ret = lwip_select(s + 1, &sets.readset, &sets.writeset, &sets.errset, &tv);
+  CHECK_FDSETS(&sets);
   LWIP_ASSERT("ret == 0", ret == 0);
-  LWIP_ASSERT("!FD_ISSET(s, &writeset)", !FD_ISSET(s, &writeset));
-  LWIP_ASSERT("!FD_ISSET(s, &readset)", !FD_ISSET(s, &readset));
-  LWIP_ASSERT("!FD_ISSET(s, &errset)", !FD_ISSET(s, &errset));
+  LWIP_ASSERT("!FD_ISSET(s, &writeset)", !FD_ISSET(s, &sets.writeset));
+  LWIP_ASSERT("!FD_ISSET(s, &readset)", !FD_ISSET(s, &sets.readset));
+  LWIP_ASSERT("!FD_ISSET(s, &errset)", !FD_ISSET(s, &sets.errset));
 
-  FD_ZERO(&readset);
-  FD_SET(s, &readset);
-  FD_ZERO(&writeset);
-  FD_SET(s, &writeset);
-  FD_ZERO(&errset);
-  FD_SET(s, &errset);
+  FD_ZERO(&sets.readset);
+  FD_SET(s, &sets.readset);
+  FD_ZERO(&sets.writeset);
+  FD_SET(s, &sets.writeset);
+  FD_ZERO(&sets.errset);
+  FD_SET(s, &sets.errset);
   ticks_a = sys_now();
   /* select with waiting should succeed */
-  ret = lwip_select(s + 1, &readset, &writeset, &errset, NULL);
+  ret = lwip_select(s + 1, &sets.readset, &sets.writeset, &sets.errset, NULL);
   ticks_b = sys_now();
   LWIP_ASSERT("ret == 1", ret == 1);
-  LWIP_ASSERT("FD_ISSET(s, &writeset)", FD_ISSET(s, &writeset));
-  LWIP_ASSERT("!FD_ISSET(s, &readset)", !FD_ISSET(s, &readset));
-  LWIP_ASSERT("!FD_ISSET(s, &errset)", !FD_ISSET(s, &errset));
+  LWIP_ASSERT("FD_ISSET(s, &writeset)", FD_ISSET(s, &sets.writeset));
+  LWIP_ASSERT("!FD_ISSET(s, &readset)", !FD_ISSET(s, &sets.readset));
+  LWIP_ASSERT("!FD_ISSET(s, &errset)", !FD_ISSET(s, &sets.errset));
 
   /* now write should succeed */
   ret = lwip_write(s, "test", 4);
@@ -167,7 +211,7 @@ sockex_nonblocking_connect(void *arg)
   ret = lwip_ioctl(s, FIONBIO, &opt);
   LWIP_ASSERT("ret == 0", ret == 0);
 
-  addr.sin_addr.s_addr++;
+  addr.sin_addr.s_addr++; /* this should result in an invalid address */
 
   /* connect */
   ret = lwip_connect(s, (struct sockaddr*)&addr, sizeof(addr));
@@ -182,32 +226,32 @@ sockex_nonblocking_connect(void *arg)
   err = errno;
   LWIP_ASSERT("errno == EINPROGRESS", err == EINPROGRESS);
 
-  FD_ZERO(&readset);
-  FD_SET(s, &readset);
-  FD_ZERO(&writeset);
-  FD_SET(s, &writeset);
-  FD_ZERO(&errset);
-  FD_SET(s, &errset);
+  FD_ZERO(&sets.readset);
+  FD_SET(s, &sets.readset);
+  FD_ZERO(&sets.writeset);
+  FD_SET(s, &sets.writeset);
+  FD_ZERO(&sets.errset);
+  FD_SET(s, &sets.errset);
   tv.tv_sec = 0;
   tv.tv_usec = 0;
   /* select without waiting should fail */
-  ret = lwip_select(s + 1, &readset, &writeset, &errset, &tv);
+  ret = lwip_select(s + 1, &sets.readset, &sets.writeset, &sets.errset, &tv);
   LWIP_ASSERT("ret == 0", ret == 0);
 
-  FD_ZERO(&readset);
-  FD_SET(s, &readset);
-  FD_ZERO(&writeset);
-  FD_SET(s, &writeset);
-  FD_ZERO(&errset);
-  FD_SET(s, &errset);
+  FD_ZERO(&sets.readset);
+  FD_SET(s, &sets.readset);
+  FD_ZERO(&sets.writeset);
+  FD_SET(s, &sets.writeset);
+  FD_ZERO(&sets.errset);
+  FD_SET(s, &sets.errset);
   ticks_a = sys_now();
   /* select with waiting should eventually succeed and return errset! */
-  ret = lwip_select(s + 1, &readset, &writeset, &errset, NULL);
+  ret = lwip_select(s + 1, &sets.readset, &sets.writeset, &sets.errset, NULL);
   ticks_b = sys_now();
   LWIP_ASSERT("ret > 0", ret > 0);
-  LWIP_ASSERT("FD_ISSET(s, &errset)", FD_ISSET(s, &errset));
-  LWIP_ASSERT("!FD_ISSET(s, &readset)", !FD_ISSET(s, &readset));
-  LWIP_ASSERT("!FD_ISSET(s, &writeset)", !FD_ISSET(s, &writeset));
+  LWIP_ASSERT("FD_ISSET(s, &errset)", FD_ISSET(s, &sets.errset));
+  /*LWIP_ASSERT("!FD_ISSET(s, &readset)", !FD_ISSET(s, &sets.readset));
+  LWIP_ASSERT("!FD_ISSET(s, &writeset)", !FD_ISSET(s, &sets.writeset));*/
 
   /* close */
   ret = lwip_close(s);
@@ -225,10 +269,11 @@ sockex_testrecv(void *arg)
   int s;
   int ret;
   int err;
-  int opt;
+  int opt, opt2;
+  socklen_t opt2size;
   struct sockaddr_in addr;
   size_t len;
-  char rxbuf[1024];
+  char rxbuf[SOCK_TARGET_MAXHTTPPAGESIZE];
   fd_set readset;
   fd_set errset;
   struct timeval tv;
@@ -256,6 +301,12 @@ sockex_testrecv(void *arg)
   opt = 100;
   ret = lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &opt, sizeof(int));
   LWIP_ASSERT("ret == 0", ret == 0);
+  opt2 = 0;
+  opt2size = sizeof(opt2);
+  ret = lwip_getsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &opt2, &opt2size);
+  LWIP_ASSERT("ret == 0", ret == 0);
+  LWIP_ASSERT("opt2size == sizeof(opt2)", opt2size == sizeof(opt2));
+  LWIP_ASSERT("opt == opt2", opt == opt2);
 
   /* write the start of a GET request */
 #define SNDSTR1 "G"
@@ -279,7 +330,7 @@ sockex_testrecv(void *arg)
   sys_msleep(1000);
 
   /* should not time out but receive a response */
-  ret = lwip_read(s, rxbuf, 1024);
+  ret = lwip_read(s, rxbuf, SOCK_TARGET_MAXHTTPPAGESIZE);
   LWIP_ASSERT("ret > 0", ret > 0);
 
   /* now select should directly return because the socket is readable */
@@ -295,11 +346,11 @@ sockex_testrecv(void *arg)
   LWIP_ASSERT("FD_ISSET(s, &readset)", FD_ISSET(s, &readset));
 
   /* should not time out but receive a response */
-  ret = lwip_read(s, rxbuf, 1024);
+  ret = lwip_read(s, rxbuf, SOCK_TARGET_MAXHTTPPAGESIZE);
   /* might receive a second packet for HTTP/1.1 servers */
   if (ret > 0) {
     /* should return 0: closed */
-    ret = lwip_read(s, rxbuf, 1024);
+    ret = lwip_read(s, rxbuf, SOCK_TARGET_MAXHTTPPAGESIZE);
     LWIP_ASSERT("ret == 0", ret == 0);
   }
 
@@ -470,11 +521,25 @@ sockex_testtwoselects(void *arg)
   printf("sockex_testtwoselects finished successfully\n");
 }
 
+#if !SOCKET_EXAMPLES_RUN_PARALLEL
+void socket_example_test(void* arg)
+{
+  LWIP_UNUSED_ARG(arg);
+  sockex_nonblocking_connect(NULL);
+  sockex_testrecv(NULL);
+  sockex_testtwoselects(NULL);
+}
+#endif
+
 void socket_examples_init(void)
 {
+#if SOCKET_EXAMPLES_RUN_PARALLEL
   sys_thread_new("sockex_nonblocking_connect", sockex_nonblocking_connect, NULL, 0, 0);
   sys_thread_new("sockex_testrecv", sockex_testrecv, NULL, 0, 0);
-  /*sys_thread_new("sockex_testtwoselects", sockex_testtwoselects, NULL, 0, 0);*/
+  sys_thread_new("sockex_testtwoselects", sockex_testtwoselects, NULL, 0, 0);
+#else
+  sys_thread_new("socket_example_test", socket_example_test, NULL, 0, 0);
+#endif
 }
 
 #endif /* LWIP_SOCKETS */
