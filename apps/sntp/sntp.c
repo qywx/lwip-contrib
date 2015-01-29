@@ -89,7 +89,7 @@
 #if SNTP_SERVER_DNS
 #define SNTP_SERVER_ADDRESS         "pool.ntp.org"
 #else
-#define SNTP_SERVER_ADDRESS         "213.161.194.93" /* pool.ntp.org */
+#define SNTP_SERVER_ADDRESS         "217.91.28.79" /* pool.ntp.org */
 #endif
 #endif
 
