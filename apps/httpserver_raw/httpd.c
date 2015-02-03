@@ -2328,7 +2328,6 @@ http_poll(void *arg, struct tcp_pcb *pcb)
 static err_t
 http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
-  err_t parsed = ERR_ABRT;
   struct http_state *hs = (struct http_state *)arg;
   LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_recv: pcb=%p pbuf=%p err=%s\n", (void*)pcb,
     (void*)p, lwip_strerr(err)));
@@ -2374,35 +2373,35 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 #endif /* LWIP_HTTPD_SUPPORT_POST */
   {
     if (hs->handle == NULL) {
-      parsed = http_parse_request(p, hs, pcb);
+      err_t parsed = http_parse_request(p, hs, pcb);
       LWIP_ASSERT("http_parse_request: unexpected return value", parsed == ERR_OK
         || parsed == ERR_INPROGRESS ||parsed == ERR_ARG || parsed == ERR_USE);
+#if LWIP_HTTPD_SUPPORT_REQUESTLIST
+      if (parsed != ERR_INPROGRESS) {
+        /* request fully parsed or error */
+        if (hs->req != NULL) {
+          pbuf_free(hs->req);
+          hs->req = NULL;
+        }
+      }
+#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
+      pbuf_free(p);
+      if (parsed == ERR_OK) {
+#if LWIP_HTTPD_SUPPORT_POST
+       if (hs->post_content_len_left == 0)
+#endif /* LWIP_HTTPD_SUPPORT_POST */
+        {
+          LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_recv: data %p len %"S32_F"\n", hs->file, hs->left));
+          http_send(pcb, hs);
+        }
+      } else if (parsed == ERR_ARG) {
+        /* @todo: close on ERR_USE? */
+        http_close_conn(pcb, hs);
+      }
     } else {
       LWIP_DEBUGF(HTTPD_DEBUG, ("http_recv: already sending data\n"));
       /* already sending but still receiving data, we might want to RST here? */
       pbuf_free(p);
-    }
-#if LWIP_HTTPD_SUPPORT_REQUESTLIST
-    if (parsed != ERR_INPROGRESS) {
-      /* request fully parsed or error */
-      if (hs->req != NULL) {
-        pbuf_free(hs->req);
-        hs->req = NULL;
-      }
-    }
-#endif /* LWIP_HTTPD_SUPPORT_REQUESTLIST */
-    pbuf_free(p);
-    if (parsed == ERR_OK) {
-#if LWIP_HTTPD_SUPPORT_POST
-      if (hs->post_content_len_left == 0)
-#endif /* LWIP_HTTPD_SUPPORT_POST */
-      {
-        LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("http_recv: data %p len %"S32_F"\n", hs->file, hs->left));
-        http_send(pcb, hs);
-      }
-    } else if (parsed == ERR_ARG) {
-      /* @todo: close on ERR_USE? */
-      http_close_conn(pcb, hs);
     }
   }
   return ERR_OK;
