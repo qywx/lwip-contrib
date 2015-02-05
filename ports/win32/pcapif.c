@@ -116,6 +116,15 @@
 #define PCAPIF_LINKUP_DELAY           0
 #endif
 
+/* Define PCAPIF_RX_LOCK_LWIP and PCAPIF_RX_UNLOCK_LWIP if you need to lock the lwIP core
+   before/after pbuf_alloc() or netif->input() are called on RX. */
+#ifndef PCAPIF_RX_LOCK_LWIP
+#define PCAPIF_RX_LOCK_LWIP()
+#endif
+#ifndef PCAPIF_RX_UNLOCK_LWIP
+#define PCAPIF_RX_UNLOCK_LWIP()
+#endif
+
 #define PCAPIF_LINKCHECK_INTERVAL_MS 500
 
 /* link state notification macro */
@@ -251,6 +260,46 @@ get_adapter_index(const char* adapter_guid)
 }
 #endif /* defined(PACKET_LIB_GET_ADAPTER_NETADDRESS) || defined(PACKET_LIB_ADAPTER_GUID) */
 
+static pcap_t*
+pcapif_open_adapter(const char* adapter_name, char* errbuf)
+{
+  pcap_t* adapter = pcap_open_live(adapter_name,/* name of the device */
+                               65536,             /* portion of the packet to capture */
+                                                  /* 65536 guarantees that the whole packet will be captured on all the link layers */
+                               PCAP_OPENFLAG_PROMISCUOUS,/* promiscuous mode */
+#if PCAPIF_RX_USE_THREAD
+                               /*-*/1,                /* don't wait at all for lower latency */
+#else
+                               1,                /* wait 1 ms in ethernetif_poll */
+#endif
+                               errbuf);           /* error buffer */
+  return adapter;
+}
+
+static void
+pcap_reopen_adapter(struct pcapif_private *pa)
+{
+  char errbuf[PCAP_ERRBUF_SIZE+1];
+  pcap_if_t *alldevs;
+  if (pa->adapter != NULL) {
+    pcap_close(pa->adapter);
+    pa->adapter = NULL;
+  }
+  if (pcap_findalldevs(&alldevs, errbuf) != -1) {
+    pcap_if_t *d;
+    for (d = alldevs; d != NULL; d = d->next) {
+      if (!strcmp(d->name, pa->name)) {
+        pa->adapter = pcapif_open_adapter(pa->name, errbuf);
+        if (pa->adapter == NULL) {
+          printf("failed to reopen pcap adapter after failure: %s\n", errbuf);
+        }
+        break;
+      }
+    }
+    pcap_freealldevs(alldevs);
+  }
+}
+
 /**
  * Open a network adapter and set it up for packet input
  *
@@ -265,7 +314,7 @@ pcapif_init_adapter(int adapter_num, void *arg)
   int number_of_adapters;
   struct pcapif_private *pa;
   char errbuf[PCAP_ERRBUF_SIZE+1];
-  
+
   pcap_if_t *alldevs;
   pcap_if_t *d;
   pcap_if_t *used_adapter = NULL;
@@ -284,7 +333,7 @@ pcapif_init_adapter(int adapter_num, void *arg)
     free(pa);
     return NULL; /* no adapters found */
   }
-  /* get number of adatpers and adapter pointer */
+  /* get number of adapters and adapter pointer */
   for (d = alldevs, number_of_adapters = 0; d != NULL; d = d->next, number_of_adapters++) {
     if (number_of_adapters == adapter_num) {
       char *desc = d->description;
@@ -384,18 +433,9 @@ pcapif_init_adapter(int adapter_num, void *arg)
   LWIP_ASSERT("used_adapter != NULL", used_adapter != NULL);
 
   /* Open the device */
-  pa->adapter = pcap_open_live(used_adapter->name,/* name of the device */
-                               65536,             /* portion of the packet to capture */
-                                                  /* 65536 guarantees that the whole packet will be captured on all the link layers */
-                               PCAP_OPENFLAG_PROMISCUOUS,/* promiscuous mode */
-#if PCAPIF_RX_USE_THREAD
-                               /*-*/1,                /* don't wait at all for lower latency */
-#else
-                               1,                /* wait 1 ms in ethernetif_poll */
-#endif
-                               errbuf);           /* error buffer */
+  pa->adapter = pcapif_open_adapter(used_adapter->name, errbuf);
   if (pa->adapter == NULL) {
-    printf("\nUnable to open the adapter. %s is not supported by WinPcap\n", used_adapter->name);
+    printf("\nUnable to open the adapter. %s is not supported by WinPcap (\"%s\").\n", d->name, errbuf);
     /* Free the device list */
     pcap_freealldevs(alldevs);
     free(pa);
@@ -748,6 +788,8 @@ pcapif_input(u_char *user, const struct pcap_pkthdr *pkt_header, const u_char *p
   struct netif *netif = (struct netif *)pa->input_fn_arg;
   struct pbuf *p;
 
+  PCAPIF_RX_LOCK_LWIP();
+
   /* move received packet into a new pbuf */
   p = pcapif_low_level_input(netif, packet, packet_len);
   /* no packet could be read, silently ignore this */
@@ -758,6 +800,7 @@ pcapif_input(u_char *user, const struct pcap_pkthdr *pkt_header, const u_char *p
       pbuf_free(p);
     }
   }
+  PCAPIF_RX_UNLOCK_LWIP();
 }
 
 /**
@@ -812,10 +855,17 @@ pcapif_poll(struct netif *netif)
   struct pcapif_private *pa = (struct pcapif_private*)PCAPIF_GET_STATE_PTR(netif);
 
   int ret;
-  do
-  {
-    ret = pcap_dispatch(pa->adapter, -1, pcapif_input, (u_char*)pa);
-  } while(ret > 0);
+  do {
+    if (pa->adapter != NULL) {
+      ret = pcap_dispatch(pa->adapter, -1, pcapif_input, (u_char*)pa);
+    } else {
+      ret = -1;
+    }
+    if (ret < 0) {
+      /* error (e.g. adapter removed or resume from standby), try to reopen the adapter */
+      pcap_reopen_adapter(pa);
+    }
+  } while (ret > 0);
 
 }
 #endif /* !PCAPIF_RX_USE_THREAD */
