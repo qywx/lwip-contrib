@@ -751,9 +751,16 @@ http_eof(struct tcp_pcb *pcb, struct http_state *hs)
   /* HTTP/1.1 persistent connection? (Not supported for SSI) */
 #if LWIP_HTTPD_SUPPORT_11_KEEPALIVE
   if (hs->keepalive && !LWIP_HTTPD_IS_SSI(hs)) {
+#if LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED
+    struct http_state* next = hs->next;
+#endif
     http_state_eof(hs);
     http_state_init(hs);
-    hs->keepalive = 1;
+    /* restore state: */
+#if LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED
+    hs->next = next;
+#endif
+    hs->pcb = pcb;
   } else
 #endif /* LWIP_HTTPD_SUPPORT_11_KEEPALIVE */
   {
@@ -2473,7 +2480,7 @@ httpd_init_addr(ip_addr_t *local_addr)
 void
 httpd_init(void)
 {
-#if MEMP_MEM_MALLOC || MEM_USE_POOLS
+#if MEMP_MEM_MALLOC || MEM_USE_POOLS || MEMP_USE_CUSTOM_POOLS
 #if HTTPD_USE_MEM_POOL
   LWIP_ASSERT("memp_sizes[MEMP_HTTPD_STATE] >= sizeof(http_state)",
      memp_sizes[MEMP_HTTPD_STATE] >= sizeof(struct http_state));
