@@ -761,6 +761,7 @@ http_eof(struct tcp_pcb *pcb, struct http_state *hs)
     hs->next = next;
 #endif
     hs->pcb = pcb;
+    hs->keepalive = 1;
   } else
 #endif /* LWIP_HTTPD_SUPPORT_11_KEEPALIVE */
   {
@@ -2006,6 +2007,8 @@ http_parse_request(struct pbuf *inp, struct http_state *hs, struct tcp_pcb *pcb)
 #if LWIP_HTTPD_SUPPORT_11_KEEPALIVE
           if (!is_09 && strnstr(data, HTTP11_CONNECTIONKEEPALIVE, data_len)) {
             hs->keepalive = 1;
+          } else {
+            hs->keepalive = 0;
           }
 #endif /* LWIP_HTTPD_SUPPORT_11_KEEPALIVE */
           /* null-terminate the METHOD (pbuf is freed anyway wen returning) */
