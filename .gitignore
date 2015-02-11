@@ -7,3 +7,6 @@
 /ports/win32/msvc/*.ncb
 /ports/win32/msvc/*.cache
 /ports/win32/msvc/*.suo
+/ports/win32/msvc/ipch
+/ports/win32/msvc/*.opensdf
+/ports/win32/msvc/*.sdf

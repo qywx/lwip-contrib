@@ -46,6 +46,8 @@
 /* These functions are used from NO_SYS also, for precise timer triggering */
 LARGE_INTEGER freq, sys_start_time;
 
+DWORD netconn_sem_tls_index;
+
 void sys_init_timing()
 {
   QueryPerformanceFrequency(&freq);
@@ -98,6 +100,8 @@ void msvc_sys_init()
   srand(time(0));
   sys_init_timing();
   InitSysArchProtect();
+  netconn_sem_tls_index = TlsAlloc();
+  LWIP_ASSERT("TlsAlloc failed", netconn_sem_tls_index != TLS_OUT_OF_INDEXES);
 }
 
 void sys_init()
@@ -108,6 +112,8 @@ void sys_init()
 #if !NO_SYS
 
 struct threadlist {
+  lwip_thread_fn function;
+  void *arg;
   DWORD id;
   struct threadlist *next;
 };
@@ -203,6 +209,45 @@ void sys_sem_signal(sys_sem_t *sem)
   LWIP_ASSERT("Error releasing semaphore", ret != 0);
 }
 
+const DWORD MS_VC_EXCEPTION=0x406D1388;
+#pragma pack(push,8)
+typedef struct tagTHREADNAME_INFO
+{
+  DWORD dwType; /* Must be 0x1000. */
+  LPCSTR szName; /* Pointer to name (in user addr space). */
+  DWORD dwThreadID; /* Thread ID (-1=caller thread). */
+  DWORD dwFlags; /* Reserved for future use, must be zero. */
+} THREADNAME_INFO;
+#pragma pack(pop)
+void SetThreadName( DWORD dwThreadID, const char* threadName)
+{
+  THREADNAME_INFO info;
+  info.dwType = 0x1000;
+  info.szName = threadName;
+  info.dwThreadID = dwThreadID;
+  info.dwFlags = 0;
+
+  __try
+  {
+    RaiseException(MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+  }
+  __except(EXCEPTION_EXECUTE_HANDLER)
+  {
+  }
+}
+
+static void sys_thread_function(void* arg)
+{
+  struct threadlist* t = (struct threadlist*)arg;
+#if LWIP_NETCONN_SEM_PER_THREAD
+  sys_arch_netconn_sem_alloc();
+#endif
+  t->function(t->arg);
+#if LWIP_NETCONN_SEM_PER_THREAD
+  sys_arch_netconn_sem_free();
+#endif
+}
+
 sys_thread_t sys_thread_new(const char *name, lwip_thread_fn function, void *arg, int stacksize, int prio)
 {
   struct threadlist *new_thread;
@@ -216,13 +261,16 @@ sys_thread_t sys_thread_new(const char *name, lwip_thread_fn function, void *arg
   new_thread = (struct threadlist*)malloc(sizeof(struct threadlist));
   LWIP_ASSERT("new_thread != NULL", new_thread != NULL);
   if(new_thread != NULL) {
+    new_thread->function = function;
+    new_thread->arg = arg;
     SYS_ARCH_PROTECT(lev);
     new_thread->next = lwip_win32_threads;
     lwip_win32_threads = new_thread;
 
-    h = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)function, arg, 0, &(new_thread->id));
+    h = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)sys_thread_function, new_thread, 0, &(new_thread->id));
     LWIP_ASSERT("h != 0", h != 0);
     LWIP_ASSERT("h != -1", h != INVALID_HANDLE_VALUE);
+    SetThreadName(new_thread->id, name);
 
     SYS_ARCH_UNPROTECT(lev);
     return new_thread->id;
@@ -395,5 +443,40 @@ u32_t sys_arch_mbox_tryfetch(sys_mbox_t *q, void **msg)
     return SYS_ARCH_TIMEOUT;
   }
 }
+
+#if LWIP_NETCONN_SEM_PER_THREAD
+sys_sem_t* sys_arch_netconn_sem_get(void)
+{
+  LPVOID tls_data = TlsGetValue(netconn_sem_tls_index);
+  return (sys_sem_t*)tls_data;
+}
+
+void sys_arch_netconn_sem_alloc(void)
+{
+  sys_sem_t *sem;
+  err_t err;
+  BOOL done;
+
+  sem = (sys_sem_t*)malloc(sizeof(sys_sem_t));
+  LWIP_ASSERT("failed to allocate memory for TLS semaphore", sem != NULL);
+  err = sys_sem_new(sem, 0);
+  LWIP_ASSERT("failed to initialise TLS semaphore", err == ERR_OK);
+  done = TlsSetValue(netconn_sem_tls_index, sem);
+  LWIP_UNUSED_ARG(done);
+  LWIP_ASSERT("failed to initialise TLS semaphore storage", done == TRUE);
+}
+
+void sys_arch_netconn_sem_free(void)
+{
+  LPVOID tls_data = TlsGetValue(netconn_sem_tls_index);
+  if (tls_data != NULL) {
+    BOOL done;
+    free(tls_data);
+    done = TlsSetValue(netconn_sem_tls_index, NULL);
+    LWIP_UNUSED_ARG(done);
+    LWIP_ASSERT("failed to de-init TLS semaphore storage", done == TRUE);
+  }
+}
+#endif /* LWIP_NETCONN_SEM_PER_THREAD */
 
 #endif /* !NO_SYS */

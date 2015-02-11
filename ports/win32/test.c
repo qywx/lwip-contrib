@@ -538,6 +538,10 @@ void main_loop()
   sys_sem_free(&init_sem);
 #endif /* NO_SYS */
 
+#if LWIP_NETCONN_SEM_PER_THREAD
+  netconn_thread_init();
+#endif
+
   /* MAIN LOOP for driver update (and timers if NO_SYS) */
   while (!_kbhit()) {
 #if NO_SYS
@@ -625,6 +629,9 @@ void main_loop()
       } while(sys_now() - started < 5000);
     }
 #endif /* PPP_SUPPORT */
+#if LWIP_NETCONN_SEM_PER_THREAD
+  netconn_thread_cleanup();
+#endif
 #if USE_ETHERNET
   /* release the pcap library... */
   pcapif_shutdown(&netif);
