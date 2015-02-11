@@ -33,7 +33,10 @@ typedef void (*smtp_result_fn)(void *arg, u8_t smtp_result, u16_t srv_err, err_t
 
 /** This structure is used as argument for smtp_send_mail_int(),
  * which in turn can be used with tcpip_callback() to send mail
- * from interrupt context.
+ * from interrupt context, e.g. like this:
+ *    struct smtp_send_request *req; (to be filled)
+ *    tcpip_callback_with_block(smtp_send_mail_int, (void*)req, 0);
+ *
  * For member description, see parameter description of smtp_send_mail().
  * When using with tcpip_callback, this structure has to stay allocated
  * (e.g. using mem_malloc/mem_free) until its 'callback_fn' is called.
