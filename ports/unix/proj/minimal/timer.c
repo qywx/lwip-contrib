@@ -43,16 +43,6 @@
 
 static struct itimerval tmr;
 
-struct itmr
-{
-  volatile unsigned int interval;
-  volatile unsigned int cnt;
-  volatile unsigned char event;
-};
-
-static struct itmr timers[TIMER_NUM];
-
-
 void sigalarm_handler(int sig);
 
 /**
@@ -61,18 +51,6 @@ void sigalarm_handler(int sig);
 void
 timer_init(void)
 {
-  unsigned char i;
-  struct itmr *tp;
-
-  tp = &timers[TIMER_NUM-1];
-  for(i = TIMER_NUM; i > 0; i--)
-  {
-    tp->event = 0;
-    tp->interval = 0;
-    tp->cnt = 0;
-    tp--;
-  }
-
   signal(SIGALRM,sigalarm_handler);
 
   /* timer reload is in 10msec steps */
@@ -86,78 +64,11 @@ timer_init(void)
 }
 
 /**
- * Configures timer.
- *
- * @param tmr the timer number from timer.h
- * @param interval when > 0 enables this timer, 0 disables.
- */
-void
-timer_set_interval(unsigned char tmr_num, unsigned int interval)
-{
-  if (tmr_num < TIMER_NUM)
-  {
-    timers[tmr_num].interval = interval;
-  }
-}
-
-
-/**
- * Returns timer event and restarts timer.
- */
-unsigned char
-timer_testclr_evt(unsigned char tmr_num)
-{
-  if (tmr_num < TIMER_NUM)
-  {
-    unsigned char evt;
-    struct itmr *tp;
-
-    tp = &timers[tmr_num];
-    
-    evt = tp->event;
-    if (tp->event != 0)
-    {
-      tp->event = 0;
-      tp->cnt = tp->interval;
-    }
-    return evt;
-  }
-  else
-  {
-    return 0;
-  }
-}
-
-/**
  * interrupting (!) sigalarm handler
  */
 void
 sigalarm_handler(int sig)
 {
-  unsigned char i;
-  struct itmr *tp;
-  LWIP_UNUSED_ARG(sig);
-
   snmp_inc_sysuptime();
-
-  tp = &timers[TIMER_NUM-1];
-  for(i = TIMER_NUM; i > 0; i--)
-  {
-    if (tp->interval != 0)
-    {
-      /* timer is running */
-      if (tp->cnt == 0)
-      {
-        /* timer expired */
-        tp->event |= 1;
-      }
-      else
-      {
-        /* timer ticking */
-        tp->cnt--;
-      }
-    }
-    tp--;
-  }
 }
 

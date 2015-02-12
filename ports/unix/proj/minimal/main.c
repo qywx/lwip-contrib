@@ -192,11 +192,6 @@ main(int argc, char **argv)
   echo_init();
 
   timer_init();
-  timer_set_interval(TIMER_EVT_ETHARPTMR, ARP_TMR_INTERVAL / 10);
-  timer_set_interval(TIMER_EVT_TCPTMR, TCP_TMR_INTERVAL / 10);
-#if IP_REASSEMBLY
-  timer_set_interval(TIMER_EVT_IPREASSTMR, IP_TMR_INTERVAL / 10);
-#endif
   
   printf("Applications started.\n");
     
@@ -225,22 +220,8 @@ main(int argc, char **argv)
         /* ... end critical section */
           sigprocmask(SIG_SETMASK, &oldmask, NULL);
       }
-    
-      if(timer_testclr_evt(TIMER_EVT_TCPTMR))
-      {
-        tcp_tmr();
-      }
-#if IP_REASSEMBLY
-      if(timer_testclr_evt(TIMER_EVT_IPREASSTMR))
-      {
-        ip_reass_tmr();
-      }
-#endif
-      if(timer_testclr_evt(TIMER_EVT_ETHARPTMR))
-      {
-        etharp_tmr();
-      }
-      
+
+      sys_check_timeouts();
   }
   
   return 0;

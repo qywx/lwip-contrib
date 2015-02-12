@@ -122,11 +122,6 @@
 #define MEMP_NUM_ARP_QUEUE              2
 
 /**
- * MEMP_NUM_SYS_TIMEOUT: the number of simulateously active timeouts.
- */
-#define MEMP_NUM_SYS_TIMEOUT            3
-
-/**
  * MEMP_NUM_NETBUF: the number of struct netbufs.
  * (only needed if you use the sequential API, like api_lib.c)
  */
