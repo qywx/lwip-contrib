@@ -122,6 +122,15 @@
 #define MEMP_NUM_ARP_QUEUE              2
 
 /**
+ * MEMP_NUM_SYS_TIMEOUT: the number of simultaneously active timeouts.
+ * The default number of timeouts is calculated here for all enabled modules.
+ * The formula expects settings to be either '0' or '1'.
+ *
+ * To this default value, 1 was added for the snmp_increment timer.
+ */
+#define MEMP_NUM_SYS_TIMEOUT            (LWIP_TCP + IP_REASSEMBLY + LWIP_ARP + (2*LWIP_DHCP) + LWIP_AUTOIP + LWIP_IGMP + LWIP_DNS + PPP_SUPPORT + (LWIP_IPV6 ? (1 + LWIP_IPV6_REASS + LWIP_IPV6_MLD) : 0)) + 1
+
+/**
  * MEMP_NUM_NETBUF: the number of struct netbufs.
  * (only needed if you use the sequential API, like api_lib.c)
  */

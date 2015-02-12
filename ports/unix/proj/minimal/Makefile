@@ -87,7 +87,7 @@ LWIPFILESW=$(wildcard $(LWIPFILES))
 LWIPOBJS=$(notdir $(LWIPFILESW:.c=.o))
 
 # APPFILES
-APPFILES=../../../../apps/tcpecho_raw/echo.c timer.c
+APPFILES=../../../../apps/tcpecho_raw/echo.c
 
 LWIPLIB=liblwip4.a
 APPLIB=liblwipapps.a

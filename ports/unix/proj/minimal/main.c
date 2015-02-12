@@ -40,6 +40,7 @@
 #include "lwip/mem.h"
 #include "lwip/memp.h"
 #include "lwip/sys.h"
+#include "lwip/timers.h"
 
 #include "lwip/stats.h"
 
@@ -50,9 +51,6 @@
 #include "lwip/tcp_impl.h"
 #include "mintapif.h"
 #include "netif/etharp.h"
-
-#include "timer.h"
-#include <signal.h>
 
 #include "echo.h"
 #include "private_mib.h"
@@ -94,7 +92,8 @@ static struct option longopts[] = {
 };
 #define NUM_OPTS ((sizeof(longopts) / sizeof(struct option)) - 1)
 
-static void usage(void)
+static void
+usage(void)
 {
   unsigned char i;
    
@@ -104,11 +103,17 @@ static void usage(void)
   }
 }
 
+void
+snmp_increment(void *arg)
+{
+  snmp_inc_sysuptime();
+  sys_timeout(10, snmp_increment, NULL);
+} 
+
 int
 main(int argc, char **argv)
 {
   struct netif netif;
-  sigset_t mask, oldmask, empty;
   int ch;
   char ip_str[16] = {0}, nm_str[16] = {0}, gw_str[16] = {0};
 
@@ -197,31 +202,10 @@ main(int argc, char **argv)
     
 
   while (1) {
-    
-      /* poll for input packet and ensure
-         select() or read() arn't interrupted */
-      sigemptyset(&mask);
-      sigaddset(&mask, SIGALRM);
-      sigprocmask(SIG_BLOCK, &mask, &oldmask);
+    /* poll netif, pass packet to lwIP */
+    mintapif_select(&netif);
 
-      /* start of critical section,
-         poll netif, pass packet to lwIP */
-      if (mintapif_select(&netif) > 0)
-      {
-        /* work, immediatly end critical section 
-           hoping lwIP ended quickly ... */
-        sigprocmask(SIG_SETMASK, &oldmask, NULL);
-      }
-      else
-      {
-        /* no work, wait a little (10 msec) for SIGALRM */
-          sigemptyset(&empty);
-          sigsuspend(&empty);
-        /* ... end critical section */
-          sigprocmask(SIG_SETMASK, &oldmask, NULL);
-      }
-
-      sys_check_timeouts();
+    sys_check_timeouts();
   }
   
   return 0;
