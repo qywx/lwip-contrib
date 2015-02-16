@@ -1,6 +1,11 @@
 #ifndef LWIP_SMTP_H
 #define LWIP_SMTP_H
 
+/** Set this to 1 to enable data handler callback on BODY */
+#ifndef SMTP_BODYDH
+#define SMTP_BODYDH               0
+#endif
+
 #include "lwip/err.h"
 
 /** The default TCP port used for SMTP */
@@ -54,6 +59,46 @@ struct smtp_send_request {
    * the callback function is called. */
   u8_t static_data;
 };
+
+
+#if SMTP_BODYDH
+
+#ifndef SMTP_BODYDH_BUFFER_SIZE
+#define SMTP_BODYDH_BUFFER_SIZE 256
+#endif /* SMTP_BODYDH_BUFFER_SIZE */
+
+struct smtp_bodydh {
+  u16_t state;
+  u16_t length; /* Length of content in buffer */
+  char buffer[SMTP_BODYDH_BUFFER_SIZE]; /* buffer for generated content */
+#ifdef SMTP_BODYDH_USER_SIZE
+  u8_t user[SMTP_BODYDH_USER_SIZE];
+#endif /* SMTP_BODYDH_USER_SIZE */
+};
+
+enum bdh_retvals_e {
+  BDH_DONE = 0,
+  BDH_WORKING
+};
+
+/** Prototype of an smtp body callback function
+ * It receives a struct smtp_bodydh, and a buffer to write data,
+ * must return BDH_WORKING to be called again and BDH_DONE when
+ * it has finished processing. This one tries to fill one TCP buffer with
+ * data, your function will be repeatedly called until that happens; so if you
+ * know you'll be taking too long to serve your request, pause once in a while
+ * by writing length=0 to avoid hogging system resources
+ *
+ * @param arg argument specified when initiating the email
+ * @param smtp_bodydh state handling + buffer structure
+ */
+typedef int (*smtp_bodycback_fn)(void *arg, struct smtp_bodydh *bodydh);
+
+err_t smtp_send_mail_bodycback(const char *from, const char* to, const char* subject,
+                     smtp_bodycback_fn bodycback_fn, smtp_result_fn callback_fn, void* callback_arg);
+
+#endif /* SMTP_BODYDH */
+
 
 void smtp_set_server_addr(const char* server);
 void smtp_set_server_port(u16_t port);
