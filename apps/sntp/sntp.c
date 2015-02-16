@@ -42,10 +42,9 @@
  * Author: Simon Goldschmidt (lwIP raw API part)
  */
 
-#include "lwip/opt.h"
-
 #include "sntp.h"
 
+#include "lwip/opt.h"
 #include "lwip/timers.h"
 #include "lwip/udp.h"
 #include "lwip/dns.h"
@@ -69,29 +68,27 @@
 #define SNTP_PORT                   123
 #endif
 
-/** Set this to 1 to allow SNTP_SERVER_ADDRESS to be a DNS name */
+/** Set this to 1 to allow config of SNTP server(s) by DNS name */
 #ifndef SNTP_SERVER_DNS
 #define SNTP_SERVER_DNS             0
 #endif
 
-/** Set this to 1 to support more than one server */
-#ifndef SNTP_SUPPORT_MULTIPLE_SERVERS
-#define SNTP_SUPPORT_MULTIPLE_SERVERS 0
-#endif
-
-/** \def SNTP_SERVER_ADDRESS
- * \brief SNTP server address:
- * - as IPv4 address in "u32_t" format
- * - as a DNS name if SNTP_SERVER_DNS is set to 1
- * May contain multiple server names (e.g. "pool.ntp.org","second.time.server")
+/** Handle support for more than one server via NTP_MAX_SERVERS,
+ * but catch legacy style of setting SNTP_SUPPORT_MULTIPLE_SERVERS, probably outside of this file
  */
-#ifndef SNTP_SERVER_ADDRESS
-#if SNTP_SERVER_DNS
-#define SNTP_SERVER_ADDRESS         "pool.ntp.org"
-#else
-#define SNTP_SERVER_ADDRESS         "217.91.28.79" /* pool.ntp.org */
-#endif
-#endif
+#ifndef SNTP_SUPPORT_MULTIPLE_SERVERS
+#if SNTP_MAX_SERVERS > 1
+#define SNTP_SUPPORT_MULTIPLE_SERVERS 1
+#else /* NTP_MAX_SERVERS > 1 */
+#define SNTP_SUPPORT_MULTIPLE_SERVERS 0
+#endif /* NTP_MAX_SERVERS > 1 */
+#else /* SNTP_SUPPORT_MULTIPLE_SERVERS */
+/* The developer has defined SNTP_SUPPORT_MULTIPLE_SERVERS, probably from old code */
+#if SNTP_MAX_SERVERS <= 1
+#error "SNTP_MAX_SERVERS needs to be defined to the max amount of servers if SNTP_SUPPORT_MULTIPLE_SERVERS is defined"
+#endif /* SNTP_MAX_SERVERS <= 1 */
+#endif /* SNTP_SUPPORT_MULTIPLE_SERVERS */
+
 
 /** Sanity check:
  * Define this to
@@ -260,12 +257,19 @@ static void sntp_request(void *arg);
 
 /** The UDP pcb used by the SNTP client */
 static struct udp_pcb* sntp_pcb;
-/** Addresses of servers */
-static char* sntp_server_addresses[] = {SNTP_SERVER_ADDRESS};
+/** Names/Addresses of servers */
+struct sntp_server {
+#if SNTP_SERVER_DNS
+  char* name;
+#endif /* SNTP_SERVER_DNS */
+  ip_addr_t addr;
+};
+static struct sntp_server sntp_servers[SNTP_MAX_SERVERS];
+
+static u8_t sntp_set_servers_from_dhcp;
 #if SNTP_SUPPORT_MULTIPLE_SERVERS
 /** The currently used server (initialized to 0) */
 static u8_t sntp_current_server;
-static u8_t sntp_num_servers = sizeof(sntp_server_addresses)/sizeof(char*);
 #else /* SNTP_SUPPORT_MULTIPLE_SERVERS */
 #define sntp_current_server 0
 #endif /* SNTP_SUPPORT_MULTIPLE_SERVERS */
@@ -374,28 +378,39 @@ sntp_retry(void* arg)
  * If Kiss-of-Death is received (or another packet parsing error),
  * try the next server or retry the current server and increase the retry
  * timeout if only one server is available.
+ * (implicitly, SNTP_MAX_SERVERS > 1)
  *
  * @param arg is unused (only necessary to conform to sys_timeout)
  */
 static void
 sntp_try_next_server(void* arg)
 {
+  u8_t old_server, i;
   LWIP_UNUSED_ARG(arg);
 
-  if (sntp_num_servers > 1) {
-    /* new server: reset retry timeout */
-    SNTP_RESET_RETRY_TIMEOUT();
+  old_server = sntp_current_server;
+  for (i = 0; i < SNTP_MAX_SERVERS - 1; i++) {
     sntp_current_server++;
-    if (sntp_current_server >= sntp_num_servers) {
+    if (sntp_current_server >= SNTP_MAX_SERVERS) {
       sntp_current_server = 0;
     }
-    LWIP_DEBUGF(SNTP_DEBUG_STATE, ("sntp_try_next_server: Sending request to server %"U16_F"\n",
-      (u16_t)sntp_current_server));
-    /* instantly send a request to the next server */
-    sntp_request(NULL);
-  } else {
-    sntp_retry(NULL);
+    if (!ip_addr_isany(&sntp_servers[sntp_current_server].addr)
+#if SNTP_SERVER_DNS
+        || (sntp_servers[sntp_current_server].name != NULL)
+#endif
+        ) {
+      LWIP_DEBUGF(SNTP_DEBUG_STATE, ("sntp_try_next_server: Sending request to server %"U16_F"\n",
+        (u16_t)sntp_current_server));
+      /* new server: reset retry timeout */
+      SNTP_RESET_RETRY_TIMEOUT();
+      /* instantly send a request to the next server */
+      sntp_request(NULL);
+      return;
+    }
   }
+  /* no other valid server found */
+  sntp_current_server = old_server;
+  sntp_retry(NULL);
 }
 #else /* SNTP_SUPPORT_MULTIPLE_SERVERS */
 /* Always retry on error if only one server is supported */
@@ -554,20 +569,28 @@ sntp_request(void *arg)
 
   /* initialize SNTP server address */
 #if SNTP_SERVER_DNS
-  err = dns_gethostbyname(sntp_server_addresses[sntp_current_server], &sntp_server_address,
-    sntp_dns_found, NULL);
-  if (err == ERR_INPROGRESS) {
-    /* DNS request sent, wait for sntp_dns_found being called */
-    LWIP_DEBUGF(SNTP_DEBUG_STATE, ("sntp_request: Waiting for server address to be resolved.\n"));
-    return;
-  }
-#else /* SNTP_SERVER_DNS */
-  err = ipaddr_aton(sntp_server_addresses[sntp_current_server], &sntp_server_address)
-    ? ERR_OK : ERR_ARG;
-
+  if (sntp_servers[sntp_current_server].name) {
+    /* always resolve the name and rely on dns-internal caching & timeout */
+    ip_addr_set_any(&sntp_servers[sntp_current_server].addr);
+    err = dns_gethostbyname(sntp_servers[sntp_current_server].name, &sntp_server_address,
+      sntp_dns_found, NULL);
+    if (err == ERR_INPROGRESS) {
+      /* DNS request sent, wait for sntp_dns_found being called */
+      LWIP_DEBUGF(SNTP_DEBUG_STATE, ("sntp_request: Waiting for server address to be resolved.\n"));
+      return;
+    } else if (err == ERR_OK) {
+      sntp_servers[sntp_current_server].addr = sntp_server_address;
+    }
+  } else
 #endif /* SNTP_SERVER_DNS */
+  {
+    sntp_server_address = sntp_servers[sntp_current_server].addr;
+    err = (ip_addr_isany(&sntp_server_address)) ? ERR_ARG : ERR_OK;
+  }
 
   if (err == ERR_OK) {
+    LWIP_DEBUGF(SNTP_DEBUG_TRACE, ("sntp_request: current server address is %u.%u.%u.%u\n",
+      ip4_addr1(&sntp_server_address), ip4_addr2(&sntp_server_address), ip4_addr3(&sntp_server_address), ip4_addr4(&sntp_server_address)));
     sntp_send_request(&sntp_server_address);
   } else {
     /* address conversion failed, try another server */
@@ -583,6 +606,14 @@ sntp_request(void *arg)
 void
 sntp_init(void)
 {
+#ifdef SNTP_SERVER_ADDRESS
+#if SNTP_SERVER_DNS
+  sntp_setservername(0, SNTP_SERVER_ADDRESS);
+#else
+#error SNTP_SERVER_ADDRESS string not supported SNTP_SERVER_DNS==0
+#endif
+#endif /* SNTP_SERVER_ADDRESS */
+
   if (sntp_pcb == NULL) {
     SNTP_RESET_RETRY_TIMEOUT();
     sntp_pcb = udp_new();
@@ -610,4 +641,114 @@ sntp_stop(void)
     sntp_pcb = NULL;
   }
 }
+
+#if SNTP_GET_SERVERS_FROM_DHCP
+/**
+ * Config SNTP server handling by IP address, name, or DHCP; clear table
+ * @param set_servers_from_dhcp enable or disable getting server addresses from dhcp
+ */
+void
+sntp_servermode_dhcp(int set_servers_from_dhcp)
+{
+  u8_t new_mode = set_servers_from_dhcp ? 1 : 0;
+  if (sntp_set_servers_from_dhcp != new_mode) {
+    sntp_set_servers_from_dhcp = new_mode;
+  }
+}
+#endif /* SNTP_GET_SERVERS_FROM_DHCP */
+
+/**
+ * Initialize one of the NTP servers by IP address
+ *
+ * @param numdns the index of the NTP server to set must be < SNTP_MAX_SERVERS
+ * @param dnsserver IP address of the NTP server to set
+ */
+void
+sntp_setserver(u8_t idx, ip_addr_t *server)
+{
+  if (idx < SNTP_MAX_SERVERS) {
+    if (server != NULL) {
+      sntp_servers[idx].addr = (*server);
+    } else {
+      ip_addr_set_any(&sntp_servers[idx].addr);
+    }
+#if SNTP_SERVER_DNS
+    sntp_servers[idx].name = NULL;
+#endif
+  }
+}
+
+#if LWIP_DHCP && SNTP_GET_SERVERS_FROM_DHCP
+/**
+ * Initialize one of the NTP servers by IP address, required by DHCP
+ *
+ * @param numdns the index of the NTP server to set must be < SNTP_MAX_SERVERS
+ * @param dnsserver IP address of the NTP server to set
+ */
+void
+dhcp_set_ntp_servers(u8_t num, ip_addr_t *server)
+{
+  LWIP_DEBUGF(SNTP_DEBUG_TRACE, ("sntp: %s %u.%u.%u.%u as NTP server #%u via DHCP\n",
+    (sntp_set_servers_from_dhcp ? "Got" : "Rejected"),
+    ip4_addr1(server), ip4_addr2(server), ip4_addr3(server), ip4_addr4(server), num));
+  if (sntp_set_servers_from_dhcp && num) {
+    u8_t i;
+    for (i = 0; (i < num) && (i < SNTP_MAX_SERVERS); i++) {
+      sntp_setserver(i, &server[i]);
+    }
+    for (i = num; i < SNTP_MAX_SERVERS; i++) {
+      sntp_setserver(i, NULL);
+    }
+  }
+}
+#endif /* LWIP_DHCP && SNTP_GET_SERVERS_FROM_DHCP */
+
+/**
+ * Obtain one of the currently configured by IP address (or DHCP) NTP servers 
+ *
+ * @param numdns the index of the NTP server
+ * @return IP address of the indexed NTP server or "ip_addr_any" if the NTP
+ *         server has not been configured by address (or at all).
+ */
+ip_addr_t
+sntp_getserver(u8_t idx)
+{
+  if (idx < SNTP_MAX_SERVERS) {
+    return sntp_servers[idx].addr;
+  }
+  return *IP_ADDR_ANY;
+}
+
+#if SNTP_SERVER_DNS
+/**
+ * Initialize one of the NTP servers by name
+ *
+ * @param numdns the index of the NTP server to set must be < SNTP_MAX_SERVERS
+ * @param dnsserver DNS name of the NTP server to set, to be resolved at contact time
+ */
+void
+sntp_setservername(u8_t idx, char *server)
+{
+  if (idx < SNTP_MAX_SERVERS) {
+    sntp_servers[idx].name = server;
+  }
+}
+
+/**
+ * Obtain one of the currently configured by name NTP servers.
+ *
+ * @param numdns the index of the NTP server
+ * @return IP address of the indexed NTP server or NULL if the NTP
+ *         server has not been configured by name (or at all)
+ */
+char *
+sntp_getservername(u8_t idx)
+{
+  if (idx < SNTP_MAX_SERVERS) {
+    return sntp_servers[idx].name;
+  }
+  return NULL;
+}
+#endif /* SNTP_SERVER_DNS */
+
 #endif /* LWIP_UDP */
