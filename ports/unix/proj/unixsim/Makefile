@@ -97,11 +97,11 @@ NETIFFILES+=$(LWIPDIR)/netif/ppp/auth.c $(LWIPDIR)/netif/ppp/ccp.c \
 	$(LWIPDIR)/netif/ppp/lcp.c $(LWIPDIR)/netif/ppp/magic.c \
 	$(LWIPDIR)/netif/ppp/multilink.c $(LWIPDIR)/netif/ppp/ppp.c \
 	$(LWIPDIR)/netif/ppp/pppcrypt.c $(LWIPDIR)/netif/ppp/pppoe.c \
-	$(LWIPDIR)/netif/ppp/pppol2tp.c $(LWIPDIR)/netif/ppp/upap.c \
-	$(LWIPDIR)/netif/ppp/utils.c $(LWIPDIR)/netif/ppp/vj.c \
-	$(LWIPDIR)/netif/ppp/polarssl/des.c $(LWIPDIR)/netif/ppp/polarssl/md4.c \
-	$(LWIPDIR)/netif/ppp/polarssl/md5.c $(LWIPDIR)/netif/ppp/polarssl/sha1.c \
-	$(LWIPARCH)/netif/sio.c
+	$(LWIPDIR)/netif/ppp/pppol2tp.c $(LWIPDIR)/netif/ppp/pppos.c \
+	$(LWIPDIR)/netif/ppp/upap.c $(LWIPDIR)/netif/ppp/utils.c \
+	$(LWIPDIR)/netif/ppp/vj.c $(LWIPDIR)/netif/ppp/polarssl/des.c \
+	$(LWIPDIR)/netif/ppp/polarssl/md4.c $(LWIPDIR)/netif/ppp/polarssl/md5.c \
+	$(LWIPDIR)/netif/ppp/polarssl/sha1.c $(LWIPARCH)/netif/sio.c
 
 # ARCHFILES: Architecture specific files.
 ARCHFILES=$(wildcard $(LWIPARCH)/*.c $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tunif.c $(LWIPARCH)/netif/unixif.c $(LWIPARCH)/netif/list.c $(LWIPARCH)/netif/tcpdump.c)
