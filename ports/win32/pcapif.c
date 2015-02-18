@@ -82,6 +82,12 @@
 #define PCAPIF_FILTER_GROUP_ADDRESSES 1
 #endif
 
+/** Set this to 1 to receive all frames (also unicast to other addresses;
+    this is only needed for test purposes) */
+#ifndef PCAPIF_RECEIVE_PROMISCUOUS
+#define PCAPIF_RECEIVE_PROMISCUOUS    0
+#endif
+
 /* Define those to better describe your network interface.
    For now, we use 'e0', 'e1', 'e2' and so on */
 #define IFNAME0                       'e'
@@ -703,11 +709,11 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
   struct eth_addr *dest = (struct eth_addr*)packet;
   struct eth_addr *src = dest + 1;
   int unicast;
-#if PCAPIF_FILTER_GROUP_ADDRESSES
+#if PCAPIF_FILTER_GROUP_ADDRESSES && !PCAPIF_RECEIVE_PROMISCUOUS
   const u8_t bcast[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
   const u8_t ipv4mcast[] = {0x01, 0x00, 0x5e};
   const u8_t ipv6mcast[] = {0x33, 0x33};
-#endif /* PCAPIF_FILTER_GROUP_ADDRESSES */
+#endif /* PCAPIF_FILTER_GROUP_ADDRESSES && !PCAPIF_RECEIVE_PROMISCUOUS */
 
   /* Don't let feedback packets through (limitation in winpcap?) */
   if(!memcmp(src, netif->hwaddr, ETHARP_HWADDR_LEN)) {
@@ -715,8 +721,9 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
     return NULL;
   }
 
-  /* MAC filter: only let my MAC or non-unicast through (pcap receives loopback traffic, too) */
   unicast = ((dest->addr[0] & 0x01) == 0);
+#if !PCAPIF_RECEIVE_PROMISCUOUS
+  /* MAC filter: only let my MAC or non-unicast through (pcap receives loopback traffic, too) */
   if (memcmp(dest, &netif->hwaddr, ETHARP_HWADDR_LEN) &&
 #if PCAPIF_FILTER_GROUP_ADDRESSES
     (memcmp(dest, ipv4mcast, 3) || ((dest->addr[3] & 0x80) != 0)) && 
@@ -729,6 +736,7 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
     /* don't update counters here! */
     return NULL;
   }
+#endif /* !PCAPIF_RECEIVE_PROMISCUOUS */
 
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_RAW, (u16_t)length + ETH_PAD_SIZE, PBUF_POOL);
@@ -737,7 +745,7 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
   if (p != NULL) {
     /* We iterate over the pbuf chain until we have read the entire
        packet into the pbuf. */
-    start=0;
+    start = 0;
     for (q = p; q != NULL; q = q->next) {
       u16_t copy_len = q->len;
       /* Read enough bytes to fill this pbuf in the chain. The
@@ -768,7 +776,7 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
       snmp_inc_ifinnucastpkts(netif);
     }
   } else {
-    /* drop packet(); */
+    /* drop packet */
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.drop);
   }
