@@ -81,9 +81,10 @@
 
 #if PPP_SUPPORT
 /* PPP includes */
-#include "../netif/ppp/ppp_impl.h"
 #include "lwip/sio.h"
-#include "netif/ppp_oe.h"
+#include "lwip/pppapi.h"
+#include "netif/ppp/pppos.h"
+#include "netif/ppp/pppoe.h"
 #endif /* PPP_SUPPORT */
 
 /* include the port-dependent configuration */
@@ -137,8 +138,11 @@ struct autoip netif_autoip;
 #endif /* LWIP_AUTOIP */
 #endif /* USE_ETHERNET */
 #if PPP_SUPPORT
+/* THE PPP PCB */
+ppp_pcb *ppp;
+/* THE PPP interface */
+struct netif ppp_netif;
 /* THE PPP descriptor */
-int ppp_desc = -1;
 u8_t sio_idx = 0;
 sio_fd_t ppp_sio;
 #endif /* PPP_SUPPORT */
@@ -152,20 +156,24 @@ struct netif slipif2;
 
 #if PPP_SUPPORT
 void
-pppLinkStatusCallback(void *ctx, int errCode, void *arg)
+pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx) {
 {
   LWIP_UNUSED_ARG(ctx);
 
   switch(errCode) {
     case PPPERR_NONE: {             /* No error. */
-      struct ppp_addrs *ppp_addrs = (struct ppp_addrs *)arg;
+      struct ppp_addrs *ppp_addrs = ppp_addrs(pcb);
 
       printf("pppLinkStatusCallback: PPPERR_NONE\n");
-      printf(" our_ipaddr=%s\n", ip_ntoa(&ppp_addrs->our_ipaddr));
-      printf(" his_ipaddr=%s\n", ip_ntoa(&ppp_addrs->his_ipaddr));
-      printf(" netmask   =%s\n", ip_ntoa(&ppp_addrs->netmask));
-      printf(" dns1      =%s\n", ip_ntoa(&ppp_addrs->dns1));
-      printf(" dns2      =%s\n", ip_ntoa(&ppp_addrs->dns2));
+      printf("   our_ipaddr  = %s\n", ip_ntoa(&ppp_addrs->our_ipaddr));
+      printf("   his_ipaddr  = %s\n", ip_ntoa(&ppp_addrs->his_ipaddr));
+      printf("   netmask     = %s\n", ip_ntoa(&ppp_addrs->netmask));
+      printf("   dns1        = %s\n", ip_ntoa(&ppp_addrs->dns1));
+      printf("   dns2        = %s\n", ip_ntoa(&ppp_addrs->dns2));
+#if PPP_IPV6_SUPPORT
+      printf("   our6_ipaddr = %s\n", ip6addr_ntoa(&ppp_addrs->our6_ipaddr));
+      printf("   his6_ipaddr = %s\n", ip6addr_ntoa(&ppp_addrs->his6_ipaddr));
+#endif /* PPP_IPV6_SUPPORT */
       break;
     }
     case PPPERR_PARAM: {           /* Invalid parameter. */
@@ -198,6 +206,22 @@ pppLinkStatusCallback(void *ctx, int errCode, void *arg)
     }
     case PPPERR_PROTOCOL: {        /* Failed to meet protocol. */
       printf("pppLinkStatusCallback: PPPERR_PROTOCOL\n");
+      break;
+    }
+    case PPPERR_PEERDEAD: {        /* Connection timeout */
+      printf("pppLinkStatusCallback: PPPERR_PEERDEAD\n");
+      break;
+    }
+    case PPPERR_IDLETIMEOUT: {     /* Idle Timeout */
+      printf("pppLinkStatusCallback: PPPERR_IDLETIMEOUT\n");
+      break;
+    }
+    case PPPERR_CONNECTTIME: {     /* Max connect time reached */
+      printf("pppLinkStatusCallback: PPPERR_CONNECTTIME\n");
+      break;
+    }
+    case PPPERR_LOOPBACK: {        /* Loopback detected */
+      printf("pppLinkStatusCallback: PPPERR_LOOPBACK\n");
       break;
     }
     default: {
@@ -259,16 +283,19 @@ msvc_netif_init()
 #ifdef PPP_PASSWORD
   password = PPP_PASSWORD;
 #endif
-  printf("pppInit\n");
-  pppInit();
-  pppSetAuth(PPPAUTHTYPE_ANY, username, password);
-  printf("pppOpen: COM%d\n", (int)sio_idx);
+  printf("ppp_open: COM%d\n", (int)sio_idx);
 #if PPPOS_SUPPORT
   ppp_sio = sio_open(sio_idx);
   if (ppp_sio == NULL) {
     printf("sio_open error\n");
   } else {
-    ppp_desc = pppOpen(ppp_sio, pppLinkStatusCallback, NULL);
+    ppp = pppos_create(&ppp_netif, ppp_sio, pppLinkStatusCallback, NULL);
+    if (ppp == NULL) {
+      printf("pppos_create error\n");
+    } else {
+      ppp_set_auth(ppp, PPPAUTHTYPE_ANY, username, password);
+      ppp_open(ppp, 0);
+    }
   }
 #endif /* PPPOS_SUPPORT */
 #endif  /* PPP_SUPPORT */
@@ -334,7 +361,13 @@ msvc_netif_init()
 
 #if PPP_SUPPORT && PPPOE_SUPPORT
   /* start PPPoE after ethernet netif is added! */
-  ppp_desc = pppOverEthernetOpen(&netif, NULL, NULL, pppLinkStatusCallback, NULL);
+  ppp = pppoe_create(&ppp_netif, &netif, NULL, NULL, pppLinkStatusCallback, NULL);
+  if (ppp == NULL) {
+    printf("pppos_create error\n");
+  } else {
+    ppp_set_auth(ppp, PPPAUTHTYPE_ANY, username, password);
+    ppp_open(ppp, 0);
+  }
 #endif /* PPP_SUPPORT && PPPOE_SUPPORT */
 
 #endif /* USE_ETHERNET */
@@ -499,14 +532,6 @@ test_init(void * arg)
 #endif /* !NO_SYS */
 }
 
-#if PPP_SUPPORT
-static void pppCloseCallback(void *arg)
-{
-  int pd = (int)arg;
-  pppClose(pd);
-}
-#endif /* PPP_SUPPORT */
-
 /* This is somewhat different to other ports: we have a main loop here:
  * a dedicated task that waits for packets to arrive. This would normally be
  * done from interrupt context with embedded hardware, but we don't get an
@@ -561,14 +586,11 @@ void main_loop()
     sys_msleep(50);
 #endif /* !PCAPIF_RX_USE_THREAD */
 #else /* USE_ETHERNET */
-#if 0 /* set this to 1 if PPP_INPROC_OWNTHREAD==0 or not defined (see ppp.c) */
     /* try to read characters from serial line and pass them to PPPoS */
     count = sio_read(ppp_sio, (u8_t*)rxbuf, 1024);
     if(count > 0) {
-      pppos_input(ppp_desc, rxbuf, count);
-    } else
-#endif
-    {
+      pppos_input(ppp, rxbuf, count);
+    } else {
       /* nothing received, give other tasks a chance to run */
       sys_msleep(1);
     }
@@ -588,34 +610,34 @@ void main_loop()
     {
     int do_hup = 0;
     if(do_hup) {
-      pppSigHUP(ppp_desc);
+      ppp_sighup(ppp);
       do_hup = 0;
     }
     }
-    if(callClosePpp && (ppp_desc >= 0)) {
+    if(callClosePpp && ppp) {
       /* make sure to disconnect PPP before stopping the program... */
       callClosePpp = 0;
 #if NO_SYS
-      pppClose(ppp_desc);
+      ppp_close(ppp);
 #else
-      tcpip_callback_with_block(pppCloseCallback, (void*)ppp_desc, 0);
+      pppapi_close(ppp);
 #endif
-      ppp_desc = -1;
+      ppp = NULL;
     }
 #endif /* PPP_SUPPORT */
   }
 
 #if PPP_SUPPORT
-    if(ppp_desc >= 0) {
+    if(ppp) {
       u32_t started;
       printf("Closing PPP connection...\n");
       /* make sure to disconnect PPP before stopping the program... */
 #if NO_SYS
-      pppClose(ppp_desc);
+      ppp_close(ppp);
 #else
-      tcpip_callback_with_block(pppCloseCallback, (void*)ppp_desc, 0);
+      pppapi_close(ppp);
 #endif
-      ppp_desc = -1;
+      ppp = NULL;
       /* Wait for some time to let PPP finish... */
       started = sys_now();
       do
