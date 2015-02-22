@@ -85,6 +85,9 @@
 #include "lwip/pppapi.h"
 #include "netif/ppp/pppos.h"
 #include "netif/ppp/pppoe.h"
+#if !NO_SYS && !LWIP_PPP_API
+#error With NO_SYS==0, LWIP_PPP_API==1 is required.
+#endif
 #endif /* PPP_SUPPORT */
 
 /* include the port-dependent configuration */
@@ -156,7 +159,7 @@ struct netif slipif2;
 
 #if PPP_SUPPORT
 void
-pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx) {
+pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
 {
   LWIP_UNUSED_ARG(ctx);
 
