@@ -257,7 +257,7 @@ netbios_name_encoding(char *name_enc, char *name_dec, int name_dec_len)
 
 /** NetBIOS Name service recv callback */
 static void
-netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
+netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *addr, u16_t port)
 {
   LWIP_UNUSED_ARG(arg);
 
