@@ -75,7 +75,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(LWIP_DIR)\src\include;$(LWIP_DIR)\src\include\ipv4;$(LWIP_DIR)\src\include\ipv6;..\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(LWIP_DIR)\src\include;$(LWIP_DIR)\src\include\ipv4;$(LWIP_DIR)\src\include\ipv6;..\include;..;..\..\..\apps\snmp_private_mib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -97,7 +97,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(LWIP_DIR)\src\include;$(LWIP_DIR)\src\include\ipv4;$(LWIP_DIR)\src\include\ipv6;..\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(LWIP_DIR)\src\include;$(LWIP_DIR)\src\include\ipv4;$(LWIP_DIR)\src\include\ipv6;..\include;..;..\..\..\apps\snmp_private_mib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_LIB;WIN32;_DEBUG;LWIP_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -293,6 +293,7 @@
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppcrypt.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppoe.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppol2tp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppos.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\upap.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\utils.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\vj.c" />
@@ -375,6 +376,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppdebug.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppoe.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppol2tp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppos.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\upap.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\vj.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\des.h" />

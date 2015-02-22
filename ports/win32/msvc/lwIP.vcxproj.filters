@@ -270,6 +270,9 @@
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppol2tp.c">
       <Filter>src\netif\ppp</Filter>
     </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppos.c">
+      <Filter>src\netif\ppp</Filter>
+    </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\upap.c">
       <Filter>src\netif\ppp</Filter>
     </ClCompile>
@@ -510,6 +513,9 @@
       <Filter>src\include\netif\ppp</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppol2tp.h">
+      <Filter>src\include\netif\ppp</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppos.h">
       <Filter>src\include\netif\ppp</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\upap.h">
