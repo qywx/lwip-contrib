@@ -613,7 +613,7 @@ void main_loop()
     {
     int do_hup = 0;
     if(do_hup) {
-      ppp_sighup(ppp);
+      ppp_close(ppp, 1);
       do_hup = 0;
     }
     }
@@ -621,9 +621,9 @@ void main_loop()
       /* make sure to disconnect PPP before stopping the program... */
       callClosePpp = 0;
 #if NO_SYS
-      ppp_close(ppp);
+      ppp_close(ppp, 0);
 #else
-      pppapi_close(ppp);
+      pppapi_close(ppp, 0);
 #endif
       ppp = NULL;
     }
@@ -636,9 +636,9 @@ void main_loop()
       printf("Closing PPP connection...\n");
       /* make sure to disconnect PPP before stopping the program... */
 #if NO_SYS
-      ppp_close(ppp);
+      ppp_close(ppp, 0);
 #else
-      pppapi_close(ppp);
+      pppapi_close(ppp, 0);
 #endif
       ppp = NULL;
       /* Wait for some time to let PPP finish... */
