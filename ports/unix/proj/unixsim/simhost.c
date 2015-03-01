@@ -369,7 +369,7 @@ init_netifs(void)
   ppp_set_auth(ppp, PPPAUTHTYPE_CHAP, "lwip", "mysecret");
 #endif
 
-  ppp_open(ppp, 0);
+  ppp_connect(ppp, 0);
 #endif /* PPP_SUPPORT */
   
 #if LWIP_DHCP

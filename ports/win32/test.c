@@ -286,7 +286,7 @@ msvc_netif_init()
 #ifdef PPP_PASSWORD
   password = PPP_PASSWORD;
 #endif
-  printf("ppp_open: COM%d\n", (int)sio_idx);
+  printf("ppp_connect: COM%d\n", (int)sio_idx);
 #if PPPOS_SUPPORT
   ppp_sio = sio_open(sio_idx);
   if (ppp_sio == NULL) {
@@ -297,7 +297,7 @@ msvc_netif_init()
       printf("pppos_create error\n");
     } else {
       ppp_set_auth(ppp, PPPAUTHTYPE_ANY, username, password);
-      ppp_open(ppp, 0);
+      ppp_connect(ppp, 0);
     }
   }
 #endif /* PPPOS_SUPPORT */
@@ -369,7 +369,7 @@ msvc_netif_init()
     printf("pppos_create error\n");
   } else {
     ppp_set_auth(ppp, PPPAUTHTYPE_ANY, username, password);
-    ppp_open(ppp, 0);
+    ppp_connect(ppp, 0);
   }
 #endif /* PPP_SUPPORT && PPPOE_SUPPORT */
 
