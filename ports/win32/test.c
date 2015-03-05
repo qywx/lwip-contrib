@@ -251,11 +251,6 @@ void link_callback(struct netif *netif)
 {
   if (netif_is_link_up(netif)) {
     printf("link_callback==UP\n");
-#if USE_DHCP
-    if (netif->dhcp != NULL) {
-      dhcp_renew(netif);
-    }
-#endif /* USE_DHCP */
   } else {
     printf("link_callback==DOWN\n");
   }
@@ -277,6 +272,9 @@ msvc_netif_init()
   ip_addr_t ipaddr_slip2, netmask_slip2, gw_slip2;
 #endif /* USE_SLIPIF > 1 */
 #endif /* USE_SLIPIF */
+#if USE_DHCP || USE_AUTOIP
+  err_t err;
+#endif
 
 #if PPP_SUPPORT
   const char *username = NULL, *password = NULL;
@@ -349,12 +347,13 @@ msvc_netif_init()
 #if LWIP_DHCP
   dhcp_set_struct(&netif, &netif_dhcp);
 #endif /* LWIP_DHCP */
-#if USE_DHCP
-  dhcp_start(&netif);
-#elif USE_AUTOIP
-  autoip_start(&netif);
-#else /* USE_DHCP */
   netif_set_up(&netif);
+#if USE_DHCP
+  err = dhcp_start(&netif);
+  LWIP_ASSERT("dhcp_start failed", err == ERR_OK);
+#elif USE_AUTOIP
+  err = autoip_start(&netif);
+  LWIP_ASSERT("autoip_start failed", err == ERR_OK);
 #endif /* USE_DHCP */
 #else /* USE_ETHERNET_TCPIP */
   /* Use ethernet for PPPoE only */

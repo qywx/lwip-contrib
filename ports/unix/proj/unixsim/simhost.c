@@ -373,22 +373,16 @@ init_netifs(void)
 #endif /* PPP_SUPPORT */
   
 #if LWIP_DHCP
-  {
-    IP4_ADDR(&gw, 0,0,0,0);
-    IP4_ADDR(&ipaddr, 0,0,0,0);
-    IP4_ADDR(&netmask, 0,0,0,0);
-
-    netif_add(&netif, &ipaddr, &netmask, &gw, NULL, tapif_init,
-              tcpip_input);
-    netif_set_default(&netif);
-    dhcp_start(&netif);
-  }
-#else
+  IP4_ADDR(&gw, 0,0,0,0);
+  IP4_ADDR(&ipaddr, 0,0,0,0);
+  IP4_ADDR(&netmask, 0,0,0,0);
+#endif
   
   netif_set_default(netif_add(&netif,&ipaddr, &netmask, &gw, NULL, tapif_init,
                   tcpip_input));
   netif_set_up(&netif);
-
+#if LWIP_DHCP
+  dhcp_start(&netif);
 #endif
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif, 1);
