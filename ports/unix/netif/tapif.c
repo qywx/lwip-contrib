@@ -64,6 +64,13 @@
 #include <sys/ioctl.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
+/*
+ * Creating a tap interface requires special privileges. If the interfaces
+ * is created in advance with `tunctl -u <user>` it can be opened as a regular
+ * user. The network must already be configured. If DEVTAP_IF is defined it
+ * will be opened instead of creating a new tap device.
+ */
+/* #define DEVTAP_IF "tap0" */
 #define DEVTAP "/dev/net/tun"
 #define NETMASK_ARGS "netmask %d.%d.%d.%d"
 #define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
@@ -100,7 +107,9 @@ static void
 low_level_init(struct netif *netif)
 {
   struct tapif *tapif;
+#ifndef DEVTAP_IF
   char buf[sizeof(IFCONFIG_ARGS) + sizeof(IFCONFIG_BIN) + 50];
+#endif /* DEVTAP_IF */
 
   tapif = (struct tapif *)netif->state;
 
@@ -131,6 +140,9 @@ low_level_init(struct netif *netif)
   {
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(ifr));
+#ifdef DEVTAP_IF
+    strncpy(ifr.ifr_name, DEVTAP_IF, IFNAMSIZ);
+#endif
     ifr.ifr_flags = IFF_TAP|IFF_NO_PI;
     if (ioctl(tapif->fd, TUNSETIFF, (void *) &ifr) < 0) {
       perror("tapif_init: "DEVTAP" ioctl TUNSETIFF");
@@ -139,6 +151,7 @@ low_level_init(struct netif *netif)
   }
 #endif /* Linux */
 
+#ifndef DEVTAP_IF
   sprintf(buf, IFCONFIG_BIN IFCONFIG_ARGS,
            ip4_addr1(&(netif->gw)),
            ip4_addr2(&(netif->gw)),
@@ -155,6 +168,7 @@ low_level_init(struct netif *netif)
 
   LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: system(\"%s\");\n", buf));
   system(buf);
+#endif /* DEVTAP_IF */
   sys_thread_new("tapif_thread", tapif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 
 }
@@ -223,6 +237,12 @@ low_level_input(struct tapif *tapif)
   /* Obtain the size of the packet and put it into the "len"
      variable. */
   len = read(tapif->fd, buf, sizeof(buf));
+
+  if (len == (u16_t)-1) {
+    perror("read returned -1");
+    exit(1);
+  }
+
 #if 0
     if(((double)rand()/(double)RAND_MAX) < 0.2) {
     printf("drop\n");
