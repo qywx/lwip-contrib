@@ -161,21 +161,26 @@ struct netif slipif2;
 void
 pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
 {
+  struct netif *pppif = ppp_netif(pcb);
   LWIP_UNUSED_ARG(ctx);
 
   switch(errCode) {
     case PPPERR_NONE: {             /* No error. */
-      struct ppp_addrs *ppp_addrs = ppp_addrs(pcb);
-
+#if LWIP_DNS
+      ip_addr_t ns;
+#endif /* LWIP_DNS */
       printf("pppLinkStatusCallback: PPPERR_NONE\n");
-      printf("   our_ipaddr  = %s\n", ip_ntoa(&ppp_addrs->our_ipaddr));
-      printf("   his_ipaddr  = %s\n", ip_ntoa(&ppp_addrs->his_ipaddr));
-      printf("   netmask     = %s\n", ip_ntoa(&ppp_addrs->netmask));
-      printf("   dns1        = %s\n", ip_ntoa(&ppp_addrs->dns1));
-      printf("   dns2        = %s\n", ip_ntoa(&ppp_addrs->dns2));
+      printf("   our_ipaddr  = %s\n", ip_ntoa(&pppif->ip_addr));
+      printf("   his_ipaddr  = %s\n", ip_ntoa(&pppif->gw));
+      printf("   netmask     = %s\n", ip_ntoa(&pppif->netmask));
+#if LWIP_DNS
+      ns = dns_getserver(0);
+      printf("   dns1        = %s\n", ip_ntoa(&ns));
+      ns = dns_getserver(1);
+      printf("   dns2        = %s\n", ip_ntoa(&ns));
+#endif /* LWIP_DNS */
 #if PPP_IPV6_SUPPORT
-      printf("   our6_ipaddr = %s\n", ip6addr_ntoa(&ppp_addrs->our6_ipaddr));
-      printf("   his6_ipaddr = %s\n", ip6addr_ntoa(&ppp_addrs->his6_ipaddr));
+      printf("   our6_ipaddr = %s\n", ip6addr_ntoa(netif_ip6_addr(pppif, 0)));
 #endif /* PPP_IPV6_SUPPORT */
       break;
     }

@@ -42,6 +42,8 @@
 #include "lwip/memp.h"
 #include "lwip/sys.h"
 
+#include "lwip/dns.h"
+
 #include "lwip/stats.h"
 
 #include "lwip/tcp_impl.h"
@@ -146,21 +148,27 @@ tcpip_init_done(void *arg)
 static void
 ppp_link_status_cb(ppp_pcb *pcb, int err_code, void *ctx)
 {
+    struct netif *pppif = ppp_netif(pcb);
     LWIP_UNUSED_ARG(ctx);
 
     switch(err_code) {
     case PPPERR_NONE:               /* No error. */
         {
-        struct ppp_addrs *ppp_addrs = ppp_addrs(pcb);
+#if LWIP_DNS
+        ip_addr_t ns;
+#endif /* LWIP_DNS */
         fprintf(stderr, "ppp_link_status_cb: PPPERR_NONE\n\r");
-        fprintf(stderr, "   our_ipaddr  = %s\n\r", ip_ntoa(&ppp_addrs->our_ipaddr));
-        fprintf(stderr, "   his_ipaddr  = %s\n\r", ip_ntoa(&ppp_addrs->his_ipaddr));
-        fprintf(stderr, "   netmask     = %s\n\r", ip_ntoa(&ppp_addrs->netmask));
-        fprintf(stderr, "   dns1        = %s\n\r", ip_ntoa(&ppp_addrs->dns1));
-        fprintf(stderr, "   dns2        = %s\n\r", ip_ntoa(&ppp_addrs->dns2));
+        fprintf(stderr, "   our_ipaddr  = %s\n\r", ip_ntoa(&pppif->ip_addr));
+        fprintf(stderr, "   his_ipaddr  = %s\n\r", ip_ntoa(&pppif->gw));
+        fprintf(stderr, "   netmask     = %s\n\r", ip_ntoa(&pppif->netmask));
+#if LWIP_DNS
+        ns = dns_getserver(0);
+        fprintf(stderr, "   dns1        = %s\n\r", ip_ntoa(&ns));
+        ns = dns_getserver(1);
+        fprintf(stderr, "   dns2        = %s\n\r", ip_ntoa(&ns));
+#endif /* LWIP_DNS */
 #if PPP_IPV6_SUPPORT
-        fprintf(stderr, "   our6_ipaddr = %s\n\r", ip6addr_ntoa(&ppp_addrs->our6_ipaddr));
-        fprintf(stderr, "   his6_ipaddr = %s\n\r", ip6addr_ntoa(&ppp_addrs->his6_ipaddr));
+        fprintf(stderr, "   our6_ipaddr = %s\n\r", ip6addr_ntoa(netif_ip6_addr(pppif, 0)));
 #endif /* PPP_IPV6_SUPPORT */
         }
         break;
