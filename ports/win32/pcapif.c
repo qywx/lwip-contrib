@@ -563,7 +563,7 @@ pcapif_low_level_init(struct netif *netif)
   memset(&guid, 0, sizeof(guid));
   PACKET_LIB_GET_ADAPTER_NETADDRESS(&netaddr);
   if (get_adapter_index_from_addr((struct in_addr *)&netaddr, guid, GUID_LEN) < 0) {
-     printf("ERROR initializing network adapter, failed to get GUID for network address %s\n", ip_ntoa(&netaddr));
+     printf("ERROR initializing network adapter, failed to get GUID for network address %s\n", ipaddr_ntoa(&netaddr));
      LWIP_ASSERT("ERROR initializing network adapter, failed to get GUID for network address!", 0);
      return;
   }

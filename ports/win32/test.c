@@ -170,14 +170,14 @@ pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
       ip_addr_t ns;
 #endif /* LWIP_DNS */
       printf("pppLinkStatusCallback: PPPERR_NONE\n");
-      printf("   our_ipaddr  = %s\n", ip_ntoa(&pppif->ip_addr));
-      printf("   his_ipaddr  = %s\n", ip_ntoa(&pppif->gw));
-      printf("   netmask     = %s\n", ip_ntoa(&pppif->netmask));
+      printf("   our_ipaddr  = %s\n", ipaddr_ntoa(&pppif->ip_addr));
+      printf("   his_ipaddr  = %s\n", ipaddr_ntoa(&pppif->gw));
+      printf("   netmask     = %s\n", ipaddr_ntoa(&pppif->netmask));
 #if LWIP_DNS
       ns = dns_getserver(0);
-      printf("   dns1        = %s\n", ip_ntoa(&ns));
+      printf("   dns1        = %s\n", ipaddr_ntoa(&ns));
       ns = dns_getserver(1);
-      printf("   dns2        = %s\n", ip_ntoa(&ns));
+      printf("   dns2        = %s\n", ipaddr_ntoa(&ns));
 #endif /* LWIP_DNS */
 #if PPP_IPV6_SUPPORT
       printf("   our6_ipaddr = %s\n", ip6addr_ntoa(netif_ip6_addr(pppif, 0)));
@@ -244,7 +244,7 @@ pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
 void status_callback(struct netif *netif)
 {
   if (netif_is_up(netif)) {
-    printf("status_callback==UP, local interface IP is %s\n", ip_ntoa(&netif->ip_addr));
+    printf("status_callback==UP, local interface IP is %s\n", ipaddr_ntoa(&netif->ip_addr));
   } else {
     printf("status_callback==DOWN\n");
   }
@@ -319,7 +319,7 @@ msvc_netif_init()
   LWIP_PORT_INIT_GW(&gw);
   LWIP_PORT_INIT_IPADDR(&ipaddr);
   LWIP_PORT_INIT_NETMASK(&netmask);
-  printf("Starting lwIP, local interface IP is %s\n", ip_ntoa(&ipaddr));
+  printf("Starting lwIP, local interface IP is %s\n", ipaddr_ntoa(&ipaddr));
 #endif /* USE_DHCP */
 #endif /* USE_ETHERNET_TCPIP */
 
@@ -382,7 +382,7 @@ msvc_netif_init()
   LWIP_PORT_INIT_SLIP1_IPADDR(&ipaddr_slip1);
   LWIP_PORT_INIT_SLIP1_GW(&gw_slip1);
   LWIP_PORT_INIT_SLIP1_NETMASK(&netmask_slip1);
-  printf("Starting lwIP slipif, local interface IP is %s\n", ip_ntoa(&ipaddr_slip1));
+  printf("Starting lwIP slipif, local interface IP is %s\n", ipaddr_ntoa(&ipaddr_slip1));
 #if SIO_USE_COMPORT
   num_slip1++; /* COM ports cannot be 0-based */
 #endif
@@ -408,7 +408,7 @@ msvc_netif_init()
   LWIP_PORT_INIT_SLIP2_IPADDR(&ipaddr_slip2);
   LWIP_PORT_INIT_SLIP2_GW(&gw_slip2);
   LWIP_PORT_INIT_SLIP2_NETMASK(&netmask_slip2);
-  printf("Starting lwIP SLIP if #2, local interface IP is %s\n", ip_ntoa(&ipaddr_slip2));
+  printf("Starting lwIP SLIP if #2, local interface IP is %s\n", ipaddr_ntoa(&ipaddr_slip2));
 #if SIO_USE_COMPORT
   num_slip2++; /* COM ports cannot be 0-based */
 #endif
@@ -434,7 +434,7 @@ msvc_netif_init()
 void dns_found(const char *name, ip_addr_t *addr, void *arg)
 {
   LWIP_UNUSED_ARG(arg);
-  printf("%s: %s\n", name, addr ? ip_ntoa(addr) : "<not found>");
+  printf("%s: %s\n", name, addr ? ipaddr_ntoa(addr) : "<not found>");
 }
 
 void dns_dorequest(void *arg)

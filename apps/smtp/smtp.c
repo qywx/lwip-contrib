@@ -994,7 +994,7 @@ smtp_prepare_helo(struct smtp_session *s, u16_t *tx_buf_len, struct tcp_pcb *pcb
   } else
 #endif
   {
-    ipa = ip_ntoa(ipX_2_ip(&pcb->local_ip));
+    ipa = ipaddr_ntoa(ipX_2_ip(&pcb->local_ip));
   }
   LWIP_ASSERT("ip_ntoa returned NULL", ipa != NULL);
   ipa_len = strlen(ipa);
