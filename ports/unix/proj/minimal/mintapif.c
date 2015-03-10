@@ -88,6 +88,7 @@ low_level_init(struct netif *netif)
   struct mintapif *mintapif;
   char buf[1024];
   int ret;
+  char *preconfigured_tapif = getenv("PRECONFIGURED_TAPIF");
 
   mintapif = (struct mintapif *)netif->state;
   
@@ -115,6 +116,8 @@ low_level_init(struct netif *netif)
   {
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(ifr));
+    if (preconfigured_tapif != NULL)
+      strncpy(ifr.ifr_name, preconfigured_tapif, IFNAMSIZ);
     ifr.ifr_flags = IFF_TAP|IFF_NO_PI;
     if (ioctl(mintapif->fd, TUNSETIFF, (void *) &ifr) < 0) {
       perror("Could not set interface flags");
