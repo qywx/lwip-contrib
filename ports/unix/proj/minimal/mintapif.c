@@ -117,7 +117,7 @@ low_level_init(struct netif *netif)
     memset(&ifr, 0, sizeof(ifr));
     ifr.ifr_flags = IFF_TAP|IFF_NO_PI;
     if (ioctl(mintapif->fd, TUNSETIFF, (void *) &ifr) < 0) {
-      perror(buf);
+      perror("Could not set interface flags");
       exit(1);
     }
   }
