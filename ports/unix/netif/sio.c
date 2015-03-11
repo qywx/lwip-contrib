@@ -20,7 +20,7 @@
 #undef NTOHS
 
 #include <stdlib.h>
-#if defined(openbsd)
+#if defined(LWIP_UNIX_OPENBSD)
 #include <util.h>
 #endif
 #include <termios.h>
@@ -31,7 +31,7 @@
 #include <sys/signal.h>
 #include <sys/types.h>
 
-#if PPP_SUPPORT && defined(linux)
+#if PPP_SUPPORT && defined(LWIP_UNIX_LINUX)
 #include <pty.h>
 #endif
 
@@ -127,9 +127,9 @@ static int sio_unix_init( char * device, int devnum, sio_status_t * siostat )
 	}
 
 	saio.sa_flags = 0;
-#if linux
+#if defined(LWIP_UNIX_LINUX)
 	saio.sa_restorer = NULL;
-#endif /* linux */
+#endif /* LWIP_UNIX_LINUX */
 	sigaction( SIGIO,&saio,NULL );
 
 	/* allow the process to receive SIGIO */

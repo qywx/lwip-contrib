@@ -43,14 +43,14 @@
 #include <sys/uio.h>
 #include <sys/socket.h>
 
-#if defined(linux)
+#if defined(LWIP_UNIX_LINUX)
 #include <sys/ioctl.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
 #define DEVTAP "/dev/net/tun"
 #define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d"
 
-#elif defined(openbsd)
+#elif defined(LWIP_UNIX_OPENBSD)
 #define DEVTAP "/dev/tun0"
 #define IFCONFIG_ARGS "tun0 inet %d.%d.%d.%d link0"
 
@@ -112,7 +112,7 @@ low_level_init(struct netif *netif)
     exit(1);
   }
 
-#ifdef linux
+#ifdef LWIP_UNIX_LINUX
   {
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(ifr));

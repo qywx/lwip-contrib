@@ -84,7 +84,7 @@ static int
 unix_socket_client(const char *name)
 {
   int fd;
-#if !defined(linux) && !defined(cygwin) && !defined(__CYGWIN__)
+#if !defined(LWIP_UNIX_LINUX) && !defined(LWIP_UNIX_CYGWIN) && !defined(__CYGWIN__)
   int len;
 #endif
   struct sockaddr_un unix_addr;
@@ -99,11 +99,11 @@ unix_socket_client(const char *name)
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
   snprintf(unix_addr.sun_path, sizeof(unix_addr.sun_path), "%s%05d", "/var/tmp/", getpid());
-#if !defined(linux) && !defined(cygwin) && !defined(__CYGWIN__)
+#if !defined(LWIP_UNIX_LINUX) && !defined(LWIP_UNIX_CYGWIN) && !defined(__CYGWIN__)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;
   unix_addr.sun_len = len;
-#endif /* linux */
+#endif /* LWIP_UNIX_LINUX */
 
   unlink(unix_addr.sun_path);             /* in case it already exists */
   if (bind(fd, (struct sockaddr *) &unix_addr,
@@ -120,11 +120,11 @@ unix_socket_client(const char *name)
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
   strcpy(unix_addr.sun_path, name);
-#if !defined(linux) && !defined(cygwin) && !defined(__CYGWIN__)
+#if !defined(LWIP_UNIX_LINUX) && !defined(LWIP_UNIX_CYGWIN) && !defined(__CYGWIN__)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;  
   unix_addr.sun_len = len;
-#endif /* linux */
+#endif /* LWIP_UNIX_LINUX */
   if (connect(fd, (struct sockaddr *) &unix_addr,
       sizeof(struct sockaddr_un)) < 0) {
     perror("unixif: unix_socket_client: socket");
@@ -138,7 +138,7 @@ static int
 unix_socket_server(const char *name)
 {
   int fd;
-#if !defined(linux) && !defined(cygwin) && !defined(__CYGWIN__)
+#if !defined(LWIP_UNIX_LINUX) && !defined(LWIP_UNIX_CYGWIN) && !defined(__CYGWIN__)
   int len;
 #endif
   struct sockaddr_un unix_addr;
@@ -155,11 +155,11 @@ unix_socket_server(const char *name)
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
   strcpy(unix_addr.sun_path, name);
-#if !defined(linux) && !defined(cygwin) && !defined(__CYGWIN__)
+#if !defined(LWIP_UNIX_LINUX) && !defined(LWIP_UNIX_CYGWIN) && !defined(__CYGWIN__)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;
   unix_addr.sun_len = len;
-#endif /* linux */
+#endif /* LWIP_UNIX_LINUX */
 
   /* bind the name to the descriptor */
   if (bind(fd, (struct sockaddr *) &unix_addr,

@@ -37,11 +37,11 @@
 #include "lwip/def.h"
 #include "netif/delif.h"
 
-#ifdef linux
+#ifdef LWIP_UNIX_LINUX
 #include "netif/tapif.h"
-#else /* linux */
+#else /* LWIP_UNIX_LINUX */
 #include "netif/tunif.h"
-#endif /* linux */
+#endif /* LWIP_UNIX_LINUX */
 
 #include "lwip/sys.h"
 
@@ -253,12 +253,12 @@ delif_init(struct netif *netif)
       free(del);
       return ERR_MEM;
   }
-#ifdef linux
+#ifdef LWIP_UNIX_LINUX
   /*  tapif_init(del->netif);*/
   tunif_init(del->netif);
-#else /* linux */
+#else /* LWIP_UNIX_LINUX */
   tunif_init(del->netif);
-#endif /* linux */
+#endif /* LWIP_UNIX_LINUX */
   del->input = netif->input;
   del->netif->input = delif_input;
   sys_timeout(DELIF_TIMEOUT, delif_input_timeout, netif);
@@ -275,11 +275,11 @@ delif_thread(void *arg)
   sys_sem_t sem;
   
   del = netif->state;
-#ifdef linux
+#ifdef LWIP_UNIX_LINUX
   tapif_init(del->netif);
-#else /* linux */
+#else /* LWIP_UNIX_LINUX */
   tunif_init(del->netif);
-#endif /* linux */
+#endif /* LWIP_UNIX_LINUX */
 
   sys_timeout(DELIF_TIMEOUT, delif_input_timeout, netif);
   sys_timeout(DELIF_TIMEOUT, delif_output_timeout, netif);

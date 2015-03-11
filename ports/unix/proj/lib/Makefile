@@ -39,7 +39,10 @@ LWIPDIR=$(CONTRIBDIR)/../lwip/src
 
 CCDEP=gcc
 CC=gcc
-CFLAGS=-g -Wall -DLWIP_DEBUG -fPIC -pedantic -Werror \
+#To compile for openbsd: make UNIXARCH=OPENBSD
+#To compile for cygwin: make UNIXARCH=CYGWIN
+UNIXARCH ?= LINUX
+CFLAGS=-g -Wall -DLWIP_UNIX_${UNIXARCH} -DLWIP_DEBUG -fPIC -pedantic -Werror \
 	-Wparentheses -Wsequence-point -Wswitch-default \
 	-Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast \
 	-Wc++-compat -Wwrite-strings -Wold-style-definition \

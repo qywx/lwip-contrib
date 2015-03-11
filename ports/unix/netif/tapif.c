@@ -60,7 +60,7 @@
 
 #define IFCONFIG_BIN "/sbin/ifconfig "
 
-#if defined(linux)
+#if defined(LWIP_UNIX_LINUX)
 #include <sys/ioctl.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
@@ -74,7 +74,7 @@
 #define DEVTAP "/dev/net/tun"
 #define NETMASK_ARGS "netmask %d.%d.%d.%d"
 #define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
-#elif defined(openbsd)
+#elif defined(LWIP_UNIX_OPENBSD)
 #define DEVTAP "/dev/tun0"
 #define NETMASK_ARGS "netmask %d.%d.%d.%d"
 #define IFCONFIG_ARGS "tun0 inet %d.%d.%d.%d " NETMASK_ARGS " link0"
@@ -128,7 +128,7 @@ low_level_init(struct netif *netif)
   tapif->fd = open(DEVTAP, O_RDWR);
   LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: fd %d\n", tapif->fd));
   if(tapif->fd == -1) {
-#ifdef linux
+#ifdef LWIP_UNIX_LINUX
     perror("tapif_init: try running \"modprobe tun\" or rebuilding your kernel with CONFIG_TUN; cannot open "DEVTAP);
 #else
     perror("tapif_init: cannot open "DEVTAP);
@@ -136,7 +136,7 @@ low_level_init(struct netif *netif)
     exit(1);
   }
 
-#ifdef linux
+#ifdef LWIP_UNIX_LINUX
   {
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(ifr));
