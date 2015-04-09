@@ -822,7 +822,6 @@ com_udpb(struct command *com)
   u16_t lport, rport;
   int i;
   err_t err;
-  ip_addr_t bcaddr;
   long tmp;
 
   tmp = strtol(com->args[0], NULL, 10);
@@ -876,8 +875,7 @@ com_udpb(struct command *com)
     return ESUCCESS;
   }
 
-  IP4_ADDR(&bcaddr, 255,255,255,255);
-  err = netconn_bind(conns[i], &bcaddr, lport);
+  err = netconn_bind(conns[i], &ip_addr_broadcast, lport);
   if (err != ERR_OK) {
     netconn_delete(conns[i]);
     conns[i] = NULL;

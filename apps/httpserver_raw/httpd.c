@@ -2470,7 +2470,7 @@ httpd_init_addr(const ip_addr_t *local_addr)
   /* set SOF_REUSEADDR here to explicitly bind httpd to multiple interfaces */
   err = tcp_bind(pcb, local_addr, HTTPD_SERVER_PORT);
   LWIP_ASSERT("httpd_init: tcp_bind failed", err == ERR_OK);
-  pcb = tcp_listen(pcb);
+  pcb = tcp_listen_dual(pcb);
   LWIP_ASSERT("httpd_init: tcp_listen failed", pcb != NULL);
   /* initialize callback arg and accept callback */
   tcp_arg(pcb, pcb);

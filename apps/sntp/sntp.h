@@ -31,7 +31,7 @@ extern "C" {
 void sntp_init(void);
 void sntp_stop(void);
 
-void sntp_setserver(u8_t idx, ip_addr_t *addr);
+void sntp_setserver(u8_t idx, const ip_addr_t *addr);
 ip_addr_t sntp_getserver(u8_t idx);
 
 #if SNTP_SERVER_DNS

@@ -320,7 +320,6 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\icmp6.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\igmp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\inet.h" />
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\inet6.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\inet_chksum.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\init.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip.h" />

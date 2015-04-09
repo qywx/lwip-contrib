@@ -347,9 +347,6 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\inet.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\inet6.h">
-      <Filter>src\include\lwip</Filter>
-    </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\inet_chksum.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>

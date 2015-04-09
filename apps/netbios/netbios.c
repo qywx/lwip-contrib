@@ -129,7 +129,7 @@ struct netbios_name_hdr {
   PACK_STRUCT_FIELD(u32_t ttl);
   PACK_STRUCT_FIELD(u16_t datalen);
   PACK_STRUCT_FIELD(u16_t flags);
-  PACK_STRUCT_FLD_S(ip_addr_p_t addr);
+  PACK_STRUCT_FLD_S(ip4_addr_p_t addr);
 } PACK_STRUCT_STRUCT;
 PACK_STRUCT_END
 #ifdef PACK_STRUCT_USE_INCLUDES
@@ -304,7 +304,7 @@ netbios_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t *a
             resp->resp_name.ttl          = PP_HTONL(NETBIOS_NAME_TTL);
             resp->resp_name.datalen      = PP_HTONS(sizeof(resp->resp_name.flags)+sizeof(resp->resp_name.addr));
             resp->resp_name.flags        = PP_HTONS(NETB_NFLAG_NODETYPE_BNODE);
-            ip_addr_copy(resp->resp_name.addr, netif_default->ip_addr);
+            ip4_addr_copy(resp->resp_name.addr, netif_default->ip_addr);
 
             /* send the NetBIOS response */
             udp_sendto(upcb, q, addr, port);

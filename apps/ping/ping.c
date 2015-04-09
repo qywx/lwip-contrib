@@ -65,9 +65,9 @@
 #define PING_DEBUG     LWIP_DBG_ON
 #endif
 
-/** ping target - should be a "ip_addr_t" */
+/** ping target - should be an "ip4_addr_t" */
 #ifndef PING_TARGET
-#define PING_TARGET   (netif_default?netif_default->gw:ip_addr_any)
+#define PING_TARGET   (netif_default?netif_default->gw:(*IP4_ADDR_ANY))
 #endif
 
 /** ping receive timeout - in milliseconds */
@@ -134,6 +134,7 @@ ping_send(int s, ip_addr_t *addr)
   struct sockaddr_in to;
   size_t ping_size = sizeof(struct icmp_echo_hdr) + PING_DATA_SIZE;
   LWIP_ASSERT("ping_size is too big", ping_size <= 0xffff);
+  LWIP_ASSERT("ping: expect IPv4 address", !IP_IS_V6(addr));
 
   iecho = (struct icmp_echo_hdr *)mem_malloc((mem_size_t)ping_size);
   if (!iecho) {
@@ -144,7 +145,7 @@ ping_send(int s, ip_addr_t *addr)
 
   to.sin_len = sizeof(to);
   to.sin_family = AF_INET;
-  inet_addr_from_ipaddr(&to.sin_addr, addr);
+  inet_addr_from_ipaddr(&to.sin_addr, ip_2_ip4(addr));
 
   err = lwip_sendto(s, iecho, ping_size, 0, (struct sockaddr*)&to, sizeof(to));
 
@@ -164,20 +165,24 @@ ping_recv(int s)
 
   while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, (socklen_t*)&fromlen)) > 0) {
     if (len >= (int)(sizeof(struct ip_hdr)+sizeof(struct icmp_echo_hdr))) {
-      ip_addr_t fromaddr;
-      inet_addr_to_ipaddr(&fromaddr, &from.sin_addr);
-      LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
-      ip_addr_debug_print(PING_DEBUG, &fromaddr);
-      LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", (sys_now() - ping_time)));
-
-      iphdr = (struct ip_hdr *)buf;
-      iecho = (struct icmp_echo_hdr *)(buf + (IPH_HL(iphdr) * 4));
-      if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
-        /* do some ping result processing */
-        PING_RESULT((ICMPH_TYPE(iecho) == ICMP_ER));
-        return;
+      if (from.sin_family == AF_INET) {
+        LWIP_DEBUGF( PING_DEBUG, ("ping: invalid sin_family\n"));
       } else {
-        LWIP_DEBUGF( PING_DEBUG, ("ping: drop\n"));
+        ip4_addr_t fromaddr;
+        inet_addr_to_ipaddr(&fromaddr, &from.sin_addr);
+        LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
+        ip4_addr_debug_print(PING_DEBUG, &fromaddr);
+        LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", (sys_now() - ping_time)));
+
+        iphdr = (struct ip_hdr *)buf;
+        iecho = (struct icmp_echo_hdr *)(buf + (IPH_HL(iphdr) * 4));
+        if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
+          /* do some ping result processing */
+          PING_RESULT((ICMPH_TYPE(iecho) == ICMP_ER));
+          return;
+        } else {
+          LWIP_DEBUGF( PING_DEBUG, ("ping: drop\n"));
+        }
       }
     }
   }
@@ -206,7 +211,7 @@ ping_thread(void *arg)
   lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
   while (1) {
-    ping_target = PING_TARGET;
+    ip_addr_copy_from_ip4(ping_target, PING_TARGET);
 
     if (ping_send(s, &ping_target) == ERR_OK) {
       LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
@@ -228,7 +233,7 @@ ping_thread(void *arg)
 
 /* Ping using the raw ip */
 static u8_t
-ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
+ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
 {
   struct icmp_echo_hdr *iecho;
   LWIP_UNUSED_ARG(arg);
@@ -288,10 +293,11 @@ static void
 ping_timeout(void *arg)
 {
   struct raw_pcb *pcb = (struct raw_pcb*)arg;
-  ip_addr_t ping_target = PING_TARGET;
-  
+  ip_addr_t ping_target;
+
   LWIP_ASSERT("ping_timeout: no pcb given!", pcb != NULL);
 
+  ip_addr_copy_from_ip4(ping_target, PING_TARGET);
   ping_send(pcb, &ping_target);
 
   sys_timeout(PING_DELAY, ping_timeout, pcb);
@@ -311,8 +317,9 @@ ping_raw_init(void)
 void
 ping_send_now()
 {
-  ip_addr_t ping_target = PING_TARGET;
+  ip_addr_t ping_target;
   LWIP_ASSERT("ping_pcb != NULL", ping_pcb != NULL);
+  ip_addr_copy_from_ip4(ping_target, PING_TARGET);
   ping_send(ping_pcb, &ping_target);
 }
 

@@ -987,15 +987,7 @@ static enum smtp_session_state
 smtp_prepare_helo(struct smtp_session *s, u16_t *tx_buf_len, struct tcp_pcb *pcb)
 {
   size_t ipa_len;
-  char *ipa;
-#if LWIP_IPV6
-  if (PCB_ISIPV6(pcb)) {
-    ipa = ip6addr_ntoa(ipX_2_ip6(&pcb->local_ip));
-  } else
-#endif
-  {
-    ipa = ipaddr_ntoa(ipX_2_ip(&pcb->local_ip));
-  }
+  char *ipa = ipaddr_ntoa(&pcb->local_ip);
   LWIP_ASSERT("ipaddr_ntoa returned NULL", ipa != NULL);
   ipa_len = strlen(ipa);
   LWIP_ASSERT("string too long", ipa_len <= 0xffff);

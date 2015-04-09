@@ -571,7 +571,7 @@ sntp_request(void *arg)
 #if SNTP_SERVER_DNS
   if (sntp_servers[sntp_current_server].name) {
     /* always resolve the name and rely on dns-internal caching & timeout */
-    ip_addr_set_any(&sntp_servers[sntp_current_server].addr);
+    ip_addr_set_zero(&sntp_servers[sntp_current_server].addr);
     err = dns_gethostbyname(sntp_servers[sntp_current_server].name, &sntp_server_address,
       sntp_dns_found, NULL);
     if (err == ERR_INPROGRESS) {
@@ -664,13 +664,13 @@ sntp_servermode_dhcp(int set_servers_from_dhcp)
  * @param dnsserver IP address of the NTP server to set
  */
 void
-sntp_setserver(u8_t idx, ip_addr_t *server)
+sntp_setserver(u8_t idx, const ip_addr_t *server)
 {
   if (idx < SNTP_MAX_SERVERS) {
     if (server != NULL) {
       sntp_servers[idx].addr = (*server);
     } else {
-      ip_addr_set_any(&sntp_servers[idx].addr);
+      ip_addr_set_zero(&sntp_servers[idx].addr);
     }
 #if SNTP_SERVER_DNS
     sntp_servers[idx].name = NULL;
@@ -686,7 +686,7 @@ sntp_setserver(u8_t idx, ip_addr_t *server)
  * @param dnsserver IP address of the NTP server to set
  */
 void
-dhcp_set_ntp_servers(u8_t num, ip_addr_t *server)
+dhcp_set_ntp_servers(u8_t num, const ip4_addr_t *server)
 {
   LWIP_DEBUGF(SNTP_DEBUG_TRACE, ("sntp: %s %u.%u.%u.%u as NTP server #%u via DHCP\n",
     (sntp_set_servers_from_dhcp ? "Got" : "Rejected"),
@@ -694,7 +694,9 @@ dhcp_set_ntp_servers(u8_t num, ip_addr_t *server)
   if (sntp_set_servers_from_dhcp && num) {
     u8_t i;
     for (i = 0; (i < num) && (i < SNTP_MAX_SERVERS); i++) {
-      sntp_setserver(i, &server[i]);
+      ip_addr_t addr;
+      ip_addr_copy_from_ip4(addr, server[i]);
+      sntp_setserver(i, &addr);
     }
     for (i = num; i < SNTP_MAX_SERVERS; i++) {
       sntp_setserver(i, NULL);
