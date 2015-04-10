@@ -83,8 +83,8 @@ tcpdump(struct pbuf *p)
 
     pbuf_header(p, -IP_HLEN);
     if (inet_chksum_pseudo(p, IP_PROTO_TCP, p->tot_len, 
-                           (ip_addr_t *)&(iphdr->src),
-                           (ip_addr_t *)&(iphdr->dest)) != 0) {
+                           (ip4_addr_t *)&(iphdr->src),
+                           (ip4_addr_t *)&(iphdr->dest)) != 0) {
       LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: IP checksum failed!\n"));
       /*
       fprintf(file, "chksum 0x%lx ", tcphdr->chksum);
@@ -149,8 +149,8 @@ tcpdump(struct pbuf *p)
 
     pbuf_header(p, -IP_HLEN);
     if (inet_chksum_pseudo(p, IP_PROTO_UDP, p->tot_len,
-                           (ip_addr_t *)&(iphdr->src),
-                           (ip_addr_t *)&(iphdr->dest)) != 0) {
+                           (ip4_addr_t *)&(iphdr->src),
+                           (ip4_addr_t *)&(iphdr->dest)) != 0) {
       LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: IP checksum failed!\n"));
       /*
       fprintf(file, "chksum 0x%lx ", tcphdr->chksum);

@@ -81,11 +81,11 @@
 #endif
 
 /* (manual) host IP configuration */
-static ip_addr_t ipaddr, netmask, gw;
+static ip4_addr_t ipaddr, netmask, gw;
 
 /* ping out destination cmd option */
 static unsigned char ping_flag;
-static ip_addr_t ping_addr;
+static ip4_addr_t ping_addr;
 
 /* nonstatic debug cmd option, exported in lwipopts.h */
 unsigned char debug_flags;
@@ -237,14 +237,14 @@ static int seq_num;
 #if 0
 /* Ping using the raw api */
 static int
-ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip_addr_t *addr)
+ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip4_addr_t *addr)
 {
   printf("ping recv\n");
   return 1; /* eat the event */
 }
 
 static void
-ping_send(struct raw_pcb *raw, ip_addr_t *addr)
+ping_send(struct raw_pcb *raw, ip4_addr_t *addr)
 {
   struct pbuf *p;
   struct icmp_echo_hdr *iecho;
@@ -287,7 +287,7 @@ ping_thread(void *arg)
 /* Ping using the socket api */
 
 static void
-ping_send(int s, ip_addr_t *addr)
+ping_send(int s, ip4_addr_t *addr)
 {
   struct icmp_echo_hdr *iecho;
   struct sockaddr_in to;
@@ -311,7 +311,7 @@ ping_send(int s, ip_addr_t *addr)
 }
 
 static void
-ping_recv(int s, ip_addr_t *addr)
+ping_recv(int s, ip4_addr_t *addr)
 {
   char buf[200];
   socklen_t fromlen;
@@ -449,7 +449,6 @@ main_thread(void *arg)
 int
 main(int argc, char **argv)
 {
-  struct in_addr inaddr;
   int ch;
   char ip_str[16] = {0}, nm_str[16] = {0}, gw_str[16] = {0};
 
@@ -472,23 +471,18 @@ main(int argc, char **argv)
         exit(0);
         break;
       case 'g':
-        inet_aton(optarg, &inaddr);
-        gw.addr = inaddr.s_addr;
+        ip4addr_aton(optarg, &gw);
         break;
       case 'i':
-        inet_aton(optarg, &inaddr);
-        ipaddr.addr = inaddr.s_addr;
+        ip4addr_aton(optarg, &ipaddr);
         break;
       case 'm':
-        inet_aton(optarg, &inaddr);
-        netmask.addr = inaddr.s_addr;
+        ip4addr_aton(optarg, &netmask);
         break;
       case 'p':
         ping_flag = !0;
-        inet_aton(optarg, &inaddr);
-        /* lwip inet.h oddity workaround */
-        ping_addr.addr = inaddr.s_addr; 
-        strncpy(ip_str,inet_ntoa(inaddr),sizeof(ip_str));
+        ip4addr_aton(optarg, &ping_addr);
+        strncpy(ip_str,ip4addr_ntoa(&ping_addr),sizeof(ip_str));
         printf("Using %s to ping\n", ip_str);
         break;
       default:
@@ -499,12 +493,9 @@ main(int argc, char **argv)
   argc -= optind;
   argv += optind;
 
-  inaddr.s_addr = ipaddr.addr;
-  strncpy(ip_str,inet_ntoa(inaddr),sizeof(ip_str));
-  inaddr.s_addr = netmask.addr;
-  strncpy(nm_str,inet_ntoa(inaddr),sizeof(nm_str));
-  inaddr.s_addr = gw.addr;
-  strncpy(gw_str,inet_ntoa(inaddr),sizeof(gw_str));
+  strncpy(ip_str,ip4addr_ntoa(&ipaddr),sizeof(ip_str));
+  strncpy(nm_str,ip4addr_ntoa(&netmask),sizeof(nm_str));
+  strncpy(gw_str,ip4addr_ntoa(&gw),sizeof(gw_str));
   printf("Host at %s mask %s gateway %s\n", ip_str, nm_str, gw_str);
 
 #ifdef PERF
