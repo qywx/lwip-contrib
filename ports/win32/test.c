@@ -170,9 +170,9 @@ pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
       ip_addr_t ns;
 #endif /* LWIP_DNS */
       printf("pppLinkStatusCallback: PPPERR_NONE\n");
-      printf("   our_ipaddr  = %s\n", ipaddr_ntoa(&pppif->ip_addr));
-      printf("   his_ipaddr  = %s\n", ipaddr_ntoa(&pppif->gw));
-      printf("   netmask     = %s\n", ipaddr_ntoa(&pppif->netmask));
+      printf("   our_ipaddr  = %s\n", ip4addr_ntoa(&pppif->ip_addr));
+      printf("   his_ipaddr  = %s\n", ip4addr_ntoa(&pppif->gw));
+      printf("   netmask     = %s\n", ip4addr_ntoa(&pppif->netmask));
 #if LWIP_DNS
       ns = dns_getserver(0);
       printf("   dns1        = %s\n", ipaddr_ntoa(&ns));
@@ -244,7 +244,7 @@ pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
 void status_callback(struct netif *netif)
 {
   if (netif_is_up(netif)) {
-    printf("status_callback==UP, local interface IP is %s\n", ipaddr_ntoa(&netif->ip_addr));
+    printf("status_callback==UP, local interface IP is %s\n", ip4addr_ntoa(&netif->ip_addr));
   } else {
     printf("status_callback==DOWN\n");
   }
@@ -267,14 +267,14 @@ static void
 msvc_netif_init()
 {
 #if USE_ETHERNET
-  ip_addr_t ipaddr, netmask, gw;
+  ip4_addr_t ipaddr, netmask, gw;
 #endif /* USE_ETHERNET */
 #if USE_SLIPIF
   u8_t num_slip1 = 0;
-  ip_addr_t ipaddr_slip1, netmask_slip1, gw_slip1;
+  ip4_addr_t ipaddr_slip1, netmask_slip1, gw_slip1;
 #if USE_SLIPIF > 1
   u8_t num_slip2 = 1;
-  ip_addr_t ipaddr_slip2, netmask_slip2, gw_slip2;
+  ip4_addr_t ipaddr_slip2, netmask_slip2, gw_slip2;
 #endif /* USE_SLIPIF > 1 */
 #endif /* USE_SLIPIF */
 #if USE_DHCP || USE_AUTOIP
@@ -307,9 +307,9 @@ msvc_netif_init()
 #endif  /* PPP_SUPPORT */
 
 #if USE_ETHERNET
-  ip_addr_set_zero(&gw);
-  ip_addr_set_zero(&ipaddr);
-  ip_addr_set_zero(&netmask);
+  ip4_addr_set_zero(&gw);
+  ip4_addr_set_zero(&ipaddr);
+  ip4_addr_set_zero(&netmask);
 #if USE_ETHERNET_TCPIP
 #if USE_DHCP
   printf("Starting lwIP, local interface IP is dhcp-enabled\n");
@@ -319,7 +319,7 @@ msvc_netif_init()
   LWIP_PORT_INIT_GW(&gw);
   LWIP_PORT_INIT_IPADDR(&ipaddr);
   LWIP_PORT_INIT_NETMASK(&netmask);
-  printf("Starting lwIP, local interface IP is %s\n", ipaddr_ntoa(&ipaddr));
+  printf("Starting lwIP, local interface IP is %s\n", ip4addr_ntoa(&ipaddr));
 #endif /* USE_DHCP */
 #endif /* USE_ETHERNET_TCPIP */
 
@@ -382,7 +382,7 @@ msvc_netif_init()
   LWIP_PORT_INIT_SLIP1_IPADDR(&ipaddr_slip1);
   LWIP_PORT_INIT_SLIP1_GW(&gw_slip1);
   LWIP_PORT_INIT_SLIP1_NETMASK(&netmask_slip1);
-  printf("Starting lwIP slipif, local interface IP is %s\n", ipaddr_ntoa(&ipaddr_slip1));
+  printf("Starting lwIP slipif, local interface IP is %s\n", ip4addr_ntoa(&ipaddr_slip1));
 #if SIO_USE_COMPORT
   num_slip1++; /* COM ports cannot be 0-based */
 #endif
@@ -408,7 +408,7 @@ msvc_netif_init()
   LWIP_PORT_INIT_SLIP2_IPADDR(&ipaddr_slip2);
   LWIP_PORT_INIT_SLIP2_GW(&gw_slip2);
   LWIP_PORT_INIT_SLIP2_NETMASK(&netmask_slip2);
-  printf("Starting lwIP SLIP if #2, local interface IP is %s\n", ipaddr_ntoa(&ipaddr_slip2));
+  printf("Starting lwIP SLIP if #2, local interface IP is %s\n", ip4addr_ntoa(&ipaddr_slip2));
 #if SIO_USE_COMPORT
   num_slip2++; /* COM ports cannot be 0-based */
 #endif
