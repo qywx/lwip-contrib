@@ -588,7 +588,7 @@ sntp_request(void *arg)
 #endif /* SNTP_SERVER_DNS */
   {
     sntp_server_address = sntp_servers[sntp_current_server].addr;
-    err = (ip_addr_isany(&sntp_server_address)) ? ERR_ARG : ERR_OK;
+    err = (ip_addr_isany_val(sntp_server_address)) ? ERR_ARG : ERR_OK;
   }
 
   if (err == ERR_OK) {
