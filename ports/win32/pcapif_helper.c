@@ -5,21 +5,18 @@
 
 #include "pcapif_helper.h"
 
-
 #include <stdlib.h>
 #include <stdio.h>
 
 #ifdef WIN32
 
-#ifdef _MSC_VER
-#pragma warning (disable: 4201) /* don't warn about union without name */
-#endif /* _MSC_VER */
-
 #define WIN32_LEAN_AND_MEAN
 
+#pragma warning( push, 3 )
 #include <windows.h>
 #include <packet32.h>
 #include <ntddndis.h>
+#pragma warning ( pop )
 
 struct pcapifh_linkstate {
   LPADAPTER        lpAdapter;

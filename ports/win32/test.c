@@ -264,7 +264,7 @@ void link_callback(struct netif *netif)
 
 /* This function initializes all network interfaces */
 static void
-msvc_netif_init()
+msvc_netif_init(void)
 {
 #if USE_ETHERNET
   ip4_addr_t ipaddr, netmask, gw;
@@ -451,7 +451,7 @@ void dns_dorequest(void *arg)
 
 /* This function initializes applications */
 static void
-apps_init()
+apps_init(void)
 {
 #if LWIP_DNS_APP && LWIP_DNS
   /* wait until the netif is up (for dhcp, autoip or ppp) */
@@ -526,7 +526,7 @@ test_init(void * arg)
 #endif /* NO_SYS */
 
   /* init randomizer again (seed per thread) */
-  srand(time(0));
+  srand((unsigned int)time(0));
 
   /* init network interfaces */
   msvc_netif_init();
@@ -543,7 +543,7 @@ test_init(void * arg)
  * a dedicated task that waits for packets to arrive. This would normally be
  * done from interrupt context with embedded hardware, but we don't get an
  * interrupt in windows for that :-) */
-void main_loop()
+void main_loop(void)
 {
 #if !NO_SYS
   err_t err;

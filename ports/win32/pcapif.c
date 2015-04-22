@@ -40,7 +40,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef _MSC_VER
+#pragma warning( push, 3 )
+#endif
 #include "pcap.h"
+#ifdef _MSC_VER
+#pragma warning ( pop )
+#endif
 
 #include "lwip/opt.h"
 
