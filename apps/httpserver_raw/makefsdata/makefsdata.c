@@ -672,13 +672,14 @@ int file_write_http_header(FILE *data_file, const char *filename, int file_size,
     printf("failed to get extension for file \"%s\", using default.\n", filename);
     file_type = HTTP_HDR_DEFAULT_TYPE;
   } else {
+    file_type = NULL;
     for(j = 0; j < NUM_HTTP_HEADERS; j++) {
       if(!strcmp(file_ext, g_psHTTPHeaders[j].extension)) {
         file_type = g_psHTTPHeaders[j].content_type;
         break;
       }
     }
-    if (j >= NUM_HTTP_HEADERS) {
+    if (file_type == NULL) {
       printf("failed to get file type for extension \"%s\", using default.\n", file_ext);
       file_type = HTTP_HDR_DEFAULT_TYPE;
     }
