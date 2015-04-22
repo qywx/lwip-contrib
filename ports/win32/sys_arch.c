@@ -34,7 +34,9 @@
 #include <stdlib.h>
 #include <stdio.h> /* sprintf() for task names */
 
+#pragma warning (push, 3)
 #include <windows.h>
+#pragma warning (pop)
 #include <time.h>
 
 #include <lwip/opt.h>
@@ -48,13 +50,13 @@ LARGE_INTEGER freq, sys_start_time;
 
 DWORD netconn_sem_tls_index;
 
-void sys_init_timing()
+static void sys_init_timing(void)
 {
   QueryPerformanceFrequency(&freq);
   QueryPerformanceCounter(&sys_start_time);
 }
 
-static LONGLONG sys_get_ms_longlong()
+static LONGLONG sys_get_ms_longlong(void)
 {
   LONGLONG ret;
   LARGE_INTEGER now;
@@ -68,23 +70,23 @@ static LONGLONG sys_get_ms_longlong()
   return (u32_t)(((ret)*1000)/freq.QuadPart);
 }
 
-u32_t sys_jiffies()
+u32_t sys_jiffies(void)
 {
   return (u32_t)sys_get_ms_longlong();
 }
 
-u32_t sys_now()
+u32_t sys_now(void)
 {
   return (u32_t)sys_get_ms_longlong();
 }
 
 CRITICAL_SECTION critSec;
 
-void InitSysArchProtect()
+static void InitSysArchProtect(void)
 {
   InitializeCriticalSection(&critSec);
 }
-u32_t sys_arch_protect()
+u32_t sys_arch_protect(void)
 {
   EnterCriticalSection(&critSec);
   return 0;
@@ -95,16 +97,16 @@ void sys_arch_unprotect(u32_t pval)
   LeaveCriticalSection(&critSec);
 }
 
-void msvc_sys_init()
+void msvc_sys_init(void)
 {
-  srand(time(0));
+  srand((unsigned int)time(0));
   sys_init_timing();
   InitSysArchProtect();
   netconn_sem_tls_index = TlsAlloc();
   LWIP_ASSERT("TlsAlloc failed", netconn_sem_tls_index != TLS_OUT_OF_INDEXES);
 }
 
-void sys_init()
+void sys_init(void)
 {
   msvc_sys_init();
 }

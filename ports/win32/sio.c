@@ -35,7 +35,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#pragma warning (push, 3)
 #include <windows.h>
+#pragma warning (pop)
 #include "lwipcfg_msvc.h"
 
 /** When 1, use COM ports, when 0, use named pipes (for simulation). */
