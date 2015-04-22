@@ -50,6 +50,7 @@
 #include "lwip/dns.h"
 #include "lwip/ip_addr.h"
 #include "lwip/pbuf.h"
+#include "lwip/dhcp.h"
 
 #include <string.h>
 #include <time.h>
