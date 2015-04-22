@@ -91,7 +91,7 @@ http_server_netconn_thread(void *arg)
 
 /** Initialize the HTTP server (start its thread) */
 void
-http_server_netconn_init()
+http_server_netconn_init(void)
 {
   sys_thread_new("http_server_netconn", http_server_netconn_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 }

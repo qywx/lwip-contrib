@@ -157,7 +157,7 @@ typedef u16_t (*tSSIHandler)(int iIndex, char *pcInsert, int iInsertLen
 #if LWIP_HTTPD_SSI_MULTIPART
                              , u16_t current_tag_part, u16_t *next_tag_part
 #endif /* LWIP_HTTPD_SSI_MULTIPART */
-#if LWIP_HTTPD_FILE_STATE
+#if defined(LWIP_HTTPD_FILE_STATE) && LWIP_HTTPD_FILE_STATE
                              , void *connection_state
 #endif /* LWIP_HTTPD_FILE_STATE */
                              );

@@ -184,7 +184,7 @@
 #define SMTP_CMD_QUIT             "QUIT\r\n"
 #define SMTP_CMD_QUIT_LEN         6
 
-#if SMTP_STAT_TX_BUF_MAX
+#if defined(SMTP_STAT_TX_BUF_MAX) && SMTP_STAT_TX_BUF_MAX
 #define SMTP_TX_BUF_MAX(len) LWIP_MACRO(if((len) > smtp_tx_buf_len_max) smtp_tx_buf_len_max = (len);)
 #else /* SMTP_STAT_TX_BUF_MAX */
 #define SMTP_TX_BUF_MAX(len)
