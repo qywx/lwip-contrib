@@ -220,8 +220,10 @@
 #define SNTP_OFFSET_RECEIVE_TIME    32
 #define SNTP_OFFSET_TRANSMIT_TIME   40
 
-/* number of seconds between 1900 and 1970 */
+/* number of seconds between 1900 and 1970 (MSB=1)*/
 #define DIFF_SEC_1900_1970         (2208988800UL)
+/* number of seconds between 1970 and Feb 7, 2036 (6:28:16 UTC) (MSB=0) */
+#define DIFF_SEC_1970_2036         (2085978496UL)
 
 /**
  * SNTP packet format (without optional fields)
@@ -304,23 +306,27 @@ static void
 sntp_process(u32_t *receive_timestamp)
 {
   /* convert SNTP time (1900-based) to unix GMT time (1970-based)
-   * @todo: if MSB is 1, SNTP time is 2036-based!
+   * if MSB is 0, SNTP time is 2036-based!
    */
-  time_t t = (ntohl(receive_timestamp[0]) - DIFF_SEC_1900_1970);
+  u32_t rx_secs = ntohl(receive_timestamp[0]);
+  int is_1900_based = ((rx_secs & 0x80000000) != 0);
+  u32_t t = is_1900_based ? (rx_secs - DIFF_SEC_1900_1970) : (rx_secs + DIFF_SEC_1970_2036);
+  time_t tim = t;
 
 #if SNTP_CALC_TIME_US
   u32_t us = ntohl(receive_timestamp[1]) / 4295;
   SNTP_SET_SYSTEM_TIME_US(t, us);
   /* display local time from GMT time */
-  LWIP_DEBUGF(SNTP_DEBUG_TRACE, ("sntp_process: %s, %"U32_F" us", ctime(&t), us));
+  LWIP_DEBUGF(SNTP_DEBUG_TRACE, ("sntp_process: %s, %"U32_F" us", ctime(&tim), us));
 
 #else /* SNTP_CALC_TIME_US */
 
   /* change system time and/or the update the RTC clock */
   SNTP_SET_SYSTEM_TIME(t);
   /* display local time from GMT time */
-  LWIP_DEBUGF(SNTP_DEBUG_TRACE, ("sntp_process: %s", ctime(&t)));
+  LWIP_DEBUGF(SNTP_DEBUG_TRACE, ("sntp_process: %s", ctime(&tim)));
 #endif /* SNTP_CALC_TIME_US */
+  LWIP_UNUSED_ARG(tim);
 }
 
 /**
