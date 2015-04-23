@@ -87,7 +87,11 @@ static void close_chargen(struct charcb *p_charcb);
 static void chargen_thread(void *arg)
 {
     int listenfd;
+#if LWIP_IPV6
+    struct sockaddr_in6 chargen_saddr;
+#else /* LWIP_IPV6 */
     struct sockaddr_in chargen_saddr;
+#endif /* LWIP_IPV6 */
     fd_set readset;
     fd_set writeset;
     int i, maxfdp1;
@@ -99,9 +103,15 @@ static void chargen_thread(void *arg)
 
     LWIP_ASSERT("chargen_thread(): Socket create failed.", listenfd >= 0);
     memset(&chargen_saddr, 0, sizeof(chargen_saddr));
+#if LWIP_IPV6
+    chargen_saddr.sin6_family = AF_INET6;
+    chargen_saddr.sin6_addr = in6addr_any;
+    chargen_saddr.sin6_port = htons(19);     /* Chargen server port */
+#else /* LWIP_IPV6 */
     chargen_saddr.sin_family = AF_INET;
     chargen_saddr.sin_addr.s_addr = PP_HTONL(INADDR_ANY);
     chargen_saddr.sin_port = htons(19);     /* Chargen server port */
+#endif /* LWIP_IPV6 */
 
     if (bind(listenfd, (struct sockaddr *) &chargen_saddr, sizeof(chargen_saddr)) == -1)
         LWIP_ASSERT("chargen_thread(): Socket bind failed.", 0);

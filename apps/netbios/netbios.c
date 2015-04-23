@@ -33,12 +33,14 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_UDP  /* don't build if not configured for use in lwipopts.h */
+#if LWIP_IPV4 && LWIP_UDP  /* don't build if not configured for use in lwipopts.h */
 
 #include "lwip/udp.h"
 #include "lwip/netif.h"
 
 #include <string.h>
+
+#include "netbios.h"
 
 /** This is an example implementation of a NetBIOS name server.
  * It responds to name queries for a configurable name.
@@ -334,4 +336,4 @@ void netbios_init(void)
     udp_recv(pcb, netbios_recv, pcb);
   }
 }
-#endif /* LWIP_UDP */
+#endif /* LWIP_IPV4 && LWIP_UDP */

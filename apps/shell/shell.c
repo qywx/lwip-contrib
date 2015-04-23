@@ -176,7 +176,7 @@ static const char *stat_msgs_proto[] = {
 static void
 sendstr(const char *str, struct netconn *conn)
 {
-  netconn_write(conn, (void *)str, strlen(str), NETCONN_NOCOPY);
+  netconn_write(conn, (const void *)str, strlen(str), NETCONN_NOCOPY);
 }
 /*-----------------------------------------------------------------------------------*/
 static s8_t
@@ -875,19 +875,23 @@ com_udpb(struct command *com)
     return ESUCCESS;
   }
 
-  err = netconn_bind(conns[i], &ip_addr_broadcast, lport);
-  if (err != ERR_OK) {
-    netconn_delete(conns[i]);
-    conns[i] = NULL;
-    sendstr("Could not bind: ", com->conn);
+#if LWIP_IPV4
+  if (IP_IS_V6(&ipaddr)) {
+    err = netconn_bind(conns[i], &ip_addr_broadcast, lport);
+    if (err != ERR_OK) {
+      netconn_delete(conns[i]);
+      conns[i] = NULL;
+      sendstr("Could not bind: ", com->conn);
 #ifdef LWIP_DEBUG
-    sendstr(lwip_strerr(err), com->conn);
+      sendstr(lwip_strerr(err), com->conn);
 #else
-    sendstr("(debugging must be turned on for error message to appear)", com->conn);
+      sendstr("(debugging must be turned on for error message to appear)", com->conn);
 #endif /* LWIP_DEBUG */
-    sendstr(NEWLINE, com->conn);
-    return ESUCCESS;
+      sendstr(NEWLINE, com->conn);
+      return ESUCCESS;
+    }
   }
+#endif /* LWIP_IPV4 */
 
   sendstr("Connection set up, connection identifier is ", com->conn);
   snprintf((char *)buffer, sizeof(buffer), "%d"NEWLINE, i);
