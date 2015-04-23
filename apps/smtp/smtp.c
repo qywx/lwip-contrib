@@ -533,8 +533,7 @@ smtp_send_mail_alloced(struct smtp_session *s)
 #if LWIP_DNS
   err = dns_gethostbyname(smtp_server, &addr, smtp_dns_found, pcb);
 #else /* LWIP_DNS */
-  addr.addr = ipaddr_addr(smtp_server);
-  err = addr.addr == IPADDR_NONE ? ERR_ARG : ERR_OK;
+  err = ipaddr_aton(smtp_server, &addr) ? ERR_OK : ERR_ARG;
 #endif /* LWIP_DNS */
   if (err == ERR_OK) {
     err = tcp_connect(pcb, &addr, smtp_server_port, smtp_tcp_connected);

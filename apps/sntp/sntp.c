@@ -592,8 +592,8 @@ sntp_request(void *arg)
   }
 
   if (err == ERR_OK) {
-    LWIP_DEBUGF(SNTP_DEBUG_TRACE, ("sntp_request: current server address is %u.%u.%u.%u\n",
-      ip4_addr1(&sntp_server_address), ip4_addr2(&sntp_server_address), ip4_addr3(&sntp_server_address), ip4_addr4(&sntp_server_address)));
+    LWIP_DEBUGF(SNTP_DEBUG_TRACE, ("sntp_request: current server address is %s\n",
+      ipaddr_ntoa(&sntp_server_address)));
     sntp_send_request(&sntp_server_address);
   } else {
     /* address conversion failed, try another server */

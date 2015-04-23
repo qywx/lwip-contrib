@@ -40,7 +40,7 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_RAW /* don't build if not configured for use in lwipopts.h */
+#if LWIP_IPV4 && LWIP_RAW /* don't build if not configured for use in lwipopts.h */
 
 #include "ping.h"
 
@@ -335,4 +335,4 @@ ping_init(void)
 #endif /* PING_USE_SOCKETS */
 }
 
-#endif /* LWIP_RAW */
+#endif /* LWIP_IPV4 && LWIP_RAW */
