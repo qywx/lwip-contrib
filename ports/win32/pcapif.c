@@ -834,17 +834,16 @@ pcapif_init(struct netif *netif)
   netif->name[0] = IFNAME0;
   netif->name[1] = (char)(IFNAME1 + local_index);
   netif->linkoutput = pcapif_low_level_output;
+#if LWIP_IPV4
 #if LWIP_ARP
   netif->output = etharp_output;
+#else /* LWIP_ARP */
+  netif->output = NULL; /* not used for PPPoE */
+#endif /* LWIP_ARP */
+#endif /* LWIP_IPV4 */
 #if LWIP_IPV6
   netif->output_ip6 = ethip6_output;
 #endif /* LWIP_IPV6 */
-#else /* LWIP_ARP */
-  netif->output = NULL; /* not used for PPPoE */
-#if LWIP_IPV6
-  netif->output_ip6 = NULL; /* not used for PPPoE */
-#endif /* LWIP_IPV6 */
-#endif /* LWIP_ARP */
 #if LWIP_NETIF_HOSTNAME
   /* Initialize interface hostname */
   netif_set_hostname(netif, "lwip");
