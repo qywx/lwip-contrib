@@ -150,6 +150,7 @@ low_level_init(struct netif *netif)
     }
   }
 #endif /* Linux */
+  netif_set_link_up(netif);
 
 #ifndef DEVTAP_IF
   sprintf(buf, IFCONFIG_BIN IFCONFIG_ARGS,
@@ -169,6 +170,7 @@ low_level_init(struct netif *netif)
   LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: system(\"%s\");\n", buf));
   system(buf);
 #endif /* DEVTAP_IF */
+  netif_set_up(netif);
   sys_thread_new("tapif_thread", tapif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 
 }
