@@ -58,13 +58,16 @@
 /* (manual) host IP configuration */
 static ip4_addr_t ipaddr, netmask, gw;
 
+#if LWIP_SNMP
 /* SNMP trap destination cmd option */
 static unsigned char trap_flag;
 static ip_addr_t trap_addr;
+#endif
 
 /* nonstatic debug cmd option, exported in lwipopts.h */
 unsigned char debug_flags;
 
+#if LWIP_SNMP
 /* 'non-volatile' SNMP settings
   @todo: make these truly non-volatile */
 u8_t syscontact_str[255];
@@ -73,6 +76,7 @@ u8_t syslocation_str[255];
 u8_t syslocation_len = 0;
 /* enable == 1, disable == 2 */
 u8_t snmpauthentraps_set = 2;
+#endif
 
 static struct option longopts[] = {
   /* turn on debugging output (if build with LWIP_DEBUG) */
@@ -125,7 +129,9 @@ main(int argc, char **argv)
   IP4_ADDR(&ipaddr, 192,168,0,2);
   IP4_ADDR(&netmask, 255,255,255,0);
 
+#if LWIP_SNMP
   trap_flag = 0;
+#endif
   /* use debug flags defined by debug.h */
   debug_flags = LWIP_DBG_OFF;
 
@@ -148,6 +154,7 @@ main(int argc, char **argv)
         ip4addr_aton(optarg, &netmask);
         break;
       case 't':
+#if LWIP_SNMP
         trap_flag = !0;
         /* @todo: remove this authentraps tweak 
           when we have proper SET & non-volatile mem */
@@ -155,6 +162,7 @@ main(int argc, char **argv)
         ipaddr_aton(optarg, &trap_addr);
         strncpy(ip_str, ipaddr_ntoa(&trap_addr),sizeof(ip_str));
         printf("SNMP trap destination %s\n", ip_str);
+#endif
         break;
       default:
         usage();
@@ -190,12 +198,14 @@ main(int argc, char **argv)
   /* initialize our private example MIB */
   lwip_privmib_init();
 #endif
+#if LWIP_SNMP
   snmp_trap_dst_ip_set(0,&trap_addr);
   snmp_trap_dst_enable(0,trap_flag);
   snmp_set_syscontact(syscontact_str,&syscontact_len);
   snmp_set_syslocation(syslocation_str,&syslocation_len);
   snmp_set_snmpenableauthentraps(&snmpauthentraps_set);
   snmp_init();
+#endif
 
   echo_init();
 
