@@ -201,8 +201,8 @@ main(int argc, char **argv)
 #if LWIP_SNMP
   snmp_trap_dst_ip_set(0,&trap_addr);
   snmp_trap_dst_enable(0,trap_flag);
-  snmp_set_syscontact(syscontact_str,&syscontact_len);
-  snmp_set_syslocation(syslocation_str,&syslocation_len);
+  snmp_set_syscontact(syscontact_str,&syscontact_len,sizeof syscontact_str);
+  snmp_set_syslocation(syslocation_str,&syslocation_len,sizeof syslocation_str);
   snmp_set_snmpenableauthentraps(&snmpauthentraps_set);
   snmp_init();
 #endif
