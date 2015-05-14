@@ -195,7 +195,7 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 
       /* chain pbufs to the end of what we recv'ed previously  */
       ptr = es->p;
-      pbuf_chain(ptr,p);
+      pbuf_cat(ptr,p);
     }
     ret_err = ERR_OK;
   }
