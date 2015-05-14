@@ -75,6 +75,7 @@ err_t echo_poll(void *arg, struct tcp_pcb *tpcb);
 err_t echo_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
 void echo_send(struct tcp_pcb *tpcb, struct echo_state *es);
 void echo_close(struct tcp_pcb *tpcb, struct echo_state *es);
+void echo_free(struct echo_state *es);
 
 void
 echo_init(void)
@@ -226,10 +227,8 @@ echo_error(void *arg, err_t err)
   LWIP_UNUSED_ARG(err);
 
   es = (struct echo_state *)arg;
-  if (es != NULL)
-  {
-    mem_free(es);
-  }
+
+  echo_free(es);
 }
 
 err_t
@@ -349,12 +348,18 @@ echo_close(struct tcp_pcb *tpcb, struct echo_state *es)
   tcp_recv(tpcb, NULL);
   tcp_err(tpcb, NULL);
   tcp_poll(tpcb, NULL, 0);
-  
+
+  echo_free(es);
+
+  tcp_close(tpcb);
+}
+
+void echo_free(struct echo_state *es)
+{
   if (es != NULL)
   {
     mem_free(es);
   }  
-  tcp_close(tpcb);
 }
 
 #endif /* LWIP_TCP */
