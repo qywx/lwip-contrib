@@ -305,7 +305,6 @@ echo_send(struct tcp_pcb *tpcb, struct echo_state *es)
   if (wr_err == ERR_OK)
   {
      u16_t plen;
-      u8_t freed;
 
      plen = ptr->len;
      /* continue with next pbuf in chain (if any) */
@@ -316,12 +315,7 @@ echo_send(struct tcp_pcb *tpcb, struct echo_state *es)
        pbuf_ref(es->p);
      }
      /* chop first pbuf from chain */
-      do
-      {
-        /* try hard to free pbuf */
-        freed = pbuf_free(ptr);
-      }
-      while(freed == 0);
+     pbuf_free(ptr);
      /* we can read more data now */
      tcp_recved(tpcb, plen);
    }
