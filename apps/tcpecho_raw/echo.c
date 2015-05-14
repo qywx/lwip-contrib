@@ -128,6 +128,7 @@ echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
     tcp_recv(newpcb, echo_recv);
     tcp_err(newpcb, echo_error);
     tcp_poll(newpcb, echo_poll, 0);
+    tcp_sent(tpcb, echo_sent);
     ret_err = ERR_OK;
   }
   else
@@ -157,7 +158,6 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     else
     {
       /* we're not done yet */
-      tcp_sent(tpcb, echo_sent);
       echo_send(tpcb, es);
     }
     ret_err = ERR_OK;
@@ -178,8 +178,6 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     es->state = ES_RECEIVED;
     /* store reference to incoming pbuf (chain) */
     es->p = p;
-    /* install send completion notifier */
-    tcp_sent(tpcb, echo_sent);
     echo_send(tpcb, es);
     ret_err = ERR_OK;
   }
@@ -189,7 +187,6 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     if(es->p == NULL)
     {
       es->p = p;
-      tcp_sent(tpcb, echo_sent);
       echo_send(tpcb, es);
     }
     else
@@ -247,7 +244,6 @@ echo_poll(void *arg, struct tcp_pcb *tpcb)
     if (es->p != NULL)
     {
       /* there is a remaining pbuf (chain)  */
-      tcp_sent(tpcb, echo_sent);
       echo_send(tpcb, es);
     }
     else
