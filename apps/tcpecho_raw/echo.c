@@ -168,7 +168,6 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     /* cleanup, for unkown reason */
     if (p != NULL)
     {
-      es->p = NULL;
       pbuf_free(p);
     }
     ret_err = err;
@@ -204,7 +203,6 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
   {
     /* odd case, remote side closing twice, trash data */
     tcp_recved(tpcb, p->tot_len);
-    es->p = NULL;
     pbuf_free(p);
     ret_err = ERR_OK;
   }
@@ -212,7 +210,6 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
   {
     /* unkown es->state, trash data  */
     tcp_recved(tpcb, p->tot_len);
-    es->p = NULL;
     pbuf_free(p);
     ret_err = ERR_OK;
   }
@@ -358,6 +355,12 @@ void echo_free(struct echo_state *es)
 {
   if (es != NULL)
   {
+    if (es->p)
+    {
+      /* free the buffer chain if present */
+      pbuf_free(es->p);
+    }
+
     mem_free(es);
   }  
 }
