@@ -10,3 +10,4 @@
 /ports/win32/msvc/ipch
 /ports/win32/msvc/*.opensdf
 /ports/win32/msvc/*.sdf
+/ports/unix/check/lwip_unittests
