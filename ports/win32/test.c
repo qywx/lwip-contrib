@@ -171,9 +171,9 @@ pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
 #endif /* LWIP_DNS */
       printf("pppLinkStatusCallback: PPPERR_NONE\n");
 #if LWIP_IPV4
-      printf("   our_ipaddr  = %s\n", ip4addr_ntoa(&pppif->ip_addr));
-      printf("   his_ipaddr  = %s\n", ip4addr_ntoa(&pppif->gw));
-      printf("   netmask     = %s\n", ip4addr_ntoa(&pppif->netmask));
+      printf("   our_ipaddr  = %s\n", ip4addr_ntoa(netif_ip4_addr(pppif)));
+      printf("   his_ipaddr  = %s\n", ip4addr_ntoa(netif_ip4_gw(pppif)));
+      printf("   netmask     = %s\n", ip4addr_ntoa(netif_ip4_netmask(pppif)));
 #endif /* LWIP_IPV4 */
 #if LWIP_DNS
       ns = dns_getserver(0);
@@ -247,7 +247,7 @@ void status_callback(struct netif *netif)
 {
   if (netif_is_up(netif)) {
 #if LWIP_IPV4
-    printf("status_callback==UP, local interface IP is %s\n", ip4addr_ntoa(&netif->ip_addr));
+    printf("status_callback==UP, local interface IP is %s\n", ip4addr_ntoa(netif_ip4_addr(netif)));
 #else
     printf("status_callback==UP\n");
 #endif
@@ -346,7 +346,7 @@ msvc_netif_init(void)
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif, 1);
   printf("ip6 linklocal address: ");
-  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, &netif.ip6_addr[0]);
+  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, netif_ip6_addr(&netif, 0));
   printf("\n");
 #endif /* LWIP_IPV6 */
 #endif /* NO_SYS */
