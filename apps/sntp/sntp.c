@@ -493,10 +493,13 @@ sntp_recv(void *arg, struct udp_pcb* pcb, struct pbuf *p, const ip_addr_t *addr,
     } else {
       LWIP_DEBUGF(SNTP_DEBUG_WARN, ("sntp_recv: Invalid packet length: %"U16_F"\n", p->tot_len));
     }
-  } else {
+  }
+#if SNTP_CHECK_RESPONSE >= 1
+  else {
     /* packet from wrong remote address or port, wait for correct response */
     err = ERR_TIMEOUT;
   }
+#endif /* SNTP_CHECK_RESPONSE >= 1 */
   pbuf_free(p);
   if (err == ERR_OK) {
     sntp_process(receive_timestamp);
