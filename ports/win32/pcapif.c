@@ -643,7 +643,7 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
   u16_t tot_len = p->tot_len - ETH_PAD_SIZE;
   struct pcapif_private *pa = (struct pcapif_private*)PCAPIF_GET_STATE_PTR(netif);
 
-#if defined(LWIP_DEBUG) && LWIP_NETIF_TX_SINGLE_PBUF
+#if defined(LWIP_DEBUG) && LWIP_NETIF_TX_SINGLE_PBUF && !(LWIP_IPV4 && IP_FRAG) && (LWIP_IPV6 && LWIP_IPV6_FRAG)
   LWIP_ASSERT("p->next == NULL && p->len == p->tot_len", p->next == NULL && p->len == p->tot_len);
 #endif
 
