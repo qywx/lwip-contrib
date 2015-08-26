@@ -129,7 +129,7 @@ echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
     tcp_recv(newpcb, echo_recv);
     tcp_err(newpcb, echo_error);
     tcp_poll(newpcb, echo_poll, 0);
-    tcp_sent(tpcb, echo_sent);
+    tcp_sent(newpcb, echo_sent);
     ret_err = ERR_OK;
   }
   else
