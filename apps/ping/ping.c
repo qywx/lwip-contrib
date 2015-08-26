@@ -67,7 +67,7 @@
 
 /** ping target - should be an "ip4_addr_t" */
 #ifndef PING_TARGET
-#define PING_TARGET   (netif_default?netif_default->gw:(*IP4_ADDR_ANY))
+#define PING_TARGET   (netif_default ? *netif_ip4_gw(netif_default) : (*IP4_ADDR_ANY))
 #endif
 
 /** ping receive timeout - in milliseconds */
@@ -315,7 +315,7 @@ ping_raw_init(void)
 }
 
 void
-ping_send_now()
+ping_send_now(void)
 {
   ip_addr_t ping_target;
   LWIP_ASSERT("ping_pcb != NULL", ping_pcb != NULL);
