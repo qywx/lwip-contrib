@@ -258,6 +258,9 @@ PACK_STRUCT_END
 /* function prototypes */
 static void sntp_request(void *arg);
 
+/** The operating mode */
+static u8_t sntp_opmode;
+
 /** The UDP pcb used by the SNTP client */
 static struct udp_pcb* sntp_pcb;
 /** Names/Addresses of servers */
@@ -445,7 +448,7 @@ sntp_recv(void *arg, struct udp_pcb* pcb, struct pbuf *p, const ip_addr_t *addr,
   err = ERR_ARG;
 #if SNTP_CHECK_RESPONSE >= 1
   /* check server address and port */
-  if (ip_addr_cmp(addr, &sntp_last_server_address) &&
+  if (((sntp_opmode != SNTP_OPMODE_POLL) || ip_addr_cmp(addr, &sntp_last_server_address)) &&
     (port == SNTP_PORT))
 #else /* SNTP_CHECK_RESPONSE >= 1 */
   LWIP_UNUSED_ARG(addr);
@@ -457,8 +460,8 @@ sntp_recv(void *arg, struct udp_pcb* pcb, struct pbuf *p, const ip_addr_t *addr,
       pbuf_copy_partial(p, &mode, 1, SNTP_OFFSET_LI_VN_MODE);
       mode &= SNTP_MODE_MASK;
       /* if this is a SNTP response... */
-      if ((mode == SNTP_MODE_SERVER) ||
-          (mode == SNTP_MODE_BROADCAST)) {
+      if (((sntp_opmode == SNTP_OPMODE_POLL) && (mode == SNTP_MODE_SERVER)) ||
+          ((sntp_opmode == SNTP_OPMODE_LISTENONLY) && (mode == SNTP_MODE_BROADCAST))) {
         pbuf_copy_partial(p, &stratum, 1, SNTP_OFFSET_STRATUM);
         if (stratum == SNTP_STRATUM_KOD) {
           /* Kiss-of-death packet. Use another server or increase UPDATE_DELAY. */
@@ -479,33 +482,45 @@ sntp_recv(void *arg, struct udp_pcb* pcb, struct pbuf *p, const ip_addr_t *addr,
           {
             /* correct answer */
             err = ERR_OK;
-            pbuf_copy_partial(p, &receive_timestamp, SNTP_RECEIVE_TIME_SIZE * 4, SNTP_OFFSET_RECEIVE_TIME);
+            pbuf_copy_partial(p, &receive_timestamp, SNTP_RECEIVE_TIME_SIZE * 4, SNTP_OFFSET_TRANSMIT_TIME);
           }
         }
       } else {
         LWIP_DEBUGF(SNTP_DEBUG_WARN, ("sntp_recv: Invalid mode in response: %"U16_F"\n", (u16_t)mode));
+        /* wait for correct response */
+        err = ERR_TIMEOUT;
       }
     } else {
       LWIP_DEBUGF(SNTP_DEBUG_WARN, ("sntp_recv: Invalid packet length: %"U16_F"\n", p->tot_len));
     }
+  } else {
+    /* packet from wrong remote address or port, wait for correct response */
+    err = ERR_TIMEOUT;
   }
   pbuf_free(p);
   if (err == ERR_OK) {
-    /* Correct response, reset retry timeout */
-    SNTP_RESET_RETRY_TIMEOUT();
-
     sntp_process(receive_timestamp);
 
-    /* Set up timeout for next request */
-    sys_timeout((u32_t)SNTP_UPDATE_DELAY, sntp_request, NULL);
-    LWIP_DEBUGF(SNTP_DEBUG_STATE, ("sntp_recv: Scheduled next time request: %"U32_F" ms\n",
-      (u32_t)SNTP_UPDATE_DELAY));
-  } else if (err == SNTP_ERR_KOD) {
-    /* Kiss-of-death packet. Use another server or increase UPDATE_DELAY. */
-    sntp_try_next_server(NULL);
-  } else {
-    /* another error, try the same server again */
-    sntp_retry(NULL);
+    /* Set up timeout for next request (only if poll response was received)*/
+    if (sntp_opmode == SNTP_OPMODE_POLL) {
+      /* Correct response, reset retry timeout */
+      SNTP_RESET_RETRY_TIMEOUT();
+
+      sys_timeout((u32_t)SNTP_UPDATE_DELAY, sntp_request, NULL);
+      LWIP_DEBUGF(SNTP_DEBUG_STATE, ("sntp_recv: Scheduled next time request: %"U32_F" ms\n",
+        (u32_t)SNTP_UPDATE_DELAY));
+    }
+  } else if (err != ERR_TIMEOUT) {
+    /* Errors are only processed in case of an explicit poll response */
+    if (sntp_opmode == SNTP_OPMODE_POLL) {
+      if (err == SNTP_ERR_KOD) {
+        /* Kiss-of-death packet. Use another server or increase UPDATE_DELAY. */
+        sntp_try_next_server(NULL);
+      } else {
+        /* another error, try the same server again */
+        sntp_retry(NULL);
+      }
+    }
   }
 }
 
@@ -624,16 +639,22 @@ sntp_init(void)
 #endif /* SNTP_SERVER_ADDRESS */
 
   if (sntp_pcb == NULL) {
-    SNTP_RESET_RETRY_TIMEOUT();
     sntp_pcb = udp_new();
     LWIP_ASSERT("Failed to allocate udp pcb for sntp client", sntp_pcb != NULL);
     if (sntp_pcb != NULL) {
       udp_recv(sntp_pcb, sntp_recv, NULL);
+
+      if (sntp_opmode == SNTP_OPMODE_POLL) {
+        SNTP_RESET_RETRY_TIMEOUT();
 #if SNTP_STARTUP_DELAY
-      sys_timeout((u32_t)SNTP_STARTUP_DELAY_FUNC, sntp_request, NULL);
+        sys_timeout((u32_t)SNTP_STARTUP_DELAY_FUNC, sntp_request, NULL);
 #else
-      sntp_request(NULL);
+        sntp_request(NULL);
 #endif
+      } else if (sntp_opmode == SNTP_OPMODE_LISTENONLY) {
+        ip_set_option(sntp_pcb, SOF_BROADCAST);
+        udp_bind(sntp_pcb, IP_ADDR_ANY, SNTP_PORT);
+      }
     }
   }
 }
@@ -649,6 +670,18 @@ sntp_stop(void)
     udp_remove(sntp_pcb);
     sntp_pcb = NULL;
   }
+}
+
+/**
+ * Sets the operating mode.
+ * @param operating_mode one of the available operating modes
+ */
+void 
+sntp_setoperatingmode(u8_t operating_mode)
+{
+  LWIP_ASSERT("Invalid operating mode", operating_mode <= SNTP_OPMODE_LISTENONLY);
+  LWIP_ASSERT("Operating mode must not be set while SNTP client is running", sntp_pcb == NULL);
+  sntp_opmode = operating_mode;
 }
 
 #if SNTP_GET_SERVERS_FROM_DHCP

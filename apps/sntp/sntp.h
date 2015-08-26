@@ -28,6 +28,12 @@ extern "C" {
  * #define SNTP_SERVER_ADDRESS "pool.ntp.org"
  */
 
+/* SNTP operating modes: default is to poll using unicast.
+   The mode has to be set before calling sntp_init(). */
+#define SNTP_OPMODE_POLL            0
+#define SNTP_OPMODE_LISTENONLY      1
+void sntp_setoperatingmode(u8_t operating_mode);
+
 void sntp_init(void);
 void sntp_stop(void);
 
