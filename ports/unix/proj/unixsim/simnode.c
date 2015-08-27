@@ -89,6 +89,7 @@ tcpip_init_done(void *arg)
 
   netif_set_default(netif_add(&netif_unix, &ipaddr, &netmask, &gw, NULL, unixif_init_client,
 			      tcpip_input));
+  netif_set_up(&netif_unix);
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif_unix, 1);
 #endif

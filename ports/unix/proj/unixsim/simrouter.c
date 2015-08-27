@@ -93,6 +93,7 @@ tcpip_init_done(void *arg)
 
   netif_set_default(netif_add(&netif_tap, &ipaddr, &netmask, &gw, NULL, tapif_init,
                     tcpip_input));
+  netif_set_up(&netif_tap);
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif_tap, 1);
 #endif
@@ -102,6 +103,7 @@ tcpip_init_done(void *arg)
   IP4_ADDR(&netmask, 255,255,255,0);
   netif_set_default(netif_add(&netif_unix, &ipaddr, &netmask, &gw, NULL, unixif_init_server,
                     tcpip_input));
+  netif_set_up(&netif_unix);
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif_unix, 1);
 #endif

@@ -143,8 +143,6 @@ low_level_init(struct netif *netif)
   }
 
   mintapif->lasttime = 0;
-
-  netif_set_up(netif);
 }
 /*-----------------------------------------------------------------------------------*/
 /*
