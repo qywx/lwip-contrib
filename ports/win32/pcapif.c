@@ -178,6 +178,14 @@ struct pcapif_private {
 #endif /* PCAPIF_HANDLE_LINKSTATE */
 };
 
+#if PCAPIF_RX_REF
+struct pcapif_pbuf_custom
+{
+   struct pbuf_custom pc;
+   struct pbuf* p;
+};
+#endif /* PCAPIF_RX_REF */
+
 /* Forward declarations. */
 static void pcapif_input(u_char *user, const struct pcap_pkthdr *pkt_header, const u_char *packet);
 
@@ -808,17 +816,17 @@ pcapif_rx_pbuf_free_custom(struct pbuf *p)
 static struct pbuf*
 pcapif_rx_ref(struct pbuf* p)
 {
-  struct pbuf_custom* pc;
+  struct pcapif_pbuf_custom* ppc;
   struct pbuf* q;
 
   LWIP_ASSERT("NULL pointer", p != NULL);
   LWIP_ASSERT("chained pbuf not supported here", p->next == NULL);
 
-  pc = (struct pbuf_custom*)mem_malloc(sizeof(struct pbuf_custom));
-  LWIP_ASSERT("out of memory for RX", pc != NULL);
-  pc->custom_free_function = pcapif_rx_pbuf_free_custom;
+  ppc = (struct pcapif_pbuf_custom*)mem_malloc(sizeof(struct pcapif_pbuf_custom));
+  LWIP_ASSERT("out of memory for RX", ppc != NULL);
+  ppc->pc.custom_free_function = pcapif_rx_pbuf_free_custom;
 
-  q = pbuf_alloced_custom(PBUF_RAW, p->tot_len, PBUF_REF, pc, p->payload, p->tot_len);
+  q = pbuf_alloced_custom(PBUF_RAW, p->tot_len, PBUF_REF, &ppc->pc, p->payload, p->tot_len);
   LWIP_ASSERT("pbuf_alloced_custom returned NULL", q != NULL);
   return q;
 }
