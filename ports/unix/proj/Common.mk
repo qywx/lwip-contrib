@@ -84,7 +84,7 @@ SNMPFILES=$(LWIPDIR)/core/snmp/asn1_dec.c $(LWIPDIR)/core/snmp/asn1_enc.c \
 # APIFILES: The files which implement the sequential and socket APIs.
 APIFILES=$(LWIPDIR)/api/api_lib.c $(LWIPDIR)/api/api_msg.c $(LWIPDIR)/api/err.c \
 	$(LWIPDIR)/api/netbuf.c $(LWIPDIR)/api/netdb.c $(LWIPDIR)/api/netifapi.c \
-	$(LWIPDIR)/api/sockets.c $(LWIPDIR)/api/tcpip.c
+	$(LWIPDIR)/api/pppapi.c $(LWIPDIR)/api/sockets.c $(LWIPDIR)/api/tcpip.c
 
 # NETIFFILES: Files implementing various generic network interface functions.'
 NETIFFILES=$(LWIPDIR)/netif/etharp.c $(LWIPDIR)/netif/slipif.c
@@ -97,11 +97,12 @@ NETIFFILES+=$(LWIPDIR)/netif/ppp/auth.c $(LWIPDIR)/netif/ppp/ccp.c \
 	$(LWIPDIR)/netif/ppp/eui64.c $(LWIPDIR)/netif/ppp/fsm.c \
 	$(LWIPDIR)/netif/ppp/ipcp.c $(LWIPDIR)/netif/ppp/ipv6cp.c \
 	$(LWIPDIR)/netif/ppp/lcp.c $(LWIPDIR)/netif/ppp/magic.c \
-	$(LWIPDIR)/netif/ppp/multilink.c $(LWIPDIR)/netif/ppp/ppp.c \
-	$(LWIPDIR)/netif/ppp/pppcrypt.c $(LWIPDIR)/netif/ppp/pppoe.c \
-	$(LWIPDIR)/netif/ppp/pppol2tp.c $(LWIPDIR)/netif/ppp/pppos.c \
-	$(LWIPDIR)/netif/ppp/upap.c $(LWIPDIR)/netif/ppp/utils.c \
-	$(LWIPDIR)/netif/ppp/vj.c $(LWIPDIR)/netif/ppp/polarssl/des.c \
+	$(LWIPDIR)/netif/ppp/mppe.c $(LWIPDIR)/netif/ppp/multilink.c \
+	$(LWIPDIR)/netif/ppp/ppp.c $(LWIPDIR)/netif/ppp/pppcrypt.c \
+	$(LWIPDIR)/netif/ppp/pppoe.c $(LWIPDIR)/netif/ppp/pppol2tp.c \
+	$(LWIPDIR)/netif/ppp/pppos.c $(LWIPDIR)/netif/ppp/upap.c \
+	$(LWIPDIR)/netif/ppp/utils.c $(LWIPDIR)/netif/ppp/vj.c \
+	$(LWIPDIR)/netif/ppp/polarssl/arc4.c $(LWIPDIR)/netif/ppp/polarssl/des.c \
 	$(LWIPDIR)/netif/ppp/polarssl/md4.c $(LWIPDIR)/netif/ppp/polarssl/md5.c \
 	$(LWIPDIR)/netif/ppp/polarssl/sha1.c $(LWIPARCH)/netif/sio.c
 
