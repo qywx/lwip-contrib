@@ -368,14 +368,14 @@ smtp_result_str(u8_t smtp_result)
  * WARNING: use this only if p is not needed any more as the last byte of
  *          payload is deleted!
  */
-static char*
+static const char*
 smtp_pbuf_str(struct pbuf* p)
 {
   if ((p == NULL) || (p->len == 0)) {
     return "";
   }
   ((char*)p->payload)[p->len] = 0;
-  return p->payload;
+  return (const char*)p->payload;
 }
 #endif /* LWIP_DEBUG */
 
@@ -808,7 +808,7 @@ smtp_tcp_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
     smtp_process(arg, pcb, p);
   } else {
     LWIP_DEBUGF(SMTP_DEBUG_WARN_STATE, ("smtp_tcp_recv: connection closed by remote host\n"));
-    smtp_close(arg, pcb, SMTP_RESULT_ERR_CLOSED, 0, err);
+    smtp_close((struct smtp_session*)arg, pcb, SMTP_RESULT_ERR_CLOSED, 0, err);
   }
   return ERR_OK;
 }
@@ -823,7 +823,7 @@ smtp_tcp_connected(void *arg, struct tcp_pcb *pcb, err_t err)
   } else {
     /* shouldn't happen, but we still check 'err', only to be sure */
     LWIP_DEBUGF(SMTP_DEBUG_WARN, ("smtp_connected: %d\n", (int)err));
-    smtp_close(arg, pcb, SMTP_RESULT_ERR_CONNECT, 0, err);
+    smtp_close((struct smtp_session*)arg, pcb, SMTP_RESULT_ERR_CONNECT, 0, err);
   }
   return ERR_OK;
 }
@@ -1219,7 +1219,7 @@ smtp_send_body(struct smtp_session *s, struct tcp_pcb *pcb)
 static void
 smtp_process(void *arg, struct tcp_pcb *pcb, struct pbuf *p)
 {
-  struct smtp_session* s = arg;
+  struct smtp_session* s = (struct smtp_session*)arg;
   u16_t response_code = 0;
   u16_t tx_buf_len = 0;
   enum smtp_session_state next_state;

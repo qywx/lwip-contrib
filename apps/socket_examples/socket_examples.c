@@ -522,7 +522,8 @@ sockex_testtwoselects(void *arg)
 }
 
 #if !SOCKET_EXAMPLES_RUN_PARALLEL
-void socket_example_test(void* arg)
+static void
+socket_example_test(void* arg)
 {
   LWIP_UNUSED_ARG(arg);
   sockex_nonblocking_connect(NULL);

@@ -78,7 +78,7 @@
 
 /** The Time-To-Live for NetBIOS name responds (in seconds)
  * Default is 300000 seconds (3 days, 11 hours, 20 minutes) */
-#define NETBIOS_NAME_TTL 300000
+#define NETBIOS_NAME_TTL 300000u
 
 /** NetBIOS header flags */
 #define NETB_HFLAG_RESPONSE           0x8000U
