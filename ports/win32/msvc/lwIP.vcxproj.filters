@@ -422,6 +422,9 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp_asn1.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp_mib2.h">
+      <Filter>src\include\lwip</Filter>
+    </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp_msg.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>

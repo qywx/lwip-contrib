@@ -346,6 +346,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\sio.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp_asn1.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp_mib2.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp_msg.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\snmp_structs.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\sockets.h" />
