@@ -1,4 +1,3 @@
-/*-----------------------------------------------------------------------------------*/
 /*
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
  * All rights reserved.
@@ -123,6 +122,8 @@ low_level_init(struct netif *netif)
   mintapif = (struct mintapif *)netif->state;
 
   /* Obtain MAC address from network interface. */
+
+  /* (We just fake an address...) */
   mintapif->ethaddr->addr[0] = 0x02;
   mintapif->ethaddr->addr[1] = 0x12;
   mintapif->ethaddr->addr[2] = 0x34;
@@ -134,6 +135,7 @@ low_level_init(struct netif *netif)
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
 
   mintapif->fd = open(DEVTAP, O_RDWR);
+  LWIP_DEBUGF(TAPIF_DEBUG, ("mintapif_init: fd %d\n", mintapif->fd));
   if (mintapif->fd == -1) {
 #ifdef LWIP_UNIX_LINUX
     perror("mintapif_init: try running \"modprobe tun\" or rebuilding your kernel with CONFIG_TUN; cannot open "DEVTAP);
@@ -156,7 +158,7 @@ low_level_init(struct netif *netif)
 #endif /* DEVTAP_IF */
     ifr.ifr_flags = IFF_TAP|IFF_NO_PI;
     if (ioctl(mintapif->fd, TUNSETIFF, (void *) &ifr) < 0) {
-      perror("Could not set interface flags");
+      perror("mintapif_init: "DEVTAP" ioctl TUNSETIFF");
       exit(1);
     }
   }

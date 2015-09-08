@@ -289,7 +289,7 @@ low_level_input(struct netif *netif)
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
 
-  if(p != NULL) {
+  if (p != NULL) {
     /* We iterate over the pbuf chain until we have read the entire
        packet into the pbuf. */
     bufptr = &buf[0];
@@ -304,6 +304,8 @@ low_level_input(struct netif *netif)
     /* acknowledge that packet has been read(); */
   } else {
     /* drop packet(); */
+    snmp_inc_ifindiscards(netif);
+    LWIP_DEBUGF(NETIF_DEBUG, ("tapif_input: could not allocate pbuf\n"));
   }
 
   return p;
