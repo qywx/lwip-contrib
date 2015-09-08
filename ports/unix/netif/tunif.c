@@ -52,6 +52,7 @@
 #include "lwip/pbuf.h"
 #include "lwip/sys.h"
 
+#if !NO_SYS
 
 #define IFNAME0 't'
 #define IFNAME1 'n'
@@ -316,3 +317,5 @@ tunif_init(struct netif *netif)
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
+
+#endif /* !NO_SYS */

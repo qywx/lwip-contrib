@@ -54,6 +54,8 @@
 #include "netif/etharp.h"
 #include "lwip/ethip6.h"
 
+#if !NO_SYS
+
 #if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
 #include "netif/tcpdump.h"
 #endif /* LWIP_DEBUG && LWIP_TCPDUMP */
@@ -100,7 +102,7 @@ struct tapif {
 /* Forward declarations. */
 static void  tapif_input(struct netif *netif);
 
-static void tapif_thread(void *data);
+static void tapif_thread(void *arg);
 
 /*-----------------------------------------------------------------------------------*/
 static void
@@ -170,6 +172,7 @@ low_level_init(struct netif *netif)
   LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: system(\"%s\");\n", buf));
   system(buf);
 #endif /* DEVTAP_IF */
+
   sys_thread_new("tapif_thread", tapif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 
 }
@@ -393,3 +396,5 @@ tapif_init(struct netif *netif)
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
+
+#endif /* !NO_SYS */

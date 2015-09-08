@@ -56,6 +56,9 @@
 
 struct netif netif;
 
+void _init(void);
+void _fini(void);
+
 static void
 tcpip_init_done(void *arg)
 {

@@ -55,6 +55,7 @@
 #include "lwip/sys.h"
 #include "lwip/timers.h"
 
+#if !NO_SYS
 
 #include "netif/tcpdump.h"
 
@@ -78,6 +79,8 @@ struct unixif {
   struct list *q;
 };
 
+static void unixif_thread(void *arg);
+static void unixif_thread2(void *arg);
 
 /*-----------------------------------------------------------------------------------*/
 static int
@@ -488,4 +491,4 @@ unixif_init_client(struct netif *netif)
 }
 /*-----------------------------------------------------------------------------------*/
 
-
+#endif /* !NO_SYS */

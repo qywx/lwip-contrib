@@ -177,7 +177,7 @@ static void sio_unix_speed( int fd, int speed )
 
 	/* set new port settings 
 	* see 'man termios' for further settings */
-	newtio.c_cflag = speed | CS8 | CLOCAL | CREAD; /*§ | CRTSCTS; */
+	newtio.c_cflag = speed | CS8 | CLOCAL | CREAD; /* | CRTSCTS; */
 	newtio.c_iflag = 0;
 	newtio.c_oflag = 0;
 	newtio.c_lflag = 0; /*ECHO; */

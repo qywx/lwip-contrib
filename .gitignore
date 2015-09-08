@@ -1,3 +1,10 @@
+*.o
+*.a
+.depend
+/ports/unix/proj/unixsim/simhost
+/ports/unix/proj/unixsim/simrouter
+/ports/unix/proj/unixsim/simnode
+/ports/unix/proj/minimal/echop
 /ports/win32/msvc/Debug
 /ports/win32/lwipcfg_msvc.h
 /ports/win32/msvc/Debug unittests
