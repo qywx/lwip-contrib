@@ -48,6 +48,8 @@
 #include "lwip/def.h"
 #include "lwip/ip.h"
 #include "lwip/mem.h"
+#include "lwip/stats.h"
+#include "lwip/snmp.h"
 #include "lwip/pbuf.h"
 #include "lwip/sys.h"
 
@@ -129,16 +131,17 @@ low_level_init(struct netif *netif)
   tapif->ethaddr->addr[4] = 0x78;
   tapif->ethaddr->addr[5] = 0xab;
 
-  /* Do whatever else is needed to initialize interface. */
+  /* device capabilities */
+  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
 
   tapif->fd = open(DEVTAP, O_RDWR);
   LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: fd %d\n", tapif->fd));
-  if(tapif->fd == -1) {
+  if (tapif->fd == -1) {
 #ifdef LWIP_UNIX_LINUX
     perror("tapif_init: try running \"modprobe tun\" or rebuilding your kernel with CONFIG_TUN; cannot open "DEVTAP);
-#else
+#else /* LWIP_UNIX_LINUX */
     perror("tapif_init: cannot open "DEVTAP);
-#endif
+#endif /* LWIP_UNIX_LINUX */
     exit(1);
   }
 
@@ -207,20 +210,21 @@ low_level_init(struct netif *netif)
 static err_t
 low_level_output(struct netif *netif, struct pbuf *p)
 {
+  struct tapif *tapif;
   struct pbuf *q;
   char buf[1514];
   char *bufptr;
-  struct tapif *tapif;
+  ssize_t written;
 
   tapif = (struct tapif *)netif->state;
 #if 0
-    if(((double)rand()/(double)RAND_MAX) < 0.2) {
+  if (((double)rand()/(double)RAND_MAX) < 0.2) {
     printf("drop output\n");
     return ERR_OK;
-    }
+  }
 #endif
-  /* initiate transfer(); */
 
+  /* initiate transfer(); */
   bufptr = &buf[0];
 
   for(q = p; q != NULL; q = q->next) {
@@ -233,8 +237,13 @@ low_level_output(struct netif *netif, struct pbuf *p)
   }
 
   /* signal that packet should be sent(); */
-  if(write(tapif->fd, buf, p->tot_len) == -1) {
+  written = write(tapif->fd, buf, p->tot_len);
+  if (written == -1) {
+    snmp_inc_ifoutdiscards(netif);
     perror("tapif: write");
+  }
+  else {
+    snmp_add_ifoutoctets(netif, written);
   }
   return ERR_OK;
 }
@@ -248,27 +257,31 @@ low_level_output(struct netif *netif, struct pbuf *p)
  */
 /*-----------------------------------------------------------------------------------*/
 static struct pbuf *
-low_level_input(struct tapif *tapif)
+low_level_input(struct netif *netif)
 {
   struct pbuf *p, *q;
   u16_t len;
   char buf[1514];
   char *bufptr;
+  struct tapif *tapif;
+
+  tapif = (struct tapif *)netif->state;
 
   /* Obtain the size of the packet and put it into the "len"
      variable. */
   len = read(tapif->fd, buf, sizeof(buf));
-
   if (len == (u16_t)-1) {
     perror("read returned -1");
     exit(1);
   }
 
+  snmp_add_ifinoctets(netif,len);
+
 #if 0
-    if(((double)rand()/(double)RAND_MAX) < 0.2) {
+  if (((double)rand()/(double)RAND_MAX) < 0.2) {
     printf("drop\n");
     return NULL;
-    }
+  }
 #endif
 
   /* We allocate a pbuf chain of pbufs from the pool. */
@@ -336,14 +349,16 @@ tapif_input(struct netif *netif)
 {
   struct pbuf *p;
 
-  p = low_level_input((struct tapif *)netif->state);
+  p = low_level_input(netif);
 
   if (p == NULL) {
+#if LINK_STATS
+    LINK_STATS_INC(link.recv);
+#endif /* LINK_STATS */
     LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: low_level_input returned NULL\n"));
     return;
   }
 
-  /* send full packet to tcpip_thread to process */
   if (netif->input(p, netif) != ERR_OK) {
     LWIP_DEBUGF(NETIF_DEBUG, ("tapif_input: netif input error\n"));
     pbuf_free(p);
@@ -365,10 +380,28 @@ tapif_init(struct netif *netif)
   struct tapif *tapif;
 
   tapif = (struct tapif *)mem_malloc(sizeof(struct tapif));
-  if (!tapif) {
+  if (tapif == NULL) {
+    LWIP_DEBUGF(NETIF_DEBUG, ("tapif_init: out of memory for tapif\n"));
     return ERR_MEM;
   }
   netif->state = tapif;
+#if LWIP_SNMP
+  /* ifType is other(1), there doesn't seem
+     to be a proper type for the tunnel if */
+  netif->link_type = 1;
+  /* @todo get this from struct tunif? */
+  netif->link_speed = 0;
+  netif->ts = 0;
+  netif->ifinoctets = 0;
+  netif->ifinucastpkts = 0;
+  netif->ifinnucastpkts = 0;
+  netif->ifindiscards = 0;
+  netif->ifoutoctets = 0;
+  netif->ifoutucastpkts = 0;
+  netif->ifoutnucastpkts = 0;
+  netif->ifoutdiscards = 0;
+#endif
+
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
   netif->output = etharp_output;
@@ -381,8 +414,6 @@ tapif_init(struct netif *netif)
   netif->hwaddr_len = 6;
 
   tapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
-
-  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
 
   low_level_init(netif);
 

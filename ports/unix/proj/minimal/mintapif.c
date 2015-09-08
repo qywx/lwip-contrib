@@ -119,14 +119,15 @@ low_level_init(struct netif *netif)
   mintapif->ethaddr->addr[5] = 0xab;
 
   /* device capabilities */
-  /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
-
-  /* Do whatever else is needed to initialize interface. */
 
   mintapif->fd = open(DEVTAP, O_RDWR);
   if (mintapif->fd == -1) {
-    perror("tapif: tapif_init: open");
+#ifdef LWIP_UNIX_LINUX
+    perror("mintapif_init: try running \"modprobe tun\" or rebuilding your kernel with CONFIG_TUN; cannot open "DEVTAP);
+#else /* LWIP_UNIX_LINUX */
+    perror("mintapif_init: cannot open "DEVTAP);
+#endif /* LWIP_UNIX_LINUX */
     exit(1);
   }
 
@@ -198,12 +199,17 @@ low_level_output(struct netif *netif, struct pbuf *p)
   struct pbuf *q;
   char buf[1514];
   char *bufptr;
-  int written;
+  ssize_t written;
 
   mintapif = (struct mintapif *)netif->state;
+#if 0
+  if (((double)rand()/(double)RAND_MAX) < 0.2) {
+    printf("drop output\n");
+    return ERR_OK;
+  }
+#endif
 
   /* initiate transfer(); */
-
   bufptr = &buf[0];
 
   for(q = p; q != NULL; q = q->next) {
@@ -219,7 +225,7 @@ low_level_output(struct netif *netif, struct pbuf *p)
   written = write(mintapif->fd, buf, p->tot_len);
   if (written == -1) {
     snmp_inc_ifoutdiscards(netif);
-    perror("tapif: write");
+    perror("mintapif: write");
   }
   else {
     snmp_add_ifoutoctets(netif, written);
@@ -249,15 +255,22 @@ low_level_input(struct netif *netif)
   /* Obtain the size of the packet and put it into the "len"
      variable. */
   len = read(mintapif->fd, buf, sizeof(buf));
+  if (len == (u16_t)-1) {
+    perror("read returned -1");
+    exit(1);
+  }
+
   snmp_add_ifinoctets(netif,len);
 
-  /*  if (((double)rand()/(double)RAND_MAX) < 0.1) {
+#if 0
+  if (((double)rand()/(double)RAND_MAX) < 0.2) {
     printf("drop\n");
     return NULL;
-    }*/
+  }
+#endif
 
   /* We allocate a pbuf chain of pbufs from the pool. */
-  p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
+  p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
 
   if (p != NULL) {
     /* We iterate over the pbuf chain until we have read the entire
@@ -297,12 +310,18 @@ mintapif_input(struct netif *netif)
   struct pbuf *p;
 
   p = low_level_input(netif);
-  if (p != NULL) {
-#if LINK_STATS
-    lwip_stats.link.recv++;
-#endif /* LINK_STATS */
 
-    netif->input(p, netif);
+  if (p == NULL) {
+#if LINK_STATS
+    LINK_STATS_INC(link.recv);
+#endif /* LINK_STATS */
+    LWIP_DEBUGF(TAPIF_DEBUG, ("mintapif_input: low_level_input returned NULL\n"));
+    return;
+  }
+
+  if (netif->input(p, netif) != ERR_OK) {
+    LWIP_DEBUGF(NETIF_DEBUG, ("mintapif_input: netif input error\n"));
+    pbuf_free(p);
   }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -321,9 +340,8 @@ mintapif_init(struct netif *netif)
   struct mintapif *mintapif;
 
   mintapif = (struct mintapif *)mem_malloc(sizeof(struct mintapif));
-  if (mintapif == NULL)
-  {
-    LWIP_DEBUGF(NETIF_DEBUG, ("cs8900_init: out of memory for mintapif\n"));
+  if (mintapif == NULL) {
+    LWIP_DEBUGF(NETIF_DEBUG, ("mintapif_init: out of memory for mintapif\n"));
     return ERR_MEM;
   }
   netif->state = mintapif;
@@ -344,7 +362,6 @@ mintapif_init(struct netif *netif)
   netif->ifoutdiscards = 0;
 #endif
 
-  netif->hwaddr_len = 6;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
   netif->output = etharp_output;
@@ -353,6 +370,8 @@ mintapif_init(struct netif *netif)
 #endif /* LWIP_IPV6 */
   netif->linkoutput = low_level_output;
   netif->mtu = 1500;
+  /* hardware address length */
+  netif->hwaddr_len = 6;
 
   mintapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
 
