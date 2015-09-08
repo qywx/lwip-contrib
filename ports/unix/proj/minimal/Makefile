@@ -41,8 +41,8 @@ depend dep: .depend
 
 include .depend
 
-.depend: main.c mintapif.c $(LWIPFILES) $(APPFILES)
+.depend: main.c $(LWIPFILES) $(APPFILES)
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
 
-echop: .depend $(LWIPLIBCOMMON) $(APPLIB) main.o mintapif.o $(APPFILES)
-	$(CC) $(CFLAGS) -o echop main.o mintapif.o $(APPLIB) $(LWIPLIBCOMMON) $(LDFLAGS)
+echop: .depend $(LWIPLIBCOMMON) $(APPLIB) main.o $(APPFILES)
+	$(CC) $(CFLAGS) -o echop main.o $(APPLIB) $(LWIPLIBCOMMON) $(LDFLAGS)

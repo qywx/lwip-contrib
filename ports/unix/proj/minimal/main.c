@@ -49,7 +49,7 @@
 #include "lwip/udp.h"
 #include "lwip/snmp_msg.h"
 #include "lwip/tcp_impl.h"
-#include "mintapif.h"
+#include "netif/tapif.h"
 #include "netif/etharp.h"
 
 #include "echo.h"
@@ -186,7 +186,7 @@ main(int argc, char **argv)
 
   printf("TCP/IP initialized.\n");
 
-  netif_add(&netif, &ipaddr, &netmask, &gw, NULL, mintapif_init, ethernet_input);
+  netif_add(&netif, &ipaddr, &netmask, &gw, NULL, tapif_init, ethernet_input);
   netif_set_default(&netif);
   netif_set_up(&netif);
 #if LWIP_IPV6
@@ -218,7 +218,7 @@ main(int argc, char **argv)
 
   while (1) {
     /* poll netif, pass packet to lwIP */
-    mintapif_select(&netif);
+    tapif_select(&netif);
 
     sys_check_timeouts();
   }
