@@ -43,20 +43,23 @@
 #include <sys/uio.h>
 #include <sys/socket.h>
 
+#define IFCONFIG_BIN "/sbin/ifconfig "
+
 #if defined(LWIP_UNIX_LINUX)
 #include <sys/ioctl.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
 #define DEVTAP "/dev/net/tun"
-#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d"
-
+#define NETMASK_ARGS "netmask %d.%d.%d.%d"
+#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
 #elif defined(LWIP_UNIX_OPENBSD)
 #define DEVTAP "/dev/tun0"
-#define IFCONFIG_ARGS "tun0 inet %d.%d.%d.%d link0"
-
-#else /* freebsd, cygwin? */
+#define NETMASK_ARGS "netmask %d.%d.%d.%d"
+#define IFCONFIG_ARGS "tun0 inet %d.%d.%d.%d " NETMASK_ARGS " link0"
+#else /* others */
 #define DEVTAP "/dev/tap0"
-#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d"
+#define NETMASK_ARGS "netmask %d.%d.%d.%d"
+#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
 #endif
 
 #include "lwip/stats.h"
@@ -127,11 +130,19 @@ low_level_init(struct netif *netif)
 #endif /* Linux */
   netif_set_link_up(netif);
 
-  snprintf(buf, sizeof(buf), "/sbin/ifconfig " IFCONFIG_ARGS,
+  sprintf(buf, IFCONFIG_BIN IFCONFIG_ARGS,
            ip4_addr1(&(netif->gw)),
            ip4_addr2(&(netif->gw)),
            ip4_addr3(&(netif->gw)),
-           ip4_addr4(&(netif->gw)));
+           ip4_addr4(&(netif->gw))
+#ifdef NETMASK_ARGS
+           ,
+           ip4_addr1(&(netif->netmask)),
+           ip4_addr2(&(netif->netmask)),
+           ip4_addr3(&(netif->netmask)),
+           ip4_addr4(&(netif->netmask))
+#endif /* NETMASK_ARGS */
+           );
   
   ret = system(buf);
   if (ret < 0) {
