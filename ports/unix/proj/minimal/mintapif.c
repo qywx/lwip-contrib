@@ -1,9 +1,9 @@
 /*-----------------------------------------------------------------------------------*/
 /*
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
- * All rights reserved. 
- * 
- * Redistribution and use in source and binary forms, with or without modification, 
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice,
@@ -12,21 +12,21 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission. 
+ *    derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED 
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT 
- * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT 
- * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
- * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+ * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  *
  * This file is part of the lwIP TCP/IP stack.
- * 
+ *
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
@@ -94,7 +94,7 @@ low_level_init(struct netif *netif)
   char *preconfigured_tapif = getenv("PRECONFIGURED_TAPIF");
 
   mintapif = (struct mintapif *)netif->state;
-  
+
   /* Obtain MAC address from network interface. */
   mintapif->ethaddr->addr[0] = 0x02;
   mintapif->ethaddr->addr[1] = 0x12;
@@ -107,8 +107,8 @@ low_level_init(struct netif *netif)
   /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
 
-  /* Do whatever else is needed to initialize interface. */  
-  
+  /* Do whatever else is needed to initialize interface. */
+
   mintapif->fd = open(DEVTAP, O_RDWR);
   if (mintapif->fd == -1) {
     perror("tapif: tapif_init: open");
@@ -143,7 +143,7 @@ low_level_init(struct netif *netif)
            ip4_addr4(&(netif->netmask))
 #endif /* NETMASK_ARGS */
            );
-  
+
   ret = system(buf);
   if (ret < 0) {
     perror("ifconfig failed");
@@ -176,15 +176,15 @@ low_level_output(struct netif *netif, struct pbuf *p)
   int written;
 
   mintapif = (struct mintapif *)netif->state;
-  
+
   /* initiate transfer(); */
-  
+
   bufptr = &buf[0];
-  
+
   for(q = p; q != NULL; q = q->next) {
     /* Send the data from the pbuf to the interface, one pbuf at a
        time. The size of the data in each pbuf is kept in the ->len
-       variable. */    
+       variable. */
     /* send data from(q->payload, q->len); */
     memcpy(bufptr, q->payload, q->len);
     bufptr += q->len;
@@ -230,10 +230,10 @@ low_level_input(struct netif *netif)
     printf("drop\n");
     return NULL;
     }*/
-  
+
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
-  
+
   if (p != NULL) {
     /* We iterate over the pbuf chain until we have read the entire
        packet into the pbuf. */
@@ -253,7 +253,7 @@ low_level_input(struct netif *netif)
     printf("Could not allocate pbufs\n");
   }
 
-  return p;  
+  return p;
 }
 /*-----------------------------------------------------------------------------------*/
 /*
@@ -294,7 +294,7 @@ err_t
 mintapif_init(struct netif *netif)
 {
   struct mintapif *mintapif;
-    
+
   mintapif = (struct mintapif *)mem_malloc(sizeof(struct mintapif));
   if (mintapif == NULL)
   {
@@ -325,9 +325,9 @@ mintapif_init(struct netif *netif)
   netif->output = etharp_output;
   netif->linkoutput = low_level_output;
   netif->mtu = 1500;
-  
+
   mintapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
-  
+
   low_level_init(netif);
 
   return ERR_OK;
@@ -341,19 +341,19 @@ mintapif_select(struct netif *netif)
   int ret;
   struct timeval tv;
   struct mintapif *mintapif;
-  u32_t msecs = sys_timeouts_sleeptime(); 
+  u32_t msecs = sys_timeouts_sleeptime();
 
   mintapif = (struct mintapif *)netif->state;
 
   tv.tv_sec = msecs / 1000;
   tv.tv_usec = (msecs % 1000) * 1000;
-  
+
   FD_ZERO(&fdset);
   FD_SET(mintapif->fd, &fdset);
 
   ret = select(mintapif->fd + 1, &fdset, NULL, NULL, &tv);
   if (ret > 0) {
-    mintapif_input(netif);   
+    mintapif_input(netif);
   }
   return ret;
 }
