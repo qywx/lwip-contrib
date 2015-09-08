@@ -348,6 +348,9 @@ mintapif_init(struct netif *netif)
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
   netif->output = etharp_output;
+#if LWIP_IPV6
+  netif->output_ip6 = ethip6_output;
+#endif /* LWIP_IPV6 */
   netif->linkoutput = low_level_output;
   netif->mtu = 1500;
 
