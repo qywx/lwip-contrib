@@ -49,6 +49,15 @@
 #include <sys/ioctl.h>
 #include <linux/if.h>
 #include <linux/if_tun.h>
+/*
+ * Creating a tap interface requires special privileges. If the interfaces
+ * is created in advance with `tunctl -u <user>` it can be opened as a regular
+ * user. The network must already be configured. If DEVTAP_IF is defined it
+ * will be opened instead of creating a new tap device.
+ *
+ * You can also use PRECONFIGURED_TAPIF environment variable to do so.
+ */
+/* #define DEVTAP_IF "tap0" */
 #define DEVTAP "/dev/net/tun"
 #define NETMASK_ARGS "netmask %d.%d.%d.%d"
 #define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
@@ -93,9 +102,11 @@ static void
 low_level_init(struct netif *netif)
 {
   struct mintapif *mintapif;
-  char buf[1024];
   int ret;
+#ifndef DEVTAP_IF
+  char buf[1024];
   char *preconfigured_tapif = getenv("PRECONFIGURED_TAPIF");
+#endif /* DEVTAP_IF */
 
   mintapif = (struct mintapif *)netif->state;
 
@@ -123,8 +134,13 @@ low_level_init(struct netif *netif)
   {
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(ifr));
-    if (preconfigured_tapif != NULL)
+#ifdef DEVTAP_IF
+    strncpy(ifr.ifr_name, DEVTAP_IF, IFNAMSIZ);
+#else /* DEVTAP_IF */
+    if (preconfigured_tapif) {
       strncpy(ifr.ifr_name, preconfigured_tapif, IFNAMSIZ);
+    }
+#endif /* DEVTAP_IF */
     ifr.ifr_flags = IFF_TAP|IFF_NO_PI;
     if (ioctl(mintapif->fd, TUNSETIFF, (void *) &ifr) < 0) {
       perror("Could not set interface flags");
@@ -134,29 +150,33 @@ low_level_init(struct netif *netif)
 #endif /* Linux */
   netif_set_link_up(netif);
 
-  snprintf(buf, 1024, IFCONFIG_BIN IFCONFIG_ARGS,
-           ip4_addr1(&(netif->gw)),
-           ip4_addr2(&(netif->gw)),
-           ip4_addr3(&(netif->gw)),
-           ip4_addr4(&(netif->gw))
+#ifndef DEVTAP_IF
+  if (preconfigured_tapif == NULL) {
+    snprintf(buf, 1024, IFCONFIG_BIN IFCONFIG_ARGS,
+             ip4_addr1(&(netif->gw)),
+             ip4_addr2(&(netif->gw)),
+             ip4_addr3(&(netif->gw)),
+             ip4_addr4(&(netif->gw))
 #ifdef NETMASK_ARGS
-           ,
-           ip4_addr1(&(netif->netmask)),
-           ip4_addr2(&(netif->netmask)),
-           ip4_addr3(&(netif->netmask)),
-           ip4_addr4(&(netif->netmask))
+             ,
+             ip4_addr1(&(netif->netmask)),
+             ip4_addr2(&(netif->netmask)),
+             ip4_addr3(&(netif->netmask)),
+             ip4_addr4(&(netif->netmask))
 #endif /* NETMASK_ARGS */
-           );
+             );
 
-  LWIP_DEBUGF(TAPIF_DEBUG, ("mintapif_init: system(\"%s\");\n", buf));
-  ret = system(buf);
-  if (ret < 0) {
-    perror("ifconfig failed");
-    exit(1);
+    LWIP_DEBUGF(TAPIF_DEBUG, ("mintapif_init: system(\"%s\");\n", buf));
+    ret = system(buf);
+    if (ret < 0) {
+      perror("ifconfig failed");
+      exit(1);
+    }
+    if (ret != 0) {
+      printf("ifconfig returned %d\n", ret);
+    }
   }
-  if (ret != 0) {
-    printf("ifconfig returned %d\n", ret);
-  }
+#endif /* DEVTAP_IF */
 
   mintapif->lasttime = 0;
 }
