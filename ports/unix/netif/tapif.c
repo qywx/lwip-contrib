@@ -317,43 +317,19 @@ tapif_thread(void *arg)
 static void
 tapif_input(struct netif *netif)
 {
-  struct tapif *tapif;
-  struct eth_hdr *ethhdr;
   struct pbuf *p;
 
+  p = low_level_input((struct tapif *)netif->state);
 
-  tapif = (struct tapif *)netif->state;
-
-  p = low_level_input(tapif);
-
-  if(p == NULL) {
+  if (p == NULL) {
     LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_input: low_level_input returned NULL\n"));
     return;
   }
-  ethhdr = (struct eth_hdr *)p->payload;
 
-  switch(htons(ethhdr->type)) {
-  /* IP or ARP packet? */
-  case ETHTYPE_IP:
-  case ETHTYPE_ARP:
-#if LWIP_IPV6
-  case ETHTYPE_IPV6:
-#endif /* LWIP_IPV6 */
-#if PPPOE_SUPPORT
-  /* PPPoE packet? */
-  case ETHTYPE_PPPOEDISC:
-  case ETHTYPE_PPPOE:
-#endif /* PPPOE_SUPPORT */
-    /* full packet send to tcpip_thread to process */
-    if (netif->input(p, netif) != ERR_OK) {
-      LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
-       pbuf_free(p);
-       p = NULL;
-    }
-    break;
-  default:
+  /* send full packet to tcpip_thread to process */
+  if (netif->input(p, netif) != ERR_OK) {
+    LWIP_DEBUGF(NETIF_DEBUG, ("tapif_input: netif input error\n"));
     pbuf_free(p);
-    break;
   }
 }
 /*-----------------------------------------------------------------------------------*/
