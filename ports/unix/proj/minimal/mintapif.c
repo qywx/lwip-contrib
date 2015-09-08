@@ -71,8 +71,12 @@
 #include "mintapif.h"
 
 /* Define those to better describe your network interface. */
-#define IFNAME0 'e'
-#define IFNAME1 't'
+#define IFNAME0 't'
+#define IFNAME1 'p'
+
+#ifndef TAPIF_DEBUG
+#define TAPIF_DEBUG LWIP_DBG_OFF
+#endif
 
 struct mintapif {
   struct eth_addr *ethaddr;
@@ -144,6 +148,7 @@ low_level_init(struct netif *netif)
 #endif /* NETMASK_ARGS */
            );
 
+  LWIP_DEBUGF(TAPIF_DEBUG, ("mintapif_init: system(\"%s\");\n", buf));
   ret = system(buf);
   if (ret < 0) {
     perror("ifconfig failed");

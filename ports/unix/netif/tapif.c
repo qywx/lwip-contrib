@@ -109,6 +109,7 @@ static void
 low_level_init(struct netif *netif)
 {
   struct tapif *tapif;
+  int ret;
 #ifndef DEVTAP_IF
   char buf[sizeof(IFCONFIG_ARGS) + sizeof(IFCONFIG_BIN) + 50];
 #endif /* DEVTAP_IF */
@@ -170,7 +171,14 @@ low_level_init(struct netif *netif)
            );
 
   LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: system(\"%s\");\n", buf));
-  system(buf);
+  ret = system(buf);
+  if (ret < 0) {
+    perror("ifconfig failed");
+    exit(1);
+  }
+  if (ret != 0) {
+    printf("ifconfig returned %d\n", ret);
+  }
 #endif /* DEVTAP_IF */
 
   sys_thread_new("tapif_thread", tapif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
