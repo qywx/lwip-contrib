@@ -30,21 +30,23 @@
  *
  */
 
-#include "netif/tapif.h"
-
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/uio.h>
 #include <sys/socket.h>
 
+#include "lwip/opt.h"
+
+#if !NO_SYS
 
 #include "lwip/debug.h"
-
-#include "lwip/opt.h"
 #include "lwip/def.h"
 #include "lwip/ip.h"
 #include "lwip/mem.h"
@@ -52,15 +54,15 @@
 #include "lwip/snmp.h"
 #include "lwip/pbuf.h"
 #include "lwip/sys.h"
-
+#include "lwip/timers.h"
 #include "netif/etharp.h"
 #include "lwip/ethip6.h"
-
-#if !NO_SYS
 
 #if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
 #include "netif/tcpdump.h"
 #endif /* LWIP_DEBUG && LWIP_TCPDUMP */
+
+#include "netif/tapif.h"
 
 #define IFCONFIG_BIN "/sbin/ifconfig "
 
@@ -90,6 +92,7 @@
 #define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
 #endif
 
+/* Define those to better describe your network interface. */
 #define IFNAME0 't'
 #define IFNAME1 'p'
 
@@ -104,8 +107,7 @@ struct tapif {
 };
 
 /* Forward declarations. */
-static void  tapif_input(struct netif *netif);
-
+static void tapif_input(struct netif *netif);
 static void tapif_thread(void *arg);
 
 /*-----------------------------------------------------------------------------------*/

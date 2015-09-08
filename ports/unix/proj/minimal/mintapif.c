@@ -43,6 +43,26 @@
 #include <sys/uio.h>
 #include <sys/socket.h>
 
+#include "lwip/opt.h"
+
+#include "lwip/debug.h"
+#include "lwip/def.h"
+#include "lwip/ip.h"
+#include "lwip/mem.h"
+#include "lwip/stats.h"
+#include "lwip/snmp.h"
+#include "lwip/pbuf.h"
+#include "lwip/sys.h"
+#include "lwip/timers.h"
+#include "netif/etharp.h"
+#include "lwip/ethip6.h"
+
+#if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
+#include "netif/tcpdump.h"
+#endif /* LWIP_DEBUG && LWIP_TCPDUMP */
+
+#include "mintapif.h"
+
 #define IFCONFIG_BIN "/sbin/ifconfig "
 
 #if defined(LWIP_UNIX_LINUX)
@@ -71,14 +91,6 @@
 #define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
 #endif
 
-#include "lwip/stats.h"
-#include "lwip/snmp.h"
-#include "lwip/mem.h"
-#include "lwip/timers.h"
-#include "netif/etharp.h"
-
-#include "mintapif.h"
-
 /* Define those to better describe your network interface. */
 #define IFNAME0 't'
 #define IFNAME1 'p'
@@ -95,7 +107,7 @@ struct mintapif {
 };
 
 /* Forward declarations. */
-static void  mintapif_input(struct netif *netif);
+static void mintapif_input(struct netif *netif);
 
 /*-----------------------------------------------------------------------------------*/
 static void
