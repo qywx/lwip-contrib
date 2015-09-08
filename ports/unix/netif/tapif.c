@@ -44,8 +44,6 @@
 
 #include "lwip/opt.h"
 
-#if !NO_SYS
-
 #include "lwip/debug.h"
 #include "lwip/def.h"
 #include "lwip/ip.h"
@@ -108,7 +106,9 @@ struct tapif {
 
 /* Forward declarations. */
 static void tapif_input(struct netif *netif);
+#if !NO_SYS
 static void tapif_thread(void *arg);
+#endif /* !NO_SYS */
 
 /*-----------------------------------------------------------------------------------*/
 static void
@@ -195,8 +195,9 @@ low_level_init(struct netif *netif)
   }
 #endif /* DEVTAP_IF */
 
+#if !NO_SYS
   sys_thread_new("tapif_thread", tapif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
-
+#endif /* !NO_SYS */
 }
 /*-----------------------------------------------------------------------------------*/
 /*
@@ -310,33 +311,7 @@ low_level_input(struct netif *netif)
 
   return p;
 }
-/*-----------------------------------------------------------------------------------*/
-static void
-tapif_thread(void *arg)
-{
-  struct netif *netif;
-  struct tapif *tapif;
-  fd_set fdset;
-  int ret;
 
-  netif = (struct netif *)arg;
-  tapif = (struct tapif *)netif->state;
-
-  while(1) {
-    FD_ZERO(&fdset);
-    FD_SET(tapif->fd, &fdset);
-
-    /* Wait for a packet to arrive. */
-    ret = select(tapif->fd + 1, &fdset, NULL, NULL, NULL);
-
-    if(ret == 1) {
-      /* Handle incoming packet. */
-      tapif_input(netif);
-    } else if(ret == -1) {
-      perror("tapif_thread: select");
-    }
-  }
-}
 /*-----------------------------------------------------------------------------------*/
 /*
  * tapif_input():
@@ -423,6 +398,62 @@ tapif_init(struct netif *netif)
 
   return ERR_OK;
 }
-/*-----------------------------------------------------------------------------------*/
 
-#endif /* !NO_SYS */
+
+/*-----------------------------------------------------------------------------------*/
+#if NO_SYS
+
+int
+tapif_select(struct netif *netif)
+{
+  fd_set fdset;
+  int ret;
+  struct timeval tv;
+  struct tapif *tapif;
+  u32_t msecs = sys_timeouts_sleeptime();
+
+  tapif = (struct tapif *)netif->state;
+
+  tv.tv_sec = msecs / 1000;
+  tv.tv_usec = (msecs % 1000) * 1000;
+
+  FD_ZERO(&fdset);
+  FD_SET(tapif->fd, &fdset);
+
+  ret = select(tapif->fd + 1, &fdset, NULL, NULL, &tv);
+  if (ret > 0) {
+    tapif_input(netif);
+  }
+  return ret;
+}
+
+#else /* NO_SYS */
+
+static void
+tapif_thread(void *arg)
+{
+  struct netif *netif;
+  struct tapif *tapif;
+  fd_set fdset;
+  int ret;
+
+  netif = (struct netif *)arg;
+  tapif = (struct tapif *)netif->state;
+
+  while(1) {
+    FD_ZERO(&fdset);
+    FD_SET(tapif->fd, &fdset);
+
+    /* Wait for a packet to arrive. */
+    ret = select(tapif->fd + 1, &fdset, NULL, NULL, NULL);
+
+    if(ret == 1) {
+      /* Handle incoming packet. */
+      tapif_input(netif);
+    } else if(ret == -1) {
+      perror("tapif_thread: select");
+    }
+  }
+}
+
+#endif /* NO_SYS */
