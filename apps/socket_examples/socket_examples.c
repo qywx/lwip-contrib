@@ -3,7 +3,7 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_SOCKET
+#if LWIP_SOCKET && LWIP_IPV4
 
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
