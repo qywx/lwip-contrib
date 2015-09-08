@@ -29,127 +29,26 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
 
-CCDEP=gcc
-CC=gcc
-
-#To compile for openbsd: make UNIXARCH=OPENBSD
-#To compile for cygwin: make UNIXARCH=CYGWIN
-UNIXARCH ?= LINUX
-CFLAGS=-g -Wall -DLWIP_UNIX_$(UNIXARCH) -DLWIP_DEBUG -pedantic -Werror \
-	-Wparentheses -Wsequence-point -Wswitch-default \
-	-Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast \
-	-Wc++-compat -Wwrite-strings -Wold-style-definition \
-	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address
-# not used for now but interesting:
-# -Wpacked
-# -Wunreachable-code
-# -ansi
-# -std=c89
-LDFLAGS=-pthread -lutil
-CONTRIBDIR=../../../..
-LWIPARCH=$(CONTRIBDIR)/ports/unix
-ARFLAGS=rs
-
-#Set this to where you have the lwip core module checked out from CVS
-#default assumes it's a dir named lwip at the same level as the contrib module
-LWIPDIR=$(CONTRIBDIR)/../lwip/src
-
-CFLAGS:=$(CFLAGS) \
-	-I. -I$(CONTRIBDIR)/apps/httpserver_raw -I$(CONTRIBDIR)/apps/shell \
-	-I$(CONTRIBDIR)/apps/tcpecho -I$(CONTRIBDIR)/apps/udpecho \
-	-I$(LWIPDIR)/include -I$(LWIPARCH)/include -I$(LWIPDIR)
-
-# COREFILES, CORE4FILES: The minimum set of files needed for lwIP.
-COREFILES=$(LWIPDIR)/core/def.c $(LWIPDIR)/core/dhcp.c $(LWIPDIR)/core/dns.c \
-	$(LWIPDIR)/core/inet_chksum.c $(LWIPDIR)/core/init.c $(LWIPDIR)/core/mem.c \
-	$(LWIPDIR)/core/memp.c $(LWIPDIR)/core/netif.c $(LWIPDIR)/core/pbuf.c \
-	$(LWIPDIR)/core/raw.c $(LWIPDIR)/core/stats.c $(LWIPDIR)/core/sys.c \
-	$(LWIPDIR)/core/tcp.c $(LWIPDIR)/core/tcp_in.c $(LWIPDIR)/core/tcp_in.c \
-	$(LWIPDIR)/core/tcp_out.c $(LWIPDIR)/core/timers.c $(LWIPDIR)/core/udp.c
-CORE4FILES=$(LWIPDIR)/core/ipv4/autoip.c $(LWIPDIR)/core/ipv4/icmp.c \
-	$(LWIPDIR)/core/ipv4/igmp.c $(LWIPDIR)/core/ipv4/ip_frag.c \
-	$(LWIPDIR)/core/ipv4/ip4.c $(LWIPDIR)/core/ipv4/ip4_addr.c
-CORE6FILES=$(LWIPDIR)/core/ipv6/dhcp6.c $(LWIPDIR)/core/ipv6/ethip6.c \
-	$(LWIPDIR)/core/ipv6/icmp6.c $(LWIPDIR)/core/ipv6/ip6.c \
-	$(LWIPDIR)/core/ipv6/ip6_addr.c $(LWIPDIR)/core/ipv6/ip6_frag.c \
-	$(LWIPDIR)/core/ipv6/mld6.c $(LWIPDIR)/core/ipv6/nd6.c
-
-# SNMPFILES: Extra SNMPv1 agent
-SNMPFILES=$(LWIPDIR)/core/snmp/asn1_dec.c $(LWIPDIR)/core/snmp/asn1_enc.c \
-	$(LWIPDIR)/core/snmp/mib2.c $(LWIPDIR)/core/snmp/mib_structs.c \
-	$(LWIPDIR)/core/snmp/msg_in.c $(LWIPDIR)/core/snmp/msg_out.c
-
-# APIFILES: The files which implement the sequential and socket APIs.
-APIFILES=$(LWIPDIR)/api/api_lib.c $(LWIPDIR)/api/api_msg.c $(LWIPDIR)/api/err.c \
-	$(LWIPDIR)/api/netbuf.c $(LWIPDIR)/api/netdb.c $(LWIPDIR)/api/netifapi.c \
-	$(LWIPDIR)/api/sockets.c $(LWIPDIR)/api/tcpip.c
-
-# NETIFFILES: Files implementing various generic network interface functions.'
-NETIFFILES=$(LWIPDIR)/netif/etharp.c $(LWIPDIR)/netif/slipif.c
-
-# NETIFFILES: Add PPP netif
-NETIFFILES+=$(LWIPDIR)/netif/ppp/auth.c $(LWIPDIR)/netif/ppp/ccp.c \
-	$(LWIPDIR)/netif/ppp/chap-md5.c $(LWIPDIR)/netif/ppp/chap_ms.c \
-	$(LWIPDIR)/netif/ppp/chap-new.c $(LWIPDIR)/netif/ppp/demand.c \
-	$(LWIPDIR)/netif/ppp/eap.c $(LWIPDIR)/netif/ppp/ecp.c \
-	$(LWIPDIR)/netif/ppp/eui64.c $(LWIPDIR)/netif/ppp/fsm.c \
-	$(LWIPDIR)/netif/ppp/ipcp.c $(LWIPDIR)/netif/ppp/ipv6cp.c \
-	$(LWIPDIR)/netif/ppp/lcp.c $(LWIPDIR)/netif/ppp/magic.c \
-	$(LWIPDIR)/netif/ppp/mppe.c \
-	$(LWIPDIR)/netif/ppp/multilink.c $(LWIPDIR)/netif/ppp/ppp.c \
-	$(LWIPDIR)/netif/ppp/pppcrypt.c $(LWIPDIR)/netif/ppp/pppoe.c \
-	$(LWIPDIR)/netif/ppp/pppol2tp.c $(LWIPDIR)/netif/ppp/pppos.c \
-	$(LWIPDIR)/netif/ppp/upap.c $(LWIPDIR)/netif/ppp/utils.c \
-	$(LWIPDIR)/netif/ppp/vj.c $(LWIPDIR)/netif/ppp/polarssl/des.c \
-	$(LWIPDIR)/netif/ppp/polarssl/arc4.c \
-	$(LWIPDIR)/netif/ppp/polarssl/md4.c $(LWIPDIR)/netif/ppp/polarssl/md5.c \
-	$(LWIPDIR)/netif/ppp/polarssl/sha1.c $(LWIPARCH)/netif/sio.c
-
-# ARCHFILES: Architecture specific files.
-ARCHFILES=$(wildcard $(LWIPARCH)/*.c $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tunif.c $(LWIPARCH)/netif/unixif.c $(LWIPARCH)/netif/list.c $(LWIPARCH)/netif/tcpdump.c)
-
-# APPFILES: Applications.
-APPFILES=$(CONTRIBDIR)/apps/httpserver_raw/fs.c $(CONTRIBDIR)/apps/httpserver_raw/httpd.c \
-	$(CONTRIBDIR)/apps/udpecho/udpecho.c $(CONTRIBDIR)/apps/tcpecho/tcpecho.c \
-	$(CONTRIBDIR)/apps/shell/shell.c
-
-# LWIPFILES: All the above.
-LWIPFILES=$(COREFILES) $(CORE4FILES) $(CORE6FILES) $(SNMPFILES) $(APIFILES) $(NETIFFILES) $(ARCHFILES)
-LWIPFILESW=$(wildcard $(LWIPFILES))
-LWIPOBJS=$(notdir $(LWIPFILESW:.c=.o))
-
-LWIPLIB=liblwip4.a
-APPLIB=liblwipapps.a
-APPOBJS=$(notdir $(APPFILES:.c=.o))
-
-%.o:
-	$(CC) $(CFLAGS) -c $(<:.o=.c)
-
-all ipv4 compile: simhost 
+all ipv4 compile: simhost simrouter simnode
 .PHONY: all
 
+include ../Common.mk
+
 clean:
-	rm -f *.o $(LWIPLIB) $(APPLIB) simhost simnode simrouter *.s .depend* *.core core
+	rm -f *.o $(LWIPLIBCOMMON) $(APPLIB) simhost simnode simrouter *.s .depend* *.core core
 
 depend dep: .depend
 
 include .depend
 
-$(APPLIB): $(APPOBJS)
-	$(AR) $(ARFLAGS) $(APPLIB) $?
-
-$(LWIPLIB): $(LWIPOBJS)
-	$(AR) $(ARFLAGS) $(LWIPLIB) $?
-
 .depend: simhost.c simnode.c simrouter.c $(LWIPFILES) $(APPFILES)
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
 
-simhost: .depend $(LWIPLIB) $(APPLIB) simhost.o $(APPFILES)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o simhost simhost.o $(APPLIB) $(LWIPLIB)
+simhost: .depend $(LWIPLIBCOMMON) $(APPLIB) simhost.o
+	$(CC) $(CFLAGS) -o simhost simhost.o $(APPLIB) $(LWIPLIBCOMMON) $(LDFLAGS)
 
-simrouter: .depend $(LWIPLIB) $(APPLIB) simrouter.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o simrouter simrouter.o $(APPLIB) $(LWIPLIB) 
+simrouter: .depend $(LWIPLIBCOMMON) $(APPLIB) simrouter.o
+	$(CC) $(CFLAGS) -o simrouter simrouter.o $(APPLIB) $(LWIPLIBCOMMON) $(LDFLAGS) 
 
-simnode: .depend $(LWIPLIB) $(APPLIB) simnode.o 
-	$(CC) $(CFLAGS) $(LDFLAGS) -o simnode simnode.o $(APPLIB) $(LWIPLIB)
-
+simnode: .depend $(LWIPLIBCOMMON) $(APPLIB) simnode.o 
+	$(CC) $(CFLAGS) -o simnode simnode.o $(APPLIB) $(LWIPLIBCOMMON) $(LDFLAGS) 
