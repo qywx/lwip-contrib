@@ -809,7 +809,12 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
 static void
 pcapif_rx_pbuf_free_custom(struct pbuf *p)
 {
+  struct pcapif_pbuf_custom* ppc;
   LWIP_ASSERT("NULL pointer", p != NULL);
+  ppc = (struct pcapif_pbuf_custom*)p;
+  LWIP_ASSERT("NULL pointer", ppc->p != NULL);
+  pbuf_free(ppc->p);
+  ppc->p = NULL;
   mem_free(p);
 }
 
@@ -825,6 +830,7 @@ pcapif_rx_ref(struct pbuf* p)
   ppc = (struct pcapif_pbuf_custom*)mem_malloc(sizeof(struct pcapif_pbuf_custom));
   LWIP_ASSERT("out of memory for RX", ppc != NULL);
   ppc->pc.custom_free_function = pcapif_rx_pbuf_free_custom;
+  ppc->p = p;
 
   q = pbuf_alloced_custom(PBUF_RAW, p->tot_len, PBUF_REF, &ppc->pc, p->payload, p->tot_len);
   LWIP_ASSERT("pbuf_alloced_custom returned NULL", q != NULL);
