@@ -111,7 +111,7 @@ low_level_init(struct netif *netif)
   struct tapif *tapif;
   int ret;
 #ifndef DEVTAP_IF
-  char buf[sizeof(IFCONFIG_ARGS) + sizeof(IFCONFIG_BIN) + 50];
+  char buf[1024];
 #endif /* DEVTAP_IF */
 
   tapif = (struct tapif *)netif->state;
@@ -156,7 +156,7 @@ low_level_init(struct netif *netif)
   netif_set_link_up(netif);
 
 #ifndef DEVTAP_IF
-  sprintf(buf, IFCONFIG_BIN IFCONFIG_ARGS,
+  snprintf(buf, 1024, IFCONFIG_BIN IFCONFIG_ARGS,
            ip4_addr1(&(netif->gw)),
            ip4_addr2(&(netif->gw)),
            ip4_addr3(&(netif->gw)),

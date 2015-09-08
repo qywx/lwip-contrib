@@ -134,7 +134,7 @@ low_level_init(struct netif *netif)
 #endif /* Linux */
   netif_set_link_up(netif);
 
-  sprintf(buf, IFCONFIG_BIN IFCONFIG_ARGS,
+  snprintf(buf, 1024, IFCONFIG_BIN IFCONFIG_ARGS,
            ip4_addr1(&(netif->gw)),
            ip4_addr2(&(netif->gw)),
            ip4_addr3(&(netif->gw)),
