@@ -30,6 +30,10 @@
  *
  */
 
+#include "lwip/opt.h"
+
+#if !NO_SYS
+
 #include "lwip/debug.h"
 
 #include <stdlib.h>
@@ -315,3 +319,5 @@ delif_init_thread(struct netif *netif)
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
+
+#endif /* !NO_SYS */
