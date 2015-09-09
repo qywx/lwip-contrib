@@ -55,7 +55,6 @@ typedef struct _xx
   LWIP_ASSERT("buf4 fail", !memcmp((sets)->buf4, cmpbuf, 8)); \
 }while(0)
 
-
 /** This is an example function that tests
     blocking- and nonblocking connect. */
 static void
