@@ -91,4 +91,9 @@ typedef unsigned long mem_ptr_t;
 
 #define LWIP_RAND() ((u32_t)rand())
 
+struct sio_status_s;
+typedef struct sio_status_s sio_status_t;
+#define sio_fd_t sio_status_t*
+#define __sio_fd_t_defined
+
 #endif /* LWIP_ARCH_CC_H */

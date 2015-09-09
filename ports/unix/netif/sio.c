@@ -1,11 +1,12 @@
 /* Author: Magnus Ivarsson <magnus.ivarsson@volvo.com> */
 
-#include "netif/sio.h" 
+#include "netif/sio.h"
 #include "netif/fifo.h"
 #include "lwip/debug.h"
 #include "lwip/def.h"
 #include "lwip/sys.h"
 #include "lwip/arch.h"
+#include "lwip/sio.h"
 
 /* Following #undefs are here to keep compiler from issuing warnings
    about them being double defined. (They are defined in lwip/inet.h
@@ -284,7 +285,7 @@ void sio_read_abort(sio_status_t * siostat)
 }
 #endif /* PPP_SUPPORT */
 
-sio_status_t * sio_open( int devnum )
+sio_fd_t sio_open(u8_t devnum)
 {
 	char dev[20];
 
