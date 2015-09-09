@@ -230,11 +230,15 @@ a lot of data that needs to be copied, this should be set high. */
  * is 0
  * */
 
-#define LWIP_STATS	1
+#define LWIP_STATS        1
 
 /* ---------- PPP options ---------- */
 
-#define PPP_SUPPORT      1      /* Set > 0 for PPP */
+#define PPP_SUPPORT       1      /* Set > 0 for PPP */
+#define MPPE_SUPPORT      PPP_SUPPORT
+#define PPPOE_SUPPORT     PPP_SUPPORT
+#define PPPOL2TP_SUPPORT  PPP_SUPPORT
+#define PPPOS_SUPPORT     PPP_SUPPORT
 
 #if PPP_SUPPORT > 0
 
