@@ -9,7 +9,7 @@
 #include "arch/cc.h"
 #include "lwip/opt.h"
 
-#if LWIP_SNMP
+#if SNMP_PRIVATE_MIB
 #include "lwip/snmp_structs.h"
 extern const struct mib_array_node mib_private;
 
@@ -23,6 +23,6 @@ void lwip_privmib_init(void);
 
 #define SNMP_PRIVATE_MIB_INIT() lwip_privmib_init()
 
-#endif
+#endif /* SNMP_PRIVATE_MIB */
 
 #endif

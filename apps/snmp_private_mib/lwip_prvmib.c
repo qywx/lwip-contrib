@@ -44,7 +44,7 @@
 
 #include "private_mib.h"
 
-#if LWIP_SNMP
+#if SNMP_PRIVATE_MIB
 
 /** Directory where the sensor files are */
 #define SENSORS_DIR           "w:\\sensors"
@@ -601,4 +601,4 @@ sensorentry_set_value_pc(u8_t rid, struct obj_def *od)
   /* nop */
 }
 
-#endif /* LWIP_SNMP */
+#endif /* SNMP_PRIVATE_MIB */
