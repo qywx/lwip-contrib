@@ -37,12 +37,13 @@ CC=gcc
 UNIXARCH ?= LINUX
 CFLAGS=-g -Wall -DLWIP_UNIX_$(UNIXARCH) -DLWIP_DEBUG -pedantic -Werror \
 	-Wparentheses -Wsequence-point -Wswitch-default \
-	-Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast \
+	-Wextra -Wundef -Wshadow -Wpointer-arith \
 	-Wc++-compat -Wwrite-strings -Wold-style-definition -Wcast-align \
-	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address
+	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address \
+	-Wunreachable-code -Wuninitialized -Wlogical-op
 # not used for now but interesting:
 # -Wpacked
-# -Wunreachable-code
+# -Wcast-qual (TODO: PPP)
 # -ansi
 # -std=c89
 LDFLAGS=-pthread -lutil
@@ -107,11 +108,13 @@ NETIFFILES+=$(LWIPDIR)/netif/ppp/auth.c $(LWIPDIR)/netif/ppp/ccp.c \
 	$(LWIPDIR)/netif/ppp/polarssl/sha1.c $(LWIPARCH)/netif/sio.c
 
 # ARCHFILES: Architecture specific files.
-ARCHFILES=$(wildcard $(LWIPARCH)/*.c $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tunif.c \
-	$(LWIPARCH)/netif/unixif.c $(LWIPARCH)/netif/list.c $(LWIPARCH)/netif/tcpdump.c)
+ARCHFILES=$(wildcard $(LWIPARCH)/*.c) $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tunif.c \
+	$(LWIPARCH)/netif/unixif.c $(LWIPARCH)/netif/list.c $(LWIPARCH)/netif/tcpdump.c \
+	$(LWIPARCH)/netif/delif.c $(LWIPARCH)/netif/sio.c
 
 # APPFILES: Applications.
 APPFILES=$(CONTRIBDIR)/apps/httpserver_raw/fs.c $(CONTRIBDIR)/apps/httpserver_raw/httpd.c \
+	$(CONTRIBDIR)/apps/httpserver/httpserver-netconn.c \
 	$(CONTRIBDIR)/apps/udpecho/udpecho.c $(CONTRIBDIR)/apps/tcpecho/tcpecho.c \
 	$(CONTRIBDIR)/apps/shell/shell.c $(CONTRIBDIR)/apps/snmp_private_mib/lwip_prvmib.c \
 	$(CONTRIBDIR)/apps/tcpecho_raw/echo.c $(CONTRIBDIR)/apps/sntp/sntp.c \
