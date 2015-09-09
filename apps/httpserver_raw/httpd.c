@@ -239,7 +239,7 @@
 #else /* LWIP_HTTPD_SSI */
 /** Default: don't copy if the data is sent from file-system directly */
 #define HTTP_IS_DATA_VOLATILE(hs) (((hs->file != NULL) && (hs->handle != NULL) && (hs->file == \
-                                   (char*)hs->handle->data + hs->handle->len - hs->left)) \
+                                   (const char*)hs->handle->data + hs->handle->len - hs->left)) \
                                    ? 0 : TCP_WRITE_FLAG_COPY)
 #endif /* LWIP_HTTPD_SSI */
 #endif
@@ -354,7 +354,7 @@ struct http_state {
 #endif /* LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED */
   struct fs_file file_handle;
   struct fs_file *handle;
-  char *file;       /* Pointer to first unsent byte in buf. */
+  const char *file; /* Pointer to first unsent byte in buf. */
 
   struct tcp_pcb *pcb;
 #if LWIP_HTTPD_SUPPORT_REQUESTLIST
@@ -439,11 +439,11 @@ strnstr(const char* buffer, const char* token, size_t n)
   const char* p;
   int tokenlen = (int)strlen(token);
   if (tokenlen == 0) {
-    return (char *)buffer;
+    return (char *)(size_t)buffer; /* cast to size_t is a hack to cast away constness */
   }
   for (p = buffer; *p && (p + tokenlen <= buffer + n); p++) {
     if ((*p == *token) && (strncmp(p, token, tokenlen) == 0)) {
-      return (char *)p;
+      return (char *)(size_t)p; /* cast to size_t is a hack to cast away constness */
     }
   }
   return NULL;
@@ -2096,8 +2096,8 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
        that exists. */
     for (loop = 0; loop < NUM_DEFAULT_FILENAMES; loop++) {
       LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Looking for %s...\n", g_psDefaultFilenames[loop].name));
-      err = fs_open(&hs->file_handle, (char *)g_psDefaultFilenames[loop].name);
-      uri = (char *)g_psDefaultFilenames[loop].name;
+      err = fs_open(&hs->file_handle, g_psDefaultFilenames[loop].name);
+      uri = g_psDefaultFilenames[loop].name;
       if(err == ERR_OK) {
         file = &hs->file_handle;
         LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Opened.\n"));
@@ -2199,7 +2199,7 @@ http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const cha
     LWIP_UNUSED_ARG(tag_check);
 #endif /* LWIP_HTTPD_SSI */
     hs->handle = file;
-    hs->file = (char*)file->data;
+    hs->file = file->data;
     LWIP_ASSERT("File length must be positive!", (file->len >= 0));
     hs->left = file->len;
     hs->retries = 0;
@@ -2213,7 +2213,7 @@ http_init_file(struct http_state *hs, struct fs_file *file, int is_09, const cha
     if (hs->handle->http_header_included && is_09) {
       /* HTTP/0.9 responses are sent without HTTP header,
          search for the end of the header. */
-      char *file_start = strnstr(hs->file, CRLF CRLF, hs->left);
+      const char *file_start = strnstr(hs->file, CRLF CRLF, hs->left);
       if (file_start != NULL) {
         size_t diff = file_start + 4 - hs->file;
         hs->file += diff;
