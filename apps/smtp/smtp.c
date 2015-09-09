@@ -837,7 +837,7 @@ smtp_tcp_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 static void
 smtp_dns_found(const char* hostname, ip_addr_t *ipaddr, void *arg)
 {
-  struct tcp_pcb *pcb = arg;
+  struct tcp_pcb *pcb = (struct tcp_pcb *)arg;
   err_t err;
   u8_t result;
 
@@ -857,7 +857,7 @@ smtp_dns_found(const char* hostname, ip_addr_t *ipaddr, void *arg)
     result = SMTP_RESULT_ERR_HOSTNAME;
     err = ERR_ARG;
   }
-  smtp_close(pcb->callback_arg, pcb, result, 0, err);
+  smtp_close((struct smtp_session*)(pcb->callback_arg), pcb, result, 0, err);
 }
 #endif /* LWIP_DNS */
 
@@ -988,7 +988,7 @@ static enum smtp_session_state
 smtp_prepare_helo(struct smtp_session *s, u16_t *tx_buf_len, struct tcp_pcb *pcb)
 {
   size_t ipa_len;
-  char *ipa = ipaddr_ntoa(&pcb->local_ip);
+  const char *ipa = ipaddr_ntoa(&pcb->local_ip);
   LWIP_ASSERT("ipaddr_ntoa returned NULL", ipa != NULL);
   ipa_len = strlen(ipa);
   LWIP_ASSERT("string too long", ipa_len <= 0xffff);
