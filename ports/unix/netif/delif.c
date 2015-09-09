@@ -44,7 +44,7 @@
 #endif /* LWIP_UNIX_LINUX */
 
 #include "lwip/sys.h"
-
+#include "lwip/timers.h"
 
 #define DELIF_INPUT_DROPRATE 0.1
 #define DELIF_OUTPUT_DROPRATE 0.1
@@ -62,7 +62,7 @@ struct delif {
 struct delif_pbuf {
   struct delif_pbuf *next;
   struct pbuf *p;
-  ip_addr_t *ipaddr;
+  const ip_addr_t *ipaddr;
   unsigned int time;
 };
 
@@ -79,8 +79,8 @@ delif_input_timeout(void *arg)
 
   timeout = DELIF_TIMEOUT;
   
-  netif = arg;
-  delif = netif->state;
+  netif = (struct netif*)arg;
+  delif = (struct delif*)netif->state;
 
   
   /* Check if there is anything on the input list. */
@@ -120,8 +120,8 @@ delif_output_timeout(void *arg)
 
   timeout = DELIF_TIMEOUT;
 
-  netif = arg;
-  delif = netif->state;
+  netif = (struct netif*)arg;
+  delif = (struct delif*)netif->state;
 
   /* Check if there is anything on the output list. */
   dp = output_list;
@@ -155,13 +155,15 @@ delif_output_timeout(void *arg)
 }
 /*-----------------------------------------------------------------------------------*/
 static err_t
-delif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
+delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
 {
   struct delif_pbuf *dp, *np;
   struct pbuf *q;
   int i, j;
   char *data;
 
+  LWIP_UNUSED_ARG(netif);
+  
   LWIP_DEBUGF(DELIF_DEBUG, ("delif_output\n"));
     
 #ifdef DELIF_OUTPUT_DROPRATE
@@ -175,8 +177,8 @@ delif_output(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
   LWIP_DEBUGF(DELIF_DEBUG, ("delif_output\n"));
 
 
-  dp = malloc(sizeof(struct delif_pbuf));
-  data = malloc(p->tot_len);
+  dp = (struct delif_pbuf*)malloc(sizeof(struct delif_pbuf));
+  data = (char*)malloc(p->tot_len);
     
   i = 0;
   for(q = p; q != NULL; q = q->next) {
@@ -211,6 +213,8 @@ static err_t
 delif_input(struct pbuf *p, struct netif *inp)
 {
   struct delif_pbuf *dp, *np;
+  
+  LWIP_UNUSED_ARG(inp);
 
   LWIP_DEBUGF(DELIF_DEBUG, ("delif_input\n"));
 #ifdef DELIF_INPUT_DROPRATE
@@ -222,7 +226,7 @@ delif_input(struct pbuf *p, struct netif *inp)
 #endif /* DELIF_INPUT_DROPRATE */
 
   
-  dp = malloc(sizeof(struct delif_pbuf));
+  dp = (struct delif_pbuf*)malloc(sizeof(struct delif_pbuf));
   dp->p = p;
   dp->time = sys_now() + DELIF_INPUT_DELAY;
   dp->next = NULL;
@@ -240,7 +244,7 @@ delif_init(struct netif *netif)
 {
   struct delif *del;
   
-  del = malloc(sizeof(struct delif));
+  del = (struct delif*)malloc(sizeof(struct delif));
   if (!del)
       return ERR_MEM;
   netif->state = del;
@@ -248,14 +252,13 @@ delif_init(struct netif *netif)
   netif->name[1] = 'e';
   netif->output = delif_output;
 
-  del->netif = malloc(sizeof(struct netif));  
+  del->netif = (struct netif*)malloc(sizeof(struct netif));  
   if (!del->netif) {
       free(del);
       return ERR_MEM;
   }
 #ifdef LWIP_UNIX_LINUX
-  /*  tapif_init(del->netif);*/
-  tunif_init(del->netif);
+  tapif_init(del->netif);
 #else /* LWIP_UNIX_LINUX */
   tunif_init(del->netif);
 #endif /* LWIP_UNIX_LINUX */
@@ -270,11 +273,11 @@ delif_init(struct netif *netif)
 static void 
 delif_thread(void *arg)
 {
-  struct netif *netif = arg;
+  struct netif *netif = (struct netif*)arg;
   struct delif *del;
   sys_sem_t sem;
   
-  del = netif->state;
+  del = (struct delif*)netif->state;
 #ifdef LWIP_UNIX_LINUX
   tapif_init(del->netif);
 #else /* LWIP_UNIX_LINUX */
@@ -298,7 +301,7 @@ delif_init_thread(struct netif *netif)
 
   LWIP_DEBUGF(DELIF_DEBUG, ("delif_init_thread\n"));
   
-  del = malloc(sizeof(struct delif));
+  del = (struct delif*)malloc(sizeof(struct delif));
   if (!del)
       return ERR_MEM;
   netif->state = del;
@@ -306,7 +309,7 @@ delif_init_thread(struct netif *netif)
   netif->name[1] = 'e';
   netif->output = delif_output;
 
-  del->netif = malloc(sizeof(struct netif));
+  del->netif = (struct netif*)malloc(sizeof(struct netif));
   if (!del->netif) {
       free(del);
       return ERR_MEM;
