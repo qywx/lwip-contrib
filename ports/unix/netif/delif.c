@@ -32,7 +32,7 @@
 
 #include "lwip/debug.h"
 
-#include <stdlib.h> 
+#include <stdlib.h>
 
 #include "lwip/def.h"
 #include "netif/delif.h"
@@ -78,11 +78,10 @@ delif_input_timeout(void *arg)
   unsigned int timeout, now;
 
   timeout = DELIF_TIMEOUT;
-  
+
   netif = (struct netif*)arg;
   delif = (struct delif*)netif->state;
 
-  
   /* Check if there is anything on the input list. */
   dp = input_list;
   while (dp != NULL) {
@@ -150,7 +149,6 @@ delif_output_timeout(void *arg)
     }
   }
 
-  
   sys_timeout(timeout, delif_output_timeout, arg);
 }
 /*-----------------------------------------------------------------------------------*/
@@ -163,7 +161,7 @@ delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
   char *data;
 
   LWIP_UNUSED_ARG(netif);
-  
+
   LWIP_DEBUGF(DELIF_DEBUG, ("delif_output\n"));
     
 #ifdef DELIF_OUTPUT_DROPRATE
@@ -176,7 +174,6 @@ delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
   
   LWIP_DEBUGF(DELIF_DEBUG, ("delif_output\n"));
 
-
   dp = (struct delif_pbuf*)malloc(sizeof(struct delif_pbuf));
   data = (char*)malloc(p->tot_len);
     
@@ -188,7 +185,6 @@ delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
     }
   }
 
-  
   dp->p = pbuf_alloc(PBUF_LINK, 0, PBUF_ROM);
   dp->p->payload = data;
   dp->p->len = p->tot_len;
@@ -202,18 +198,15 @@ delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
     for(np = output_list; np->next != NULL; np = np->next);
     np->next = dp;
   }
-    
 
   return ERR_OK;
-    
-
 }
 /*-----------------------------------------------------------------------------------*/
 static err_t
 delif_input(struct pbuf *p, struct netif *inp)
 {
   struct delif_pbuf *dp, *np;
-  
+
   LWIP_UNUSED_ARG(inp);
 
   LWIP_DEBUGF(DELIF_DEBUG, ("delif_input\n"));
@@ -225,7 +218,6 @@ delif_input(struct pbuf *p, struct netif *inp)
   }
 #endif /* DELIF_INPUT_DROPRATE */
 
-  
   dp = (struct delif_pbuf*)malloc(sizeof(struct delif_pbuf));
   dp->p = p;
   dp->time = sys_now() + DELIF_INPUT_DELAY;
@@ -243,19 +235,20 @@ err_t
 delif_init(struct netif *netif)
 {
   struct delif *del;
-  
+
   del = (struct delif*)malloc(sizeof(struct delif));
-  if (!del)
-      return ERR_MEM;
+  if (!del) {
+    return ERR_MEM;
+  }
   netif->state = del;
   netif->name[0] = 'd';
   netif->name[1] = 'e';
   netif->output = delif_output;
 
-  del->netif = (struct netif*)malloc(sizeof(struct netif));  
+  del->netif = (struct netif*)malloc(sizeof(struct netif));
   if (!del->netif) {
-      free(del);
-      return ERR_MEM;
+    free(del);
+    return ERR_MEM;
   }
 #ifdef LWIP_UNIX_LINUX
   tapif_init(del->netif);
@@ -268,7 +261,6 @@ delif_init(struct netif *netif)
   sys_timeout(DELIF_TIMEOUT, delif_output_timeout, netif);
   return ERR_OK;
 }
-
 /*-----------------------------------------------------------------------------------*/
 static void 
 delif_thread(void *arg)
@@ -276,7 +268,7 @@ delif_thread(void *arg)
   struct netif *netif = (struct netif*)arg;
   struct delif *del;
   sys_sem_t sem;
-  
+
   del = (struct delif*)netif->state;
 #ifdef LWIP_UNIX_LINUX
   tapif_init(del->netif);
@@ -291,7 +283,6 @@ delif_thread(void *arg)
     LWIP_ASSERT("Failed to create semaphore", 0);
   }
   sys_sem_wait(&sem);
-
 }
 /*-----------------------------------------------------------------------------------*/
 err_t
@@ -300,10 +291,11 @@ delif_init_thread(struct netif *netif)
   struct delif *del;
 
   LWIP_DEBUGF(DELIF_DEBUG, ("delif_init_thread\n"));
-  
+
   del = (struct delif*)malloc(sizeof(struct delif));
-  if (!del)
-      return ERR_MEM;
+  if (!del) {
+    return ERR_MEM;
+  }
   netif->state = del;
   netif->name[0] = 'd';
   netif->name[1] = 'e';
@@ -311,8 +303,8 @@ delif_init_thread(struct netif *netif)
 
   del->netif = (struct netif*)malloc(sizeof(struct netif));
   if (!del->netif) {
-      free(del);
-      return ERR_MEM;
+    free(del);
+    return ERR_MEM;
   }
   del->netif->ip_addr = netif->ip_addr;
   del->netif->gw = netif->gw;
@@ -322,5 +314,4 @@ delif_init_thread(struct netif *netif)
   sys_thread_new("delif_thread", delif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   return ERR_OK;
 }
-
 /*-----------------------------------------------------------------------------------*/
