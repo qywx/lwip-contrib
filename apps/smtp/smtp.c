@@ -579,6 +579,7 @@ smtp_send_mail(const char* from, const char* to, const char* subject, const char
   size_t subject_len = strlen(subject);
   size_t body_len = strlen(body);
   size_t mem_len = sizeof(struct smtp_session);
+  char *sfrom, *sto, *ssubject, *sbody;
 
   mem_len += from_len + to_len + subject_len + body_len + 4;
   if (mem_len > 0xffff) {
@@ -593,19 +594,20 @@ smtp_send_mail(const char* from, const char* to, const char* subject, const char
   }
   /* initialize the structure */
   memset(s, 0, mem_len);
-  s->from = (char*)s + sizeof(struct smtp_session);
+  s->from = sfrom = (char*)s + sizeof(struct smtp_session);
   s->from_len = (u16_t)from_len;
-  s->to = s->from + from_len + 1;
+  s->to = sto = sfrom + from_len + 1;
   s->to_len = (u16_t)to_len;
-  s->subject = s->to + to_len + 1;
+  s->subject = ssubject = sto + to_len + 1;
   s->subject_len = (u16_t)subject_len;
-  s->body = s->subject + subject_len + 1;
+  s->body = sbody = ssubject + subject_len + 1;
   s->body_len = (u16_t)body_len;
   /* copy source and target email address */
-  memcpy((char*)s->from, from, from_len + 1);
-  memcpy((char*)s->to, to, to_len + 1);
-  memcpy((char*)s->subject, subject, subject_len + 1);
-  memcpy((char*)s->body, body, body_len + 1);
+  /* cast to size_t is a hack to cast away constness */
+  memcpy(sfrom, from, from_len + 1);
+  memcpy(sto, to, to_len + 1);
+  memcpy(ssubject, subject, subject_len + 1);
+  memcpy(sbody, body, body_len + 1);
 
   s->callback_fn = callback_fn;
   s->callback_arg = callback_arg;
