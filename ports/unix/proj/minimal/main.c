@@ -107,16 +107,6 @@ usage(void)
   }
 }
 
-#if LWIP_SNMP
-static void
-snmp_increment(void *arg)
-{
-  LWIP_UNUSED_ARG(arg);
-  snmp_inc_sysuptime();
-  sys_timeout(10, snmp_increment, NULL);
-} 
-#endif /* LWIP_SNMP */
-
 int
 main(int argc, char **argv)
 {
@@ -208,10 +198,6 @@ main(int argc, char **argv)
 #endif
 
   echo_init();
-
-#if LWIP_SNMP
-  sys_timeout(10, snmp_increment, NULL);
-#endif /* LWIP_SNMP */
 
   printf("Applications started.\n");
     

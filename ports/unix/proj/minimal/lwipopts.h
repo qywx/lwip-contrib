@@ -392,7 +392,7 @@
 /**
  * LWIP_STATS==1: Enable statistics collection in lwip_stats.
  */
-#define LWIP_STATS                      0
+#define LWIP_STATS                      1
 
 /*
    ---------------------------------------
