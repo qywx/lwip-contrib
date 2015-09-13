@@ -226,6 +226,13 @@ ppp_link_status_cb(ppp_pcb *pcb, int err_code, void *ctx)
         break;
     }
 }
+
+static u32_t
+ppp_output_cb(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
+{
+  LWIP_UNUSED_ARG(pcb);
+  return sio_write((sio_fd_t)ctx, data, len);
+}
 #endif
 
 /*-----------------------------------------------------------------------------------*/
@@ -367,7 +374,7 @@ init_netifs(void)
       exit(1);
   }
 
-  ppp = pppos_create(&pppos_netif, ppp_sio, ppp_link_status_cb, NULL);
+  ppp = pppos_create(&pppos_netif, ppp_output_cb, ppp_link_status_cb, ppp_sio);
   if (!ppp)
   {
       printf("Could not create PPP control interface");
