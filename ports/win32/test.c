@@ -240,6 +240,15 @@ pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
     }
   }
 }
+
+#if PPPOS_SUPPORT
+static u32_t
+ppp_output_cb(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
+{
+  LWIP_UNUSED_ARG(pcb);
+  return sio_write((sio_fd_t)ctx, data, len);
+}
+#endif /* PPPOS_SUPPORT */
 #endif /* PPP_SUPPORT */
 
 #if LWIP_NETIF_STATUS_CALLBACK
@@ -301,7 +310,7 @@ msvc_netif_init(void)
   if (ppp_sio == NULL) {
     printf("sio_open error\n");
   } else {
-    ppp = pppos_create(&ppp_netif, ppp_sio, pppLinkStatusCallback, NULL);
+    ppp = pppos_create(&ppp_netif, ppp_output_cb, pppLinkStatusCallback, ppp_sio);
     if (ppp == NULL) {
       printf("pppos_create error\n");
     } else {
