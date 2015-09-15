@@ -35,7 +35,11 @@
  */
 
 /* include the port-dependent configuration */
+#ifdef _MSC_VER
 #include "lwipcfg_msvc.h"
+#else
+#include "lwipcfg_gcc.h"
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -303,6 +307,7 @@ pcapif_open_adapter(const char* adapter_name, char* errbuf)
   return adapter;
 }
 
+#if !PCAPIF_RX_USE_THREAD
 static void
 pcap_reopen_adapter(struct pcapif_private *pa)
 {
@@ -326,6 +331,7 @@ pcap_reopen_adapter(struct pcapif_private *pa)
     pcap_freealldevs(alldevs);
   }
 }
+#endif
 
 /**
  * Open a network adapter and set it up for packet input
@@ -462,7 +468,7 @@ pcapif_init_adapter(int adapter_num, void *arg)
   /* Open the device */
   pa->adapter = pcapif_open_adapter(used_adapter->name, errbuf);
   if (pa->adapter == NULL) {
-    printf("\nUnable to open the adapter. %s is not supported by WinPcap (\"%s\").\n", d->name, errbuf);
+    printf("\nUnable to open the adapter. %s is not supported by pcap (\"%s\").\n", used_adapter->name, errbuf);
     /* Free the device list */
     pcap_freealldevs(alldevs);
     free(pa);
@@ -480,7 +486,7 @@ pcapif_init_adapter(int adapter_num, void *arg)
 }
 
 #if PCAPIF_HANDLE_LINKSTATE
-void
+static void
 pcapif_check_linkstate(void *netif_ptr)
 {
   struct netif *netif = (struct netif*)netif_ptr;
@@ -500,6 +506,9 @@ pcapif_check_linkstate(void *netif_ptr)
         PCAPIF_NOTIFY_LINKSTATE(netif, netif_set_link_down);
         break;
       }
+      case PCAPIF_LINKEVENT_UNKNOWN: /* fall through */
+      default:
+        break;
     }
   }
   sys_timeout(PCAPIF_LINKCHECK_INTERVAL_MS, pcapif_check_linkstate, netif);
@@ -572,7 +581,7 @@ pcapif_low_level_init(struct netif *netif)
      the index of the adapter to use (+ 1 because 0==NULL is invalid).
      This can be used to instantiate multiple PCAP drivers. */
   if (netif->state != NULL) {
-    adapter_num = ((int)netif->state) - 1;
+    adapter_num = ((int)(size_t)netif->state) - 1;
     if (adapter_num < 0) {
       printf("ERROR: invalid adapter index \"%d\"!\n", adapter_num);
       LWIP_ASSERT("ERROR initializing network adapter!\n", 0);
@@ -727,8 +736,8 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
   struct pbuf *p, *q;
   int start;
   int length = packet_len;
-  struct eth_addr *dest = (struct eth_addr*)packet;
-  struct eth_addr *src = dest + 1;
+  const struct eth_addr *dest = (const struct eth_addr*)packet;
+  const struct eth_addr *src = dest + 1;
   int unicast;
 #if PCAPIF_FILTER_GROUP_ADDRESSES && !PCAPIF_RECEIVE_PROMISCUOUS
   const u8_t bcast[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -779,9 +788,9 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
         LWIP_ASSERT("q->len >= ETH_PAD_SIZE", q->len >= ETH_PAD_SIZE);
         copy_len -= ETH_PAD_SIZE;
 #endif /* ETH_PAD_SIZE*/
-        memcpy(&((char*)q->payload)[ETH_PAD_SIZE], &((char*)packet)[start], copy_len);
+        memcpy(&((char*)q->payload)[ETH_PAD_SIZE], &((const char*)packet)[start], copy_len);
       } else {
-        memcpy(q->payload, &((char*)packet)[start], copy_len);
+        memcpy(q->payload, &((const char*)packet)[start], copy_len);
       }
       start += copy_len;
       length -= copy_len;
