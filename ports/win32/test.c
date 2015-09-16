@@ -287,10 +287,14 @@ msvc_netif_init(void)
 #endif /* LWIP_IPV4 && USE_ETHERNET */
 #if USE_SLIPIF
   u8_t num_slip1 = 0;
+#if LWIP_IPV4
   ip4_addr_t ipaddr_slip1, netmask_slip1, gw_slip1;
+#endif
 #if USE_SLIPIF > 1
   u8_t num_slip2 = 1;
+#if LWIP_IPV4
   ip4_addr_t ipaddr_slip2, netmask_slip2, gw_slip2;
+#endif
 #endif /* USE_SLIPIF > 1 */
 #endif /* USE_SLIPIF */
 #if USE_DHCP || USE_AUTOIP
@@ -401,14 +405,20 @@ msvc_netif_init(void)
 
 #endif /* USE_ETHERNET */
 #if USE_SLIPIF
+#if LWIP_IPV4
+#define SLIP1_ADDRS &ipaddr_slip1, &netmask_slip1, &gw_slip1,
   LWIP_PORT_INIT_SLIP1_IPADDR(&ipaddr_slip1);
   LWIP_PORT_INIT_SLIP1_GW(&gw_slip1);
   LWIP_PORT_INIT_SLIP1_NETMASK(&netmask_slip1);
   printf("Starting lwIP slipif, local interface IP is %s\n", ip4addr_ntoa(&ipaddr_slip1));
-#if SIO_USE_COMPORT
+#else
+#define SLIP1_ADDRS
+  printf("Starting lwIP slipif\n");
+#endif
+#if defined(SIO_USE_COMPORT) && SIO_USE_COMPORT
   num_slip1++; /* COM ports cannot be 0-based */
 #endif
-  netif_add(&slipif1, &ipaddr_slip1, &netmask_slip1, &gw_slip1, &num_slip1, slipif_init, ip_input);
+  netif_add(&slipif1, SLIP1_ADDRS &num_slip1, slipif_init, ip_input);
 #if !USE_ETHERNET
   netif_set_default(&slipif1);
 #endif /* !USE_ETHERNET */
@@ -427,14 +437,20 @@ msvc_netif_init(void)
   netif_set_up(&slipif1);
 
 #if USE_SLIPIF > 1
+#if LWIP_IPV4
+#define SLIP1_ADDRS &ipaddr_slip1, &netmask_slip1, &gw_slip1,
   LWIP_PORT_INIT_SLIP2_IPADDR(&ipaddr_slip2);
   LWIP_PORT_INIT_SLIP2_GW(&gw_slip2);
   LWIP_PORT_INIT_SLIP2_NETMASK(&netmask_slip2);
   printf("Starting lwIP SLIP if #2, local interface IP is %s\n", ip4addr_ntoa(&ipaddr_slip2));
-#if SIO_USE_COMPORT
+#else
+#define SLIP2_ADDRS
+  printf("Starting lwIP SLIP if #2\n");
+#endif
+#if defined(SIO_USE_COMPORT) && SIO_USE_COMPORT
   num_slip2++; /* COM ports cannot be 0-based */
 #endif
-  netif_add(&slipif2, &ipaddr_slip2, &netmask_slip2, &gw_slip2, &num_slip2, slipif_init, ip_input);
+  netif_add(&slipif2, SLIP2_ADDRS &num_slip2, slipif_init, ip_input);
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&slipif1, 1);
   printf("SLIP2 ip6 linklocal address: ");
