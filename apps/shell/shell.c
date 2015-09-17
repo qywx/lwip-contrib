@@ -819,7 +819,10 @@ static s8_t
 com_udpb(struct command *com)
 {
   ip_addr_t ipaddr;
-  u16_t lport, rport;
+#if LWIP_IPV4
+  u16_t lport;
+#endif /* LWIP_IPV4 */
+  u16_t rport;
   int i;
   err_t err;
   long tmp;
@@ -829,7 +832,9 @@ com_udpb(struct command *com)
     sendstr("Invalid port number."NEWLINE, com->conn);
     return ESUCCESS;
   }
+#if LWIP_IPV4
   lport = (u16_t)tmp;
+#endif /* LWIP_IPV4 */
   if (ipaddr_aton(com->args[1], &ipaddr) == -1) {
     sendstr(strerror(errno), com->conn);
     return ESYNTAX;

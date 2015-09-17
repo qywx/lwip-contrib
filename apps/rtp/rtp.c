@@ -38,6 +38,8 @@
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
 
+#include "rtp.h"
+
 #include "rtpdata.h"
 
 #include <string.h>
@@ -123,7 +125,7 @@ rtp_send_packets( int sock, struct sockaddr_in* to)
   struct rtp_hdr* rtphdr;
   u8_t*           rtp_payload;
   int             rtp_payload_size;
-  int             rtp_data_index;
+  size_t          rtp_data_index;
 
   /* prepare RTP packet */
   rtphdr = (struct rtp_hdr*)rtp_send_packet;
@@ -136,7 +138,7 @@ rtp_send_packets( int sock, struct sockaddr_in* to)
   rtp_data_index = 0;
   do {
     rtp_payload      = rtp_send_packet+sizeof(struct rtp_hdr);
-    rtp_payload_size = min(RTP_PAYLOAD_SIZE, (sizeof(rtp_data) - rtp_data_index));
+    rtp_payload_size = LWIP_MIN(RTP_PAYLOAD_SIZE, (sizeof(rtp_data) - rtp_data_index));
 
     memcpy(rtp_payload, rtp_data + rtp_data_index, rtp_payload_size);
 
@@ -218,7 +220,7 @@ rtp_recv_thread(void *arg)
   struct rtp_hdr*    rtphdr;
   u32_t              rtp_stream_address;
   int                timeout;
-  int                result;
+  size_t             result;
   int                recvrtppackets  = 0;
   int                lostrtppackets  = 0;
   u16_t              lastrtpseq = 0;
