@@ -3,6 +3,7 @@
 /* ---------------------------------------------- */
 /* --- fifo 4 unix ------------------------------ */
 /* ---------------------------------------------- */
+#include "lwip/err.h"
 #include "netif/fifo.h"
 #include "lwip/debug.h"
 #include "lwip/def.h"
@@ -17,6 +18,9 @@
 #define FALSE 0
 #endif
 
+#ifndef SIO_FIFO_DEBUG
+#define SIO_FIFO_DEBUG LWIP_DBG_OFF
+#endif
 
 u8_t fifoGet(fifo_t * fifo) 
 {

@@ -83,7 +83,7 @@ struct netif netif_tap, netif_unix;
 static void
 tcpip_init_done(void *arg)
 {
-  ip_addr_t ipaddr, netmask, gw;
+  ip4_addr_t ipaddr, netmask, gw;
   sys_sem_t *sem;
   sem = (sys_sem_t *)arg;
 

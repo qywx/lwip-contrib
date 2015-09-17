@@ -55,6 +55,7 @@
 #include "lwip/sys.h"
 #include "lwip/timers.h"
 
+#if LWIP_IPV4 /* @todo: IPv6 */
 #if !NO_SYS
 
 #include "netif/tcpdump.h"
@@ -492,3 +493,4 @@ unixif_init_client(struct netif *netif)
 /*-----------------------------------------------------------------------------------*/
 
 #endif /* !NO_SYS */
+#endif /* LWIP_IPV4 */

@@ -39,6 +39,8 @@
 #include "lwip/inet.h"
 #include "lwip/inet_chksum.h"
 
+#if LWIP_IPV4 /* @todo: IPv6 */
+
 #ifndef TCPDUMP_DEBUG
 #define TCPDUMP_DEBUG LWIP_DBG_OFF
 #endif
@@ -186,8 +188,7 @@ tcpdump(struct pbuf *p)
 
   }
 }
+
+#endif /* LWIP_IPV4 */
+
 /*-----------------------------------------------------------------------------------*/
-
-
-
-

@@ -43,6 +43,7 @@
 #include "lwip/sys.h"
 
 #include "lwip/dns.h"
+#include "lwip/dhcp.h"
 
 #include "lwip/stats.h"
 
@@ -79,6 +80,8 @@
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
 #endif
+
+#if LWIP_IPV4 /* @todo: IPv6 */
 
 /* (manual) host IP configuration */
 static ip4_addr_t ipaddr, netmask, gw;
@@ -279,9 +282,9 @@ ppp_link_status_cb(ppp_pcb *pcb, int err_code, void *ctx)
         ip_addr_t ns;
 #endif /* LWIP_DNS */
         fprintf(stderr, "ppp_link_status_cb: PPPERR_NONE\n\r");
-        fprintf(stderr, "   our_ipaddr  = %s\n\r", ipaddr_ntoa(&pppif->ip_addr));
-        fprintf(stderr, "   his_ipaddr  = %s\n\r", ipaddr_ntoa(&pppif->gw));
-        fprintf(stderr, "   netmask     = %s\n\r", ipaddr_ntoa(&pppif->netmask));
+        fprintf(stderr, "   our_ipaddr  = %s\n\r", ip4addr_ntoa(&pppif->ip_addr));
+        fprintf(stderr, "   his_ipaddr  = %s\n\r", ip4addr_ntoa(&pppif->gw));
+        fprintf(stderr, "   netmask     = %s\n\r", ip4addr_ntoa(&pppif->netmask));
 #if LWIP_DNS
         ns = dns_getserver(0);
         fprintf(stderr, "   dns1        = %s\n\r", ipaddr_ntoa(&ns));
@@ -514,12 +517,7 @@ main(int argc, char **argv)
   pause();
   return 0;
 }
+
+#endif /* LWIP_IPV4 */
+
 /*-----------------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-

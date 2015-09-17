@@ -52,6 +52,7 @@
 #include "lwip/pbuf.h"
 #include "lwip/sys.h"
 
+#if LWIP_IPV4 /* @todo: IPv6 */
 #if !NO_SYS
 
 #define IFNAME0 't'
@@ -319,3 +320,4 @@ tunif_init(struct netif *netif)
 /*-----------------------------------------------------------------------------------*/
 
 #endif /* !NO_SYS */
+#endif /* LWIP_IPV4 */

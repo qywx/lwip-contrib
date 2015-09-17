@@ -32,6 +32,7 @@
 
 #include "lwip/opt.h"
 
+#if LWIP_IPV4 /* @todo: IPv6 */
 #if !NO_SYS
 
 #include "lwip/debug.h"
@@ -49,6 +50,10 @@
 
 #include "lwip/sys.h"
 #include "lwip/timers.h"
+
+#ifndef DELIF_DEBUG
+#define DELIF_DEBUG    LWIP_DBG_OFF
+#endif
 
 #define DELIF_INPUT_DROPRATE 0.1
 #define DELIF_OUTPUT_DROPRATE 0.1
@@ -321,3 +326,4 @@ delif_init_thread(struct netif *netif)
 /*-----------------------------------------------------------------------------------*/
 
 #endif /* !NO_SYS */
+#endif /* LWIP_IPV4 */

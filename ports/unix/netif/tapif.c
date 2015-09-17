@@ -44,6 +44,8 @@
 
 #include "lwip/opt.h"
 
+#if LWIP_IPV4 /* @todo: IPv6 */
+
 #include "lwip/debug.h"
 #include "lwip/def.h"
 #include "lwip/ip.h"
@@ -457,3 +459,4 @@ tapif_thread(void *arg)
 }
 
 #endif /* NO_SYS */
+#endif /* LWIP_IPV4 */
