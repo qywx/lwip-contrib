@@ -34,9 +34,13 @@
 #include <stdlib.h>
 #include <stdio.h> /* sprintf() for task names */
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)
+#endif
 #include <windows.h>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 #include <time.h>
 
 #include <lwip/opt.h>
@@ -86,18 +90,20 @@ static void InitSysArchProtect(void)
 {
   InitializeCriticalSection(&critSec);
 }
+
 u32_t sys_arch_protect(void)
 {
   EnterCriticalSection(&critSec);
   return 0;
 }
+
 void sys_arch_unprotect(u32_t pval)
 {
   LWIP_UNUSED_ARG(pval);
   LeaveCriticalSection(&critSec);
 }
 
-void msvc_sys_init(void)
+static void msvc_sys_init(void)
 {
   srand((unsigned int)time(0));
   sys_init_timing();
@@ -121,11 +127,6 @@ struct threadlist {
 };
 
 struct threadlist *lwip_win32_threads = NULL;
-
-void do_sleep(int ms)
-{
-  Sleep(ms);
-}
 
 err_t sys_sem_new(sys_sem_t *sem, u8_t count)
 {
@@ -183,7 +184,6 @@ u32_t sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout)
   }
   else
   {
-    int ret;
     starttime = sys_get_ms_longlong();
     ret = WaitForSingleObject(sem->sem, timeout);
     LWIP_ASSERT("Error waiting for semaphore", (ret == WAIT_OBJECT_0) || (ret == WAIT_TIMEOUT));
@@ -211,6 +211,7 @@ void sys_sem_signal(sys_sem_t *sem)
   LWIP_ASSERT("Error releasing semaphore", ret != 0);
 }
 
+#ifdef _MSC_VER
 const DWORD MS_VC_EXCEPTION=0x406D1388;
 #pragma pack(push,8)
 typedef struct tagTHREADNAME_INFO
@@ -221,7 +222,7 @@ typedef struct tagTHREADNAME_INFO
   DWORD dwFlags; /* Reserved for future use, must be zero. */
 } THREADNAME_INFO;
 #pragma pack(pop)
-void SetThreadName( DWORD dwThreadID, const char* threadName)
+static void SetThreadName(DWORD dwThreadID, const char* threadName)
 {
   THREADNAME_INFO info;
   info.dwType = 0x1000;
@@ -237,6 +238,13 @@ void SetThreadName( DWORD dwThreadID, const char* threadName)
   {
   }
 }
+#else /* _MSC_VER */
+static void SetThreadName(DWORD dwThreadID, const char* threadName)
+{
+  LWIP_UNUSED_ARG(dwThreadID);
+  LWIP_UNUSED_ARG(threadName);
+}
+#endif /* _MSC_VER */
 
 static void sys_thread_function(void* arg)
 {
