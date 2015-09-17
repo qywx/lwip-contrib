@@ -60,6 +60,8 @@
 #include "tcpecho.h"
 #include "shell.h"
 
+#if LWIP_IPV4 /* @todo: IPv6 */
+
 /* nonstatic debug cmd option, exported in lwipopts.h */
 unsigned char debug_flags;
 
@@ -145,12 +147,19 @@ main(void)
   pause();
   return 0;
 }
+
+#else /* LWIP_IPV4 */
+
+int
+main(int argc, char **argv)
+{
+  LWIP_UNUSED_ARG(argc);
+  LWIP_UNUSED_ARG(argv);
+
+  printf("simnode only works with IPv4\n");
+
+  return 0;
+}
+
+#endif /* LWIP_IPV4 */
 /*-----------------------------------------------------------------------------------*/
-
-
-
-
-
-
-
-

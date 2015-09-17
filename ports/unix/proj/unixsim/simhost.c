@@ -518,6 +518,19 @@ main(int argc, char **argv)
   return 0;
 }
 
+#else /* LWIP_IPV4 */
+
+int
+main(int argc, char **argv)
+{
+  LWIP_UNUSED_ARG(argc);
+  LWIP_UNUSED_ARG(argv);
+
+  printf("simhost only works with IPv4\n");
+
+  return 0;
+}
+
 #endif /* LWIP_IPV4 */
 
 /*-----------------------------------------------------------------------------------*/
