@@ -21,6 +21,7 @@
 #undef NTOHS
 
 #include <stdlib.h>
+#include <stdio.h>
 #if defined(LWIP_UNIX_OPENBSD)
 #include <util.h>
 #endif

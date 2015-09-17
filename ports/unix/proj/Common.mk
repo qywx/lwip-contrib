@@ -37,13 +37,12 @@ CC=gcc
 UNIXARCH ?= LINUX
 CFLAGS=-g -Wall -DLWIP_UNIX_$(UNIXARCH) -DLWIP_DEBUG -pedantic -Werror \
 	-Wparentheses -Wsequence-point -Wswitch-default \
-	-Wextra -Wundef -Wshadow -Wpointer-arith \
+	-Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-qual \
 	-Wc++-compat -Wwrite-strings -Wold-style-definition -Wcast-align \
 	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address \
 	-Wunreachable-code -Wuninitialized -Wlogical-op
 # not used for now but interesting:
 # -Wpacked
-# -Wcast-qual (TODO: PPP)
 # -ansi
 # -std=c89
 LDFLAGS=-pthread -lutil
@@ -105,12 +104,12 @@ NETIFFILES+=$(LWIPDIR)/netif/ppp/auth.c $(LWIPDIR)/netif/ppp/ccp.c \
 	$(LWIPDIR)/netif/ppp/utils.c $(LWIPDIR)/netif/ppp/vj.c \
 	$(LWIPDIR)/netif/ppp/polarssl/arc4.c $(LWIPDIR)/netif/ppp/polarssl/des.c \
 	$(LWIPDIR)/netif/ppp/polarssl/md4.c $(LWIPDIR)/netif/ppp/polarssl/md5.c \
-	$(LWIPDIR)/netif/ppp/polarssl/sha1.c $(LWIPARCH)/netif/sio.c
+	$(LWIPDIR)/netif/ppp/polarssl/sha1.c
 
 # ARCHFILES: Architecture specific files.
 ARCHFILES=$(wildcard $(LWIPARCH)/*.c) $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tunif.c \
 	$(LWIPARCH)/netif/unixif.c $(LWIPARCH)/netif/list.c $(LWIPARCH)/netif/tcpdump.c \
-	$(LWIPARCH)/netif/delif.c $(LWIPARCH)/netif/sio.c
+	$(LWIPARCH)/netif/delif.c $(LWIPARCH)/netif/sio.c $(LWIPARCH)/netif/fifo.c
 
 # APPFILES: Applications.
 APPFILES=$(CONTRIBDIR)/apps/httpserver_raw/fs.c $(CONTRIBDIR)/apps/httpserver_raw/httpd.c \
