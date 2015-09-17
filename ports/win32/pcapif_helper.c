@@ -29,7 +29,7 @@ struct pcapifh_linkstate {
   PPACKET_OID_DATA ppacket_oid_data;
 };
 
-struct pcapifh_linkstate* pcapifh_linkstate_init(const char *adapter_name)
+struct pcapifh_linkstate* pcapifh_linkstate_init(char *adapter_name)
 {
   struct pcapifh_linkstate* state = (struct pcapifh_linkstate*)malloc(sizeof(struct pcapifh_linkstate));
   if (state != NULL) {
@@ -86,7 +86,7 @@ struct pcapifh_linkstate {
   u8_t empty;
 };
 
-struct pcapifh_linkstate* pcapifh_linkstate_init(const char *adapter_name)
+struct pcapifh_linkstate* pcapifh_linkstate_init(char *adapter_name)
 {
   LWIP_UNUSED_ARG(adapter_name);
   return NULL;

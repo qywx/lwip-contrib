@@ -158,7 +158,7 @@ struct netif slipif2;
 
 
 #if PPP_SUPPORT
-void
+static void
 pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
 {
   struct netif *pppif = ppp_netif(pcb);

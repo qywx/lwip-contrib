@@ -35,9 +35,13 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#ifdef _MSC_VER
 #pragma warning (push, 3)
+#endif
 #include <windows.h>
+#ifdef _MSC_VER
 #pragma warning (pop)
+#endif
 #include "lwipcfg_msvc.h"
 
 /** When 1, use COM ports, when 0, use named pipes (for simulation). */
@@ -172,18 +176,18 @@ sio_fd_t sio_open(u8_t devnum)
 #if SIO_USE_COMPORT
     if(!sio_setup(fileHandle)) {
       CloseHandle(fileHandle);
-      LWIP_DEBUGF(SIO_DEBUG, ("sio_open(%lu): sio_setup failed. GetLastError() returns %d\n",
+      LWIP_DEBUGF(SIO_DEBUG, ("sio_open(%lu): sio_setup failed. GetLastError() returns %lu\n",
                   (DWORD)devnum, GetLastError()));
       return NULL;
     }
 #endif /* SIO_USE_COMPORT */
     LWIP_DEBUGF(SIO_DEBUG, ("sio_open: file \"%s\" successfully opened.\n", fileName));
-    printf("sio_open: file \"%s\" (%lu) successfully opened: 0x%08x\n", fileName, devnum, (u32_t)fileHandle);
+    printf("sio_open: file \"%s\" (%d) successfully opened: 0x%08x\n", fileName, devnum, (unsigned int)(size_t)fileHandle);
     return (sio_fd_t)(fileHandle);
   }
-  LWIP_DEBUGF(SIO_DEBUG, ("sio_open(%lu) failed. GetLastError() returns %d\n",
+  LWIP_DEBUGF(SIO_DEBUG, ("sio_open(%lu) failed. GetLastError() returns %lu\n",
               (DWORD)devnum, GetLastError()));
-  printf("sio_open(%lu) failed. GetLastError() returns %d\n",
+  printf("sio_open(%lu) failed. GetLastError() returns %lu\n",
               (DWORD)devnum, GetLastError());
   return NULL;
 }
