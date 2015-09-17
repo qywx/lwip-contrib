@@ -91,6 +91,7 @@ static void InitSysArchProtect(void)
   InitializeCriticalSection(&critSec);
 }
 
+#if !NO_SYS
 u32_t sys_arch_protect(void)
 {
   EnterCriticalSection(&critSec);
@@ -102,6 +103,7 @@ void sys_arch_unprotect(u32_t pval)
   LWIP_UNUSED_ARG(pval);
   LeaveCriticalSection(&critSec);
 }
+#endif /* !NO_SYS */
 
 static void msvc_sys_init(void)
 {

@@ -14,11 +14,15 @@
 
 #define WIN32_LEAN_AND_MEAN
 
+#ifdef _MSC_VER
 #pragma warning( push, 3 )
+#endif
 #include <windows.h>
 #include <packet32.h>
 #include <ntddndis.h>
+#ifdef _MSC_VER
 #pragma warning ( pop )
+#endif
 
 struct pcapifh_linkstate {
   LPADAPTER        lpAdapter;

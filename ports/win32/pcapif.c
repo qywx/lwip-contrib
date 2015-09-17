@@ -35,33 +35,27 @@
  */
 
 /* include the port-dependent configuration */
-#ifdef _MSC_VER
 #include "lwipcfg_msvc.h"
-#else
-#include "lwipcfg_gcc.h"
-#endif
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #ifdef _MSC_VER
 #pragma warning( push, 3 )
-#endif
 #include "pcap.h"
-#ifdef _MSC_VER
 #pragma warning ( pop )
+#else
+// e.g. mingw
+#define _MSC_VER 1500
+#include "pcap.h"
+#undef _MSC_VER
 #endif
 
 #include "lwip/opt.h"
 
 #if LWIP_ETHERNET
 
-/* @todo: once moved to the correct place, this should be unconditional! */
-#ifdef _MSC_VER
 #include "pcapif.h"
-#else
-#include "netif/pcapif.h"
-#endif
 
 #include <stdlib.h>
 #include <stdio.h>
