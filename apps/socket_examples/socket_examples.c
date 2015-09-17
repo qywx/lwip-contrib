@@ -195,7 +195,7 @@ sockex_nonblocking_connect(void *arg)
   ret = lwip_close(s);
   LWIP_ASSERT("ret == 0", ret == 0);
 
-  printf("select() needed %d ticks to return writable\n", ticks_b - ticks_a);
+  printf("select() needed %d ticks to return writable\n", (int)(ticks_b - ticks_a));
 
 
   /* now try nonblocking to invalid address:
@@ -256,7 +256,7 @@ sockex_nonblocking_connect(void *arg)
   ret = lwip_close(s);
   LWIP_ASSERT("ret == 0", ret == 0);
 
-  printf("select() needed %d ticks to return error\n", ticks_b - ticks_a);
+  printf("select() needed %d ticks to return error\n", (int)(ticks_b - ticks_a));
   printf("all tests done, thread ending\n");
 }
 
