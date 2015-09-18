@@ -127,7 +127,7 @@ sio_setup(HANDLE fd)
   /* change read timeout, leave write timeout as it is */
   cto.ReadIntervalTimeout = 1;
   cto.ReadTotalTimeoutMultiplier = 0;
-  cto.ReadTotalTimeoutConstant = 1;// 1ms //100; /* 10 ms */
+  cto.ReadTotalTimeoutConstant = 1; /* 1 ms */
   if(!SetCommTimeouts(fd, &cto)) {
     return FALSE;
   }

@@ -42,7 +42,7 @@ CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 # -Wpacked
 # -ansi
 # -std=c89
-LDFLAGS=-L. -lwpcap -lpacket
+LDFLAGS=-L$(PCAP_DIR)/lib -lwpcap -lpacket
 CONTRIBDIR=../../..
 LWIPARCH=$(CONTRIBDIR)/ports/win32
 ARFLAGS=rs
@@ -137,4 +137,6 @@ $(APPLIB): $(APPOBJS)
 	$(CC) $(CFLAGS) -c $(<:.o=.c)
 
 pcapif.o:
-	$(CC) $(CFLAGS) -Wno-redundant-decls -c $(<:.o=.c)
+	$(CC) $(CFLAGS) -Wno-error -Wno-redundant-decls -c $(<:.o=.c)
+pcapif_helper.o:
+	$(CC) $(CFLAGS) -std=c99 -Wno-redundant-decls -c $(<:.o=.c)

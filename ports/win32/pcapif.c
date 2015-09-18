@@ -45,7 +45,7 @@
 #include "pcap.h"
 #pragma warning ( pop )
 #else
-// e.g. mingw
+/* e.g. mingw */
 #define _MSC_VER 1500
 #include "pcap.h"
 #undef _MSC_VER
