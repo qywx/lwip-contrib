@@ -55,6 +55,7 @@
 #include "lwip/sys.h"
 #include "lwip/timers.h"
 
+#if LWIP_IPV4 /* @todo: IPv6 */
 #if !NO_SYS
 
 #include "netif/tcpdump.h"
@@ -231,11 +232,13 @@ unixif_input_handler(void *data)
       }
       pbuf_realloc(p, len);
       LINK_STATS_INC(link.recv);
-      /* tcpdump(p); @todo */
+      tcpdump(p);
       netif->input(p, netif);
     } else {
       LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_irq_handler: could not allocate pbuf\n"));
     }
+
+
   }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -250,10 +253,12 @@ unixif_thread(void *arg)
   netif = (struct netif *)arg;
   unixif = (struct unixif *)netif->state;
 
+
   while (1) {
     sys_sem_wait(&unixif->sem);
     unixif_input_handler(netif);
   }
+
 }
 /*-----------------------------------------------------------------------------------*/
 static void 
@@ -281,10 +286,11 @@ unixif_thread2(void *arg)
 static void unixif_output_timeout(void *arg);
 
 static err_t
-unixif_output(struct netif *netif, struct pbuf *p)
+unixif_output(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
 {
   struct unixif *unixif;
   struct unixif_buf *buf;
+  LWIP_UNUSED_ARG(ipaddr);
 
   unixif = (struct unixif *)netif->state;
 
@@ -328,31 +334,12 @@ unixif_output(struct netif *netif, struct pbuf *p)
   }
   return ERR_OK;
 }
-
-#if LWIP_IPV4
-static err_t
-unixif_output4(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
-{
-  LWIP_UNUSED_ARG(ipaddr);
-  return unixif_output(netif, p);
-}
-#endif /* LWIP_IPV4 */
-
-#if LWIP_IPV6
-static err_t
-unixif_output6(struct netif *netif, struct pbuf *p, const ip6_addr_t *ipaddr)
-{
-  LWIP_UNUSED_ARG(ipaddr);
-  return unixif_output(netif, p);
-}
-#endif /* LWIP_IPV6 */
-
 /*-----------------------------------------------------------------------------------*/
 static void
 unixif_output_timeout(void *arg)
 {
-  struct pbuf *p;
-  int len;
+  struct pbuf *p, *q;
+  int i, j, len;
   unsigned short plen, ptot_len;
   struct unixif_buf *buf;
   void *payload;
@@ -388,7 +375,13 @@ unixif_output_timeout(void *arg)
   }
   data = (char *)malloc(p->tot_len);
 
-  pbuf_copy_partial(p, data, p->tot_len, 0);
+  i = 0;
+  for(q = p; q != NULL; q = q->next) {
+    for(j = 0; j < q->len; j++) {
+      data[i] = ((char *)q->payload)[j];
+      i++;
+    }
+  }
 
   LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_output: sending %d (%d) bytes\n",
               p->len, p->tot_len));
@@ -403,8 +396,7 @@ unixif_output_timeout(void *arg)
     perror("unixif_output: write");
     abort();
   }
-  /* tcpdump(p); @todo */
-  /* tcpdump(p); */
+  tcpdump(p);
   LINK_STATS_INC(link.xmit);
 
   free(data);
@@ -449,12 +441,7 @@ unixif_init_server(struct netif *netif)
   netif->state = unixif;
   netif->name[0] = 'u';
   netif->name[1] = 'n';
-#if LWIP_IPV4
-  netif->output = unixif_output4;
-#endif /* LWIP_IPV4 */
-#if LWIP_IPV6
-  netif->output_ip6 = unixif_output6;
-#endif /* LWIP_IPV6 */
+  netif->output = unixif_output;
   unixif->q = list_new(UNIXIF_QUEUELEN);
 
   printf("Now run ./simnode.\n");
@@ -488,12 +475,7 @@ unixif_init_client(struct netif *netif)
   netif->state = unixif;
   netif->name[0] = 'u';
   netif->name[1] = 'n';
-#if LWIP_IPV4
-  netif->output = unixif_output4;
-#endif /* LWIP_IPV4 */
-#if LWIP_IPV6
-  netif->output_ip6 = unixif_output6;
-#endif /* LWIP_IPV6 */
+  netif->output = unixif_output;
 
   unixif->fd = unix_socket_client("/tmp/unixif");
   if (unixif->fd == -1) {
@@ -511,3 +493,4 @@ unixif_init_client(struct netif *netif)
 /*-----------------------------------------------------------------------------------*/
 
 #endif /* !NO_SYS */
+#endif /* LWIP_IPV4 */

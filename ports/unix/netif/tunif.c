@@ -70,7 +70,10 @@ struct tunif {
 };
 
 /* Forward declarations. */
-static void tunif_input(struct netif *netif);
+static void  tunif_input(struct netif *netif);
+static err_t tunif_output(struct netif *netif, struct pbuf *p,
+                          const ip4_addr_t *ipaddr);
+
 static void tunif_thread(void *data);
 
 /*-----------------------------------------------------------------------------------*/
@@ -93,14 +96,14 @@ low_level_init(struct netif *netif)
     exit(1);
   }
   sprintf(buf, IFCONFIG_CALL,
-           ip4_addr1(netif_ip4_gw(netif)),
-           ip4_addr2(netif_ip4_gw(netif)),
-           ip4_addr3(netif_ip4_gw(netif)),
-           ip4_addr4(netif_ip4_gw(netif)),
-           ip4_addr1(netif_ip4_addr(netif)),
-           ip4_addr2(netif_ip4_addr(netif)),
-           ip4_addr3(netif_ip4_addr(netif)),
-           ip4_addr4(netif_ip4_addr(netif)));
+           ip4_addr1(&(netif->gw)),
+           ip4_addr2(&(netif->gw)),
+           ip4_addr3(&(netif->gw)),
+           ip4_addr4(&(netif->gw)),
+           ip4_addr1(&(netif->ip_addr)),
+           ip4_addr2(&(netif->ip_addr)),
+           ip4_addr3(&(netif->ip_addr)),
+           ip4_addr4(&(netif->ip_addr)));
 
   LWIP_DEBUGF(TUNIF_DEBUG, ("tunif_init: system(\"%s\");\n", buf));
   system(buf);
@@ -117,10 +120,13 @@ low_level_init(struct netif *netif)
  *
  */
 /*-----------------------------------------------------------------------------------*/
+
 static err_t
 low_level_output(struct tunif *tunif, struct pbuf *p)
 {
+  struct pbuf *q;
   char buf[1500];
+  char *bufptr;
   int rnd_val;
 
   /* initiate transfer(); */
@@ -131,7 +137,17 @@ low_level_output(struct tunif *tunif, struct pbuf *p)
     return ERR_OK;
   }
 
-  pbuf_copy_partial(p, buf, p->tot_len, 0);
+
+  bufptr = &buf[0];
+
+  for(q = p; q != NULL; q = q->next) {
+    /* Send the data from the pbuf to the interface, one pbuf at a
+       time. The size of the data in each pbuf is kept in the ->len
+       variable. */
+    /* send data from(q->payload, q->len); */
+    memcpy(bufptr, q->payload, q->len);
+    bufptr += q->len;
+  }
 
   /* signal that packet should be sent(); */
   if (write(tunif->fd, buf, p->tot_len) == -1) {
@@ -151,9 +167,10 @@ low_level_output(struct tunif *tunif, struct pbuf *p)
 static struct pbuf *
 low_level_input(struct tunif *tunif)
 {
-  struct pbuf *p;
+  struct pbuf *p, *q;
   u16_t len;
   char buf[1500];
+  char *bufptr;
 
   /* Obtain the size of the packet and put it into the "len"
      variable. */
@@ -164,10 +181,22 @@ low_level_input(struct tunif *tunif)
     return NULL;
     }*/
 
+
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
+
   if (p != NULL) {
-    pbuf_take(p, buf, len);
+    /* We iterate over the pbuf chain until we have read the entire
+       packet into the pbuf. */
+    bufptr = &buf[0];
+    for(q = p; q != NULL; q = q->next) {
+      /* Read enough bytes to fill this pbuf in the chain. The
+         available data in the pbuf is given by the q->len
+         variable. */
+      /* read data into(q->payload, q->len); */
+      memcpy(q->payload, bufptr, q->len);
+      bufptr += q->len;
+    }
     /* acknowledge that packet has been read(); */
   } else {
     /* drop packet(); */
@@ -212,32 +241,18 @@ tunif_thread(void *arg)
  *
  */
 /*-----------------------------------------------------------------------------------*/
-#if LWIP_IPV4
 static err_t
-tunif_output4(struct netif *netif, struct pbuf *p,
+tunif_output(struct netif *netif, struct pbuf *p,
              const ip4_addr_t *ipaddr)
 {
   struct tunif *tunif;
   LWIP_UNUSED_ARG(ipaddr);
 
   tunif = (struct tunif *)netif->state;
+
   return low_level_output(tunif, p);
+
 }
-#endif /* LWIP_IPV4 */
-
-#if LWIP_IPV6
-static err_t
-tunif_output6(struct netif *netif, struct pbuf *p,
-             const ip6_addr_t *ipaddr)
-{
-  struct tunif *tunif;
-  LWIP_UNUSED_ARG(ipaddr);
-
-  tunif = (struct tunif *)netif->state;
-  return low_level_output(tunif, p);
-}
-#endif /* LWIP_IPV6 */
-
 /*-----------------------------------------------------------------------------------*/
 /*
  * tunif_input():
@@ -254,6 +269,7 @@ tunif_input(struct netif *netif)
 {
   struct tunif *tunif;
   struct pbuf *p;
+
 
   tunif = (struct tunif *)netif->state;
 
@@ -295,12 +311,7 @@ tunif_init(struct netif *netif)
   netif->state = tunif;
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
-#if LWIP_IPV4
-  netif->output = tunif_output4;
-#endif /* LWIP_IPV4 */
-#if LWIP_IPV6
-  netif->output_ip6 = tunif_output6;
-#endif /* LWIP_IPV6 */
+  netif->output = tunif_output;
 
 
   low_level_init(netif);

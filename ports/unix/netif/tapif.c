@@ -44,19 +44,32 @@
 
 #include "lwip/opt.h"
 
+#if LWIP_IPV4 /* @todo: IPv6 */
+
 #include "lwip/debug.h"
 #include "lwip/def.h"
 #include "lwip/ip.h"
 #include "lwip/mem.h"
 #include "lwip/stats.h"
-#include "lwip/snmp_mib2.h"
+#include "lwip/snmp.h"
 #include "lwip/pbuf.h"
 #include "lwip/sys.h"
 #include "lwip/timers.h"
 #include "netif/etharp.h"
 #include "lwip/ethip6.h"
+
+#if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
+#include "netif/tcpdump.h"
+#endif /* LWIP_DEBUG && LWIP_TCPDUMP */
+
 #include "netif/tapif.h"
 
+#define IFCONFIG_BIN "/sbin/ifconfig "
+
+#if defined(LWIP_UNIX_LINUX)
+#include <sys/ioctl.h>
+#include <linux/if.h>
+#include <linux/if_tun.h>
 /*
  * Creating a tap interface requires special privileges. If the interfaces
  * is created in advance with `tunctl -u <user>` it can be opened as a regular
@@ -65,17 +78,18 @@
  *
  * You can also use PRECONFIGURED_TAPIF environment variable to do so.
  */
-/* #define DEVTAP_IF "tap1" */
-
-#if defined(LWIP_UNIX_LINUX)
-#include <sys/ioctl.h>
-#include <linux/if.h>
-#include <linux/if_tun.h>
+/* #define DEVTAP_IF "tap0" */
 #define DEVTAP "/dev/net/tun"
+#define NETMASK_ARGS "netmask %d.%d.%d.%d"
+#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
 #elif defined(LWIP_UNIX_OPENBSD)
 #define DEVTAP "/dev/tun0"
+#define NETMASK_ARGS "netmask %d.%d.%d.%d"
+#define IFCONFIG_ARGS "tun0 inet %d.%d.%d.%d " NETMASK_ARGS " link0"
 #else /* others */
 #define DEVTAP "/dev/tap0"
+#define NETMASK_ARGS "netmask %d.%d.%d.%d"
+#define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
 #endif
 
 /* Define those to better describe your network interface. */
@@ -87,6 +101,7 @@
 #endif
 
 struct tapif {
+  struct eth_addr *ethaddr;
   /* Add whatever per-interface state that is needed here. */
   int fd;
 };
@@ -101,18 +116,25 @@ static void tapif_thread(void *arg);
 static void
 low_level_init(struct netif *netif)
 {
-  struct tapif *tapif = (struct tapif *)netif->state;
+  struct tapif *tapif;
+  int ret;
+#ifndef DEVTAP_IF
+  char buf[1024];
+  char *preconfigured_tapif = getenv("PRECONFIGURED_TAPIF");
+#endif /* DEVTAP_IF */
+
+  tapif = (struct tapif *)netif->state;
 
   /* Obtain MAC address from network interface. */
+
   /* (We just fake an address...) */
-  netif->hwaddr[0] = 0x02;
-  netif->hwaddr[1] = 0x12;
-  netif->hwaddr[2] = 0x34;
-  netif->hwaddr[3] = 0x56;
-  netif->hwaddr[4] = 0x78;
-  netif->hwaddr[5] = 0xab;
-  netif->hwaddr_len = 6;
-  
+  tapif->ethaddr->addr[0] = 0x02;
+  tapif->ethaddr->addr[1] = 0x12;
+  tapif->ethaddr->addr[2] = 0x34;
+  tapif->ethaddr->addr[3] = 0x56;
+  tapif->ethaddr->addr[4] = 0x78;
+  tapif->ethaddr->addr[5] = 0xab;
+
   /* device capabilities */
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP;
 
@@ -130,14 +152,7 @@ low_level_init(struct netif *netif)
 #ifdef LWIP_UNIX_LINUX
   {
     struct ifreq ifr;
-#ifndef DEVTAP_IF
-    char *preconfigured_tapif = getenv("PRECONFIGURED_TAPIF");
-#endif /* DEVTAP_IF */
-
-    LWIP_ASSERT("If you compile without DEVTAP_IF, you need to set PRECONFIGURED_TAPIF environment variable",
-      preconfigured_tapif != NULL);
     memset(&ifr, 0, sizeof(ifr));
-
 #ifdef DEVTAP_IF
     strncpy(ifr.ifr_name, DEVTAP_IF, IFNAMSIZ);
 #else /* DEVTAP_IF */
@@ -145,16 +160,42 @@ low_level_init(struct netif *netif)
       strncpy(ifr.ifr_name, preconfigured_tapif, IFNAMSIZ);
     }
 #endif /* DEVTAP_IF */
-
     ifr.ifr_flags = IFF_TAP|IFF_NO_PI;
     if (ioctl(tapif->fd, TUNSETIFF, (void *) &ifr) < 0) {
       perror("tapif_init: "DEVTAP" ioctl TUNSETIFF");
       exit(1);
     }
   }
-#endif /* LWIP_UNIX_LINUX */
-
+#endif /* Linux */
   netif_set_link_up(netif);
+
+#ifndef DEVTAP_IF
+  if (preconfigured_tapif == NULL) {
+    snprintf(buf, 1024, IFCONFIG_BIN IFCONFIG_ARGS,
+             ip4_addr1(&(netif->gw)),
+             ip4_addr2(&(netif->gw)),
+             ip4_addr3(&(netif->gw)),
+             ip4_addr4(&(netif->gw))
+#ifdef NETMASK_ARGS
+             ,
+             ip4_addr1(&(netif->netmask)),
+             ip4_addr2(&(netif->netmask)),
+             ip4_addr3(&(netif->netmask)),
+             ip4_addr4(&(netif->netmask))
+#endif /* NETMASK_ARGS */
+             );
+
+    LWIP_DEBUGF(TAPIF_DEBUG, ("tapif_init: system(\"%s\");\n", buf));
+    ret = system(buf);
+    if (ret < 0) {
+      perror("ifconfig failed");
+      exit(1);
+    }
+    if (ret != 0) {
+      printf("ifconfig returned %d\n", ret);
+    }
+  }
+#endif /* DEVTAP_IF */
 
 #if !NO_SYS
   sys_thread_new("tapif_thread", tapif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
@@ -174,10 +215,13 @@ low_level_init(struct netif *netif)
 static err_t
 low_level_output(struct netif *netif, struct pbuf *p)
 {
-  struct tapif *tapif = (struct tapif *)netif->state;
+  struct tapif *tapif;
+  struct pbuf *q;
   char buf[1514];
+  char *bufptr;
   ssize_t written;
 
+  tapif = (struct tapif *)netif->state;
 #if 0
   if (((double)rand()/(double)RAND_MAX) < 0.2) {
     printf("drop output\n");
@@ -186,16 +230,25 @@ low_level_output(struct netif *netif, struct pbuf *p)
 #endif
 
   /* initiate transfer(); */
-  pbuf_copy_partial(p, buf, p->tot_len, 0);
+  bufptr = &buf[0];
+
+  for(q = p; q != NULL; q = q->next) {
+    /* Send the data from the pbuf to the interface, one pbuf at a
+       time. The size of the data in each pbuf is kept in the ->len
+       variable. */
+    /* send data from(q->payload, q->len); */
+    memcpy(bufptr, q->payload, q->len);
+    bufptr += q->len;
+  }
 
   /* signal that packet should be sent(); */
   written = write(tapif->fd, buf, p->tot_len);
   if (written == -1) {
-    MIB2_STATS_NETIF_INC(netif, ifoutdiscards);
+    snmp_inc_ifoutdiscards(netif);
     perror("tapif: write");
   }
   else {
-    MIB2_STATS_NETIF_ADD(netif, ifoutoctets, written);
+    snmp_add_ifoutoctets(netif, written);
   }
   return ERR_OK;
 }
@@ -211,10 +264,13 @@ low_level_output(struct netif *netif, struct pbuf *p)
 static struct pbuf *
 low_level_input(struct netif *netif)
 {
-  struct pbuf *p;
+  struct pbuf *p, *q;
   u16_t len;
   char buf[1514];
-  struct tapif *tapif = (struct tapif *)netif->state;
+  char *bufptr;
+  struct tapif *tapif;
+
+  tapif = (struct tapif *)netif->state;
 
   /* Obtain the size of the packet and put it into the "len"
      variable. */
@@ -224,7 +280,7 @@ low_level_input(struct netif *netif)
     exit(1);
   }
 
-  MIB2_STATS_NETIF_ADD(netif, ifinoctets, len);
+  snmp_add_ifinoctets(netif,len);
 
 #if 0
   if (((double)rand()/(double)RAND_MAX) < 0.2) {
@@ -235,12 +291,23 @@ low_level_input(struct netif *netif)
 
   /* We allocate a pbuf chain of pbufs from the pool. */
   p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
+
   if (p != NULL) {
-    pbuf_take(p, buf, len);
+    /* We iterate over the pbuf chain until we have read the entire
+       packet into the pbuf. */
+    bufptr = &buf[0];
+    for(q = p; q != NULL; q = q->next) {
+      /* Read enough bytes to fill this pbuf in the chain. The
+         available data in the pbuf is given by the q->len
+         variable. */
+      /* read data into(q->payload, q->len); */
+      memcpy(q->payload, bufptr, q->len);
+      bufptr += q->len;
+    }
     /* acknowledge that packet has been read(); */
   } else {
     /* drop packet(); */
-    MIB2_STATS_NETIF_INC(netif, ifindiscards);
+    snmp_inc_ifindiscards(netif);
     LWIP_DEBUGF(NETIF_DEBUG, ("tapif_input: could not allocate pbuf\n"));
   }
 
@@ -261,7 +328,9 @@ low_level_input(struct netif *netif)
 static void
 tapif_input(struct netif *netif)
 {
-  struct pbuf *p = low_level_input(netif);
+  struct pbuf *p;
+
+  p = low_level_input(netif);
 
   if (p == NULL) {
 #if LINK_STATS
@@ -289,20 +358,34 @@ tapif_input(struct netif *netif)
 err_t
 tapif_init(struct netif *netif)
 {
-  struct tapif *tapif = (struct tapif *)mem_malloc(sizeof(struct tapif));
+  struct tapif *tapif;
 
+  tapif = (struct tapif *)mem_malloc(sizeof(struct tapif));
   if (tapif == NULL) {
     LWIP_DEBUGF(NETIF_DEBUG, ("tapif_init: out of memory for tapif\n"));
     return ERR_MEM;
   }
   netif->state = tapif;
-  MIB2_INIT_NETIF(netif, snmp_ifType_other, 100000000);
+#if LWIP_SNMP
+  /* ifType is other(1), there doesn't seem
+     to be a proper type for the tunnel if */
+  netif->link_type = 1;
+  /* @todo get this from struct tunif? */
+  netif->link_speed = 0;
+  netif->ts = 0;
+  netif->ifinoctets = 0;
+  netif->ifinucastpkts = 0;
+  netif->ifinnucastpkts = 0;
+  netif->ifindiscards = 0;
+  netif->ifoutoctets = 0;
+  netif->ifoutucastpkts = 0;
+  netif->ifoutnucastpkts = 0;
+  netif->ifoutdiscards = 0;
+#endif
 
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
-#if LWIP_IPV4
   netif->output = etharp_output;
-#endif /* LWIP_IPV4 */
 #if LWIP_IPV6
   netif->output_ip6 = ethip6_output;
 #endif /* LWIP_IPV6 */
@@ -310,6 +393,8 @@ tapif_init(struct netif *netif)
   netif->mtu = 1500;
   /* hardware address length */
   netif->hwaddr_len = 6;
+
+  tapif->ethaddr = (struct eth_addr *)&(netif->hwaddr[0]);
 
   low_level_init(netif);
 
@@ -374,3 +459,4 @@ tapif_thread(void *arg)
 }
 
 #endif /* NO_SYS */
+#endif /* LWIP_IPV4 */

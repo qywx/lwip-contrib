@@ -42,8 +42,6 @@
 #include "lwip/memp.h"
 #include "lwip/sys.h"
 
-#include "lwip/ip_addr.h"
-
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
 
@@ -83,14 +81,14 @@
 #include "lwip/raw.h"
 #endif
 
-#if LWIP_IPV4
+#if LWIP_IPV4 /* @todo: IPv6 */
+
 /* (manual) host IP configuration */
-static ip_addr_t ipaddr, netmask, gw;
-#endif /* LWIP_IPV4 */
+static ip4_addr_t ipaddr, netmask, gw;
 
 /* ping out destination cmd option */
 static unsigned char ping_flag;
-static ip_addr_t ping_addr;
+static ip4_addr_t ping_addr;
 
 /* nonstatic debug cmd option, exported in lwipopts.h */
 unsigned char debug_flags;
@@ -101,7 +99,6 @@ static struct option longopts[] = {
   {"debug", no_argument,        NULL, 'd'},
   /* help */
   {"help", no_argument, NULL, 'h'},
-#if LWIP_IPV4
   /* gateway address */
   {"gateway", required_argument, NULL, 'g'},
   /* ip address */
@@ -110,7 +107,6 @@ static struct option longopts[] = {
   {"netmask", required_argument, NULL, 'm'},
   /* ping destination */
   {"ping",   required_argument, NULL, 'p'},
-#endif /* LWIP_IPV4 */
   /* new command line options go here! */
   {NULL,   0,                 NULL,  0}
 };
@@ -158,7 +154,6 @@ tcpip_init_done(void *arg)
 static int seq_num;
 
 #if 0
-
 /* Ping using the raw api */
 static int
 ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip4_addr_t *addr)
@@ -211,74 +206,41 @@ ping_thread(void *arg)
 /* Ping using the socket api */
 
 static void
-ping_send(int s, const ip_addr_t *addr)
+ping_send(int s, ip4_addr_t *addr)
 {
   struct icmp_echo_hdr *iecho;
-  struct sockaddr_storage to;
+  struct sockaddr_in to;
 
   if (!(iecho = (struct icmp_echo_hdr *)malloc(sizeof(struct icmp_echo_hdr))))
     return;
 
   ICMPH_TYPE_SET(iecho,ICMP_ECHO);
   iecho->chksum = 0;
-  iecho->seqno  = htons(seq_num);
+  iecho->seqno = htons(seq_num);
   iecho->chksum = inet_chksum(iecho, sizeof(*iecho));
 
-#if LWIP_IPV4
-  if(!IP_IS_V6(addr))
-  {
-    struct sockaddr_in *to4 = (struct sockaddr_in*)&to;
-    to4->sin_len    = sizeof(to);
-    to4->sin_family = AF_INET;
-    inet_addr_from_ipaddr(&to4->sin_addr, ip_2_ip4_c(addr));
-  }
-#endif /* LWIP_IPV4 */
+  to.sin_len = sizeof(to);
+  to.sin_family = AF_INET;
+  to.sin_addr.s_addr = addr->addr;
 
-#if LWIP_IPV6
-  if(IP_IS_V6(addr))
-  {
-    struct sockaddr_in6 *to6 = (struct sockaddr_in6*)&to;
-    to6->sin6_len    = sizeof(to);
-    to6->sin6_family = AF_INET6;
-    inet6_addr_from_ip6addr(&to6->sin6_addr, ip_2_ip6_c(addr));
-  }
-#endif /* LWIP_IPV6 */
-
-  lwip_sendto(s, iecho, sizeof(*iecho), 0, (struct sockaddr*)&to, sizeof(to));
+  lwip_sendto(s,iecho,sizeof(*iecho),0,(struct sockaddr*)&to,sizeof(to));
 
   free(iecho);
   seq_num++;
 }
 
 static void
-ping_recv(int s, const ip_addr_t *addr)
+ping_recv(int s, ip4_addr_t *addr)
 {
   char buf[200];
   socklen_t fromlen;
   int len;
-  struct sockaddr_storage from;
-  ip_addr_t ipFrom;
+  struct sockaddr_in from;
   LWIP_UNUSED_ARG(addr);
 
-  len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, &fromlen);
+  len = lwip_recvfrom(s, buf,sizeof(buf),0,(struct sockaddr*)&from,&fromlen);
 
-#if LWIP_IPV4
-  if(!IP_IS_V6(addr))
-  {
-    struct sockaddr_in *from4 = (struct sockaddr_in*)&from;
-    inet_addr_to_ipaddr(ip_2_ip4(&ipFrom), &from4->sin_addr);
-  }
-#endif /* LWIP_IPV4 */
-
-#if LWIP_IPV6
-  if(IP_IS_V6(addr))
-  {
-    struct sockaddr_in6 *from6 = (struct sockaddr_in6*)&from;
-    inet6_addr_to_ip6addr(ip_2_ip6(&ipFrom), &from6->sin6_addr);
-  }
-#endif /* LWIP_IPV6 */
-
-  printf("Received %d bytes from %s\n", len, ipaddr_ntoa(&ipFrom));
+  printf("Received %d bytes from %x\n",len,ntohl(from.sin_addr.s_addr));
 }
 
 static void
@@ -320,15 +282,9 @@ ppp_link_status_cb(ppp_pcb *pcb, int err_code, void *ctx)
         ip_addr_t ns;
 #endif /* LWIP_DNS */
         fprintf(stderr, "ppp_link_status_cb: PPPERR_NONE\n\r");
-#if LWIP_IPV4
-        fprintf(stderr, "   our_ip4addr = %s\n\r", ip4addr_ntoa(&pppif->ip_addr));
+        fprintf(stderr, "   our_ipaddr  = %s\n\r", ip4addr_ntoa(&pppif->ip_addr));
         fprintf(stderr, "   his_ipaddr  = %s\n\r", ip4addr_ntoa(&pppif->gw));
         fprintf(stderr, "   netmask     = %s\n\r", ip4addr_ntoa(&pppif->netmask));
-#endif /* LWIP_IPV4 */
-#if LWIP_IPV6
-        fprintf(stderr, "   our_ip6addr = %s\n\r", ip6addr_ntoa(&pppif->ip6_addr[0]));
-#endif /* LWIP_IPV6 */
-
 #if LWIP_DNS
         ns = dns_getserver(0);
         fprintf(stderr, "   dns1        = %s\n\r", ipaddr_ntoa(&ns));
@@ -404,20 +360,6 @@ ppp_output_cb(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
 }
 #endif
 
-#if LWIP_NETIF_STATUS_CALLBACK
-static void
-netif_status_callback(struct netif *netif_)
-{
-#if LWIP_IPV4
-  printf("Host at IP %s ", ip4addr_ntoa(netif_ip4_addr(netif_)));
-  printf("mask %s ", ip4addr_ntoa(netif_ip4_netmask(netif_)));
-  printf("gw %s\n", ip4addr_ntoa(netif_ip4_gw(netif_)));
-#else/* LWIP_IPV4 */
-  LWIP_UNUSED_ARG(netif_);
-#endif /* LWIP_IPV4 */
-}
-#endif
-
 static void
 init_netifs(void)
 {
@@ -446,39 +388,23 @@ init_netifs(void)
 
   ppp_connect(ppp, 0);
 #endif /* PPP_SUPPORT */
- 
-#if LWIP_IPV4
+  
 #if LWIP_DHCP
-  IP_ADDR4(&gw,      0,0,0,0);
-  IP_ADDR4(&ipaddr,  0,0,0,0);
-  IP_ADDR4(&netmask, 0,0,0,0);
-#endif /* LWIP_DHCP */
-  netif_add(&netif, ip_2_ip4_c(&ipaddr), ip_2_ip4_c(&netmask), ip_2_ip4_c(&gw), NULL, tapif_init, tcpip_input);
-#else /* LWIP_IPV4 */
-  netif_add(&netif, NULL, tapif_init, tcpip_input);
-#endif /* LWIP_IPV4 */
-#if LWIP_IPV6
-  netif_create_ip6_linklocal_address(&netif, 1);
+  IP4_ADDR(&gw, 0,0,0,0);
+  IP4_ADDR(&ipaddr, 0,0,0,0);
+  IP4_ADDR(&netmask, 0,0,0,0);
 #endif
-  netif_set_default(&netif);
+  
+  netif_set_default(netif_add(&netif,&ipaddr, &netmask, &gw, NULL, tapif_init,
+                  tcpip_input));
   netif_set_up(&netif);
 #if LWIP_DHCP
   dhcp_start(&netif);
-#else /* LWIP_DHCP */
-#if LWIP_IPV4
-  printf("Host at IP %s ", ip4addr_ntoa(netif_ip4_addr(&netif)));
-  printf("mask %s ",       ip4addr_ntoa(netif_ip4_netmask(&netif)));
-  printf("gw %s\n",        ip4addr_ntoa(netif_ip4_gw(&netif)));
-#endif /* LWIP_IPV4 */
-#endif /* LWIP_DHCP */
+#endif
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif, 1);
-#endif /* LWIP_IPV6 */
-
-#if LWIP_NETIF_STATUS_CALLBACK
-  netif_set_status_callback(&netif, netif_status_callback);
 #endif
-  
+
 #if 0
   /* Only used for testing purposes: */
   netif_add(&ipaddr, &netmask, &gw, NULL, pcapif_init, tcpip_input);
@@ -533,13 +459,12 @@ int
 main(int argc, char **argv)
 {
   int ch;
+  char ip_str[16] = {0}, nm_str[16] = {0}, gw_str[16] = {0};
 
   /* startup defaults (may be overridden by one or more opts) */
-#if LWIP_IPV4
-  IP_ADDR4(&ipaddr,  192,168,  0,2);
-  IP_ADDR4(&gw,      192,168,  0,1);
-  IP_ADDR4(&netmask, 255,255,255,0);
-#endif /* LWIP_IPV4 */
+  IP4_ADDR(&gw, 192,168,0,1);
+  IP4_ADDR(&netmask, 255,255,255,0);
+  IP4_ADDR(&ipaddr, 192,168,0,2);
   
   ping_flag = 0;
   /* use debug flags defined by debug.h */
@@ -554,21 +479,20 @@ main(int argc, char **argv)
         usage();
         exit(0);
         break;
-#if LWIP_IPV4
       case 'g':
-        ipaddr_aton(optarg, &gw);
+        ip4addr_aton(optarg, &gw);
         break;
       case 'i':
-        ipaddr_aton(optarg, &ipaddr);
+        ip4addr_aton(optarg, &ipaddr);
         break;
       case 'm':
-        ipaddr_aton(optarg, &netmask);
+        ip4addr_aton(optarg, &netmask);
         break;
-#endif /* LWIP_IPV4 */
       case 'p':
         ping_flag = !0;
-        ipaddr_aton(optarg, &ping_addr);
-        printf("Using %s to ping\n", ipaddr_ntoa(&ping_addr));
+        ip4addr_aton(optarg, &ping_addr);
+        strncpy(ip_str,ip4addr_ntoa(&ping_addr),sizeof(ip_str));
+        printf("Using %s to ping\n", ip_str);
         break;
       default:
         usage();
@@ -577,6 +501,11 @@ main(int argc, char **argv)
   }
   argc -= optind;
   argv += optind;
+
+  strncpy(ip_str,ip4addr_ntoa(&ipaddr),sizeof(ip_str));
+  strncpy(nm_str,ip4addr_ntoa(&netmask),sizeof(nm_str));
+  strncpy(gw_str,ip4addr_ntoa(&gw),sizeof(gw_str));
+  printf("Host at %s mask %s gateway %s\n", ip_str, nm_str, gw_str);
 
 #ifdef PERF
   perf_init("/tmp/simhost.perf");
@@ -588,4 +517,20 @@ main(int argc, char **argv)
   pause();
   return 0;
 }
+
+#else /* LWIP_IPV4 */
+
+int
+main(int argc, char **argv)
+{
+  LWIP_UNUSED_ARG(argc);
+  LWIP_UNUSED_ARG(argv);
+
+  printf("simhost only works with IPv4\n");
+
+  return 0;
+}
+
+#endif /* LWIP_IPV4 */
+
 /*-----------------------------------------------------------------------------------*/
