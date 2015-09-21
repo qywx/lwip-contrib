@@ -60,8 +60,6 @@
 #include "tcpecho.h"
 #include "shell.h"
 
-#if LWIP_IPV4 /* @todo: IPv6 */
-
 /* nonstatic debug cmd option, exported in lwipopts.h */
 unsigned char debug_flags;
 
@@ -81,22 +79,28 @@ struct netif netif_unix;
 static void
 tcpip_init_done(void *arg)
 {
-  ip4_addr_t ipaddr, netmask, gw;
   sys_sem_t *sem;
   sem = (sys_sem_t *)arg;
 
-  IP4_ADDR(&gw, 192,168,1,1);
-  IP4_ADDR(&ipaddr, 192,168,1,2);
-  IP4_ADDR(&netmask, 255,255,255,0);
-
-  netif_set_default(netif_add(&netif_unix, &ipaddr, &netmask, &gw, NULL, unixif_init_client,
-			      tcpip_input));
+#if LWIP_IPV4
+  {
+    ip_addr_t ipaddr, netmask, gw;
+    IP_ADDR4(&gw,      192,168,  1,1);
+    IP_ADDR4(&ipaddr,  192,168,  1,2);
+    IP_ADDR4(&netmask, 255,255,255,0);
+    netif_set_default(netif_add(&netif_unix,
+                                ip_2_ip4_c(&ipaddr), ip_2_ip4_c(&netmask), ip_2_ip4_c(&gw),
+                                NULL, unixif_init_client, tcpip_input));
+    /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, sioslipif_init1,
+                                    tcpip_input)); */
+  }
+#else /* LWIP_IPV4 */
+  netif_set_default(netif_add(&netif_unix, NULL, unixif_init_client, tcpip_input));
+#endif /* LWIP_IPV4 */
   netif_set_up(&netif_unix);
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif_unix, 1);
-#endif
-  /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, sioslipif_init1,
-			      tcpip_input)); */
+#endif /* LWIP_IPV6 */
 
   tcpecho_init();
   shell_init();
@@ -106,7 +110,6 @@ tcpip_init_done(void *arg)
   printf("Applications started.\n");
 
   sys_timeout(5000, tcp_timeout, NULL);
-
   sys_sem_signal(sem);
 }
 /*-----------------------------------------------------------------------------------*/
@@ -120,6 +123,7 @@ main_thread(void *arg)
   if(sys_sem_new(&sem, 0) != ERR_OK) {
     LWIP_ASSERT("Failed to create semaphore", 0);
   }
+
   tcpip_init(tcpip_init_done, &sem);
   sys_sem_wait(&sem);
   printf("TCP/IP initialized.\n");
@@ -139,7 +143,7 @@ main(void)
   perf_init("/tmp/client.perf");
 #endif /* PERF */
 
-  tcpdump_init();
+  /* tcpdump_init(); @todo */
 
   printf("System initialized.\n");
 
@@ -148,18 +152,4 @@ main(void)
   return 0;
 }
 
-#else /* LWIP_IPV4 */
-
-int
-main(int argc, char **argv)
-{
-  LWIP_UNUSED_ARG(argc);
-  LWIP_UNUSED_ARG(argv);
-
-  printf("simnode only works with IPv4\n");
-
-  return 0;
-}
-
-#endif /* LWIP_IPV4 */
 /*-----------------------------------------------------------------------------------*/

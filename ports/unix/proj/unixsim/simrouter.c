@@ -62,8 +62,6 @@
 #include "tcpecho.h"
 #include "shell.h"
 
-#if LWIP_IPV4 /* @todo: IPv6 */
-
 /* nonstatic debug cmd option, exported in lwipopts.h */
 unsigned char debug_flags;
 
@@ -85,26 +83,39 @@ struct netif netif_tap, netif_unix;
 static void
 tcpip_init_done(void *arg)
 {
-  ip4_addr_t ipaddr, netmask, gw;
   sys_sem_t *sem;
   sem = (sys_sem_t *)arg;
 
-  IP4_ADDR(&gw, 192,168,0,1);
-  IP4_ADDR(&ipaddr, 192,168,0,2);
-  IP4_ADDR(&netmask, 255,255,255,0);
+#if LWIP_IPV4
+  {
+    ip_addr_t ipaddr, netmask, gw;
+    IP_ADDR4(&gw,      192,168,  0,1);
+    IP_ADDR4(&ipaddr,  192,168,  0,2);
+    IP_ADDR4(&netmask, 255,255,255,0);
 
-  netif_set_default(netif_add(&netif_tap, &ipaddr, &netmask, &gw, NULL, tapif_init,
-                    tcpip_input));
+    netif_set_default(netif_add(&netif_tap, ip_2_ip4_c(&ipaddr), ip_2_ip4_c(&netmask), ip_2_ip4_c(&gw), NULL, tapif_init,
+                      tcpip_input));
+  }
+#else /* LWIP_IPV4 */
+  netif_set_default(netif_add(&netif_tap, NULL, tapif_init, tcpip_input));
+#endif /* LWIP_IPV4 */
   netif_set_up(&netif_tap);
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif_tap, 1);
 #endif
 
-  IP4_ADDR(&gw, 192,168,1,1);
-  IP4_ADDR(&ipaddr, 192,168,1,1);
-  IP4_ADDR(&netmask, 255,255,255,0);
-  netif_set_default(netif_add(&netif_unix, &ipaddr, &netmask, &gw, NULL, unixif_init_server,
-                    tcpip_input));
+#if LWIP_IPV4
+  {
+    ip_addr_t ipaddr, netmask, gw;
+    IP_ADDR4(&gw,      192,168,  1,1);
+    IP_ADDR4(&ipaddr,  192,168,  1,1);
+    IP_ADDR4(&netmask, 255,255,255,0);
+    netif_set_default(netif_add(&netif_unix, ip_2_ip4_c(&ipaddr), ip_2_ip4_c(&netmask), ip_2_ip4_c(&gw), NULL, unixif_init_server,
+                      tcpip_input));
+  }
+#else /* LWIP_IPV4 */
+  netif_set_default(netif_add(&netif_unix, NULL, unixif_init_server, tcpip_input));
+#endif /* LWIP_IPV4 */
   netif_set_up(&netif_unix);
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif_unix, 1);
@@ -112,7 +123,6 @@ tcpip_init_done(void *arg)
 
   system("route add 192.168.1.1 192.168.0.2");
   system("route add 192.168.1.2 192.168.0.2");
-
 
   /*netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, sioslipif_init1,
 			      tcpip_input)); */
@@ -157,27 +167,12 @@ main(void)
   perf_init("/tmp/client.perf");
 #endif /* PERF */
 
-  tcpdump_init();
+  /* tcpdump_init(); @todo */
 
   printf("System initialized.\n");
   sys_thread_new("main_thread", main_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   pause();
   return 0;
 }
-
-#else /* LWIP_IPV4 */
-
-int
-main(int argc, char **argv)
-{
-  LWIP_UNUSED_ARG(argc);
-  LWIP_UNUSED_ARG(argv);
-
-  printf("simrouter only works with IPv4\n");
-
-  return 0;
-}
-
-#endif /* LWIP_IPV4 */
 
 /*-----------------------------------------------------------------------------------*/
