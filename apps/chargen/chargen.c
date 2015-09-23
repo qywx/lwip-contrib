@@ -68,7 +68,7 @@ struct charcb
 {
     struct charcb *next;
     int socket;
-    struct sockaddr_in cliaddr;
+    struct sockaddr_storage cliaddr;
     socklen_t clilen;
     char nextchar;
 };
