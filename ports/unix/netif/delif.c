@@ -32,7 +32,6 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_IPV4 /* @todo: IPv6 */
 #if !NO_SYS
 
 #include "lwip/debug.h"
@@ -71,7 +70,7 @@ struct delif {
 struct delif_pbuf {
   struct delif_pbuf *next;
   struct pbuf *p;
-  const ip4_addr_t *ipaddr;
+  ip_addr_t ipaddr;
   unsigned int time;
 };
 
@@ -138,7 +137,19 @@ delif_output_timeout(void *arg)
     if (dp->time <= now) {
       LWIP_DEBUGF(DELIF_DEBUG, ("delif_output_timeout: now %u dp->time %u\n",
         now, dp->time));
-      delif->netif->output(delif->netif, dp->p, dp->ipaddr);
+
+#if LWIP_IPV4
+      if(!IP_IS_V6_VAL(dp->ipaddr)) {
+        delif->netif->output(delif->netif, dp->p, ip_2_ip4_c(&dp->ipaddr));
+      }
+#endif /* LWIP_IPV4 */
+
+#if LWIP_IPV6
+      if(IP_IS_V6_VAL(dp->ipaddr)) {
+        delif->netif->output_ip6(delif->netif, dp->p, ip_2_ip6_c(&dp->ipaddr));
+      }
+#endif /* LWIP_IPV6 */
+
       if (dp->next != NULL) {
         if (dp->next->time > now) {
           timeout = dp->next->time - now;
@@ -162,7 +173,7 @@ delif_output_timeout(void *arg)
 }
 /*-----------------------------------------------------------------------------------*/
 static err_t
-delif_output(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
+delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
 {
   struct delif_pbuf *dp, *np;
   struct pbuf *q;
@@ -198,7 +209,7 @@ delif_output(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
   dp->p->payload = data;
   dp->p->len = p->tot_len;
   dp->p->tot_len = p->tot_len;
-  dp->ipaddr = ipaddr;
+  dp->ipaddr = *ipaddr;
   dp->time = sys_now() + DELIF_OUTPUT_DELAY;
   dp->next = NULL;
   if (output_list == NULL) {
@@ -210,6 +221,34 @@ delif_output(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
 
   return ERR_OK;
 }
+
+#if LWIP_IPV4
+static err_t
+delif_output4(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
+{
+  ip_addr_t ip;
+  if (ipaddr != NULL) {
+    ip_addr_copy_from_ip4(&ip, *ipaddr);
+  } else {
+    ip = *IP_ADDR_ANY;
+  }
+  return delif_output(netif, p, &ip);
+}
+#endif /* LWIP_IPV4 */
+
+#if LWIP_IPV6
+static err_t
+delif_output6(struct netif *netif, struct pbuf *p, const ip6_addr_t *ipaddr)
+{
+  ip_addr_t ip;
+  if (ipaddr != NULL) {
+    ip_addr_copy_from_ip6(&ip, *ipaddr);
+  } else {
+    ip = *IP6_ADDR_ANY;
+  }
+  return delif_output(netif, p, &ip);
+}
+#endif /* LWIP_IPV6 */
 /*-----------------------------------------------------------------------------------*/
 static err_t
 delif_input(struct pbuf *p, struct netif *inp)
@@ -252,7 +291,13 @@ delif_init(struct netif *netif)
   netif->state = del;
   netif->name[0] = 'd';
   netif->name[1] = 'e';
-  netif->output = delif_output;
+
+#if LWIP_IPV4
+  netif->output = delif_output4;
+#endif /* LWIP_IPV4 */
+#if LWIP_IPV6
+  netif->output_ip6 = delif_output6;
+#endif /* LWIP_IPV6 */
 
   del->netif = (struct netif*)malloc(sizeof(struct netif));
   if (!del->netif) {
@@ -308,16 +353,30 @@ delif_init_thread(struct netif *netif)
   netif->state = del;
   netif->name[0] = 'd';
   netif->name[1] = 'e';
-  netif->output = delif_output;
 
   del->netif = (struct netif*)malloc(sizeof(struct netif));
   if (!del->netif) {
     free(del);
     return ERR_MEM;
   }
-  del->netif->ip_addr = netif->ip_addr;
-  del->netif->gw = netif->gw;
-  del->netif->netmask = netif->netmask;
+
+#if LWIP_IPV4
+  netif->output = delif_output4;
+  netif_set_ipaddr(del->netif, netif_ip4_addr(netif));
+  netif_set_gw(del->netif, netif_ip4_gw(netif));
+  netif_set_netmask(del->netif, netif_ip4_netmask(netif));
+#endif /* LWIP_IPV4 */
+
+#if LWIP_IPV6
+  {
+    int i;
+    netif->output_ip6 = delif_output6;
+    for(i=0; i < LWIP_IPV6_NUM_ADDRESSES; i++) {
+      netif_ip6_addr_set(del->netif, i, netif_ip6_addr(netif, i));
+    }
+  }
+#endif /* LWIP_IPV6 */
+
   del->input = netif->input;
   del->netif->input = delif_input;
   sys_thread_new("delif_thread", delif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
@@ -326,4 +385,3 @@ delif_init_thread(struct netif *netif)
 /*-----------------------------------------------------------------------------------*/
 
 #endif /* !NO_SYS */
-#endif /* LWIP_IPV4 */
