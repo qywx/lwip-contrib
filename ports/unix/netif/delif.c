@@ -31,6 +31,7 @@
  */
 
 #include "lwip/opt.h"
+#include "lwip/pbuf.h"
 
 #if !NO_SYS
 
@@ -176,8 +177,6 @@ static err_t
 delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
 {
   struct delif_pbuf *dp, *np;
-  struct pbuf *q;
-  int i, j;
   char *data;
 
   LWIP_UNUSED_ARG(netif);
@@ -196,13 +195,7 @@ delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
   dp = (struct delif_pbuf*)malloc(sizeof(struct delif_pbuf));
   data = (char*)malloc(p->tot_len);
 
-  i = 0;
-  for(q = p; q != NULL; q = q->next) {
-    for(j = 0; j < q->len; j++) {
-      data[i] = ((char *)q->payload)[j];
-      i++;
-    }
-  }
+  pbuf_copy_partial(p, data, p->tot_len, 0);
 
   dp->p = pbuf_alloc(PBUF_LINK, 0, PBUF_ROM);
   dp->p->payload = data;

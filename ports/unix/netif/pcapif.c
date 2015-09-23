@@ -90,8 +90,7 @@ timeout(void *arg)
 {
   struct netif *netif;
   struct pcapif *pcapif;
-  struct pbuf *p, *q;
-  u8_t *bufptr;
+  struct pbuf *p;
   struct eth_hdr *ethhdr;
   
   netif = (struct netif *)arg;
@@ -106,17 +105,7 @@ timeout(void *arg)
     p = pbuf_alloc(PBUF_LINK, pcapif->len, PBUF_POOL);
     
     if (p != NULL) {
-      /* We iterate over the pbuf chain until we have read the entire
-	 packet into the pbuf. */
-      bufptr = (u_char *)pcapif->pkt;
-      for(q = p; q != NULL; q = q->next) {
-	/* Read enough bytes to fill this pbuf in the chain. The
-	   available data in the pbuf is given by the q->len
-	   variable. */
-	/* read data into(q->payload, q->len); */
-	bcopy(bufptr, q->payload, q->len);
-	bufptr += q->len;
-      }
+      pbuf_take(p, pcapif->pkt, pcapif->len);
 
 #if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
       tcpdump(p);

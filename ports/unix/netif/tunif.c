@@ -124,9 +124,7 @@ low_level_init(struct netif *netif)
 static err_t
 low_level_output(struct tunif *tunif, struct pbuf *p)
 {
-  struct pbuf *q;
   char buf[1500];
-  char *bufptr;
   int rnd_val;
 
   /* initiate transfer(); */
@@ -137,17 +135,7 @@ low_level_output(struct tunif *tunif, struct pbuf *p)
     return ERR_OK;
   }
 
-
-  bufptr = &buf[0];
-
-  for(q = p; q != NULL; q = q->next) {
-    /* Send the data from the pbuf to the interface, one pbuf at a
-       time. The size of the data in each pbuf is kept in the ->len
-       variable. */
-    /* send data from(q->payload, q->len); */
-    memcpy(bufptr, q->payload, q->len);
-    bufptr += q->len;
-  }
+  pbuf_copy_partial(p, buf, p->tot_len, 0);
 
   /* signal that packet should be sent(); */
   if (write(tunif->fd, buf, p->tot_len) == -1) {
@@ -167,10 +155,9 @@ low_level_output(struct tunif *tunif, struct pbuf *p)
 static struct pbuf *
 low_level_input(struct tunif *tunif)
 {
-  struct pbuf *p, *q;
+  struct pbuf *p;
   u16_t len;
   char buf[1500];
-  char *bufptr;
 
   /* Obtain the size of the packet and put it into the "len"
      variable. */
@@ -186,17 +173,7 @@ low_level_input(struct tunif *tunif)
   p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
 
   if (p != NULL) {
-    /* We iterate over the pbuf chain until we have read the entire
-       packet into the pbuf. */
-    bufptr = &buf[0];
-    for(q = p; q != NULL; q = q->next) {
-      /* Read enough bytes to fill this pbuf in the chain. The
-         available data in the pbuf is given by the q->len
-         variable. */
-      /* read data into(q->payload, q->len); */
-      memcpy(q->payload, bufptr, q->len);
-      bufptr += q->len;
-    }
+    pbuf_take(p, buf, len);
     /* acknowledge that packet has been read(); */
   } else {
     /* drop packet(); */

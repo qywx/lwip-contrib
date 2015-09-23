@@ -191,9 +191,9 @@ unixif_input_handler(void *data)
 {
   struct netif *netif;
   struct unixif *unixif;
-  char buf[1532], *bufptr;
-  int len, plen, rlen;
-  struct pbuf *p, *q;
+  char buf[1532];
+  int len, plen;
+  struct pbuf *p;
 
   netif = (struct netif *)data;
   unixif = (struct unixif *)netif->state;
@@ -221,15 +221,7 @@ unixif_input_handler(void *data)
     p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
 
     if (p != NULL) {
-      rlen = len;
-      bufptr = buf;
-      q = p;
-      while (rlen > 0) {
-        memcpy(q->payload, bufptr, rlen > q->len? q->len: rlen);
-        rlen -= q->len;
-        bufptr += q->len;
-        q = q->next;
-      }
+      pbuf_take(p, buf, len);
       pbuf_realloc(p, len);
       LINK_STATS_INC(link.recv);
       tcpdump(p);
