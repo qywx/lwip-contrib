@@ -44,8 +44,6 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_IPV4 /* @todo: IPv6 */
-
 #include "lwip/debug.h"
 #include "lwip/def.h"
 #include "lwip/ip.h"
@@ -174,6 +172,7 @@ low_level_init(struct netif *netif)
 
 #ifndef DEVTAP_IF
   if (preconfigured_tapif == NULL) {
+#if LWIP_IPV4
     snprintf(buf, 1024, IFCONFIG_BIN IFCONFIG_ARGS,
              ip4_addr1(&(netif->gw)),
              ip4_addr2(&(netif->gw)),
@@ -197,6 +196,10 @@ low_level_init(struct netif *netif)
     if (ret != 0) {
       printf("ifconfig returned %d\n", ret);
     }
+#else /* LWIP_IPV4 */
+    perror("todo: support IPv6 support for non-preconfigured tapif");
+    exit(1);
+#endif /* LWIP_IPV4 */
   }
 #endif /* DEVTAP_IF */
 
@@ -344,7 +347,9 @@ tapif_init(struct netif *netif)
 
   netif->name[0] = IFNAME0;
   netif->name[1] = IFNAME1;
+#if LWIP_IPV4
   netif->output = etharp_output;
+#endif /* LWIP_IPV4 */
 #if LWIP_IPV6
   netif->output_ip6 = ethip6_output;
 #endif /* LWIP_IPV6 */
@@ -414,4 +419,3 @@ tapif_thread(void *arg)
 }
 
 #endif /* NO_SYS */
-#endif /* LWIP_IPV4 */
