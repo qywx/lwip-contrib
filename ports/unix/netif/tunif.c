@@ -96,14 +96,14 @@ low_level_init(struct netif *netif)
     exit(1);
   }
   sprintf(buf, IFCONFIG_CALL,
-           ip4_addr1(&(netif->gw)),
-           ip4_addr2(&(netif->gw)),
-           ip4_addr3(&(netif->gw)),
-           ip4_addr4(&(netif->gw)),
-           ip4_addr1(&(netif->ip_addr)),
-           ip4_addr2(&(netif->ip_addr)),
-           ip4_addr3(&(netif->ip_addr)),
-           ip4_addr4(&(netif->ip_addr)));
+           ip4_addr1(netif_ip4_gw(netif)),
+           ip4_addr2(netif_ip4_gw(netif)),
+           ip4_addr3(netif_ip4_gw(netif)),
+           ip4_addr4(netif_ip4_gw(netif)),
+           ip4_addr1(netif_ip4_addr(netif)),
+           ip4_addr2(netif_ip4_addr(netif)),
+           ip4_addr3(netif_ip4_addr(netif)),
+           ip4_addr4(netif_ip4_addr(netif)));
 
   LWIP_DEBUGF(TUNIF_DEBUG, ("tunif_init: system(\"%s\");\n", buf));
   system(buf);

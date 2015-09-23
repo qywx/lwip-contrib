@@ -176,16 +176,16 @@ low_level_init(struct netif *netif)
   if (preconfigured_tapif == NULL) {
 #if LWIP_IPV4
     snprintf(buf, 1024, IFCONFIG_BIN IFCONFIG_ARGS,
-             ip4_addr1(&(netif->gw)),
-             ip4_addr2(&(netif->gw)),
-             ip4_addr3(&(netif->gw)),
-             ip4_addr4(&(netif->gw))
+             ip4_addr1(netif_ip4_gw(netif)),
+             ip4_addr2(netif_ip4_gw(netif)),
+             ip4_addr3(netif_ip4_gw(netif)),
+             ip4_addr4(netif_ip4_gw(netif))
 #ifdef NETMASK_ARGS
              ,
-             ip4_addr1(&(netif->netmask)),
-             ip4_addr2(&(netif->netmask)),
-             ip4_addr3(&(netif->netmask)),
-             ip4_addr4(&(netif->netmask))
+             ip4_addr1(netif_ip4_netmask(netif)),
+             ip4_addr2(netif_ip4_netmask(netif)),
+             ip4_addr3(netif_ip4_netmask(netif)),
+             ip4_addr4(netif_ip4_netmask(netif))
 #endif /* NETMASK_ARGS */
              );
 
