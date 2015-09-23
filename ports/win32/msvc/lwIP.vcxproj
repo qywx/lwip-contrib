@@ -289,6 +289,7 @@
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\ipv6cp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\lcp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\magic.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\mppe.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\multilink.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\ppp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppcrypt.c" />
@@ -298,6 +299,7 @@
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\upap.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\utils.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\vj.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\arc4.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\des.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\md4.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\md5.c" />
@@ -371,6 +373,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ipv6cp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\lcp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\magic.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\mppe.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ppp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ppp_impl.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppcrypt.h" />
@@ -380,6 +383,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppos.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\upap.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\vj.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\arc4.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\des.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\md4.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\md5.h" />

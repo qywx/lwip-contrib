@@ -255,6 +255,9 @@
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\magic.c">
       <Filter>src\netif\ppp</Filter>
     </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\mppe.c">
+      <Filter>src\netif\ppp</Filter>
+    </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\multilink.c">
       <Filter>src\netif\ppp</Filter>
     </ClCompile>
@@ -281,6 +284,9 @@
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\vj.c">
       <Filter>src\netif\ppp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\arc4.c">
+      <Filter>src\netif\ppp\polarssl</Filter>
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\des.c">
       <Filter>src\netif\ppp\polarssl</Filter>
@@ -497,6 +503,9 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\magic.h">
       <Filter>src\include\netif\ppp</Filter>
     </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\mppe.h">
+      <Filter>src\include\netif\ppp</Filter>
+    </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ppp.h">
       <Filter>src\include\netif\ppp</Filter>
     </ClInclude>
@@ -523,6 +532,9 @@
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\vj.h">
       <Filter>src\include\netif\ppp</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\arc4.h">
+      <Filter>src\include\netif\ppp\polarssl</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\des.h">
       <Filter>src\include\netif\ppp\polarssl</Filter>
