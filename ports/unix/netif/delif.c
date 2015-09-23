@@ -183,7 +183,7 @@ delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
   LWIP_UNUSED_ARG(netif);
 
   LWIP_DEBUGF(DELIF_DEBUG, ("delif_output\n"));
-    
+
 #ifdef DELIF_OUTPUT_DROPRATE
   if (((double)rand()/(double)RAND_MAX) < DELIF_OUTPUT_DROPRATE) {
     LWIP_DEBUGF(DELIF_DEBUG, ("delif_output: Packet dropped\n"));
@@ -191,12 +191,11 @@ delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
   }
 #endif /* DELIF_OUTPUT_DROPRATE */
 
-  
   LWIP_DEBUGF(DELIF_DEBUG, ("delif_output\n"));
 
   dp = (struct delif_pbuf*)malloc(sizeof(struct delif_pbuf));
   data = (char*)malloc(p->tot_len);
-    
+
   i = 0;
   for(q = p; q != NULL; q = q->next) {
     for(j = 0; j < q->len; j++) {
@@ -270,12 +269,14 @@ delif_input(struct pbuf *p, struct netif *inp)
   dp->p = p;
   dp->time = sys_now() + DELIF_INPUT_DELAY;
   dp->next = NULL;
+
   if (input_list == NULL) {
     input_list = dp;
   } else {
     for(np = input_list; np->next != NULL; np = np->next);
     np->next = dp;
   }
+
   return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -293,7 +294,7 @@ delif_init(struct netif *netif)
   netif->name[1] = 'e';
 
 #if LWIP_IPV4
-  netif->output = delif_output4;
+  netif->output     = delif_output4;
 #endif /* LWIP_IPV4 */
 #if LWIP_IPV6
   netif->output_ip6 = delif_output6;
@@ -304,14 +305,17 @@ delif_init(struct netif *netif)
     free(del);
     return ERR_MEM;
   }
+
 #ifdef LWIP_UNIX_LINUX
   tapif_init(del->netif);
 #else /* LWIP_UNIX_LINUX */
   tunif_init(del->netif);
 #endif /* LWIP_UNIX_LINUX */
-  del->input = netif->input;
+
+  del->input        = netif->input;
   del->netif->input = delif_input;
-  sys_timeout(DELIF_TIMEOUT, delif_input_timeout, netif);
+
+  sys_timeout(DELIF_TIMEOUT, delif_input_timeout,  netif);
   sys_timeout(DELIF_TIMEOUT, delif_output_timeout, netif);
   return ERR_OK;
 }
@@ -330,7 +334,7 @@ delif_thread(void *arg)
   tunif_init(del->netif);
 #endif /* LWIP_UNIX_LINUX */
 
-  sys_timeout(DELIF_TIMEOUT, delif_input_timeout, netif);
+  sys_timeout(DELIF_TIMEOUT, delif_input_timeout,  netif);
   sys_timeout(DELIF_TIMEOUT, delif_output_timeout, netif);
 
   if(sys_sem_new(&sem, 0) != ERR_OK) {
@@ -350,6 +354,7 @@ delif_init_thread(struct netif *netif)
   if (!del) {
     return ERR_MEM;
   }
+
   netif->state = del;
   netif->name[0] = 'd';
   netif->name[1] = 'e';
@@ -379,6 +384,7 @@ delif_init_thread(struct netif *netif)
 
   del->input = netif->input;
   del->netif->input = delif_input;
+
   sys_thread_new("delif_thread", delif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   return ERR_OK;
 }
