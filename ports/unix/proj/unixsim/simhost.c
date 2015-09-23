@@ -446,9 +446,6 @@ init_netifs(void)
 #if LWIP_DHCP
   dhcp_start(&netif);
 #endif /* LWIP_DHCP */
-#if LWIP_IPV6
-  netif_create_ip6_linklocal_address(&netif, 1);
-#endif /* LWIP_IPV6 */
 
 #if 0
   /* Only used for testing purposes: */
