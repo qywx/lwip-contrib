@@ -114,12 +114,14 @@ static void
 low_level_init(struct netif *netif)
 {
   struct tapif *tapif;
-  int ret;
 #ifndef DEVTAP_IF
+#if LWIP_IPV4
+  int ret;
   char buf[1024];
+#endif /* LWIP_IPV4 */
   char *preconfigured_tapif = getenv("PRECONFIGURED_TAPIF");
 #endif /* DEVTAP_IF */
-
+  
   tapif = (struct tapif *)netif->state;
 
   /* Obtain MAC address from network interface. */

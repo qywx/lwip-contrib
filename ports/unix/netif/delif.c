@@ -227,7 +227,7 @@ delif_output4(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
 {
   ip_addr_t ip;
   if (ipaddr != NULL) {
-    ip_addr_copy_from_ip4(&ip, *ipaddr);
+    ip_addr_copy_from_ip4(ip, *ipaddr);
   } else {
     ip = *IP_ADDR_ANY;
   }
@@ -241,7 +241,7 @@ delif_output6(struct netif *netif, struct pbuf *p, const ip6_addr_t *ipaddr)
 {
   ip_addr_t ip;
   if (ipaddr != NULL) {
-    ip_addr_copy_from_ip6(&ip, *ipaddr);
+    ip_addr_copy_from_ip6(ip, *ipaddr);
   } else {
     ip = *IP6_ADDR_ANY;
   }

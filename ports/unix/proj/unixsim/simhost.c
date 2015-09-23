@@ -504,13 +504,15 @@ int
 main(int argc, char **argv)
 {
   int ch;
-  char ip_str[16] = {0}, nm_str[16] = {0}, gw_str[16] = {0};
+  char ip_str[16] = {0};
 
   /* startup defaults (may be overridden by one or more opts) */
 #if LWIP_IPV4
-  IP4_ADDR(&gw, 192,168,0,1);
-  IP4_ADDR(&netmask, 255,255,255,0);
-  IP4_ADDR(&ipaddr, 192,168,0,2);
+  char nm_str[16] = {0}, gw_str[16] = {0};
+
+  IP_ADDR4(&gw,      192,168,  0,1);
+  IP_ADDR4(&netmask, 255,255,255,0);
+  IP_ADDR4(&ipaddr,  192,168,  0,2);
 #endif /* LWIP_IPV4 */
   
   ping_flag = 0;
@@ -540,7 +542,7 @@ main(int argc, char **argv)
       case 'p':
         ping_flag = !0;
         ipaddr_aton(optarg, &ping_addr);
-        strncpy(ip_str,ip4addr_ntoa(&ping_addr),sizeof(ip_str));
+        strncpy(ip_str,ipaddr_ntoa(&ping_addr),sizeof(ip_str));
         printf("Using %s to ping\n", ip_str);
         break;
       default:
@@ -551,10 +553,12 @@ main(int argc, char **argv)
   argc -= optind;
   argv += optind;
 
-  strncpy(ip_str,ip4addr_ntoa(&ipaddr),sizeof(ip_str));
-  strncpy(nm_str,ip4addr_ntoa(&netmask),sizeof(nm_str));
-  strncpy(gw_str,ip4addr_ntoa(&gw),sizeof(gw_str));
+#if LWIP_IPV4
+  strncpy(ip_str,ipaddr_ntoa(&ipaddr),sizeof(ip_str));
+  strncpy(nm_str,ipaddr_ntoa(&netmask),sizeof(nm_str));
+  strncpy(gw_str,ipaddr_ntoa(&gw),sizeof(gw_str));
   printf("Host at %s mask %s gateway %s\n", ip_str, nm_str, gw_str);
+#endif /* LWIP_IPV4 */
 
 #ifdef PERF
   perf_init("/tmp/simhost.perf");
