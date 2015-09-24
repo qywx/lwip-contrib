@@ -228,7 +228,7 @@ ping_send(int s, const ip_addr_t *addr)
     struct sockaddr_in *to4 = (struct sockaddr_in*)&to;
     to4->sin_len    = sizeof(to);
     to4->sin_family = AF_INET;
-    inet_addr_from_ipaddr(&to4->sin_addr, ip_2_ip4_c(addr));
+    inet_addr_from_ipaddr(&to4->sin_addr, ip_2_ip4(addr));
   }
 #endif /* LWIP_IPV4 */
 
@@ -237,7 +237,7 @@ ping_send(int s, const ip_addr_t *addr)
     struct sockaddr_in6 *to6 = (struct sockaddr_in6*)&to;
     to6->sin6_len    = sizeof(to);
     to6->sin6_family = AF_INET6;
-    inet6_addr_from_ip6addr(&to6->sin6_addr, ip_2_ip6_c(addr));
+    inet6_addr_from_ip6addr(&to6->sin6_addr, ip_2_ip6(addr));
   }
 #endif /* LWIP_IPV6 */
 
@@ -434,7 +434,7 @@ init_netifs(void)
   IP_ADDR4(&ipaddr,  0,0,0,0);
   IP_ADDR4(&netmask, 0,0,0,0);
 #endif /* LWIP_DHCP */
-  netif_add(&netif, ip_2_ip4_c(&ipaddr), ip_2_ip4_c(&netmask), ip_2_ip4_c(&gw), NULL, tapif_init, tcpip_input);
+  netif_add(&netif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw), NULL, tapif_init, tcpip_input);
 #else /* LWIP_IPV4 */
   netif_add(&netif, NULL, tapif_init, tcpip_input);
 #endif /* LWIP_IPV4 */

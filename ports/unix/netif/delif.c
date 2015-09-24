@@ -141,13 +141,13 @@ delif_output_timeout(void *arg)
 
 #if LWIP_IPV4
       if(!IP_IS_V6_VAL(dp->ipaddr)) {
-        delif->netif->output(delif->netif, dp->p, ip_2_ip4_c(&dp->ipaddr));
+        delif->netif->output(delif->netif, dp->p, ip_2_ip4(&dp->ipaddr));
       }
 #endif /* LWIP_IPV4 */
 
 #if LWIP_IPV6
       if(IP_IS_V6_VAL(dp->ipaddr)) {
-        delif->netif->output_ip6(delif->netif, dp->p, ip_2_ip6_c(&dp->ipaddr));
+        delif->netif->output_ip6(delif->netif, dp->p, ip_2_ip6(&dp->ipaddr));
       }
 #endif /* LWIP_IPV6 */
 
