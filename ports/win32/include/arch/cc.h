@@ -101,4 +101,6 @@ u32_t dns_lookup_external_hosts_file(const char *name);
 
 #define LWIP_RAND() ((u32_t)rand())
 
+#define PPP_INCLUDE_SETTINGS_HEADER
+
 #endif /* LWIP_ARCH_CC_H */
