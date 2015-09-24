@@ -316,12 +316,12 @@ ppp_link_status_cb(ppp_pcb *pcb, int err_code, void *ctx)
 #endif /* LWIP_DNS */
         fprintf(stderr, "ppp_link_status_cb: PPPERR_NONE\n\r");
 #if LWIP_IPV4
-        fprintf(stderr, "   our_ip4addr = %s\n\r", ip4addr_ntoa(&pppif->ip_addr));
-        fprintf(stderr, "   his_ipaddr  = %s\n\r", ip4addr_ntoa(&pppif->gw));
-        fprintf(stderr, "   netmask     = %s\n\r", ip4addr_ntoa(&pppif->netmask));
+        fprintf(stderr, "   our_ip4addr = %s\n\r", ip4addr_ntoa(netif_ip4_addr(pppif)));
+        fprintf(stderr, "   his_ipaddr  = %s\n\r", ip4addr_ntoa(netif_ip4_gw(pppif)));
+        fprintf(stderr, "   netmask     = %s\n\r", ip4addr_ntoa(netif_ip4_netmask(pppif)));
 #endif /* LWIP_IPV4 */
 #if LWIP_IPV6
-        fprintf(stderr, "   our_ip6addr = %s\n\r", ip6addr_ntoa(&pppif->ip6_addr[0]));
+        fprintf(stderr, "   our_ip6addr = %s\n\r", ip6addr_ntoa(netif_ip6_addr(pppif, 0)));
 #endif /* LWIP_IPV6 */
 
 #if LWIP_DNS
