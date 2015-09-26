@@ -554,10 +554,6 @@ sys_arch_unprotect(sys_prot_t pval)
 #define HZ 100
 #endif
 
-#ifndef MAX_JIFFY_OFFSET
-#define MAX_JIFFY_OFFSET (~0U / HZ)
-#endif
-
 u32_t
 sys_jiffies(void)
 {
@@ -566,8 +562,5 @@ sys_jiffies(void)
   gettimeofday(&now, NULL);
   timersub(&now, &starttime, &res);
 
-  if (res.tv_sec >= MAX_JIFFY_OFFSET) {
-    return MAX_JIFFY_OFFSET*HZ;
-  }
-  return HZ * res.tv_sec + (u32_t)res.tv_usec / (1000000L / HZ);
+  return res.tv_sec * HZ + res.tv_usec / (1000000L / HZ);
 }
