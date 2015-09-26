@@ -57,8 +57,6 @@
 #include "lwip/opt.h"
 #include "lwip/stats.h"
 
-#define UMAX(a, b)      ((a) > (b) ? (a) : (b))
-
 static struct timeval starttime;
 
 #if !NO_SYS
