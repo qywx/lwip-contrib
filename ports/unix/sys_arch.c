@@ -550,28 +550,24 @@ sys_arch_unprotect(sys_prot_t pval)
 
 /*-----------------------------------------------------------------------------------*/
 
-#ifndef MAX_JIFFY_OFFSET
-#define MAX_JIFFY_OFFSET ((~0U >> 1)-1)
-#endif
-
 #ifndef HZ
 #define HZ 100
+#endif
+
+#ifndef MAX_JIFFY_OFFSET
+#define MAX_JIFFY_OFFSET (~0U / HZ)
 #endif
 
 u32_t
 sys_jiffies(void)
 {
-    struct timeval tv;
-    unsigned long sec;
-    long usec;
+  struct timeval now, res;
 
-    gettimeofday(&tv,NULL);
-    sec = tv.tv_sec - starttime.tv_sec;
-    usec = tv.tv_usec;
+  gettimeofday(&now, NULL);
+  timersub(&now, &starttime, &res);
 
-    if (sec >= (MAX_JIFFY_OFFSET / HZ))
-      return MAX_JIFFY_OFFSET;
-    usec += 1000000L / HZ - 1;
-    usec /= 1000000L / HZ;
-    return HZ * sec + usec;
+  if (res.tv_sec >= MAX_JIFFY_OFFSET) {
+    return MAX_JIFFY_OFFSET*HZ;
+  }
+  return HZ * res.tv_sec + (u32_t)res.tv_usec / (1000000L / HZ);
 }
