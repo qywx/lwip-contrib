@@ -477,15 +477,12 @@ sys_sem_free(struct sys_sem **sem)
 u32_t
 sys_now(void)
 {
-  struct timeval tv;
-  u32_t sec, usec, msec;
-  gettimeofday(&tv, NULL);
+  struct timeval now, res;
 
-  sec = (u32_t)(tv.tv_sec - starttime.tv_sec);
-  usec = (u32_t)(tv.tv_usec - starttime.tv_usec);
-  msec = sec * 1000 + usec / 1000;
+  gettimeofday(&now, NULL);
+  timersub(&now, &starttime, &res);
 
-  return msec;
+  return res.tv_sec * 1000 + res.tv_usec / 1000;
 }
 /*-----------------------------------------------------------------------------------*/
 void
