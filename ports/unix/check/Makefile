@@ -31,6 +31,8 @@
  
 CODEDIR=../../../../lwip
 LWIPDIR=$(CODEDIR)/src
+CONTRIBDIR=../../..
+LWIPARCH=$(CONTRIBDIR)/ports/unix
 
 LDFLAGS:=$(LDFLAGS) -lcheck -lm -lpthread -lrt -lsubunit
 CFLAGS:=$(CFLAGS) -DLWIP_UNIX_EMPTY_ASSERT -I/usr/include/check -I$(LWIPDIR)/../test/unit \
@@ -46,7 +48,7 @@ COREFILES=$(LWIPDIR)/core/mem.c $(LWIPDIR)/core/memp.c $(LWIPDIR)/core/netif.c \
 CORE4FILES=$(LWIPDIR)/core/ipv4/icmp.c $(LWIPDIR)/core/ipv4/ip4.c \
 	$(LWIPDIR)/core/ipv4/ip4_addr.c $(LWIPDIR)/core/ipv4/ip_frag.c 
 
-ARCHFILES=sys_arch.c
+ARCHFILES=$(wildcard $(LWIPARCH)/*.c)
 
 # LWIPFILES: All the above.
 LWIPFILES=$(COREFILES) $(CORE4FILES) $(ARCHFILES)
