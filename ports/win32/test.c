@@ -472,7 +472,7 @@ msvc_netif_init(void)
 
 #if LWIP_DNS_APP && LWIP_DNS
 static void
-dns_found(const char *name, ip_addr_t *addr, void *arg)
+dns_found(const char *name, const ip_addr_t *addr, void *arg)
 {
   LWIP_UNUSED_ARG(arg);
   printf("%s: %s\n", name, addr ? ipaddr_ntoa(addr) : "<not found>");
