@@ -342,7 +342,7 @@ static err_t  smtp_tcp_poll(void *arg, struct tcp_pcb *pcb);
 static err_t  smtp_tcp_sent(void *arg, struct tcp_pcb *pcb, u16_t len);
 static err_t  smtp_tcp_connected(void *arg, struct tcp_pcb *pcb, err_t err);
 #if LWIP_DNS
-static void   smtp_dns_found(const char* hostname, ip_addr_t *ipaddr, void *arg);
+static void   smtp_dns_found(const char* hostname, const ip_addr_t *ipaddr, void *arg);
 #endif /* LWIP_DNS */
 static size_t smtp_base64_encode(char* target, size_t target_len, const char* source, size_t source_len);
 static enum   smtp_session_state smtp_prepare_mail(struct smtp_session *s, u16_t *tx_buf_len);
@@ -835,7 +835,7 @@ smtp_tcp_connected(void *arg, struct tcp_pcb *pcb, err_t err)
  * If ipaddr is non-NULL, resolving succeeded, otherwise it failed.
  */
 static void
-smtp_dns_found(const char* hostname, ip_addr_t *ipaddr, void *arg)
+smtp_dns_found(const char* hostname, const ip_addr_t *ipaddr, void *arg)
 {
   struct tcp_pcb *pcb = (struct tcp_pcb *)arg;
   err_t err;
