@@ -399,6 +399,21 @@ ppp_output_cb(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
 }
 #endif
 
+#if LWIP_NETIF_STATUS_CALLBACK
+static void
+netif_status_callback(struct netif *nif)
+{
+#if LWIP_IPV4
+  printf("IPV4: Host at %s ", ip4addr_ntoa(netif_ip4_addr(nif)));
+  printf("mask %s ", ip4addr_ntoa(netif_ip4_netmask(nif)));
+  printf("gateway %s\n", ip4addr_ntoa(netif_ip4_gw(nif)));
+#endif /* LWIP_IPV4 */
+#if LWIP_IPV6
+  printf("IPV6: Host at %s\n", ip6addr_ntoa(netif_ip6_addr(nif, 0)));
+#endif /* LWIP_IPV6 */
+}
+#endif /* LWIP_NETIF_STATUS_CALLBACK */
+
 static void
 init_netifs(void)
 {
@@ -443,8 +458,22 @@ init_netifs(void)
 #endif
   netif_set_default(&netif);
   netif_set_up(&netif);
+
+#if LWIP_NETIF_STATUS_CALLBACK
+  netif_set_status_callback(&netif, netif_status_callback);
+#endif /* LWIP_NETIF_STATUS_CALLBACK */
+
 #if LWIP_DHCP
   dhcp_start(&netif);
+#else /* LWIP_DHCP */
+#if LWIP_IPV4
+  printf("IPV4: Host at %s ", ip4addr_ntoa(netif_ip4_addr(&netif)));
+  printf("mask %s ", ip4addr_ntoa(netif_ip4_netmask(&netif)));
+  printf("gateway %s\n", ip4addr_ntoa(netif_ip4_gw(&netif)));
+#endif /* LWIP_IPV4 */
+#if LWIP_IPV6
+  printf("IPV6: Host at %s\n", ip6addr_ntoa(netif_ip6_addr(&netif, 0)));
+#endif /* LWIP_IPV6 */
 #endif /* LWIP_DHCP */
 
 #if 0
@@ -505,8 +534,6 @@ main(int argc, char **argv)
 
   /* startup defaults (may be overridden by one or more opts) */
 #if LWIP_IPV4
-  char nm_str[16] = {0}, gw_str[16] = {0};
-
   IP_ADDR4(&gw,      192,168,  0,1);
   IP_ADDR4(&netmask, 255,255,255,0);
   IP_ADDR4(&ipaddr,  192,168,  0,2);
@@ -549,14 +576,7 @@ main(int argc, char **argv)
   }
   argc -= optind;
   argv += optind;
-
-#if LWIP_IPV4
-  strncpy(ip_str,ipaddr_ntoa(&ipaddr),sizeof(ip_str));
-  strncpy(nm_str,ipaddr_ntoa(&netmask),sizeof(nm_str));
-  strncpy(gw_str,ipaddr_ntoa(&gw),sizeof(gw_str));
-  printf("Host at %s mask %s gateway %s\n", ip_str, nm_str, gw_str);
-#endif /* LWIP_IPV4 */
-
+  
 #ifdef PERF
   perf_init("/tmp/simhost.perf");
 #endif /* PERF */
