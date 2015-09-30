@@ -403,6 +403,7 @@ ppp_output_cb(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
 static void
 netif_status_callback(struct netif *nif)
 {
+#if LWIP_DHCP
 #if LWIP_IPV4
   printf("IPV4: Host at %s ", ip4addr_ntoa(netif_ip4_addr(nif)));
   printf("mask %s ", ip4addr_ntoa(netif_ip4_netmask(nif)));
@@ -411,6 +412,9 @@ netif_status_callback(struct netif *nif)
 #if LWIP_IPV6
   printf("IPV6: Host at %s\n", ip6addr_ntoa(netif_ip6_addr(nif, 0)));
 #endif /* LWIP_IPV6 */
+#else /* LWIP_DHCP */
+  LWIP_UNUSED_ARG(nif);
+#endif /* LWIP_DHCP */
 }
 #endif /* LWIP_NETIF_STATUS_CALLBACK */
 
