@@ -45,7 +45,7 @@ CFLAGS=-g -Wall -DLWIP_UNIX_$(UNIXARCH) -DLWIP_DEBUG -pedantic -Werror \
 # -Wpacked
 # -ansi
 # -std=c89
-LDFLAGS=-pthread -lutil
+LDFLAGS=-pthread -lutil -lrt
 CONTRIBDIR=../../../..
 LWIPARCH=$(CONTRIBDIR)/ports/unix
 ARFLAGS=rs
