@@ -179,9 +179,8 @@ static struct mib_external_node sensorentry = {
 };
 
 /* sensortable .1.3.6.1.4.1.26381.1.1 */
-static const s32_t sensortable_ids[1] = { 1 };
-static const struct mib_node* const sensortable_nodes[1] = {
-  &sensorentry.node
+static const struct mib_array_node_entry sensortable_nodes[] = {
+  {1, &sensorentry.node}
 };
 static const struct mib_array_node sensortable = {
   {
@@ -190,16 +189,14 @@ static const struct mib_array_node sensortable = {
     &noleafs_set_test,
     &noleafs_set_value,
     MIB_NODE_AR,
-    1
+    LWIP_ARRAYSIZE(sensortable_nodes)
   },
-  sensortable_ids,
   sensortable_nodes
 };
 
 /* example .1.3.6.1.4.1.26381.1 */
-static const s32_t example_ids[1] = { 1 };
-static const struct mib_node* const example_nodes[1] = {
-  &sensortable.node
+static const struct mib_array_node_entry example_nodes[] = {
+  {1, &sensortable.node}
 };
 static const struct mib_array_node example = {
   {
@@ -208,15 +205,13 @@ static const struct mib_array_node example = {
     &noleafs_set_test,
     &noleafs_set_value,
     MIB_NODE_AR,
-    1
+    LWIP_ARRAYSIZE(example_nodes)
   },
-  example_ids,
   example_nodes
 };
 
 /* lwip .1.3.6.1.4.1.26381 */
-static const s32_t lwip_ids[1] = { 1 };
-static const struct mib_node* const lwip_nodes[1] = { &example.node };
+static const struct mib_array_node_entry lwip_nodes[] = { {1, &example.node} };
 static const struct mib_array_node lwip = {
   {
     &noleafs_get_object_def,
@@ -224,15 +219,13 @@ static const struct mib_array_node lwip = {
     &noleafs_set_test,
     &noleafs_set_value,
     MIB_NODE_AR,
-    1
+    LWIP_ARRAYSIZE(lwip_nodes)
   },
-  lwip_ids,
   lwip_nodes
 };
 
 /* enterprises .1.3.6.1.4.1 */
-static const s32_t enterprises_ids[1] = { 26381 };
-static const struct mib_node* const enterprises_nodes[1] = { &lwip.node };
+static const struct mib_array_node_entry enterprises_nodes[] = { {26381, &lwip.node} };
 static const struct mib_array_node enterprises = {
   {
     &noleafs_get_object_def,
@@ -240,15 +233,13 @@ static const struct mib_array_node enterprises = {
     &noleafs_set_test,
     &noleafs_set_value,
     MIB_NODE_AR,
-    1
+    LWIP_ARRAYSIZE(enterprises_nodes)
   },
-  enterprises_ids,
   enterprises_nodes
 };
 
 /* private .1.3.6.1.4 */
-static const s32_t private_ids[1] = { 1 };
-static const struct mib_node* const private_nodes[1] = { &enterprises.node };
+static const struct mib_array_node_entry private_nodes[] = { {1, &enterprises.node} };
 const struct mib_array_node mib_private = {
   {
     &noleafs_get_object_def,
@@ -256,9 +247,8 @@ const struct mib_array_node mib_private = {
     &noleafs_set_test,
     &noleafs_set_value,
     MIB_NODE_AR,
-    1
+    LWIP_ARRAYSIZE(private_nodes)
   },
-  private_ids,
   private_nodes
 };
 
