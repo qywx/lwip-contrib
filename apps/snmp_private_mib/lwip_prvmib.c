@@ -134,7 +134,7 @@ static void sensorentry_get_object_def_q(void* addr_inf, u8_t rid, u8_t ident_le
 static void sensorentry_get_object_def_a(u8_t rid, u8_t ident_len, s32_t *ident, struct obj_def *od);
 static void sensorentry_get_object_def_pc(u8_t rid, u8_t ident_len, s32_t *ident);
 static void sensorentry_get_value_q(u8_t rid, struct obj_def *od);
-static void sensorentry_get_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value);
+static u16_t sensorentry_get_value_a(u8_t rid, struct obj_def *od, void *value);
 static void sensorentry_get_value_pc(u8_t rid, struct obj_def *od);
 static void sensorentry_set_test_q(u8_t rid, struct obj_def *od);
 static u8_t sensorentry_set_test_a(u8_t rid, struct obj_def *od, u16_t len, void *value);
@@ -472,7 +472,6 @@ sensorentry_get_object_def_a(u8_t rid, u8_t ident_len, s32_t *ident, struct obj_
     od->instance = MIB_OBJECT_TAB;
     od->access = MIB_OBJECT_READ_WRITE;
     od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
-    od->v_len = sizeof(s32_t);
   }
   else
   {
@@ -499,8 +498,8 @@ sensorentry_get_value_q(u8_t rid, struct obj_def *od)
   snmp_msg_event(rid);
 }
 
-static void
-sensorentry_get_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
+static u16_t
+sensorentry_get_value_a(u8_t rid, struct obj_def *od, void *value)
 {
   s32_t i;
   s32_t *temperature = (s32_t *)value;
@@ -510,7 +509,6 @@ sensorentry_get_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
 #endif /* SENSORS_USE_FILES */
 
   LWIP_UNUSED_ARG(rid);
-  LWIP_UNUSED_ARG(len);
 
   i = od->id_inst_ptr[1];
 #if SENSORS_USE_FILES
@@ -528,6 +526,7 @@ sensorentry_get_value_a(u8_t rid, struct obj_def *od, u16_t len, void *value)
     *temperature = sensor_values[i];
   }
 #endif /* SENSORS_USE_FILES */
+  return sizeof(s32_t);
 }
 
 static void
