@@ -11,17 +11,21 @@
 
 #if SNMP_PRIVATE_MIB
 #include "lwip/snmp_structs.h"
-extern const struct mib_array_node mib_private;
 
-/** @todo remove this?? */
-struct private_msg
-{
-  u8_t dummy;
-};
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* export MIB */
+extern const struct mib_array_node mib_private;
 
 void lwip_privmib_init(void);
 
 #define SNMP_PRIVATE_MIB_INIT() lwip_privmib_init()
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SNMP_PRIVATE_MIB */
 
