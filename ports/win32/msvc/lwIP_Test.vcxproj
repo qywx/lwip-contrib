@@ -146,7 +146,6 @@
     <ClCompile Include="..\..\..\apps\rtp\rtp.c" />
     <ClCompile Include="..\..\..\apps\shell\shell.c" />
     <ClCompile Include="..\..\..\apps\smtp\smtp.c" />
-    <ClCompile Include="..\..\..\apps\sntp\sntp.c" />
     <ClCompile Include="..\..\..\apps\socket_examples\socket_examples.c" />
     <ClCompile Include="..\..\..\apps\tcpecho\tcpecho.c" />
     <ClCompile Include="..\..\..\apps\udpecho\udpecho.c" />
@@ -165,7 +164,6 @@
     <ClInclude Include="..\..\..\apps\rtp\rtp.h" />
     <ClInclude Include="..\..\..\apps\shell\shell.h" />
     <ClInclude Include="..\..\..\apps\smtp\smtp.h" />
-    <ClInclude Include="..\..\..\apps\sntp\sntp.h" />
     <ClInclude Include="..\..\..\apps\socket_examples\socket_examples.h" />
     <ClInclude Include="..\..\..\apps\tcpecho\tcpecho.h" />
     <ClInclude Include="..\..\..\apps\udpecho\udpecho.h" />

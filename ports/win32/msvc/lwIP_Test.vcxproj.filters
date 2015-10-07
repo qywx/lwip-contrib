@@ -52,9 +52,6 @@
     <ClCompile Include="..\..\..\apps\smtp\smtp.c">
       <Filter>Source Files\apps</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\apps\sntp\sntp.c">
-      <Filter>Source Files\apps</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\apps\socket_examples\socket_examples.c">
       <Filter>Source Files\apps</Filter>
     </ClCompile>
@@ -103,9 +100,6 @@
       <Filter>Source Files\apps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\apps\smtp\smtp.h">
-      <Filter>Source Files\apps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\apps\sntp\sntp.h">
       <Filter>Source Files\apps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\apps\socket_examples\socket_examples.h">

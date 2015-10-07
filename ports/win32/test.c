@@ -59,13 +59,13 @@
 #include "netif/etharp.h"
 
 /* applications includes */
+#include "lwip/apps/sntp.h"
 #include "apps/httpserver_raw/httpd.h"
 #include "apps/httpserver/httpserver-netconn.h"
 #include "apps/netio/netio.h"
 #include "apps/netbios/netbios.h"
 #include "apps/ping/ping.h"
 #include "apps/rtp/rtp.h"
-#include "apps/sntp/sntp.h"
 #include "apps/chargen/chargen.h"
 #include "apps/shell/shell.h"
 #include "apps/tcpecho/tcpecho.h"

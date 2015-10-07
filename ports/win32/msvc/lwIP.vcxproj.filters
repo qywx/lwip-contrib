@@ -10,6 +10,12 @@
     <Filter Include="src\api">
       <UniqueIdentifier>{5752fd8f-90c3-4381-8b6a-86c09a2f9859}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\apps">
+      <UniqueIdentifier>{48a805a9-e5d2-4eed-b29c-02b57140a03d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\apps\sntp">
+      <UniqueIdentifier>{9b7b3b39-f3b0-4915-81d9-d66c3443c348}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\core">
       <UniqueIdentifier>{75f75ac5-73a4-4458-bc23-eaed529c37e1}</UniqueIdentifier>
     </Filter>
@@ -27,6 +33,9 @@
     </Filter>
     <Filter Include="src\include\lwip">
       <UniqueIdentifier>{6b889738-b59a-450a-b4dd-0d1986bffca1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\include\lwip\apps">
+      <UniqueIdentifier>{c64c0664-acd9-4f2f-8bd7-78250f4b7b4b}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\include\netif">
       <UniqueIdentifier>{dc783ea8-63ed-4de6-b576-a87c318a7ad1}</UniqueIdentifier>
@@ -89,6 +98,9 @@
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\api\tcpip.c">
       <Filter>src\api</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\sntp\sntp.c">
+      <Filter>src\apps\sntp</Filter>
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\core\def.c">
       <Filter>src\core</Filter>
@@ -308,6 +320,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\sntp.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\api.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
