@@ -111,6 +111,7 @@ APPFILES=$(CONTRIBDIR)/apps/httpserver_raw/fs.c $(CONTRIBDIR)/apps/httpserver_ra
 	$(CONTRIBDIR)/apps/httpserver/httpserver-netconn.c \
 	$(CONTRIBDIR)/apps/udpecho/udpecho.c $(CONTRIBDIR)/apps/tcpecho/tcpecho.c \
 	$(CONTRIBDIR)/apps/shell/shell.c $(CONTRIBDIR)/apps/snmp_private_mib/lwip_prvmib.c \
+	$(LWIPDIR)/apps/lwiperf/lwiperf.c \
 	$(CONTRIBDIR)/apps/tcpecho_raw/echo.c $(LWIPDIR)/apps/sntp/sntp.c \
 	$(CONTRIBDIR)/apps/netio/netio.c $(CONTRIBDIR)/apps/ping/ping.c \
 	$(CONTRIBDIR)/apps/shell/shell.c $(CONTRIBDIR)/apps/smtp/smtp.c \
