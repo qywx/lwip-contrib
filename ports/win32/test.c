@@ -59,12 +59,12 @@
 #include "netif/etharp.h"
 
 /* applications includes */
-#include "lwip/apps/sntp.h"
 #include "lwip/apps/lwiperf.h"
+#include "lwip/apps/netbiosns.h"
+#include "lwip/apps/sntp.h"
 #include "apps/httpserver_raw/httpd.h"
 #include "apps/httpserver/httpserver-netconn.h"
 #include "apps/netio/netio.h"
-#include "apps/netbios/netbios.h"
 #include "apps/ping/ping.h"
 #include "apps/rtp/rtp.h"
 #include "apps/chargen/chargen.h"
@@ -525,7 +525,14 @@ apps_init(void)
 #endif /* LWIP_PING_APP && LWIP_RAW && LWIP_ICMP */
 
 #if LWIP_NETBIOS_APP && LWIP_UDP
-  netbios_init();
+  netbiosns_init();
+#ifndef NETBIOS_LWIP_NAME
+#if LWIP_NETIF_HOSTNAME
+  netbiosns_set_name(netif_default->hostname);
+#else
+  netbiosns_set_name("NETBIOSLWIPDEV");
+#endif
+#endif
 #endif /* LWIP_NETBIOS_APP && LWIP_UDP */
 
 #if LWIP_HTTPD_APP && LWIP_TCP

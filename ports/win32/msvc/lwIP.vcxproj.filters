@@ -13,6 +13,12 @@
     <Filter Include="src\apps">
       <UniqueIdentifier>{48a805a9-e5d2-4eed-b29c-02b57140a03d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\apps\lwiperf">
+      <UniqueIdentifier>{8a8dba58-934c-4292-aa8d-d20e2b801bd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\apps\netbiosns">
+      <UniqueIdentifier>{20594706-d6e1-4503-bc38-f297892d752a}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\apps\sntp">
       <UniqueIdentifier>{9b7b3b39-f3b0-4915-81d9-d66c3443c348}</UniqueIdentifier>
     </Filter>
@@ -64,9 +70,6 @@
     <Filter Include="arch">
       <UniqueIdentifier>{2e87d0f7-38a3-45f8-870d-f8622c20e9d9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\apps\lwiperf">
-      <UniqueIdentifier>{8a8dba58-934c-4292-aa8d-d20e2b801bd4}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(LWIP_DIR)\CHANGELOG" />
@@ -104,6 +107,9 @@
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\apps\lwiperf\lwiperf.c">
       <Filter>src\apps\lwiperf</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\netbiosns\netbiosns.c">
+      <Filter>src\apps\netbiosns</Filter>
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\apps\sntp\sntp.c">
       <Filter>src\apps\sntp</Filter>
@@ -327,6 +333,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\lwiperf.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\netbiosns.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\netbiosns_opts.h">
       <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\sntp.h">

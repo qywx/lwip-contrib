@@ -234,8 +234,9 @@
     <ClCompile Include="$(LWIP_DIR)\src\api\pppapi.c" />
     <ClCompile Include="$(LWIP_DIR)\src\api\sockets.c" />
     <ClCompile Include="$(LWIP_DIR)\src\api\tcpip.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\apps\sntp\sntp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\lwiperf\lwiperf.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\netbiosns\netbiosns.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\sntp\sntp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\def.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\dhcp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\dns.c" />
@@ -311,6 +312,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\lwiperf.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\netbiosns.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\netbiosns_opts.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\sntp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\sntp_opts.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\api.h" />

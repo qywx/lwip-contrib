@@ -140,7 +140,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\apps\httpserver_raw\httpd.c" />
     <ClCompile Include="..\..\..\apps\httpserver\httpserver-netconn.c" />
-    <ClCompile Include="..\..\..\apps\netbios\netbios.c" />
     <ClCompile Include="..\..\..\apps\netio\netio.c" />
     <ClCompile Include="..\..\..\apps\ping\ping.c" />
     <ClCompile Include="..\..\..\apps\rtp\rtp.c" />
@@ -158,7 +157,6 @@
     <ClInclude Include="..\..\..\apps\httpserver_raw\fsdata.h" />
     <ClInclude Include="..\..\..\apps\httpserver_raw\httpd.h" />
     <ClInclude Include="..\..\..\apps\httpserver\httpserver-netconn.h" />
-    <ClInclude Include="..\..\..\apps\netbios\netbios.h" />
     <ClInclude Include="..\..\..\apps\netio\netio.h" />
     <ClInclude Include="..\..\..\apps\ping\ping.h" />
     <ClInclude Include="..\..\..\apps\rtp\rtp.h" />
