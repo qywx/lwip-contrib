@@ -617,10 +617,10 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\tcpip_priv.h">
       <Filter>src\include\lwip\priv</Filter>
     </ClInclude>
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\memp_std.h">
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\memp_std.h">
       <Filter>src\include\lwip\priv</Filter>
     </ClInclude>
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\api_msg.h">
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\api_msg.h">
       <Filter>src\include\lwip\priv</Filter>
     </ClInclude>
   </ItemGroup>
