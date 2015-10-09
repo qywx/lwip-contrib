@@ -316,8 +316,11 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\netbiosns_opts.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\sntp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\sntp_opts.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\api_msg.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\memp_std.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\tcpip_priv.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\tcp_priv.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\api.h" />
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\api_msg.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\arch.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\autoip.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\debug.h" />
@@ -342,7 +345,6 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip_frag.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\mem.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\memp.h" />
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\memp_std.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\mld6.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\nd6.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\netbuf.h" />
@@ -363,7 +365,6 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\stats.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\sys.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcp.h" />
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcp_impl.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcpip.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\timers.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\udp.h" />

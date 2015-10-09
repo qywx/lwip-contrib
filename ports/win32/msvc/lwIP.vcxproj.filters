@@ -43,6 +43,9 @@
     <Filter Include="src\include\lwip\apps">
       <UniqueIdentifier>{c64c0664-acd9-4f2f-8bd7-78250f4b7b4b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\include\lwip\priv">
+      <UniqueIdentifier>{56e8d041-f1e0-4b02-a173-563190c0eb4a}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\include\netif">
       <UniqueIdentifier>{dc783ea8-63ed-4de6-b576-a87c318a7ad1}</UniqueIdentifier>
     </Filter>
@@ -350,9 +353,6 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\api.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\api_msg.h">
-      <Filter>src\include\lwip</Filter>
-    </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\arch.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
@@ -425,9 +425,6 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\memp.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\memp_std.h">
-      <Filter>src\include\lwip</Filter>
-    </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\mld6.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
@@ -486,9 +483,6 @@
       <Filter>src\include\lwip</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcp.h">
-      <Filter>src\include\lwip</Filter>
-    </ClInclude>
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcp_impl.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcpip.h">
@@ -616,6 +610,18 @@
     </ClInclude>
     <ClInclude Include="..\include\arch\sys_arch.h">
       <Filter>arch</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\tcp_priv.h">
+      <Filter>src\include\lwip\priv</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\tcpip_priv.h">
+      <Filter>src\include\lwip\priv</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\memp_std.h">
+      <Filter>src\include\lwip\priv</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\api_msg.h">
+      <Filter>src\include\lwip\priv</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

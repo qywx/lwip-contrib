@@ -48,6 +48,7 @@
 #include "lwip/init.h"
 #include "lwip/tcpip.h"
 #include "lwip/netif.h"
+#include "lwip/api.h"
 
 #include "lwip/tcp.h"
 #include "lwip/udp.h"
