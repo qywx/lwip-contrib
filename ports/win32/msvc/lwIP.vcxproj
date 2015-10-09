@@ -238,7 +238,6 @@
     <ClCompile Include="$(LWIP_DIR)\src\apps\netbiosns\netbiosns.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\sntp\sntp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\def.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\core\dhcp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\dns.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\inet_chksum.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\init.c" />
@@ -255,6 +254,7 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\timers.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\udp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\autoip.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\dhcp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\icmp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\igmp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4.c" />

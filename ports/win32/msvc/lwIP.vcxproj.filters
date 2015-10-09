@@ -117,9 +117,6 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\def.c">
       <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="$(LWIP_DIR)\src\core\dhcp.c">
-      <Filter>src\core</Filter>
-    </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\core\dns.c">
       <Filter>src\core</Filter>
     </ClCompile>
@@ -166,6 +163,9 @@
       <Filter>src\core</Filter>
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\autoip.c">
+      <Filter>src\core\ipv4</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\dhcp.c">
       <Filter>src\core\ipv4</Filter>
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\icmp.c">
