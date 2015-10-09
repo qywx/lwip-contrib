@@ -19,3 +19,5 @@
 /ports/win32/msvc/*.opensdf
 /ports/win32/msvc/*.sdf
 /ports/unix/check/lwip_unittests
+/ports/win32/mingw/*.exe
+/ports/win32/mingw/*.map
