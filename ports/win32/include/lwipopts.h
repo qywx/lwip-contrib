@@ -25,130 +25,67 @@
  * OF SUCH DAMAGE.
  *
  * This file is part of the lwIP TCP/IP stack.
- *$
+ * 
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
 #ifndef LWIP_LWIPOPTS_H
 #define LWIP_LWIPOPTS_H
 
-#define LWIP_CHECKSUM_CTRL_PER_NETIF 0//1
-
-#define LWIP_WND_SCALE 0//1
-#define TCP_RCV_SCALE  0//4
-
-#define SO_REUSE 1
-#define SO_REUSE_RXTOALL 1
-#define IP_SOF_BROADCAST_RECV 1//0//1
-#define LWIP_SO_SNDTIMEO 1
-#define LWIP_NETIF_API                  !NO_SYS
-#define LWIP_DHCP_GET_NTP_SRV           1
-
-#define LWIP_NETIF_HWADDRHINT           0//1
-#define LWIP_NETIF_TX_SINGLE_PBUF       0//1//0
-
-//extern void memp_avail(int memptype);
-//#define LWIP_HOOK_MEMP_AVAILABLE(memptype) memp_avail((memp_t)memptype)
-//#define SNMP_COMMUNITY_EXT 1
-
-#define SNMP_PRIVATE_MIB                0//1
-
-#define LWIP_SOCKET_OFFSET              0//256
-#define LWIP_PERF                       1
-#define LWIP_NETCONN_FULLDUPLEX         0//1
-
-#define LWIP_NETBUF_RECVINFO            1//0
-
-#define LWIP_CHECKSUM_ON_COPY 1
-/*#define TCP_CHECKSUM_ON_COPY_SANITY_CHECK 1
-#define TCP_CHECKSUM_ON_COPY_SANITY_CHECK_FAIL(msg) LWIP_ASSERT(msg, 0)*/
-
-#define LWIP_RANDOMIZE_INITIAL_LOCAL_PORTS 1
-
-/*#define MEM_USE_POOLS                   1
-#define MEMP_USE_CUSTOM_POOLS           1
-#define MEMP_OVERFLOW_CHECK             1
-#define MEMP_SANITY_CHECK               1*/
-
-#define LOOPBACK_CHECK 1
-#define CHECKSUM_CHECK_IP               !LOOPBACK_CHECK
-#define CHECKSUM_CHECK_UDP              !LOOPBACK_CHECK
-#define CHECKSUM_CHECK_TCP              !LOOPBACK_CHECK
-#define CHECKSUM_CHECK_ICMP             !LOOPBACK_CHECK
-#define CHECKSUM_CHECK_ICMP6            !LOOPBACK_CHECK
-
 #define NO_SYS                     0
-#define LWIP_SOCKET                (NO_SYS==0)
-#define LWIP_NETCONN               (NO_SYS==0)
-#define LWIP_NETCONN_SEM_PER_THREAD    1//0//1
-#define LWIP_SO_LINGER             1//0//1
+#define LWIP_SOCKET               (NO_SYS==0)
+#define LWIP_NETCONN              (NO_SYS==0)
 
-#define LWIP_IGMP                  1//1
-#define LWIP_MULTICAST_TX_OPTIONS  1//1//0
-#define LWIP_ICMP                  1//1
-#define LWIP_SNMP                  1//1//0
-#define MIB2_STATS                      1
-#define LWIP_MIB2_SUPPORT               1//1//0
+#define LWIP_IGMP                  1
+#define LWIP_ICMP                  1
+#define LWIP_SNMP                  1
 
-#define LWIP_DNS                   1//1
-//#define DNS_LOCAL_HOSTLIST         1
-//#define DNS_LOCAL_HOSTLIST_INIT    {{"test", {0}, NULL}}
-#define DNS_LOCAL_HOSTLIST_IS_DYNAMIC   0//1
+#define LWIP_DNS                   1
 
-#define LWIP_HAVE_LOOPIF           0//1
+#define LWIP_HAVE_LOOPIF           1
 #define LWIP_NETIF_LOOPBACK        1
 #define LWIP_LOOPBACK_MAX_PBUFS    10
 
-#define TCP_LISTEN_BACKLOG         0//1//0
+#define TCP_LISTEN_BACKLOG         0
 
-#define LWIP_COMPAT_SOCKETS        1//2//1
+#define LWIP_COMPAT_SOCKETS        1
 #define LWIP_SO_RCVTIMEO           1
 #define LWIP_SO_RCVBUF             1
-#define IP_SOF_BROADCAST           1
 
-#define LWIP_SO_SNDRCVTIMEO_NONSTANDARD 0//1//0
-#define LWIP_TCPIP_CORE_LOCKING    0//1
-#define LWIP_TCPIP_CORE_LOCKING_INPUT   0//1
-#define LWIP_MPU_COMPATIBLE        0//1
+#define LWIP_TCPIP_CORE_LOCKING    0
 
-#define LWIP_IPV6                  1//1
-#define LWIP_IPV6_FRAG             1//1
-#define LWIP_IPV4                  1//0
-#define IP_FORWARD 1
-
-#define LWIP_NETIF_LINK_CALLBACK   1//0//1
-#define LWIP_NETIF_STATUS_CALLBACK 1//0//1
+#define LWIP_NETIF_LINK_CALLBACK   1
+#define LWIP_NETIF_STATUS_CALLBACK 1
 
 #ifdef LWIP_DEBUG
-#define LWIP_DBG_DEF               LWIP_DBG_OFF
 
 #define LWIP_DBG_MIN_LEVEL         0
-#define PPP_DEBUG                  LWIP_DBG_DEF
-#define MEM_DEBUG                  LWIP_DBG_DEF
-#define MEMP_DEBUG                 LWIP_DBG_DEF
-#define PBUF_DEBUG                 LWIP_DBG_DEF
-#define API_LIB_DEBUG              LWIP_DBG_DEF
-#define API_MSG_DEBUG              LWIP_DBG_DEF
-#define TCPIP_DEBUG                LWIP_DBG_DEF
-#define NETIF_DEBUG                LWIP_DBG_DEF
-#define SOCKETS_DEBUG              LWIP_DBG_DEF
-#define DNS_DEBUG                  LWIP_DBG_DEF
-#define AUTOIP_DEBUG               LWIP_DBG_DEF
-#define DHCP_DEBUG                 LWIP_DBG_DEF
-#define IP_DEBUG                   LWIP_DBG_DEF
-#define IP_REASS_DEBUG             LWIP_DBG_DEF
-#define ICMP_DEBUG                 LWIP_DBG_DEF
-#define IGMP_DEBUG                 LWIP_DBG_DEF
-#define UDP_DEBUG                  LWIP_DBG_DEF
-#define TCP_DEBUG                  LWIP_DBG_DEF
-#define TCP_INPUT_DEBUG            LWIP_DBG_DEF
-#define TCP_OUTPUT_DEBUG           LWIP_DBG_DEF
-#define TCP_RTO_DEBUG              LWIP_DBG_DEF
-#define TCP_CWND_DEBUG             LWIP_DBG_DEF
-#define TCP_WND_DEBUG              LWIP_DBG_DEF
-#define TCP_FR_DEBUG               LWIP_DBG_DEF
-#define TCP_QLEN_DEBUG             LWIP_DBG_DEF
-#define TCP_RST_DEBUG              LWIP_DBG_DEF
+#define PPP_DEBUG                  LWIP_DBG_OFF
+#define MEM_DEBUG                  LWIP_DBG_OFF
+#define MEMP_DEBUG                 LWIP_DBG_OFF
+#define PBUF_DEBUG                 LWIP_DBG_OFF
+#define API_LIB_DEBUG              LWIP_DBG_OFF
+#define API_MSG_DEBUG              LWIP_DBG_OFF
+#define TCPIP_DEBUG                LWIP_DBG_OFF
+#define NETIF_DEBUG                LWIP_DBG_OFF
+#define SOCKETS_DEBUG              LWIP_DBG_OFF
+#define DNS_DEBUG                  LWIP_DBG_OFF
+#define AUTOIP_DEBUG               LWIP_DBG_OFF
+#define DHCP_DEBUG                 LWIP_DBG_OFF
+#define IP_DEBUG                   LWIP_DBG_OFF
+#define IP_REASS_DEBUG             LWIP_DBG_OFF
+#define ICMP_DEBUG                 LWIP_DBG_OFF
+#define IGMP_DEBUG                 LWIP_DBG_OFF
+#define UDP_DEBUG                  LWIP_DBG_OFF
+#define TCP_DEBUG                  LWIP_DBG_OFF
+#define TCP_INPUT_DEBUG            LWIP_DBG_OFF
+#define TCP_OUTPUT_DEBUG           LWIP_DBG_OFF
+#define TCP_RTO_DEBUG              LWIP_DBG_OFF
+#define TCP_CWND_DEBUG             LWIP_DBG_OFF
+#define TCP_WND_DEBUG              LWIP_DBG_OFF
+#define TCP_FR_DEBUG               LWIP_DBG_OFF
+#define TCP_QLEN_DEBUG             LWIP_DBG_OFF
+#define TCP_RST_DEBUG              LWIP_DBG_OFF
 #endif
 
 #define LWIP_DBG_TYPES_ON         (LWIP_DBG_ON|LWIP_DBG_TRACE|LWIP_DBG_STATE|LWIP_DBG_FRESH|LWIP_DBG_HALT)
@@ -184,7 +121,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_TCP_PCB_LISTEN 8
 /* MEMP_NUM_TCP_SEG: the number of simultaneously queued TCP
    segments. */
-#define MEMP_NUM_TCP_SEG        16     *10
+#define MEMP_NUM_TCP_SEG        16
 /* MEMP_NUM_SYS_TIMEOUT: the number of simulateously active
    timeouts. */
 #define MEMP_NUM_SYS_TIMEOUT    15
@@ -204,10 +141,10 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */
-#define PBUF_POOL_SIZE          1200
+#define PBUF_POOL_SIZE          120
 
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
-#define PBUF_POOL_BUFSIZE       1536//128
+#define PBUF_POOL_BUFSIZE       128
 
 /* PBUF_LINK_HLEN: the number of bytes that should be allocated for a
    link level header. */
@@ -233,7 +170,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_MSS                 1024
 
 /* TCP sender buffer space (bytes). */
-#define TCP_SND_BUF             (1024*8)//2048
+#define TCP_SND_BUF             2048
 
 /* TCP sender buffer space (pbufs). This must be at least = 2 *
    TCP_SND_BUF/TCP_MSS for things to work. */
@@ -257,7 +194,7 @@ a lot of data that needs to be copied, this should be set high. */
 /* ---------- ARP options ---------- */
 #define LWIP_ARP                1
 #define ARP_TABLE_SIZE          10
-#define ARP_QUEUEING            0//1
+#define ARP_QUEUEING            1
 
 
 /* ---------- IP options ---------- */
@@ -268,11 +205,11 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* IP reassembly and segmentation.These are orthogonal even
  * if they both deal with IP fragments */
-#define IP_REASSEMBLY           1//0//1
+#define IP_REASSEMBLY           1
 #define IP_REASS_MAX_PBUFS      10
 #define MEMP_NUM_REASSDATA      10
-#define IP_FRAG                 1//0//1
-#define LWIP_IPV6_FORWARD               0//1
+#define IP_FRAG                 1
+
 
 /* ---------- ICMP options ---------- */
 #define ICMP_TTL                255
@@ -281,7 +218,7 @@ a lot of data that needs to be copied, this should be set high. */
 /* ---------- DHCP options ---------- */
 /* Define LWIP_DHCP to 1 if you want DHCP configuration of
    interfaces. */
-#define LWIP_DHCP               1//0
+#define LWIP_DHCP               0
 
 /* 1 if you want to do an ARP check on the offered address
    (recommended). */
@@ -289,13 +226,13 @@ a lot of data that needs to be copied, this should be set high. */
 
 
 /* ---------- AUTOIP options ------- */
-#define LWIP_AUTOIP             1//0
+#define LWIP_AUTOIP             0
 #define LWIP_DHCP_AUTOIP_COOP  (LWIP_DHCP && LWIP_AUTOIP)
 
 
 /* ---------- UDP options ---------- */
-#define LWIP_UDP                1//1
-#define LWIP_UDPLITE            0//1
+#define LWIP_UDP                1
+#define LWIP_UDPLITE            1
 #define UDP_TTL                 255
 
 
@@ -324,7 +261,6 @@ a lot of data that needs to be copied, this should be set high. */
 #define PPP_SUPPORT             0      /* Set > 0 for PPP */
 
 #if PPP_SUPPORT
-#define LWIP_PPP_API            (NO_SYS==0)
 
 #define NUM_PPP                 1      /* Max PPP sessions. */
 
@@ -335,21 +271,14 @@ a lot of data that needs to be copied, this should be set high. */
  */
 #define PPPOE_SUPPORT           1
 #define PPPOS_SUPPORT           1
-#define PPPOL2TP_SUPPORT        1
-
-#define PPP_SERVER                      1
-#define PPP_NOTIFY_PHASE                1
 
 #define PAP_SUPPORT             1      /* Set > 0 for PAP. */
 #define CHAP_SUPPORT            1      /* Set > 0 for CHAP. */
-#define MSCHAP_SUPPORT          1//0      /* Set > 0 for MSCHAP (NOT FUNCTIONAL!) */
+#define MSCHAP_SUPPORT          0      /* Set > 0 for MSCHAP (NOT FUNCTIONAL!) */
 #define CBCP_SUPPORT            0      /* Set > 0 for CBCP (NOT FUNCTIONAL!) */
-#define CCP_SUPPORT             1//0      /* Set > 0 for CCP (NOT FUNCTIONAL!) */
-#define VJ_SUPPORT              LWIP_TCP/* Set > 0 for VJ header compression. */
+#define CCP_SUPPORT             0      /* Set > 0 for CCP (NOT FUNCTIONAL!) */
+#define VJ_SUPPORT              1      /* Set > 0 for VJ header compression. */
 #define MD5_SUPPORT             1      /* Set > 0 for MD5 (see also CHAP) */
-#define EAP_SUPPORT             1
-#define LQR_SUPPORT             1
-#define MPPE_SUPPORT            1
 
 #endif /* PPP_SUPPORT */
 
