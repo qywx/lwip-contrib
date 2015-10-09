@@ -120,7 +120,7 @@ APPFILES=$(CONTRIBDIR)/apps/httpserver_raw/fs.c $(CONTRIBDIR)/apps/httpserver_ra
 	$(CONTRIBDIR)/apps/netio/netio.c $(CONTRIBDIR)/apps/ping/ping.c \
 	$(CONTRIBDIR)/apps/shell/shell.c $(CONTRIBDIR)/apps/smtp/smtp.c \
 	$(CONTRIBDIR)/apps/socket_examples/socket_examples.c \
-	$(CONTRIBDIR)/apps/rtp/rtp.c $(CONTRIBDIR)/apps/netbios/netbios.c
+	$(CONTRIBDIR)/apps/rtp/rtp.c $(LWIPDIR)/apps/netbiosns/netbiosns.c
 
 # LWIPFILES: All the above.
 LWIPFILES=$(COREFILES) $(CORE4FILES) $(CORE6FILES) $(SNMPFILES) $(APIFILES) $(NETIFFILES) $(ARCHFILES)
