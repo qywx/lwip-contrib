@@ -49,7 +49,7 @@
 
 #include "lwip/stats.h"
 
-#include "lwip/tcp_impl.h"
+#include "lwip/tcp.h"
 #include "lwip/inet_chksum.h"
 
 #include "lwip/tcpip.h"

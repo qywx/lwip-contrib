@@ -38,7 +38,9 @@
 #include "lwip/mem.h"
 #include "lwip/memp.h"
 #include "lwip/sys.h"
-#include "lwip/tcp_impl.h"
+#include "lwip/tcp.h"
+#include "lwip/priv/tcp_priv.h" /* for tcp_debug_print_pcbs() */
+#include "lwip/timers.h"
 
 #include "lwip/stats.h"
 

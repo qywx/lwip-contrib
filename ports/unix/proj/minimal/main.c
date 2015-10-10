@@ -48,7 +48,7 @@
 #include "lwip/ip_frag.h"
 #include "lwip/udp.h"
 #include "lwip/snmp_msg.h"
-#include "lwip/tcp_impl.h"
+#include "lwip/tcp.h"
 #include "netif/tapif.h"
 #include "netif/etharp.h"
 
