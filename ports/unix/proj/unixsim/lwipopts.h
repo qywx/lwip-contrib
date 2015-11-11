@@ -32,6 +32,8 @@
 #ifndef LWIP_LWIPOPTS_H
 #define LWIP_LWIPOPTS_H
 
+#include "arch/cc.h"
+
 #define LWIP_IPV4          1
 #define LWIP_IPV6          1
 
@@ -204,12 +206,18 @@ a lot of data that needs to be copied, this should be set high. */
    interfaces. */
 #define LWIP_DHCP               0
 
+#define LWIP_DHCP_GET_NTP_SRV   (LWIP_DHCP)
+
 /* 1 if you want to do an ARP check on the offered address
    (recommended if using DHCP). */
 #define DHCP_DOES_ARP_CHECK     (LWIP_DHCP)
 
 /* ---------- AUTOIP options ------- */
-#define LWIP_AUTOIP             1
+#define LWIP_AUTOIP             (LWIP_DHCP)
+
+/* ---------- SNTP options --------- */
+extern void sntp_set_system_time(u32_t sec);
+#define SNTP_SET_SYSTEM_TIME(s) sntp_set_system_time(s)
 
 /* ---------- SNMP options ---------- */
 /** @todo SNMP is experimental for now

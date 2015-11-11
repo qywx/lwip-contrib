@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <time.h>
 
 #include "lwip/opt.h"
 
@@ -41,6 +42,7 @@
 #include "lwip/mem.h"
 #include "lwip/memp.h"
 #include "lwip/sys.h"
+#include "lwip/timers.h"
 
 #include "lwip/ip_addr.h"
 
@@ -77,6 +79,7 @@
 #include "udpecho.h"
 #include "tcpecho.h"
 #include "shell.h"
+#include "lwip/apps/sntp.h"
 
 #if LWIP_RAW
 #include "lwip/icmp.h"
@@ -87,6 +90,8 @@
 /* (manual) host IP configuration */
 static ip_addr_t ipaddr, netmask, gw;
 #endif /* LWIP_IPV4 */
+
+struct netif netif;
 
 /* ping out destination cmd option */
 static unsigned char ping_flag;
@@ -140,6 +145,23 @@ tcp_debug_timeout(void *data)
 }
 #endif
 
+void
+sntp_set_system_time(u32_t sec)
+{
+  struct tm current_time_val;
+  time_t current_time = (time_t)sec;
+
+  localtime_r(&current_time, &current_time_val);
+  
+  printf("SNTP time: %02"U32_F".%02"U32_F".%04"U32_F" %02"U32_F":%02"U32_F":%02"U32_F"\n",
+    current_time_val.tm_mday + 1,
+    current_time_val.tm_mon  + 1,
+    current_time_val.tm_year + 1900,
+    current_time_val.tm_hour,
+    current_time_val.tm_min,
+    current_time_val.tm_sec);
+}
+
 static void
 tcpip_init_done(void *arg)
 {
@@ -147,6 +169,16 @@ tcpip_init_done(void *arg)
   sem = (sys_sem_t *)arg;
 
   init_netifs();
+
+  sntp_setoperatingmode(SNTP_OPMODE_POLL);
+#if LWIP_DHCP
+  sntp_servermode_dhcp(1); /* get SNTP server via DHCP */
+#else /* LWIP_DHCP */
+#if LWIP_IPV4
+  sntp_setserver(0, netif_ip_gw4(&netif));
+#endif /* LWIP_IPV4 */
+#endif /* LWIP_DHCP */
+  sntp_init();
 
   sys_sem_signal(sem);
 }
@@ -297,7 +329,6 @@ ping_thread(void *arg)
 
 #endif
 
-struct netif netif;
 #if PPP_SUPPORT
 sio_fd_t ppp_sio;
 struct netif pppos_netif;
