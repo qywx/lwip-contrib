@@ -79,6 +79,7 @@
 #include "udpecho.h"
 #include "tcpecho.h"
 #include "shell.h"
+#include "lwip/apps/netbiosns.h"
 #include "lwip/apps/sntp.h"
 
 #if LWIP_RAW
@@ -169,6 +170,9 @@ tcpip_init_done(void *arg)
   sem = (sys_sem_t *)arg;
 
   init_netifs();
+
+  netbiosns_set_name("simhost");
+  netbiosns_init();
 
   sntp_setoperatingmode(SNTP_OPMODE_POLL);
 #if LWIP_DHCP
