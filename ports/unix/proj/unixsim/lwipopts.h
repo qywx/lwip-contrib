@@ -32,6 +32,9 @@
 #ifndef LWIP_LWIPOPTS_H
 #define LWIP_LWIPOPTS_H
 
+#define LWIP_IPV4          1
+#define LWIP_IPV6          1
+
 #define LWIP_DBG_MIN_LEVEL 0
 #define LWIP_COMPAT_SOCKETS 1
 #define TAPIF_DEBUG LWIP_DBG_ON
@@ -107,7 +110,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_TCP_SEG        16
 /* MEMP_NUM_SYS_TIMEOUT: the number of simulateously active
    timeouts. */
-#define MEMP_NUM_SYS_TIMEOUT    5
+#define MEMP_NUM_SYS_TIMEOUT    12
 
 /* The following four are used only with the sequential API and can be
    set to 0 if the application only will use the raw API. */
@@ -123,7 +126,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */
-#define PBUF_POOL_SIZE          120
+#define PBUF_POOL_SIZE          200
 
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
 #define PBUF_POOL_BUFSIZE       128
@@ -185,10 +188,13 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* IP reassembly and segmentation.These are orthogonal even
  * if they both deal with IP fragments */
-#define IP_REASSEMBLY     1
+#define IP_REASSEMBLY           1
 #define IP_REASS_MAX_PBUFS      10
 #define MEMP_NUM_REASSDATA      10
-#define IP_FRAG           1
+#define IP_FRAG                 1
+#define IPV6_FRAG_COPYHEADER    1
+
+#define LWIP_IGMP               1
 
 /* ---------- ICMP options ---------- */
 #define ICMP_TTL                255
@@ -203,7 +209,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define DHCP_DOES_ARP_CHECK     (LWIP_DHCP)
 
 /* ---------- AUTOIP options ------- */
-#define LWIP_AUTOIP             0
+#define LWIP_AUTOIP             1
 
 /* ---------- SNMP options ---------- */
 /** @todo SNMP is experimental for now
@@ -215,6 +221,9 @@ a lot of data that needs to be copied, this should be set high. */
 #ifndef SNMP_PRIVATE_MIB
 #define SNMP_PRIVATE_MIB        0
 #endif
+
+/* ---------- DNS options ---------- */
+#define LWIP_DNS                1
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1
@@ -231,6 +240,9 @@ a lot of data that needs to be copied, this should be set high. */
  * */
 
 #define LWIP_STATS        1
+
+#define LWIP_NETIF_API    1
+#define LWIP_NETIF_STATUS_CALLBACK 1
 
 /* ---------- PPP options ---------- */
 
