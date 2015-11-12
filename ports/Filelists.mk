@@ -45,9 +45,9 @@ CORE6FILES=$(LWIPDIR)/core/ipv6/dhcp6.c $(LWIPDIR)/core/ipv6/ethip6.c \
 	$(LWIPDIR)/core/ipv6/mld6.c $(LWIPDIR)/core/ipv6/nd6.c
 
 # SNMPFILES: Extra SNMPv1 agent
-SNMPFILES=$(LWIPDIR)/core/snmp/asn1_dec.c $(LWIPDIR)/core/snmp/asn1_enc.c \
-	$(LWIPDIR)/core/snmp/mib2.c $(LWIPDIR)/core/snmp/mib_structs.c \
-	$(LWIPDIR)/core/snmp/msg_in.c $(LWIPDIR)/core/snmp/msg_out.c
+SNMPFILES=$(LWIPDIR)/apps/snmp/asn1_dec.c $(LWIPDIR)/apps/snmp/asn1_enc.c \
+	$(LWIPDIR)/apps/snmp/mib2.c $(LWIPDIR)/apps/snmp/mib_structs.c \
+	$(LWIPDIR)/apps/snmp/msg_in.c $(LWIPDIR)/apps/snmp/msg_out.c
 
 # APIFILES: The files which implement the sequential and socket APIs.
 APIFILES=$(LWIPDIR)/api/api_lib.c $(LWIPDIR)/api/api_msg.c $(LWIPDIR)/api/err.c \

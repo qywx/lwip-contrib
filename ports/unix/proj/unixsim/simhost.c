@@ -81,6 +81,7 @@
 #include "shell.h"
 #include "lwip/apps/netbiosns.h"
 #include "lwip/apps/sntp.h"
+#include "lwip/apps/snmp.h"
 
 #if LWIP_RAW
 #include "lwip/icmp.h"
@@ -184,6 +185,8 @@ tcpip_init_done(void *arg)
 #endif /* LWIP_DHCP */
   sntp_init();
 
+  snmp_init();
+  
   sys_sem_signal(sem);
 }
 
