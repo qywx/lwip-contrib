@@ -95,11 +95,8 @@
 #define HTTPD_DEBUG         LWIP_DBG_OFF
 #endif
 
-/** Set this to 1, set MEMP_USE_CUSTOM_POOLS to 1 and add the next line to
- * lwippools.h to use a memp pool for allocating struct http_state instead of
- * the heap:
- *
- * LWIP_MEMPOOL(HTTPD_STATE, 20, 100, "HTTPD_STATE")
+/** Set this to 1 to use a memp pool for allocating 
+ * struct http_state instead of the heap.
  */
 #ifndef HTTPD_USE_MEM_POOL
 #define HTTPD_USE_MEM_POOL  0
@@ -275,14 +272,6 @@
 #define HTTP_DATA_TO_SEND_CONTINUE 1
 #define HTTP_NO_DATA_TO_SEND       0
 
-#if HTTPD_USE_MEM_POOL
-#define HTTP_ALLOC_SSI_STATE()  (struct http_ssi_state *)memp_malloc(MEMP_HTTPD_SSI_STATE)
-#define HTTP_ALLOC_HTTP_STATE() (struct http_state *)memp_malloc(MEMP_HTTPD_STATE)
-#else /* HTTPD_USE_MEM_POOL */
-#define HTTP_ALLOC_SSI_STATE()  (struct http_ssi_state *)mem_malloc(sizeof(struct http_ssi_state))
-#define HTTP_ALLOC_HTTP_STATE() (struct http_state *)mem_malloc(sizeof(struct http_state))
-#endif /* HTTPD_USE_MEM_POOL */
-
 typedef struct
 {
   const char *name;
@@ -396,6 +385,25 @@ struct http_state {
 #endif /* LWIP_HTTPD_SUPPORT_POST*/
 };
 
+#if HTTPD_USE_MEM_POOL
+LWIP_MEMPOOL_DECLARE(HTTPD_STATE, 20, sizeof(struct http_state), "HTTPD_STATE")
+#define HTTP_ALLOC_HTTP_STATE() (struct http_state *)LWIP_MEMPOOL_ALLOC(HTTPD_STATE)
+#define HTTP_FREE_HTTP_STATE(x) LWIP_MEMPOOL_FREE(HTTPD_STATE, (x))
+
+#if LWIP_HTTPD_SSI
+LWIP_MEMPOOL_DECLARE(HTTPD_SSI_STATE, 20, sizeof(struct http_ssi_state), "HTTPD_SSI_STATE")
+#define HTTP_ALLOC_SSI_STATE()  (struct http_ssi_state *)LWIP_MEMPOOL_ALLOC(HTTPD_SSI_STATE)
+#define HTTP_FREE_SSI_STATE(x) LWIP_MEMPOOL_FREE(HTTPD_SSI_STATE, (x))
+#endif /* LWIP_HTTPD_SSI */
+#else /* HTTPD_USE_MEM_POOL */
+#define HTTP_ALLOC_HTTP_STATE() (struct http_state *)mem_malloc(sizeof(struct http_state))
+#define HTTP_FREE_HTTP_STATE(x) mem_free(x)
+#if LWIP_HTTPD_SSI
+#define HTTP_ALLOC_SSI_STATE()  (struct http_ssi_state *)mem_malloc(sizeof(struct http_ssi_state))
+#define HTTP_FREE_SSI_STATE(x) mem_free(x)
+#endif /* LWIP_HTTPD_SSI */
+#endif /* HTTPD_USE_MEM_POOL */
+
 static err_t http_close_conn(struct tcp_pcb *pcb, struct http_state *hs);
 static err_t http_close_or_abort_conn(struct tcp_pcb *pcb, struct http_state *hs, u8_t abort_conn);
 static err_t http_find_file(struct http_state *hs, const char *uri, int is_09);
@@ -503,11 +511,7 @@ static void
 http_ssi_state_free(struct http_ssi_state *ssi)
 {
   if (ssi != NULL) {
-#if HTTPD_USE_MEM_POOL
-    memp_free(MEMP_HTTPD_SSI_STATE, ssi);
-#else /* HTTPD_USE_MEM_POOL */
-    mem_free(ssi);
-#endif /* HTTPD_USE_MEM_POOL */
+    HTTP_FREE_SSI_STATE(ssi);
   }
 }
 #endif /* LWIP_HTTPD_SSI */
@@ -613,11 +617,7 @@ http_state_free(struct http_state *hs)
       }
     }
 #endif /* LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED */
-#if HTTPD_USE_MEM_POOL
-    memp_free(MEMP_HTTPD_STATE, hs);
-#else /* HTTPD_USE_MEM_POOL */
-    mem_free(hs);
-#endif /* HTTPD_USE_MEM_POOL */
+    HTTP_FREE_HTTP_STATE(hs);
   }
 }
 
@@ -1499,8 +1499,11 @@ http_send_data_ssi(struct tcp_pcb *pcb, struct http_state *hs)
 #endif /* !LWIP_HTTPD_SSI_INCLUDE_TAG*/
             }
           }
-          break;
+        break;
       }
+      default:
+        LWIP_ASSERT("Unknown state", 0);
+        break;
     }
   }
 
@@ -2483,18 +2486,15 @@ httpd_init_addr(const ip_addr_t *local_addr)
 void
 httpd_init(void)
 {
-#if MEMP_MEM_MALLOC || MEM_USE_POOLS || MEMP_USE_CUSTOM_POOLS
-#if HTTPD_USE_MEM_POOL
-  LWIP_ASSERT("memp_sizes[MEMP_HTTPD_STATE] >= sizeof(http_state)",
-     memp_sizes[MEMP_HTTPD_STATE] >= sizeof(struct http_state));
-#if LWIP_HTTPD_SSI
-  LWIP_ASSERT("memp_sizes[MEMP_HTTPD_SSI_STATE] >= sizeof(http_ssi_state)",
-     memp_sizes[MEMP_HTTPD_SSI_STATE] >= sizeof(struct http_ssi_state));
-#endif
-#endif
-#endif
   LWIP_DEBUGF(HTTPD_DEBUG, ("httpd_init\n"));
 
+#if HTTPD_USE_MEM_POOL
+  LWIP_MEMPOOL_INIT(HTTPD_STATE);
+#if LWIP_HTTPD_SSI
+  LWIP_MEMPOOL_INIT(HTTPD_SSI_STATE);
+#endif /* LWIP_HTTPD_SSI */
+#endif /* HTTPD_USE_MEM_POOL */
+  
   httpd_init_addr(IP_ADDR_ANY);
 }
 
