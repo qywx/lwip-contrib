@@ -29,17 +29,12 @@
  * Author: Adam Dunkels <adam@sics.se>
  *
  */
-#include "lwip/opt.h"
+
+#include "httpd_opts.h"
 #include "lwip/def.h"
 #include "fs.h"
 #include "fsdata.h"
 #include <string.h>
-
-/** Set this to 1 to include "fsdata_custom.c" instead of "fsdata.c" for the
- * file system (to prevent changing the file included in CVS) */
-#ifndef HTTPD_USE_CUSTOM_FSDATA
-#define HTTPD_USE_CUSTOM_FSDATA 0
-#endif
 
 #if HTTPD_USE_CUSTOM_FSDATA
 #include "fsdata_custom.c"

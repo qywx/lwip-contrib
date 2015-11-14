@@ -36,29 +36,13 @@
 #ifndef LWIP_HTTPD_H
 #define LWIP_HTTPD_H
 
-#include "lwip/opt.h"
+#include "httpd_opts.h"
 #include "lwip/err.h"
 #include "lwip/pbuf.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/** Set this to 1 to support CGI */
-#ifndef LWIP_HTTPD_CGI
-#define LWIP_HTTPD_CGI            0
-#endif
-
-/** Set this to 1 to support SSI (Server-Side-Includes) */
-#ifndef LWIP_HTTPD_SSI
-#define LWIP_HTTPD_SSI            0
-#endif
-
-/** Set this to 1 to support HTTP POST */
-#ifndef LWIP_HTTPD_SUPPORT_POST
-#define LWIP_HTTPD_SUPPORT_POST   0
-#endif
-
 
 #if LWIP_HTTPD_CGI
 
@@ -106,23 +90,9 @@ typedef struct
 
 void http_set_cgi_handlers(const tCGI *pCGIs, int iNumHandlers);
 
-
-/* The maximum number of parameters that the CGI handler can be sent. */
-#ifndef LWIP_HTTPD_MAX_CGI_PARAMETERS
-#define LWIP_HTTPD_MAX_CGI_PARAMETERS 16
-#endif
-
 #endif /* LWIP_HTTPD_CGI */
 
 #if LWIP_HTTPD_SSI
-
-/** LWIP_HTTPD_SSI_MULTIPART==1: SSI handler function is called with 2 more
- * arguments indicating a counter for insert string that are too long to be
- * inserted at once: the SSI handler function must then set 'next_tag_part'
- * which will be passed back to it in the next call. */
-#ifndef LWIP_HTTPD_SSI_MULTIPART
-#define LWIP_HTTPD_SSI_MULTIPART    0
-#endif
 
 /*
  * Function pointer for the SSI tag handler callback.
@@ -164,16 +134,6 @@ typedef u16_t (*tSSIHandler)(int iIndex, char *pcInsert, int iInsertLen
 
 void http_set_ssi_handler(tSSIHandler pfnSSIHandler,
                           const char **ppcTags, int iNumTags);
-
-/* The maximum length of the string comprising the tag name */
-#ifndef LWIP_HTTPD_MAX_TAG_NAME_LEN
-#define LWIP_HTTPD_MAX_TAG_NAME_LEN 8
-#endif
-
-/* The maximum length of string that can be returned to replace any given tag */
-#ifndef LWIP_HTTPD_MAX_TAG_INSERT_LEN
-#define LWIP_HTTPD_MAX_TAG_INSERT_LEN 192
-#endif
 
 #endif /* LWIP_HTTPD_SSI */
 
@@ -224,10 +184,6 @@ err_t httpd_post_receive_data(void *connection, struct pbuf *p);
  */
 void httpd_post_finished(void *connection, char *response_uri, u16_t response_uri_len);
 
-#ifndef LWIP_HTTPD_POST_MANUAL_WND
-#define LWIP_HTTPD_POST_MANUAL_WND  0
-#endif
-
 #if LWIP_HTTPD_POST_MANUAL_WND
 void httpd_post_data_recved(void *connection, u16_t recved_len);
 #endif /* LWIP_HTTPD_POST_MANUAL_WND */
@@ -235,7 +191,6 @@ void httpd_post_data_recved(void *connection, u16_t recved_len);
 #endif /* LWIP_HTTPD_SUPPORT_POST */
 
 void httpd_init(void);
-
 
 #ifdef __cplusplus
 }

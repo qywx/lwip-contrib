@@ -3,21 +3,6 @@
 
 #include "httpd.h"
 
-/** This string is passed in the HTTP header as "Server: " */
-#ifndef HTTPD_SERVER_AGENT
-#define HTTPD_SERVER_AGENT "lwIP/1.3.1 (http://savannah.nongnu.org/projects/lwip)"
-#endif
-
-/** Set this to 1 if you want to include code that creates HTTP headers
- * at runtime. Default is off: HTTP headers are then created statically
- * by the makefsdata tool. Static headers mean smaller code size, but
- * the (readonly) fsdata will grow a bit as every file includes the HTTP
- * header. */
-#ifndef LWIP_HTTPD_DYNAMIC_HEADERS
-#define LWIP_HTTPD_DYNAMIC_HEADERS 0
-#endif
-
-
 #if LWIP_HTTPD_DYNAMIC_HEADERS
 /** This struct is used for a list of HTTP header strings for various
  * filename extensions. */

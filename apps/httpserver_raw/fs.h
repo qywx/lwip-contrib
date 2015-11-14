@@ -32,51 +32,11 @@
 #ifndef LWIP_FS_H
 #define LWIP_FS_H
 
-#include "lwip/opt.h"
+#include "httpd_opts.h"
 #include "lwip/err.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-/** Set this to 1 and provide the functions:
- * - "int fs_open_custom(struct fs_file *file, const char *name)"
- *    Called first for every opened file to allow opening files
- *    that are not included in fsdata(_custom).c
- * - "void fs_close_custom(struct fs_file *file)"
- *    Called to free resources allocated by fs_open_custom().
- */
-#ifndef LWIP_HTTPD_CUSTOM_FILES
-#define LWIP_HTTPD_CUSTOM_FILES       0
-#endif
-
-/** Set this to 1 to support fs_read() to dynamically read file data.
- * Without this (default=off), only one-block files are supported,
- * and the contents must be ready after fs_open().
- */
-#ifndef LWIP_HTTPD_DYNAMIC_FILE_READ
-#define LWIP_HTTPD_DYNAMIC_FILE_READ  0
-#endif
-
-/** Set this to 1 to include an application state argument per file
- * that is opened. This allows to keep a state per connection/file.
- */
-#ifndef LWIP_HTTPD_FILE_STATE
-#define LWIP_HTTPD_FILE_STATE         0
-#endif
-
-/** HTTPD_PRECALCULATED_CHECKSUM==1: include precompiled checksums for
- * predefined (MSS-sized) chunks of the files to prevent having to calculate
- * the checksums at runtime. */
-#ifndef HTTPD_PRECALCULATED_CHECKSUM
-#define HTTPD_PRECALCULATED_CHECKSUM  0
-#endif
-
-/** LWIP_HTTPD_FS_ASYNC_READ==1: support asynchronous read operations
- * (fs_read_async returns FS_READ_DELAYED and calls a callback when finished).
- */
-#ifndef LWIP_HTTPD_FS_ASYNC_READ
-#define LWIP_HTTPD_FS_ASYNC_READ      0
 #endif
 
 #define FS_READ_EOF     -1

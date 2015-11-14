@@ -32,7 +32,7 @@
 #ifndef LWIP_FSDATA_H
 #define LWIP_FSDATA_H
 
-#include "lwip/opt.h"
+#include "httpd_opts.h"
 #include "fs.h"
 
 struct fsdata_file {
