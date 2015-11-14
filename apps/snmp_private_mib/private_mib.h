@@ -10,7 +10,7 @@
 #include "lwip/opt.h"
 
 #if SNMP_PRIVATE_MIB
-#include "lwip/snmp_structs.h"
+#include "lwip/apps/snmp_structs.h"
 
 #ifdef __cplusplus
 extern "C" {

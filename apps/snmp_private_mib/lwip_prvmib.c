@@ -65,8 +65,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "lwip/snmp_msg.h"
-#include "lwip/snmp_asn1.h"
+#include "lwip/apps/snmp_asn1.h"
 
 #if !SENSORS_USE_FILES || !SENSORS_SEARCH_FILES
 /** When not using & searching files, defines the number of sensors */
