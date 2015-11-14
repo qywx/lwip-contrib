@@ -288,6 +288,8 @@
  */
 #define LWIP_SNMP                       1
 #define SNMP_PRIVATE_MIB                1
+#define LWIP_MIB2_CALLBACKS             1
+#define MIB2_STATS                      1
 
 /*
    ----------------------------------

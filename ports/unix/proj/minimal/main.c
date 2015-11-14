@@ -47,7 +47,6 @@
 #include "lwip/ip.h"
 #include "lwip/ip_frag.h"
 #include "lwip/udp.h"
-#include "lwip/snmp_msg.h"
 #include "lwip/tcp.h"
 #include "netif/tapif.h"
 #include "netif/etharp.h"
@@ -183,7 +182,7 @@ main(int argc, char **argv)
   netif_create_ip6_linklocal_address(&netif, 1);
 #endif 
 
-
+  snmp_init();
 #if SNMP_PRIVATE_MIB != 0
   /* initialize our private example MIB */
   lwip_privmib_init();
