@@ -59,6 +59,13 @@ CFLAGS:=$(CFLAGS) \
 
 include ../../Filelists.mk
 
+# ARCHFILES: Architecture specific files.
+#ARCHFILES=$(wildcard $(LWIPARCH)/*.c)
+ARCHFILES=$(LWIPARCH)/sys_arch.c $(LWIPARCH)/test.c $(LWIPARCH)/pcapif.c $(LWIPARCH)/pcapif_helper.c $(LWIPARCH)/sio.c
+
+# LWIPFILES: All the above.
+LWIPFILES=$(COREFILES) $(CORE4FILES) $(CORE6FILES) $(SNMPFILES) $(APIFILES) $(NETIFFILES) $(ARCHFILES)
+
 LWIPOBJS=$(notdir $(LWIPFILES:.c=.o))
 #LWIPOBJS=$(LWIPFILES:.c=.o)
 

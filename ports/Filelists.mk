@@ -74,13 +74,8 @@ NETIFFILES+=$(LWIPDIR)/netif/ppp/auth.c $(LWIPDIR)/netif/ppp/ccp.c \
 	$(LWIPDIR)/netif/ppp/polarssl/md4.c $(LWIPDIR)/netif/ppp/polarssl/md5.c \
 	$(LWIPDIR)/netif/ppp/polarssl/sha1.c
 
-# ARCHFILES: Architecture specific files.
-ARCHFILES=$(wildcard $(LWIPARCH)/*.c) $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tunif.c \
-	$(LWIPARCH)/netif/unixif.c $(LWIPARCH)/netif/list.c $(LWIPARCH)/netif/tcpdump.c \
-	$(LWIPARCH)/netif/delif.c $(LWIPARCH)/netif/sio.c $(LWIPARCH)/netif/fifo.c
-
 # APPFILES: Applications.
-APPFILES=$(LWIPDIR)/apps/httpd/httpserver_raw/fs.c $(LWIPDIR)/apps/httpd/httpd.c \
+APPFILES=$(LWIPDIR)/apps/httpd/fs.c $(LWIPDIR)/apps/httpd/httpd.c \
 	$(CONTRIBDIR)/apps/httpserver/httpserver-netconn.c \
 	$(CONTRIBDIR)/apps/udpecho/udpecho.c $(CONTRIBDIR)/apps/tcpecho/tcpecho.c \
 	$(CONTRIBDIR)/apps/shell/shell.c $(CONTRIBDIR)/apps/snmp_private_mib/lwip_prvmib.c \
@@ -89,6 +84,3 @@ APPFILES=$(LWIPDIR)/apps/httpd/httpserver_raw/fs.c $(LWIPDIR)/apps/httpd/httpd.c
 	$(CONTRIBDIR)/apps/shell/shell.c $(CONTRIBDIR)/apps/smtp/smtp.c \
 	$(CONTRIBDIR)/apps/socket_examples/socket_examples.c \
 	$(CONTRIBDIR)/apps/rtp/rtp.c $(LWIPDIR)/apps/netbiosns/netbiosns.c
-
-# LWIPFILES: All the above.
-LWIPFILES=$(COREFILES) $(CORE4FILES) $(CORE6FILES) $(SNMPFILES) $(APIFILES) $(NETIFFILES) $(ARCHFILES)
