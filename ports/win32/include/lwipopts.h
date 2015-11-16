@@ -39,6 +39,8 @@
 #define LWIP_IGMP                  1
 #define LWIP_ICMP                  1
 #define LWIP_SNMP                  1
+#define LWIP_MIB2_CALLBACKS        LWIP_SNMP
+#define MIB2_STATS                 LWIP_SNMP
 
 #define LWIP_DNS                   1
 
@@ -274,9 +276,9 @@ a lot of data that needs to be copied, this should be set high. */
 
 #define PAP_SUPPORT             1      /* Set > 0 for PAP. */
 #define CHAP_SUPPORT            1      /* Set > 0 for CHAP. */
-#define MSCHAP_SUPPORT          0      /* Set > 0 for MSCHAP (NOT FUNCTIONAL!) */
+#define MSCHAP_SUPPORT          0      /* Set > 0 for MSCHAP */
 #define CBCP_SUPPORT            0      /* Set > 0 for CBCP (NOT FUNCTIONAL!) */
-#define CCP_SUPPORT             0      /* Set > 0 for CCP (NOT FUNCTIONAL!) */
+#define CCP_SUPPORT             0      /* Set > 0 for CCP */
 #define VJ_SUPPORT              1      /* Set > 0 for VJ header compression. */
 #define MD5_SUPPORT             1      /* Set > 0 for MD5 (see also CHAP) */
 
