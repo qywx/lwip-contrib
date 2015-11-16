@@ -45,4 +45,4 @@ include .depend
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
 
 echop: .depend $(LWIPLIBCOMMON) $(APPLIB) main.o $(APPFILES)
-	$(CC) $(CFLAGS) -o echop main.o $(APPLIB) $(LWIPLIBCOMMON) $(LDFLAGS)
+	$(CC) $(CFLAGS) -o echop main.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)

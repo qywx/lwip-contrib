@@ -69,14 +69,14 @@ ARCHFILES=$(LWIPARCH)/perf.c $(LWIPARCH)/sys_arch.c $(LWIPARCH)/netif/tapif.c $(
 	$(LWIPARCH)/netif/unixif.c $(LWIPARCH)/netif/list.c $(LWIPARCH)/netif/tcpdump.c \
 	$(LWIPARCH)/netif/delif.c $(LWIPARCH)/netif/sio.c $(LWIPARCH)/netif/fifo.c
 
-LWIPFILES=$(LWIPNOAPPSFILES) $(ARCHFILES) $(LWIPAPPFILES)
+LWIPFILES=$(LWIPNOAPPSFILES) $(ARCHFILES)
 LWIPOBJS=$(notdir $(LWIPFILES:.c=.o))
 
 LWIPLIBCOMMON=liblwipcommon.a
 $(LWIPLIBCOMMON): $(LWIPOBJS)
 	$(AR) $(ARFLAGS) $(LWIPLIBCOMMON) $?
 
-APPFILES=$(CONTRIBAPPFILES)
+APPFILES=$(CONTRIBAPPFILES) $(LWIPAPPFILES)
 APPLIB=liblwipapps.a
 APPOBJS=$(notdir $(APPFILES:.c=.o))
 $(APPLIB): $(APPOBJS)

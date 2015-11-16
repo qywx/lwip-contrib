@@ -45,10 +45,10 @@ include .depend
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
 
 simhost: .depend $(LWIPLIBCOMMON) $(APPLIB) simhost.o
-	$(CC) $(CFLAGS) -o simhost simhost.o $(APPLIB) $(LWIPLIBCOMMON) $(LDFLAGS)
+	$(CC) $(CFLAGS) -o simhost simhost.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
 
 simrouter: .depend $(LWIPLIBCOMMON) $(APPLIB) simrouter.o
-	$(CC) $(CFLAGS) -o simrouter simrouter.o $(APPLIB) $(LWIPLIBCOMMON) $(LDFLAGS) 
+	$(CC) $(CFLAGS) -o simrouter simrouter.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
 
 simnode: .depend $(LWIPLIBCOMMON) $(APPLIB) simnode.o 
-	$(CC) $(CFLAGS) -o simnode simnode.o $(APPLIB) $(LWIPLIBCOMMON) $(LDFLAGS) 
+	$(CC) $(CFLAGS) -o simnode simnode.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
