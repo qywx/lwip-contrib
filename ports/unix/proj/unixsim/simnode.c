@@ -57,7 +57,7 @@
 
 #include "arch/perf.h"
 
-#include "httpd.h"
+#include "lwip/apps/httpd.h"
 #include "udpecho.h"
 #include "tcpecho.h"
 #include "shell.h"

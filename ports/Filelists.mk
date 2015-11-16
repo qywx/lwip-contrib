@@ -80,7 +80,7 @@ ARCHFILES=$(wildcard $(LWIPARCH)/*.c) $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/neti
 	$(LWIPARCH)/netif/delif.c $(LWIPARCH)/netif/sio.c $(LWIPARCH)/netif/fifo.c
 
 # APPFILES: Applications.
-APPFILES=$(CONTRIBDIR)/apps/httpserver_raw/fs.c $(CONTRIBDIR)/apps/httpserver_raw/httpd.c \
+APPFILES=$(LWIPDIR)/apps/httpd/httpserver_raw/fs.c $(LWIPDIR)/apps/httpd/httpd.c \
 	$(CONTRIBDIR)/apps/httpserver/httpserver-netconn.c \
 	$(CONTRIBDIR)/apps/udpecho/udpecho.c $(CONTRIBDIR)/apps/tcpecho/tcpecho.c \
 	$(CONTRIBDIR)/apps/shell/shell.c $(CONTRIBDIR)/apps/snmp_private_mib/lwip_prvmib.c \

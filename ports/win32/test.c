@@ -63,7 +63,7 @@
 #include "lwip/apps/lwiperf.h"
 #include "lwip/apps/netbiosns.h"
 #include "lwip/apps/sntp.h"
-#include "apps/httpserver_raw/httpd.h"
+#include "lwip/apps/httpd.h"
 #include "apps/httpserver/httpserver-netconn.h"
 #include "apps/netio/netio.h"
 #include "apps/ping/ping.h"
