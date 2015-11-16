@@ -57,25 +57,24 @@ CFLAGS:=$(CFLAGS) \
 	-I. -I$(CONTRIBDIR)  -I$(PCAPDIR) \
 	-I$(LWIPDIR)/include -I$(LWIPARCH)/include -I$(LWIPDIR)
 
-include ../../Filelists.mk
+include $(CONTRIBDIR)/ports/Filelists.mk
+include $(LWIPDIR)/Filelists.mk
 
 # ARCHFILES: Architecture specific files.
-#ARCHFILES=$(wildcard $(LWIPARCH)/*.c)
-ARCHFILES=$(LWIPARCH)/sys_arch.c $(LWIPARCH)/test.c $(LWIPARCH)/pcapif.c $(LWIPARCH)/pcapif_helper.c $(LWIPARCH)/sio.c
+ARCHFILES=$(LWIPARCH)/sys_arch.c $(LWIPARCH)/test.c $(LWIPARCH)/pcapif.c \
+	$(LWIPARCH)/pcapif_helper.c $(LWIPARCH)/sio.c
 
 # LWIPFILES: All the above.
-LWIPFILES=$(COREFILES) $(CORE4FILES) $(CORE6FILES) $(SNMPFILES) $(APIFILES) $(NETIFFILES) $(ARCHFILES)
-
+LWIPFILES=$(LWIPNOAPPSFILES) $(ARCHFILES) $(LWIPAPPFILES)
 LWIPOBJS=$(notdir $(LWIPFILES:.c=.o))
-#LWIPOBJS=$(LWIPFILES:.c=.o)
 
 LWIPLIBCOMMON=liblwipcommon.a
 $(LWIPLIBCOMMON): $(LWIPOBJS)
 	$(AR) $(ARFLAGS) $(LWIPLIBCOMMON) $?
 
+APPFILES=$(CONTRIBAPPFILES)
 APPLIB=liblwipapps.a
 APPOBJS=$(notdir $(APPFILES:.c=.o))
-#APPOBJS=$(APPFILES:.c=.o)
 $(APPLIB): $(APPOBJS)
 	$(AR) $(ARFLAGS) $(APPLIB) $?
 
