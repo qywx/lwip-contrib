@@ -7,7 +7,7 @@
 #define LWIP_HDR_PRIVATE_MIB_H
 
 #include "arch/cc.h"
-#include "lwip/opt.h"
+#include "lwip/apps/snmp_opts.h"
 
 #if SNMP_PRIVATE_MIB
 #include "lwip/apps/snmp_structs.h"
