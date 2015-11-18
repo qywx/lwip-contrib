@@ -53,9 +53,11 @@ LWIPDIR=$(CONTRIBDIR)/../lwip/src
 
 PCAPDIR=$(PCAP_DIR)/Include
 
-CFLAGS:=$(CFLAGS) \
-	-I. -I$(CONTRIBDIR)  -I$(PCAPDIR) \
-	-I$(LWIPDIR)/include -I$(LWIPARCH)/include -I$(LWIPDIR)
+CFLAGS+=-I. \
+	-I$(CONTRIBDIR) \
+	-I$(PCAPDIR) \
+	-I$(LWIPDIR)/include \
+	-I$(LWIPARCH)/include
 
 include $(CONTRIBDIR)/ports/Filelists.mk
 include $(LWIPDIR)/Filelists.mk
@@ -65,14 +67,14 @@ ARCHFILES=$(LWIPARCH)/sys_arch.c $(LWIPARCH)/test.c $(LWIPARCH)/pcapif.c \
 	$(LWIPARCH)/pcapif_helper.c $(LWIPARCH)/sio.c
 
 # LWIPFILES: All the above.
-LWIPFILES=$(LWIPNOAPPSFILES) $(ARCHFILES) $(LWIPAPPFILES)
+LWIPFILES=$(LWIPNOAPPSFILES) $(ARCHFILES)
 LWIPOBJS=$(notdir $(LWIPFILES:.c=.o))
 
 LWIPLIBCOMMON=liblwipcommon.a
 $(LWIPLIBCOMMON): $(LWIPOBJS)
 	$(AR) $(ARFLAGS) $(LWIPLIBCOMMON) $?
 
-APPFILES=$(CONTRIBAPPFILES)
+APPFILES=$(CONTRIBAPPFILES) $(LWIPAPPFILES)
 APPLIB=liblwipapps.a
 APPOBJS=$(notdir $(APPFILES:.c=.o))
 $(APPLIB): $(APPOBJS)
