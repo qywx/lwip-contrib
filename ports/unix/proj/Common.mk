@@ -54,12 +54,11 @@ ARFLAGS=rs
 #default assumes it's a dir named lwip at the same level as the contrib module
 LWIPDIR=$(CONTRIBDIR)/../lwip/src
 
-CFLAGS:=$(CFLAGS) \
-	-I. -I$(CONTRIBDIR)/apps/httpserver_raw -I$(CONTRIBDIR)/apps/shell \
-	-I$(CONTRIBDIR)/apps/tcpecho -I$(CONTRIBDIR)/apps/udpecho \
+CFLAGS+=-I. \
+	-I$(CONTRIBDIR) \
 	-I$(CONTRIBDIR)/apps/snmp_private_mib \
-	-I$(CONTRIBDIR)/apps/tcpecho_raw \
-	-I$(LWIPDIR)/include -I$(LWIPARCH)/include -I$(LWIPDIR)
+	-I$(LWIPDIR)/include \
+	-I$(LWIPARCH)/include
 
 include $(CONTRIBDIR)/ports/Filelists.mk
 include $(LWIPDIR)/Filelists.mk

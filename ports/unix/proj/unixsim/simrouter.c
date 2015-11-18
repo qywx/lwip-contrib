@@ -60,9 +60,9 @@
 #include "arch/perf.h"
 
 #include "lwip/apps/httpd.h"
-#include "udpecho.h"
-#include "tcpecho.h"
-#include "shell.h"
+#include "apps/udpecho/udpecho.h"
+#include "apps/tcpecho/tcpecho.h"
+#include "apps/shell/shell.h"
 
 #if LWIP_IPV4 /* @todo: IPv6 */
 

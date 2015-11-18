@@ -51,7 +51,7 @@
 #include "netif/tapif.h"
 #include "netif/etharp.h"
 
-#include "echo.h"
+#include "apps/tcpecho_raw/echo.h"
 #include "private_mib.h"
 
 /* (manual) host IP configuration */
