@@ -72,7 +72,7 @@ static void
 tcp_timeout(void *data)
 {
   LWIP_UNUSED_ARG(data);
-#if TCP_DEBUG
+#if TCP_DEBUG && LWIP_TCP
   tcp_debug_print_pcbs();
 #endif /* TCP_DEBUG */
   sys_timeout(5000, tcp_timeout, NULL);
@@ -100,10 +100,14 @@ tcpip_init_done(void *arg)
   /*  netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, sioslipif_init1,
 			      tcpip_input)); */
 
+#if LWIP_NETCONN
   tcpecho_init();
   shell_init();
+#if LWIP_IPV4 && LWIP_TCP
   httpd_init();
+#endif
   udpecho_init();
+#endif
 
   printf("Applications started.\n");
 
@@ -141,8 +145,10 @@ main(void)
   perf_init("/tmp/client.perf");
 #endif /* PERF */
 
+#if LWIP_IPV4 && LWIP_TCP
   tcpdump_init();
-
+#endif
+  
   printf("System initialized.\n");
 
   sys_thread_new("main_thread", main_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);

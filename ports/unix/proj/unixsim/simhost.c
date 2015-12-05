@@ -523,12 +523,12 @@ init_netifs(void)
   netif_add(&ipaddr, &netmask, &gw, NULL, pcapif_init, tcpip_input);
 #endif
   
-#if LWIP_TCP  
+#if LWIP_TCP && LWIP_NETCONN
   tcpecho_init();
   shell_init();
   httpd_init();
 #endif
-#if LWIP_UDP  
+#if LWIP_UDP && LWIP_NETCONN  
   udpecho_init();
 #endif  
   /*  sys_timeout(5000, tcp_debug_timeout, NULL);*/

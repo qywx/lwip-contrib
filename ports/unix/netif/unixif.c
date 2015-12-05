@@ -224,7 +224,9 @@ unixif_input_handler(void *data)
       pbuf_take(p, buf, len);
       pbuf_realloc(p, len);
       LINK_STATS_INC(link.recv);
+#if LWIP_IPV4 && LWIP_TCP
       tcpdump(p);
+#endif
       netif->input(p, netif);
     } else {
       LWIP_DEBUGF(UNIXIF_DEBUG, ("unixif_irq_handler: could not allocate pbuf\n"));
@@ -388,7 +390,9 @@ unixif_output_timeout(void *arg)
     perror("unixif_output: write");
     abort();
   }
+#if LWIP_IPV4 && LWIP_TCP
   tcpdump(p);
+#endif
   LINK_STATS_INC(link.xmit);
 
   free(data);
