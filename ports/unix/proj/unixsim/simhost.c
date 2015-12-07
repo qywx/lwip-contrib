@@ -198,15 +198,20 @@ static int seq_num;
 
 #if 0
 /* Ping using the raw api */
-static int
-ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, ip4_addr_t *addr)
+static u8_t
+ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
 {
+  LWIP_UNUSED_ARG(arg);
+  LWIP_UNUSED_ARG(pcb);
+  LWIP_UNUSED_ARG(p);
+  LWIP_UNUSED_ARG(addr);
+
   printf("ping recv\n");
   return 1; /* eat the event */
 }
 
 static void
-ping_send(struct raw_pcb *raw, ip4_addr_t *addr)
+ping_send(struct raw_pcb *raw, ip_addr_t *addr)
 {
   struct pbuf *p;
   struct icmp_echo_hdr *iecho;
@@ -214,13 +219,13 @@ ping_send(struct raw_pcb *raw, ip4_addr_t *addr)
   p = pbuf_alloc(PBUF_IP,sizeof(struct icmp_echo_hdr),PBUF_RAM);
   if (!p) return;
 
-  iecho = p->payload;
+  iecho = (struct icmp_echo_hdr*)p->payload;
   ICMPH_TYPE_SET(iecho,ICMP_ECHO);
   iecho->chksum = 0;
   iecho->seqno = htons(seq_num);
 
   iecho->chksum = inet_chksum(iecho, p->len);
-  raw_send_to(raw,p,addr);
+  raw_sendto(raw, p, addr);
 
   pbuf_free(p);
 
@@ -232,9 +237,11 @@ ping_thread(void *arg)
 {
   struct raw_pcb *raw;
 
+  LWIP_UNUSED_ARG(arg);
+
   if (!(raw = raw_new(IP_PROTO_ICMP))) return;
 
-  raw_recv(raw,ping_recv,NULL);
+  raw_recv(raw, ping_recv, NULL);
 
   while (1)
   {
