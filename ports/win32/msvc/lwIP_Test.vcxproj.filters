@@ -22,15 +22,6 @@
     <ClCompile Include="..\..\..\apps\tcpecho_raw\echo.c">
       <Filter>Source Files\apps</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\apps\httpserver_raw\fs.c">
-      <Filter>Source Files\apps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\apps\httpserver_raw\fsdata.c">
-      <Filter>Source Files\apps</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\apps\httpserver_raw\httpd.c">
-      <Filter>Source Files\apps</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\apps\httpserver\httpserver-netconn.c">
       <Filter>Source Files\apps</Filter>
     </ClCompile>
@@ -67,15 +58,6 @@
       <Filter>Source Files\apps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\apps\tcpecho_raw\echo.h">
-      <Filter>Source Files\apps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\apps\httpserver_raw\fs.h">
-      <Filter>Source Files\apps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\apps\httpserver_raw\fsdata.h">
-      <Filter>Source Files\apps</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\apps\httpserver_raw\httpd.h">
       <Filter>Source Files\apps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\apps\httpserver\httpserver-netconn.h">

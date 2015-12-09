@@ -10,6 +10,9 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\makefsdata\makefsdata.c" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0BFC0F21-8E84-4E68-A9E1-CE2A09B72F6D}</ProjectGuid>
     <RootNamespace>makefsdata</RootNamespace>
@@ -90,9 +93,6 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\apps\httpserver_raw\makefsdata\makefsdata.c" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

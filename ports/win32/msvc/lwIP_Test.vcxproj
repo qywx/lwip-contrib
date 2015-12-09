@@ -133,12 +133,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\apps\chargen\chargen.c" />
     <ClCompile Include="..\..\..\apps\tcpecho_raw\echo.c" />
-    <ClCompile Include="..\..\..\apps\httpserver_raw\fs.c" />
-    <ClCompile Include="..\..\..\apps\httpserver_raw\fsdata.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\apps\httpserver_raw\httpd.c" />
     <ClCompile Include="..\..\..\apps\httpserver\httpserver-netconn.c" />
     <ClCompile Include="..\..\..\apps\netio\netio.c" />
     <ClCompile Include="..\..\..\apps\ping\ping.c" />
@@ -153,9 +147,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\apps\chargen\chargen.h" />
     <ClInclude Include="..\..\..\apps\tcpecho_raw\echo.h" />
-    <ClInclude Include="..\..\..\apps\httpserver_raw\fs.h" />
-    <ClInclude Include="..\..\..\apps\httpserver_raw\fsdata.h" />
-    <ClInclude Include="..\..\..\apps\httpserver_raw\httpd.h" />
     <ClInclude Include="..\..\..\apps\httpserver\httpserver-netconn.h" />
     <ClInclude Include="..\..\..\apps\netio\netio.h" />
     <ClInclude Include="..\..\..\apps\ping\ping.h" />

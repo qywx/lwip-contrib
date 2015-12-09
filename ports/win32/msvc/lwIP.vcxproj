@@ -307,6 +307,9 @@
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\md4.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\md5.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\sha1.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\fs.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\fsdata.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\httpd.c" />
     <ClCompile Include="..\sio.c" />
     <ClCompile Include="..\sys_arch.c" />
   </ItemGroup>
@@ -400,6 +403,8 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\polarssl\sha1.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\posix\netdb.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\posix\sys\socket.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\apps\httpd\fsdata.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\apps\httpd\httpd_structs.h" />
     <ClInclude Include="..\include\arch\bpstruct.h" />
     <ClInclude Include="..\include\arch\cc.h" />
     <ClInclude Include="..\include\arch\epstruct.h" />

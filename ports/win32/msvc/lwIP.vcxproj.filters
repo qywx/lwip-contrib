@@ -73,6 +73,9 @@
     <Filter Include="arch">
       <UniqueIdentifier>{2e87d0f7-38a3-45f8-870d-f8622c20e9d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\apps\httpd">
+      <UniqueIdentifier>{45f6a578-1f4b-4741-9b55-5b5084ecc1d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(LWIP_DIR)\CHANGELOG" />
@@ -335,6 +338,15 @@
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_msg.h">
       <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\httpd.c">
+      <Filter>src\apps\httpd</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\fsdata.c">
+      <Filter>src\apps\httpd</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\fs.c">
+      <Filter>src\apps\httpd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -625,6 +637,12 @@
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\api_msg.h">
       <Filter>src\include\lwip\priv</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\apps\httpd\httpd_structs.h">
+      <Filter>src\apps\httpd</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\apps\httpd\fsdata.h">
+      <Filter>src\apps\httpd</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

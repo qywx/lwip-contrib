@@ -179,7 +179,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\apps\httpserver_raw\makefsdata\makefsdata.c"
+				RelativePath="$(LWIP_DIR)\apps\httpd\makefsdata\makefsdata.c"
 				>
 			</File>
 		</Filter>
