@@ -82,12 +82,21 @@
 #include "lwip/apps/netbiosns.h"
 #include "lwip/apps/sntp.h"
 #include "lwip/apps/snmp.h"
+#include "lwip/apps/snmp_mib2.h"
+#include "apps/snmp_private_mib/private_mib.h"
 
 #if LWIP_RAW
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
 #include "ports/unix/proj/lib/lwipopts.h"
 #endif
+
+static const struct snmp_mib *mibs[] = {
+  &mib2
+#if SNMP_PRIVATE_MIB
+  , &mib_private
+#endif /* SNMP_PRIVATE_MIB */
+};
 
 #if LWIP_IPV4
 /* (manual) host IP configuration */
@@ -186,6 +195,10 @@ tcpip_init_done(void *arg)
 #endif /* LWIP_DHCP */
   sntp_init();
 
+#if SNMP_PRIVATE_MIB
+  lwip_privmib_init();
+#endif /* SNMP_PRIVATE_MIB */
+  snmp_set_mibs(mibs, LWIP_ARRAYSIZE(mibs));
   snmp_init();
   
   sys_sem_signal(sem);

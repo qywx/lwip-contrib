@@ -6,22 +6,19 @@
 #ifndef LWIP_HDR_PRIVATE_MIB_H
 #define LWIP_HDR_PRIVATE_MIB_H
 
-#include "arch/cc.h"
 #include "lwip/apps/snmp_opts.h"
 
 #if SNMP_PRIVATE_MIB
-#include "lwip/apps/snmp_structs.h"
+#include "lwip/apps/snmp_core.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* export MIB */
-extern const struct mib_array_node mib_private;
+extern const struct snmp_mib mib_private;
 
 void lwip_privmib_init(void);
-
-#define SNMP_PRIVATE_MIB_INIT() lwip_privmib_init()
 
 #ifdef __cplusplus
 }
