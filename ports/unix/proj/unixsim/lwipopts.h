@@ -223,9 +223,9 @@ extern void sntp_set_system_time(u32_t sec);
 /** @todo SNMP is experimental for now
     @note UDP must be available for SNMP transport */
 #define LWIP_SNMP               1
-#define LWIP_MIB2_CALLBACKS     LWIP_SNMP
+#define LWIP_MIB2_CALLBACKS     0
 #define MIB2_STATS              LWIP_SNMP
-#define SNMP_PRIVATE_MIB        LWIP_SNMP
+#define SNMP_PRIVATE_MIB        0
 
 /* ---------- DNS options ---------- */
 #define LWIP_DNS                1

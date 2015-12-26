@@ -51,8 +51,10 @@
 #include "netif/tapif.h"
 #include "netif/etharp.h"
 
+#include "lwip/apps/snmp.h"
+#include "lwip/apps/snmp_mib2.h"
+
 #include "apps/tcpecho_raw/echo.h"
-#include "private_mib.h"
 
 /* (manual) host IP configuration */
 static ip4_addr_t ipaddr, netmask, gw;
@@ -67,12 +69,6 @@ static ip_addr_t trap_addr;
 unsigned char debug_flags;
 
 #if LWIP_SNMP
-/* 'non-volatile' SNMP settings
-  @todo: make these truly non-volatile */
-u8_t syscontact_str[255];
-u8_t syscontact_len = 0;
-u8_t syslocation_str[255];
-u8_t syslocation_len = 0;
 /* enable == 1, disable == 2 */
 u8_t snmpauthentraps_set = 2;
 #endif
@@ -188,11 +184,11 @@ main(int argc, char **argv)
   lwip_privmib_init();
 #endif
 #if LWIP_SNMP
-  snmp_trap_dst_ip_set(0,&trap_addr);
-  snmp_trap_dst_enable(0,trap_flag);
-  snmp_set_syscontact(syscontact_str,&syscontact_len,sizeof syscontact_str);
-  snmp_set_syslocation(syslocation_str,&syslocation_len,sizeof syslocation_str);
-  snmp_set_snmpenableauthentraps(&snmpauthentraps_set);
+  /* snmp_trap_dst_ip_set(0,&trap_addr); */
+  /* snmp_trap_dst_enable(0,trap_flag); */
+  snmp_mib2_set_syscontact_readonly((const u8_t*)"root", NULL);
+  snmp_mib2_set_syslocation_readonly((const u8_t*)"lwIP development PC", NULL);
+  /* snmp_set_snmpenableauthentraps(&snmpauthentraps_set); */
   snmp_init();
 #endif
 
