@@ -56,7 +56,6 @@ LWIPDIR=$(CONTRIBDIR)/../lwip/src
 
 CFLAGS+=-I. \
 	-I$(CONTRIBDIR) \
-	-I$(CONTRIBDIR)/apps/snmp_private_mib \
 	-I$(LWIPDIR)/include \
 	-I$(LWIPARCH)/include
 

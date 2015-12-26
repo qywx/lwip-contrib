@@ -63,6 +63,13 @@ static ip4_addr_t ipaddr, netmask, gw;
 /* SNMP trap destination cmd option */
 static unsigned char trap_flag;
 static ip_addr_t trap_addr;
+
+static const struct snmp_mib *mibs[] = {
+  &mib2
+#if SNMP_PRIVATE_MIB
+  , &mib_private
+#endif /* SNMP_PRIVATE_MIB */
+};
 #endif
 
 /* nonstatic debug cmd option, exported in lwipopts.h */
@@ -178,19 +185,25 @@ main(int argc, char **argv)
   netif_create_ip6_linklocal_address(&netif, 1);
 #endif 
 
-  snmp_init();
-#if SNMP_PRIVATE_MIB != 0
+#if LWIP_SNMP
+#if SNMP_PRIVATE_MIB
   /* initialize our private example MIB */
   lwip_privmib_init();
 #endif
-#if LWIP_SNMP
+
   /* snmp_trap_dst_ip_set(0,&trap_addr); */
   /* snmp_trap_dst_enable(0,trap_flag); */
+
+#if SNMP_LWIP_MIB2
   snmp_mib2_set_syscontact_readonly((const u8_t*)"root", NULL);
   snmp_mib2_set_syslocation_readonly((const u8_t*)"lwIP development PC", NULL);
+  snmp_mib2_set_sysdescr((const u8_t*)"minimal example", NULL);
+#endif /* SNMP_LWIP_MIB2 */
+
   /* snmp_set_snmpenableauthentraps(&snmpauthentraps_set); */
+  snmp_set_mibs(mibs, LWIP_ARRAYSIZE(mibs));
   snmp_init();
-#endif
+#endif /* LWIP_SNMP */
 
   echo_init();
 
