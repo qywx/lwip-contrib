@@ -114,9 +114,11 @@ static u16_t      sensor_table_get_value(struct snmp_node_instance* instance, vo
 static snmp_err_t sensor_table_set_value(struct snmp_node_instance* instance, u16_t len, void *value);
 
 /* sensorentry .1.3.6.1.4.1.26381.1.1.1 (.level0.level1)
-   where level 0 is the object identifier (temperature) and level 1 the index */
+   where level 0 is the table column (temperature/file name)
+   and level 1 the table row (sensor index) */
 static const struct snmp_table_col_def sensor_table_columns[] = {
-  { 1, SNMP_ASN1_TYPE_INTEGER, SNMP_NODE_INSTANCE_READ_WRITE }
+  { 1, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_WRITE },
+  { 2, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY }
 };
 
 /* sensortable .1.3.6.1.4.1.26381.1.1 */
@@ -310,24 +312,32 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
   u32_t i = instance->reference.u32;
   s32_t *temperature = (s32_t *)value;
 
-#if SENSORS_USE_FILES
-  FILE* sensf;
-  char senspath[sizeof(SENSORS_DIR)+1+SENSOR_NAME_LEN+1] = SENSORS_DIR"/";
-
-  strncpy(&senspath[sizeof(SENSORS_DIR)],
-          sensors[i].file,
-          SENSOR_NAME_LEN);
-  sensf = fopen(senspath,"r");
-  if (sensf != NULL)
+  switch (SNMP_TABLE_GET_COLUMN_FROM_OID(instance->instance_oid.id))
   {
-    fscanf(sensf,"%"S32_F,temperature);
-    fclose(sensf);
-  }
-#else /* SENSORS_USE_FILES */
-  *temperature = sensors[i].value;
-#endif /* SENSORS_USE_FILES */
+  case 1: /* sensor value */
+#if SENSORS_USE_FILES
+    FILE* sensf;
+    char senspath[sizeof(SENSORS_DIR)+1+SENSOR_NAME_LEN+1] = SENSORS_DIR"/";
 
-  return sizeof(s32_t);
+    strncpy(&senspath[sizeof(SENSORS_DIR)],
+            sensors[i].file,
+            SENSOR_NAME_LEN);
+    sensf = fopen(senspath,"r");
+    if (sensf != NULL)
+    {
+      fscanf(sensf,"%"S32_F,temperature);
+      fclose(sensf);
+    }
+#else /* SENSORS_USE_FILES */
+    *temperature = sensors[i].value;
+#endif /* SENSORS_USE_FILES */
+    return sizeof(s32_t);
+  case 2: /* file name */
+    MEMCPY(value, sensors[i].file, strlen(sensors[i].file));
+    return strlen(sensors[i].file);
+  default:
+    return 0;
+  }
 }
 
 static snmp_err_t
