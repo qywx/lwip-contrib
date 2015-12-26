@@ -86,6 +86,7 @@
 #if LWIP_RAW
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
+#include "ports/unix/proj/lib/lwipopts.h"
 #endif
 
 #if LWIP_IPV4
@@ -192,68 +193,11 @@ tcpip_init_done(void *arg)
 
 /*-----------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------*/
-#if LWIP_RAW
+#if LWIP_SOCKET
+
+/* Ping using the socket api */
 
 static int seq_num;
-
-#if 0
-/* Ping using the raw api */
-static u8_t
-ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
-{
-  LWIP_UNUSED_ARG(arg);
-  LWIP_UNUSED_ARG(pcb);
-  LWIP_UNUSED_ARG(p);
-  LWIP_UNUSED_ARG(addr);
-
-  printf("ping recv\n");
-  return 1; /* eat the event */
-}
-
-static void
-ping_send(struct raw_pcb *raw, ip_addr_t *addr)
-{
-  struct pbuf *p;
-  struct icmp_echo_hdr *iecho;
-
-  p = pbuf_alloc(PBUF_IP,sizeof(struct icmp_echo_hdr),PBUF_RAM);
-  if (!p) return;
-
-  iecho = (struct icmp_echo_hdr*)p->payload;
-  ICMPH_TYPE_SET(iecho,ICMP_ECHO);
-  iecho->chksum = 0;
-  iecho->seqno = htons(seq_num);
-
-  iecho->chksum = inet_chksum(iecho, p->len);
-  raw_sendto(raw, p, addr);
-
-  pbuf_free(p);
-
-  seq_num++;
-}
-
-static void
-ping_thread(void *arg)
-{
-  struct raw_pcb *raw;
-
-  LWIP_UNUSED_ARG(arg);
-
-  if (!(raw = raw_new(IP_PROTO_ICMP))) return;
-
-  raw_recv(raw, ping_recv, NULL);
-
-  while (1)
-  {
-    printf("ping send\n");
-    ping_send(raw,&ping_addr);
-    sleep(1);
-  }
-  /* Never reaches this */
-  raw_remove(raw);
-}
-#else
-/* Ping using the socket api */
 
 static void
 ping_send(int s, const ip_addr_t *addr)
@@ -339,9 +283,8 @@ ping_thread(void *arg)
     sleep(1);
   }
 }
-#endif
 
-#endif
+#endif /* LWIP_SOCKET */
 
 #if PPP_SUPPORT
 sio_fd_t ppp_sio;
@@ -555,8 +498,7 @@ main_thread(void *arg)
   sys_sem_wait(&sem);
   printf("TCP/IP initialized.\n");
 
-#if LWIP_RAW
-  /** @todo remove dependency on RAW PCB support */
+#if LWIP_SOCKET
   if(ping_flag) {
     sys_thread_new("ping_thread", ping_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   }
