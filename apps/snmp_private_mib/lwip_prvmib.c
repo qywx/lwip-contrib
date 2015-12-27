@@ -108,6 +108,7 @@ struct sensor_inf
 
 static struct sensor_inf sensors[SENSOR_MAX];
 
+static u16_t sensor_count_get_value(struct snmp_node_instance* instance, void* value);
 static snmp_err_t sensor_table_get_cell_instance(const u32_t* column, const u32_t* row_oid, const u8_t row_oid_len, struct snmp_node_instance* cell_instance);
 static snmp_err_t sensor_table_get_next_cell_instance(const u32_t* column, struct snmp_obj_id* row_oid, struct snmp_node_instance* cell_instance);
 static u16_t      sensor_table_get_value(struct snmp_node_instance* instance, void* value);
@@ -118,7 +119,7 @@ static snmp_err_t sensor_table_set_value(struct snmp_node_instance* instance, u1
    and level 1 the table row (sensor index) */
 static const struct snmp_table_col_def sensor_table_columns[] = {
   { 1, SNMP_ASN1_TYPE_INTEGER,      SNMP_NODE_INSTANCE_READ_WRITE },
-  { 2, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY }
+  { 2, SNMP_ASN1_TYPE_OCTET_STRING, SNMP_NODE_INSTANCE_READ_ONLY  }
 };
 
 /* sensortable .1.3.6.1.4.1.26381.1.1 */
@@ -127,11 +128,22 @@ static const struct snmp_table_node sensor_table = SNMP_TABLE_CREATE(
   sensor_table_get_cell_instance, sensor_table_get_next_cell_instance, 
   sensor_table_get_value, snmp_set_test_ok, sensor_table_set_value);
 
+/* sensorcount .1.3.6.1.4.1.26381.1.2 */
+static const struct snmp_scalar_node sensor_count = SNMP_SCALAR_CREATE_NODE_READONLY(
+  2, SNMP_ASN1_TYPE_INTEGER, sensor_count_get_value); 
+
 /* example .1.3.6.1.4.1.26381.1 */
 static const struct snmp_node* example_nodes[] = {
-  &sensor_table.node.node
+  &sensor_table.node.node,
+  &sensor_count.node.node
 };
 static const struct snmp_tree_node example_node = SNMP_CREATE_TREE_NODE(1, example_nodes);
+
+static const u32_t prvmib_base_oid[] = { 1,3,6,1,4,1,26381,1 };
+const struct snmp_mib mib_private = SNMP_MIB_CREATE(prvmib_base_oid, &example_node.node);
+
+#if 0
+/* for reference: we could also have expressed it like this: */
 
 /* lwip .1.3.6.1.4.1.26381 */
 static const struct snmp_node* lwip_nodes[] = {
@@ -153,7 +165,7 @@ static const struct snmp_tree_node private_root = SNMP_CREATE_TREE_NODE(0, priva
 
 static const u32_t prvmib_base_oid[] = { 1,3,6,1,4 };
 const struct snmp_mib mib_private = SNMP_MIB_CREATE(prvmib_base_oid, &private_root.node);
-
+#endif
 
 /**
  * Initialises this private MIB before use.
@@ -234,6 +246,26 @@ lwip_privmib_init(void)
 #endif /* SENSORS_USE_FILE && SENSORS_SEARCH_FILES */
 }
 
+/* sensorcount .1.3.6.1.4.1.26381.1.2 */
+static u16_t
+sensor_count_get_value(struct snmp_node_instance* instance, void* value)
+{
+  size_t count = 0;
+  u32_t *uint_ptr = (u32_t*)value;
+
+  LWIP_UNUSED_ARG(instance);
+  
+  for(count=0; count<LWIP_ARRAYSIZE(sensors); count++) {
+    if(sensors[count].num == 0) {
+      *uint_ptr = (u32_t)(count + 1);
+      return sizeof(*uint_ptr);
+    }
+  }
+
+  return 0;  
+}
+
+/* sensortable .1.3.6.1.4.1.26381.1.1 */
 /* list of allowed value ranges for incoming OID */
 static const struct snmp_oid_range sensor_table_oid_ranges[] = {
   { 1, SENSOR_MAX+1 }
