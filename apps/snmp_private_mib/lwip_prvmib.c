@@ -257,7 +257,7 @@ sensor_count_get_value(struct snmp_node_instance* instance, void* value)
   
   for(count=0; count<LWIP_ARRAYSIZE(sensors); count++) {
     if(sensors[count].num == 0) {
-      *uint_ptr = (u32_t)(count + 1);
+      *uint_ptr = (u32_t)count;
       return sizeof(*uint_ptr);
     }
   }

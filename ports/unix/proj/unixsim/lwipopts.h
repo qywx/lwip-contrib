@@ -223,6 +223,8 @@ extern void sntp_set_system_time(u32_t sec);
 #define LWIP_SNMP               1
 #define MIB2_STATS              LWIP_SNMP
 #define SNMP_PRIVATE_MIB        LWIP_SNMP
+#define SNMP_USE_NETCONN        LWIP_NETCONN
+#define SNMP_USE_RAW            (!LWIP_NETCONN)
 
 /* ---------- DNS options ---------- */
 #define LWIP_DNS                1
