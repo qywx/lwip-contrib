@@ -191,6 +191,9 @@ main(int argc, char **argv)
   /* snmp_trap_dst_enable(0,trap_flag); */
 
 #if SNMP_LWIP_MIB2
+#if SNMP_USE_NETCONN
+  snmp_threadsync_init(&snmp_mib2_lwip_locks, snmp_mib2_lwip_synchronizer);
+#endif
   snmp_mib2_set_syscontact_readonly((const u8_t*)"root", NULL);
   snmp_mib2_set_syslocation_readonly((const u8_t*)"lwIP development PC", NULL);
   snmp_mib2_set_sysdescr((const u8_t*)"minimal example", NULL);
