@@ -182,8 +182,10 @@ tcpip_init_done(void *arg)
 
   init_netifs();
 
+#if LWIP_IPV4
   netbiosns_set_name("simhost");
   netbiosns_init();
+#endif /* LWIP_IPV4 */
 
   sntp_setoperatingmode(SNTP_OPMODE_POLL);
 #if LWIP_DHCP
@@ -200,7 +202,7 @@ tcpip_init_done(void *arg)
 #if SNMP_LWIP_MIB2
 #if SNMP_USE_NETCONN
   snmp_threadsync_init(&snmp_mib2_lwip_locks, snmp_mib2_lwip_synchronizer);
-#endif
+#endif /* SNMP_USE_NETCONN */
   snmp_mib2_set_syscontact_readonly((const u8_t*)"root", NULL);
   snmp_mib2_set_syslocation_readonly((const u8_t*)"lwIP development PC", NULL);
   snmp_mib2_set_sysdescr((const u8_t*)"simhost", NULL);
