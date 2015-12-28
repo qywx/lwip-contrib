@@ -65,10 +65,8 @@ static unsigned char trap_flag;
 static ip_addr_t trap_addr;
 
 static const struct snmp_mib *mibs[] = {
-  &mib2
-#if SNMP_PRIVATE_MIB
-  , &mib_private
-#endif /* SNMP_PRIVATE_MIB */
+  &mib2,
+  &mib_private
 };
 #endif
 
@@ -186,10 +184,8 @@ main(int argc, char **argv)
 #endif 
 
 #if LWIP_SNMP
-#if SNMP_PRIVATE_MIB
   /* initialize our private example MIB */
   lwip_privmib_init();
-#endif
 
   /* snmp_trap_dst_ip_set(0,&trap_addr); */
   /* snmp_trap_dst_enable(0,trap_flag); */

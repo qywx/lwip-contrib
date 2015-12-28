@@ -8,7 +8,6 @@
 
 #include "lwip/apps/snmp_opts.h"
 
-#if SNMP_PRIVATE_MIB
 #include "lwip/apps/snmp_core.h"
 
 #ifdef __cplusplus
@@ -23,7 +22,5 @@ void lwip_privmib_init(void);
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* SNMP_PRIVATE_MIB */
 
 #endif

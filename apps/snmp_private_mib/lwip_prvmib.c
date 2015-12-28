@@ -44,8 +44,6 @@
 
 #include "private_mib.h"
 
-#if SNMP_PRIVATE_MIB
-
 /** Directory where the sensor files are */
 #define SENSORS_DIR           "w:\\sensors"
 /** Set to 1 to read sensor values from files (in directory defined by SENSORS_DIR) */
@@ -398,5 +396,3 @@ sensor_table_set_value(struct snmp_node_instance* instance, u16_t len, void *val
 
   return SNMP_ERR_NOERROR;
 }
-
-#endif /* SNMP_PRIVATE_MIB */

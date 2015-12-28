@@ -93,10 +93,8 @@
 
 #if LWIP_SNMP
 static const struct snmp_mib *mibs[] = {
-  &mib2
-#if SNMP_PRIVATE_MIB
-  , &mib_private
-#endif /* SNMP_PRIVATE_MIB */
+  &mib2,
+  &mib_private
 };
 #endif /* LWIP_SNMP */
 
@@ -198,9 +196,7 @@ tcpip_init_done(void *arg)
   sntp_init();
 
 #if LWIP_SNMP
-#if SNMP_PRIVATE_MIB
   lwip_privmib_init();
-#endif /* SNMP_PRIVATE_MIB */
 #if SNMP_LWIP_MIB2
   snmp_mib2_set_syscontact_readonly((const u8_t*)"root", NULL);
   snmp_mib2_set_syslocation_readonly((const u8_t*)"lwIP development PC", NULL);
