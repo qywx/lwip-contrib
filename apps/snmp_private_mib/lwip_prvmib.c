@@ -107,7 +107,7 @@ struct sensor_inf
 static struct sensor_inf sensors[SENSOR_MAX];
 
 static u16_t sensor_count_get_value(struct snmp_node_instance* instance, void* value);
-static snmp_err_t sensor_table_get_cell_instance(const u32_t* column, const u32_t* row_oid, const u8_t row_oid_len, struct snmp_node_instance* cell_instance);
+static snmp_err_t sensor_table_get_cell_instance(const u32_t* column, const u32_t* row_oid, u8_t row_oid_len, struct snmp_node_instance* cell_instance);
 static snmp_err_t sensor_table_get_next_cell_instance(const u32_t* column, struct snmp_obj_id* row_oid, struct snmp_node_instance* cell_instance);
 static u16_t      sensor_table_get_value(struct snmp_node_instance* instance, void* value);
 static snmp_err_t sensor_table_set_value(struct snmp_node_instance* instance, u16_t len, void *value);
@@ -270,7 +270,7 @@ static const struct snmp_oid_range sensor_table_oid_ranges[] = {
 };
 
 static snmp_err_t
-sensor_table_get_cell_instance(const u32_t* column, const u32_t* row_oid, const u8_t row_oid_len, struct snmp_node_instance* cell_instance)
+sensor_table_get_cell_instance(const u32_t* column, const u32_t* row_oid, u8_t row_oid_len, struct snmp_node_instance* cell_instance)
 {
   u32_t sensor_num;
   size_t i;
