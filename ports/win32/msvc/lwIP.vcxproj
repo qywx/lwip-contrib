@@ -236,12 +236,6 @@
     <ClCompile Include="$(LWIP_DIR)\src\api\tcpip.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\lwiperf\lwiperf.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\netbiosns\netbiosns.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\asn1_dec.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\asn1_enc.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\mib2.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\mib_structs.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\msg_in.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\msg_out.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\sntp\sntp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\def.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\dns.c" />
@@ -310,6 +304,17 @@
     <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\fs.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\fsdata.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\httpd.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_asn1.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_core.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_msg.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_netconn.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_pbuf_stream.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_raw.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_scalar.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_table.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_threadsync.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_traps.c" />
     <ClCompile Include="..\sio.c" />
     <ClCompile Include="..\sys_arch.c" />
   </ItemGroup>
@@ -319,9 +324,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\netbiosns.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\netbiosns_opts.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp.h" />
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_asn1.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_opts.h" />
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_structs.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\sntp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\sntp_opts.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\api_msg.h" />
@@ -405,6 +408,14 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\posix\sys\socket.h" />
     <ClInclude Include="$(LWIP_DIR)\src\apps\httpd\fsdata.h" />
     <ClInclude Include="$(LWIP_DIR)\src\apps\httpd\httpd_structs.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmp_asn1.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmp_core_priv.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmp_pbuf_stream.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_core.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_mib2.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_scalar.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_table.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_threadsync.h" />
     <ClInclude Include="..\include\arch\bpstruct.h" />
     <ClInclude Include="..\include\arch\cc.h" />
     <ClInclude Include="..\include\arch\epstruct.h" />
