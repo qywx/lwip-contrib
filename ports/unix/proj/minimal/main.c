@@ -54,6 +54,7 @@
 #include "lwip/apps/snmp.h"
 #include "lwip/apps/snmp_mib2.h"
 
+#include "apps/snmp_private_mib/private_mib.h"
 #include "apps/tcpecho_raw/echo.h"
 
 /* (manual) host IP configuration */
