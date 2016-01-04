@@ -180,7 +180,7 @@ lwip_privmib_init(void)
   struct dirent *dp;
   int fd;
 #else /* SENSORS_USE_FILES && SENSORS_SEARCH_FILES */
-  int i;
+  u8_t i;
 #endif /* SENSORS_USE_FILES && SENSORS_SEARCH_FILES */
 
   memset(sensors, 0, sizeof(sensors));
@@ -364,7 +364,7 @@ sensor_table_get_value(struct snmp_node_instance* instance, void* value)
     return sizeof(s32_t);
   case 2: /* file name */
     MEMCPY(value, sensors[i].file, strlen(sensors[i].file));
-    return strlen(sensors[i].file);
+    return (u16_t)strlen(sensors[i].file);
   default:
     return 0;
   }

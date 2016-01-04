@@ -39,7 +39,6 @@
 #define LWIP_IGMP                  1
 #define LWIP_ICMP                  1
 #define LWIP_SNMP                  1
-#define LWIP_MIB2_CALLBACKS        LWIP_SNMP
 #define MIB2_STATS                 LWIP_SNMP
 
 #define LWIP_DNS                   1
