@@ -312,7 +312,27 @@ ping_thread(void *arg)
 
 #if PPP_SUPPORT
 sio_fd_t ppp_sio;
+ppp_pcb *ppp;
 struct netif pppos_netif;
+
+static void
+pppos_rx_thread(void *arg)
+{
+  u32_t len;
+  u8_t buffer[128];
+  LWIP_UNUSED_ARG(arg);
+
+  /* Please read the "PPPoS input path" chapter in the PPP documentation. */
+  while (1) {
+    len = sio_read(ppp_sio, buffer, sizeof(buffer));
+    if (len > 0) {
+      /* Pass received raw characters from PPPoS to be decoded through lwIP
+       * TCPIP thread using the TCPIP API. This is thread safe in all cases
+       * but you should avoid passing data byte after byte. */
+      pppos_input_tcpip(ppp, buffer, len);
+    }
+  }
+}
 
 static void
 ppp_link_status_cb(ppp_pcb *pcb, int err_code, void *ctx)
@@ -434,7 +454,6 @@ static void
 init_netifs(void)
 {
 #if PPP_SUPPORT
-  ppp_pcb *ppp;
 #if PPP_PTY_TEST
   ppp_sio = sio_open(2);
 #else
@@ -538,6 +557,7 @@ main_thread(void *arg)
     stats_display();
 #endif
   /* Block forever. */
+  sys_thread_new("pppos_rx_thread", pppos_rx_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   sys_sem_wait(&sem);
 }
 /*-----------------------------------------------------------------------------------*/
