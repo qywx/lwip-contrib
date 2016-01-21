@@ -343,6 +343,9 @@ sio_fd_t sio_open(u8_t devnum)
 #else
 			"noauth",
 #endif
+#if LWIP_IPV6
+			"+ipv6",
+#endif
 			"192.168.1.1:192.168.1.2",
 			NULL);
 		perror("execl pppd");
