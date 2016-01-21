@@ -66,6 +66,11 @@
 
 #include "netif/tcpdump.h"
 
+#if LWIP_HAVE_SLIPIF
+#include "netif/slipif.h"
+#define SLIP_PTY_TEST 1
+#endif
+
 #if PPP_SUPPORT
 #include "netif/ppp/pppos.h"
 #define PPP_PTY_TEST 1
@@ -310,6 +315,12 @@ ping_thread(void *arg)
 
 #endif /* LWIP_SOCKET */
 
+#if LWIP_HAVE_SLIPIF
+/* (manual) host IP configuration */
+static ip_addr_t ipaddr_slip, netmask_slip, gw_slip;
+struct netif slipif;
+#endif /* LWIP_HAVE_SLIPIF */
+
 #if PPP_SUPPORT
 sio_fd_t ppp_sio;
 ppp_pcb *ppp;
@@ -454,6 +465,29 @@ netif_status_callback(struct netif *nif)
 static void
 init_netifs(void)
 {
+#if LWIP_HAVE_SLIPIF
+#if SLIP_PTY_TEST
+  u8_t siodev_slip = 3;
+#else
+  u8_t siodev_slip = 0;
+#endif
+
+#if LWIP_IPV4
+  netif_add(&slipif, ip_2_ip4(&ipaddr_slip), ip_2_ip4(&netmask_slip), ip_2_ip4(&gw_slip),
+            (void*)&siodev_slip, slipif_init, tcpip_input);
+#else /* LWIP_IPV4 */
+  netif_add(&slipif, (void*)&siodev_slip, slipif_init, tcpip_input);
+#endif /* LWIP_IPV4 */
+#if LWIP_IPV6
+  netif_create_ip6_linklocal_address(&slipif, 1);
+#endif
+#if LWIP_NETIF_STATUS_CALLBACK
+  netif_set_status_callback(&slipif, netif_status_callback);
+#endif /* LWIP_NETIF_STATUS_CALLBACK */
+  netif_set_link_up(&slipif);
+  netif_set_up(&slipif);
+#endif /* LWIP_HAVE_SLIPIF */
+
 #if PPP_SUPPORT
 #if PPP_PTY_TEST
   ppp_sio = sio_open(2);
@@ -568,6 +602,11 @@ main(int argc, char **argv)
   IP_ADDR4(&gw,      192,168,  0,1);
   IP_ADDR4(&netmask, 255,255,255,0);
   IP_ADDR4(&ipaddr,  192,168,  0,2);
+#if LWIP_HAVE_SLIPIF
+  IP_ADDR4(&gw_slip,      192,168,  2,  1);
+  IP_ADDR4(&netmask_slip, 255,255,255,255);
+  IP_ADDR4(&ipaddr_slip,  192,168,  2,  2);
+#endif
 #endif /* LWIP_IPV4 */
   
   ping_flag = 0;

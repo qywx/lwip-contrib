@@ -46,6 +46,7 @@
 #define SIO_FIFO_DEBUG LWIP_DBG_OFF
 #define TCPDUMP_DEBUG LWIP_DBG_ON
 
+#define SLIP_DEBUG       LWIP_DBG_OFF
 #define PPP_DEBUG        LWIP_DBG_OFF
 #define MEM_DEBUG        LWIP_DBG_OFF
 #define MEMP_DEBUG       LWIP_DBG_OFF
@@ -246,6 +247,15 @@ extern void sntp_set_system_time(u32_t sec);
 
 #define LWIP_NETIF_API    1
 #define LWIP_NETIF_STATUS_CALLBACK 1
+#define LWIP_NETIF_HOSTNAME 0
+
+/* ---------- SLIP options ---------- */
+
+#define LWIP_HAVE_SLIPIF  1      /* Set > 0 for SLIP */
+
+/* Maximum packet size that is received by this netif */
+#define SLIP_MAX_SIZE     1500
+#define sio_tryread sio_read
 
 /* ---------- PPP options ---------- */
 
