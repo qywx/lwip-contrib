@@ -166,7 +166,7 @@ sntp_set_system_time(u32_t sec)
   localtime_r(&current_time, &current_time_val);
   
   printf("SNTP time: %02"U32_F".%02"U32_F".%04"U32_F" %02"U32_F":%02"U32_F":%02"U32_F"\n",
-    current_time_val.tm_mday + 1,
+    current_time_val.tm_mday,
     current_time_val.tm_mon  + 1,
     current_time_val.tm_year + 1900,
     current_time_val.tm_hour,
