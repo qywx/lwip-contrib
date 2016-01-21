@@ -435,7 +435,8 @@ ppp_output_cb(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
 static void
 netif_status_callback(struct netif *nif)
 {
-#if LWIP_DHCP
+  printf("NETIF: %c%c%d is %s\n", nif->name[0], nif->name[1], nif->num,
+         netif_is_up(nif) ? "UP" : "DOWN");
 #if LWIP_IPV4
   printf("IPV4: Host at %s ", ip4addr_ntoa(netif_ip4_addr(nif)));
   printf("mask %s ", ip4addr_ntoa(netif_ip4_netmask(nif)));
@@ -444,9 +445,9 @@ netif_status_callback(struct netif *nif)
 #if LWIP_IPV6
   printf("IPV6: Host at %s\n", ip6addr_ntoa(netif_ip6_addr(nif, 0)));
 #endif /* LWIP_IPV6 */
-#else /* LWIP_DHCP */
-  LWIP_UNUSED_ARG(nif);
-#endif /* LWIP_DHCP */
+#if LWIP_NETIF_HOSTNAME
+  printf("FQDN: %s\n", netif_get_hostname(nif));
+#endif /* LWIP_NETIF_HOSTNAME */
 }
 #endif /* LWIP_NETIF_STATUS_CALLBACK */
 
@@ -471,11 +472,16 @@ init_netifs(void)
       printf("Could not create PPP control interface");
       exit(1);
   }
+
 #ifdef LWIP_PPP_CHAP_TEST
   ppp_set_auth(ppp, PPPAUTHTYPE_CHAP, "lwip", "mysecret");
 #endif
 
   ppp_connect(ppp, 0);
+
+#if LWIP_NETIF_STATUS_CALLBACK
+  netif_set_status_callback(&pppos_netif, netif_status_callback);
+#endif /* LWIP_NETIF_STATUS_CALLBACK */
 #endif /* PPP_SUPPORT */
   
 #if LWIP_IPV4
@@ -491,24 +497,14 @@ init_netifs(void)
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif, 1);
 #endif
-  netif_set_default(&netif);
-  netif_set_up(&netif);
-
 #if LWIP_NETIF_STATUS_CALLBACK
   netif_set_status_callback(&netif, netif_status_callback);
 #endif /* LWIP_NETIF_STATUS_CALLBACK */
+  netif_set_default(&netif);
+  netif_set_up(&netif);
 
 #if LWIP_DHCP
   dhcp_start(&netif);
-#else /* LWIP_DHCP */
-#if LWIP_IPV4
-  printf("IPV4: Host at %s ", ip4addr_ntoa(netif_ip4_addr(&netif)));
-  printf("mask %s ", ip4addr_ntoa(netif_ip4_netmask(&netif)));
-  printf("gateway %s\n", ip4addr_ntoa(netif_ip4_gw(&netif)));
-#endif /* LWIP_IPV4 */
-#if LWIP_IPV6
-  printf("IPV6: Host at %s\n", ip6addr_ntoa(netif_ip6_addr(&netif, 0)));
-#endif /* LWIP_IPV6 */
 #endif /* LWIP_DHCP */
 
 #if 0
