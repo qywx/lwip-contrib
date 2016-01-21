@@ -1,5 +1,9 @@
 /* Author: Magnus Ivarsson <magnus.ivarsson@volvo.com> */
 
+/* to get rid of implicit function declarations */
+#define _XOPEN_SOURCE 600
+#define _GNU_SOURCE
+
 #include "netif/sio.h"
 #include "netif/fifo.h"
 #include "lwip/debug.h"
@@ -33,7 +37,7 @@
 #include <sys/signal.h>
 #include <sys/types.h>
 
-#if PPP_SUPPORT && defined(LWIP_UNIX_LINUX)
+#if (PPP_SUPPORT || LWIP_HAVE_SLIPIF) && defined(LWIP_UNIX_LINUX)
 #include <pty.h>
 #endif
 
@@ -60,9 +64,9 @@
 /*  } siostruct_t; */
 
 /** array of ((siostruct*)netif->state)->sio structs */
-static sio_status_t statusar[3];
+static sio_status_t statusar[4];
 
-#if ! PPP_SUPPORT
+#if ! (PPP_SUPPORT || LWIP_HAVE_SLIPIF)
 /* --private-functions----------------------------------------------------------------- */
 /** 
  * Signal handler for ttyXX0 to indicate bytes received 
@@ -85,7 +89,7 @@ static void signal_handler_IO_1( int status )
 	LWIP_DEBUGF(SIO_DEBUG, ("SigHand: rxSignal channel 1\n"));
 	fifoPut( &statusar[1].myfifo, statusar[1].fd );
 }
-#endif
+#endif /* ! (PPP_SUPPORT || LWIP_HAVE_SLIPIF) */
 
 /**
 * Initiation of serial device 
@@ -96,7 +100,7 @@ static void signal_handler_IO_1( int status )
 static int sio_init( char * device, int devnum, sio_status_t * siostat )
 {
 	struct termios oldtio,newtio;
-#if ! PPP_SUPPORT
+#if ! (PPP_SUPPORT || LWIP_HAVE_SLIPIF)
 	struct sigaction saio;           /* definition of signal action */
 #endif
 	int fd;
@@ -111,7 +115,7 @@ static int sio_init( char * device, int devnum, sio_status_t * siostat )
 		exit( -1 );
 	}
 
-#if ! PPP_SUPPORT
+#if ! (PPP_SUPPORT || LWIP_HAVE_SLIPIF)
 	/* install the signal handler before making the device asynchronous */
 	switch ( devnum )
 	{
@@ -141,7 +145,7 @@ static int sio_init( char * device, int devnum, sio_status_t * siostat )
 	fcntl( fd, F_SETFL, FASYNC );
 #else
 	fcntl( fd, F_SETFL, 0 );
-#endif /* ! PPP_SUPPORT */
+#endif /* ! (PPP_SUPPORT || LWIP_HAVE_SLIPIF) */
 
 	tcgetattr( fd,&oldtio ); /* save current port settings */
 	/* set new port settings */
@@ -224,7 +228,7 @@ void sio_flush( sio_status_t * siostat )
 }
 
 
-#if ! PPP_SUPPORT
+#if ! (PPP_SUPPORT || LWIP_HAVE_SLIPIF)
 /*u8_t sio_recv( struct netif * netif )*/
 u8_t sio_recv( sio_status_t * siostat )
 {
@@ -266,9 +270,9 @@ void sio_expect_string( u8_t *str, sio_status_t * siostat )
 	}
 	LWIP_DEBUGF(SIO_DEBUG, ("sio_expect_string[%d]: [match]\n", siostat->fd));
 }
-#endif /* ! PPP_SUPPORT */
+#endif /* ! (PPP_SUPPORT || LWIP_HAVE_SLIPIF) */
 
-#if PPP_SUPPORT
+#if (PPP_SUPPORT || LWIP_HAVE_SLIPIF)
 u32_t sio_write(sio_status_t * siostat, u8_t *buf, u32_t size)
 {
     ssize_t wsz = write( siostat->fd, buf, size );
@@ -286,7 +290,7 @@ void sio_read_abort(sio_status_t * siostat)
     LWIP_UNUSED_ARG(siostat);
     printf("sio_read_abort[%d]: not yet implemented for unix\n", siostat->fd);
 }
-#endif /* PPP_SUPPORT */
+#endif /* (PPP_SUPPORT || LWIP_HAVE_SLIPIF) */
 
 sio_fd_t sio_open(u8_t devnum)
 {
@@ -306,7 +310,7 @@ sio_fd_t sio_open(u8_t devnum)
 
 	LWIP_DEBUGF(SIO_DEBUG, ("sio_open: for devnum %d\n", devnum));
 
-#if ! PPP_SUPPORT
+#if ! (PPP_SUPPORT || LWIP_HAVE_SLIPIF)
 	fifoInit( &siostate->myfifo );
 #endif /* ! PPP_SUPPORT */
 
@@ -357,6 +361,59 @@ sio_fd_t sio_open(u8_t devnum)
 
 	}
 #endif
+#if LWIP_HAVE_SLIPIF
+	else if (devnum == 3) {
+	    pid_t childpid;
+	    /* create PTY pair */
+	    siostate->fd = posix_openpt(O_RDWR | O_NOCTTY);
+	    if (siostate->fd < 0) {
+		perror("open pty master");
+		exit (1);
+	    }
+	    if (grantpt(siostate->fd) != 0) {
+		perror("grant pty master");
+		exit (1);
+	    }
+	    if (unlockpt(siostate->fd) != 0) {
+		perror("unlock pty master");
+		exit (1);
+	    }
+	    LWIP_DEBUGF(SIO_DEBUG, ("sio_open[%d]: for %s\n",
+		    siostate->fd, ptsname(siostate->fd)));
+	    /* fork for slattach */
+	    childpid = fork();
+	    if(childpid < 0) {
+		perror("fork");
+		exit (1);
+	    }
+	    if(childpid == 0) {
+		/* esteblish SLIP interface on host side connected to PTY slave */
+		execl("/sbin/slattach", "slattach",
+			"-d", "-v", "-L", "-p", "slip",
+			ptsname(siostate->fd),
+			NULL);
+		perror("execl slattach");
+		exit (1);
+	    } else {
+		int ret;
+		char buf[1024];
+		LWIP_DEBUGF(SIO_DEBUG, ("sio_open[%d]: spawned slattach pid %d on %s\n",
+			siostate->fd, childpid, ptsname(siostate->fd)));
+		/* wait a moment for slattach startup */
+		sleep(1);
+		/* configure SLIP interface on host side as P2P interface */
+		snprintf(buf, sizeof(buf),
+			"/sbin/ifconfig sl0 mtu %d %s pointopoint %s up",
+			SLIP_MAX_SIZE, "192.168.2.1", "192.168.2.2");
+		LWIP_DEBUGF(SIO_DEBUG, ("sio_open[%d]: system(\"%s\");\n", siostate->fd, buf));
+		ret = system(buf);
+		if (ret < 0) {
+		    perror("ifconfig failed");
+		    exit(1);
+		}
+	    }
+	}
+#endif /* LWIP_HAVE_SLIPIF */
 	else
 	{
 		LWIP_DEBUGF(SIO_DEBUG, ("sio_open: device %s (%d) is not supported\n", dev, devnum));
