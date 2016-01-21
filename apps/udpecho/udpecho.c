@@ -57,7 +57,7 @@ udpecho_thread(void *arg)
     err = netconn_recv(conn, &buf);
     if (err == ERR_OK) {
       /*  no need netconn_connect here, since the netbuf contains the address */
-      if(netbuf_copy(buf, buffer, buf->p->tot_len) != buf->p->tot_len) {
+      if(netbuf_copy(buf, buffer, sizeof(buffer)) != buf->p->tot_len) {
         LWIP_DEBUGF(LWIP_DBG_ON, ("netbuf_copy failed\n"));
       } else {
         buffer[buf->p->tot_len] = '\0';
