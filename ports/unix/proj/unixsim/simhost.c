@@ -165,18 +165,14 @@ tcp_debug_timeout(void *data)
 void
 sntp_set_system_time(u32_t sec)
 {
+  char buf[32];
   struct tm current_time_val;
   time_t current_time = (time_t)sec;
 
   localtime_r(&current_time, &current_time_val);
   
-  printf("SNTP time: %02"U32_F".%02"U32_F".%04"U32_F" %02"U32_F":%02"U32_F":%02"U32_F"\n",
-    current_time_val.tm_mday,
-    current_time_val.tm_mon  + 1,
-    current_time_val.tm_year + 1900,
-    current_time_val.tm_hour,
-    current_time_val.tm_min,
-    current_time_val.tm_sec);
+  strftime(buf, sizeof(buf), "%d.%m.%Y %H:%M:%S", &current_time_val);
+  printf("SNTP time: %s\n", buf);
 }
 
 static void
