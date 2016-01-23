@@ -55,7 +55,7 @@
 #include "lwip/apps/snmp_mib2.h"
 
 #include "apps/snmp_private_mib/private_mib.h"
-#include "apps/tcpecho_raw/echo.h"
+#include "apps/tcpecho_raw/tcpecho_raw.h"
 
 /* (manual) host IP configuration */
 static ip4_addr_t ipaddr, netmask, gw;
@@ -205,7 +205,7 @@ main(int argc, char **argv)
   snmp_init();
 #endif /* LWIP_SNMP */
 
-  echo_init();
+  tcpecho_raw_init();
 
   printf("Applications started.\n");
     

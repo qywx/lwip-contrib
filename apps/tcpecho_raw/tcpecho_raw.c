@@ -45,13 +45,13 @@
 #include "lwip/debug.h"
 #include "lwip/stats.h"
 #include "lwip/tcp.h"
-#include "echo.h"
+#include "tcpecho_raw.h"
 
 #if LWIP_TCP
 
-static struct tcp_pcb *echo_pcb;
+static struct tcp_pcb *tcpecho_raw_pcb;
 
-enum echo_states
+enum tcpecho_raw_states
 {
   ES_NONE = 0,
   ES_ACCEPTED,
@@ -59,7 +59,7 @@ enum echo_states
   ES_CLOSING
 };
 
-struct echo_state
+struct tcpecho_raw_state
 {
   u8_t state;
   u8_t retries;
@@ -68,28 +68,28 @@ struct echo_state
   struct pbuf *p;
 };
 
-err_t echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err);
-err_t echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
-void echo_error(void *arg, err_t err);
-err_t echo_poll(void *arg, struct tcp_pcb *tpcb);
-err_t echo_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
-void echo_send(struct tcp_pcb *tpcb, struct echo_state *es);
-void echo_close(struct tcp_pcb *tpcb, struct echo_state *es);
-void echo_free(struct echo_state *es);
+err_t tcpecho_raw_accept(void *arg, struct tcp_pcb *newpcb, err_t err);
+err_t tcpecho_raw_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
+void tcpecho_raw_error(void *arg, err_t err);
+err_t tcpecho_raw_poll(void *arg, struct tcp_pcb *tpcb);
+err_t tcpecho_raw_sent(void *arg, struct tcp_pcb *tpcb, u16_t len);
+void tcpecho_raw_send(struct tcp_pcb *tpcb, struct tcpecho_raw_state *es);
+void tcpecho_raw_close(struct tcp_pcb *tpcb, struct tcpecho_raw_state *es);
+void tcpecho_raw_free(struct tcpecho_raw_state *es);
 
 void
-echo_init(void)
+tcpecho_raw_init(void)
 {
-  echo_pcb = tcp_new();
-  if (echo_pcb != NULL)
+  tcpecho_raw_pcb = tcp_new();
+  if (tcpecho_raw_pcb != NULL)
   {
     err_t err;
 
-    err = tcp_bind(echo_pcb, IP_ADDR_ANY, 7);
+    err = tcp_bind(tcpecho_raw_pcb, IP_ADDR_ANY, 7);
     if (err == ERR_OK)
     {
-      echo_pcb = tcp_listen(echo_pcb);
-      tcp_accept(echo_pcb, echo_accept);
+      tcpecho_raw_pcb = tcp_listen(tcpecho_raw_pcb);
+      tcp_accept(tcpecho_raw_pcb, tcpecho_raw_accept);
     }
     else 
     {
@@ -104,10 +104,10 @@ echo_init(void)
 
 
 err_t
-echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
+tcpecho_raw_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 {
   err_t ret_err;
-  struct echo_state *es;
+  struct tcpecho_raw_state *es;
 
   LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(err);
@@ -117,7 +117,7 @@ echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
      new pcbs of higher priority. */
   tcp_setprio(newpcb, TCP_PRIO_MIN);
 
-  es = (struct echo_state *)mem_malloc(sizeof(struct echo_state));
+  es = (struct tcpecho_raw_state *)mem_malloc(sizeof(struct tcpecho_raw_state));
   if (es != NULL)
   {
     es->state = ES_ACCEPTED;
@@ -126,10 +126,10 @@ echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
     es->p = NULL;
     /* pass newly allocated es to our callbacks */
     tcp_arg(newpcb, es);
-    tcp_recv(newpcb, echo_recv);
-    tcp_err(newpcb, echo_error);
-    tcp_poll(newpcb, echo_poll, 0);
-    tcp_sent(newpcb, echo_sent);
+    tcp_recv(newpcb, tcpecho_raw_recv);
+    tcp_err(newpcb, tcpecho_raw_error);
+    tcp_poll(newpcb, tcpecho_raw_poll, 0);
+    tcp_sent(newpcb, tcpecho_raw_sent);
     ret_err = ERR_OK;
   }
   else
@@ -140,13 +140,13 @@ echo_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
 }
 
 err_t
-echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
+tcpecho_raw_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 {
-  struct echo_state *es;
+  struct tcpecho_raw_state *es;
   err_t ret_err;
 
   LWIP_ASSERT("arg != NULL",arg != NULL);
-  es = (struct echo_state *)arg;
+  es = (struct tcpecho_raw_state *)arg;
   if (p == NULL)
   {
     /* remote host closed connection */
@@ -154,12 +154,12 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     if(es->p == NULL)
     {
        /* we're done sending, close it */
-       echo_close(tpcb, es);
+       tcpecho_raw_close(tpcb, es);
     }
     else
     {
       /* we're not done yet */
-      echo_send(tpcb, es);
+      tcpecho_raw_send(tpcb, es);
     }
     ret_err = ERR_OK;
   }
@@ -178,7 +178,7 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     es->state = ES_RECEIVED;
     /* store reference to incoming pbuf (chain) */
     es->p = p;
-    echo_send(tpcb, es);
+    tcpecho_raw_send(tpcb, es);
     ret_err = ERR_OK;
   }
   else if (es->state == ES_RECEIVED)
@@ -187,7 +187,7 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     if(es->p == NULL)
     {
       es->p = p;
-      echo_send(tpcb, es);
+      tcpecho_raw_send(tpcb, es);
     }
     else
     {
@@ -217,37 +217,37 @@ echo_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
 }
 
 void
-echo_error(void *arg, err_t err)
+tcpecho_raw_error(void *arg, err_t err)
 {
-  struct echo_state *es;
+  struct tcpecho_raw_state *es;
 
   LWIP_UNUSED_ARG(err);
 
-  es = (struct echo_state *)arg;
+  es = (struct tcpecho_raw_state *)arg;
 
-  echo_free(es);
+  tcpecho_raw_free(es);
 }
 
 err_t
-echo_poll(void *arg, struct tcp_pcb *tpcb)
+tcpecho_raw_poll(void *arg, struct tcp_pcb *tpcb)
 {
   err_t ret_err;
-  struct echo_state *es;
+  struct tcpecho_raw_state *es;
 
-  es = (struct echo_state *)arg;
+  es = (struct tcpecho_raw_state *)arg;
   if (es != NULL)
   {
     if (es->p != NULL)
     {
       /* there is a remaining pbuf (chain)  */
-      echo_send(tpcb, es);
+      tcpecho_raw_send(tpcb, es);
     }
     else
     {
       /* no remaining pbuf (chain)  */
       if(es->state == ES_CLOSING)
       {
-        echo_close(tpcb, es);
+        tcpecho_raw_close(tpcb, es);
       }
     }
     ret_err = ERR_OK;
@@ -262,34 +262,34 @@ echo_poll(void *arg, struct tcp_pcb *tpcb)
 }
 
 err_t
-echo_sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
+tcpecho_raw_sent(void *arg, struct tcp_pcb *tpcb, u16_t len)
 {
-  struct echo_state *es;
+  struct tcpecho_raw_state *es;
 
   LWIP_UNUSED_ARG(len);
 
-  es = (struct echo_state *)arg;
+  es = (struct tcpecho_raw_state *)arg;
   es->retries = 0;
   
   if(es->p != NULL)
   {
     /* still got pbufs to send */
-    tcp_sent(tpcb, echo_sent);
-    echo_send(tpcb, es);
+    tcp_sent(tpcb, tcpecho_raw_sent);
+    tcpecho_raw_send(tpcb, es);
   }
   else
   {
     /* no more pbufs to send */
     if(es->state == ES_CLOSING)
     {
-      echo_close(tpcb, es);
+      tcpecho_raw_close(tpcb, es);
     }
   }
   return ERR_OK;
 }
 
 void
-echo_send(struct tcp_pcb *tpcb, struct echo_state *es)
+tcpecho_raw_send(struct tcp_pcb *tpcb, struct tcpecho_raw_state *es)
 {
   struct pbuf *ptr;
   err_t wr_err = ERR_OK;
@@ -332,7 +332,7 @@ echo_send(struct tcp_pcb *tpcb, struct echo_state *es)
 }
 
 void
-echo_close(struct tcp_pcb *tpcb, struct echo_state *es)
+tcpecho_raw_close(struct tcp_pcb *tpcb, struct tcpecho_raw_state *es)
 {
   tcp_arg(tpcb, NULL);
   tcp_sent(tpcb, NULL);
@@ -340,12 +340,12 @@ echo_close(struct tcp_pcb *tpcb, struct echo_state *es)
   tcp_err(tpcb, NULL);
   tcp_poll(tpcb, NULL, 0);
 
-  echo_free(es);
+  tcpecho_raw_free(es);
 
   tcp_close(tpcb);
 }
 
-void echo_free(struct echo_state *es)
+void tcpecho_raw_free(struct tcpecho_raw_state *es)
 {
   if (es != NULL)
   {

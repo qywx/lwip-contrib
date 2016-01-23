@@ -72,7 +72,7 @@
 #include "apps/shell/shell.h"
 #include "apps/tcpecho/tcpecho.h"
 #include "apps/udpecho/udpecho.h"
-#include "apps/tcpecho_raw/echo.h"
+#include "apps/tcpecho_raw/tcpecho_raw.h"
 #include "apps/socket_examples/socket_examples.h"
 
 #if NO_SYS
@@ -563,7 +563,7 @@ apps_init(void)
 #if LWIP_NETCONN && defined(LWIP_TCPECHO_APP_NETCONN)
   tcpecho_init();
 #else /* LWIP_NETCONN && defined(LWIP_TCPECHO_APP_NETCONN) */
-  echo_init();
+  tcpecho_raw_init();
 #endif
 #endif /* LWIP_TCPECHO_APP && LWIP_NETCONN */
 #if LWIP_UDPECHO_APP && LWIP_NETCONN
