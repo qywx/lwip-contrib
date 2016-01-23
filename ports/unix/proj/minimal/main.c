@@ -55,6 +55,7 @@
 #include "lwip/apps/snmp_mib2.h"
 
 #include "apps/snmp_private_mib/private_mib.h"
+#include "apps/udpecho_raw/udpecho_raw.h"
 #include "apps/tcpecho_raw/tcpecho_raw.h"
 
 /* (manual) host IP configuration */
@@ -205,6 +206,7 @@ main(int argc, char **argv)
   snmp_init();
 #endif /* LWIP_SNMP */
 
+  udpecho_raw_init();
   tcpecho_raw_init();
 
   printf("Applications started.\n");
