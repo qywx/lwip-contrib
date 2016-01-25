@@ -122,6 +122,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\apps\tcpecho_raw\tcpecho_raw.c" />
+    <ClCompile Include="..\..\..\apps\udpecho_raw\udpecho_raw.c" />
     <ClCompile Include="..\test.c">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -132,7 +134,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="..\..\..\apps\chargen\chargen.c" />
-    <ClCompile Include="..\..\..\apps\tcpecho_raw\echo.c" />
     <ClCompile Include="..\..\..\apps\httpserver\httpserver-netconn.c" />
     <ClCompile Include="..\..\..\apps\netio\netio.c" />
     <ClCompile Include="..\..\..\apps\ping\ping.c" />
@@ -146,7 +147,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\apps\chargen\chargen.h" />
-    <ClInclude Include="..\..\..\apps\tcpecho_raw\echo.h" />
     <ClInclude Include="..\..\..\apps\httpserver\httpserver-netconn.h" />
     <ClInclude Include="..\..\..\apps\netio\netio.h" />
     <ClInclude Include="..\..\..\apps\ping\ping.h" />
@@ -155,8 +155,10 @@
     <ClInclude Include="..\..\..\apps\smtp\smtp.h" />
     <ClInclude Include="..\..\..\apps\socket_examples\socket_examples.h" />
     <ClInclude Include="..\..\..\apps\tcpecho\tcpecho.h" />
+    <ClInclude Include="..\..\..\apps\tcpecho_raw\tcpecho_raw.h" />
     <ClInclude Include="..\..\..\apps\udpecho\udpecho.h" />
     <ClInclude Include="..\..\..\apps\snmp_private_mib\private_mib.h" />
+    <ClInclude Include="..\..\..\apps\udpecho_raw\udpecho_raw.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="readme.txt" />
