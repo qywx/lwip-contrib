@@ -991,7 +991,7 @@ smtp_prepare_helo(struct smtp_session *s, u16_t *tx_buf_len, struct tcp_pcb *pcb
   const char *ipa = ipaddr_ntoa(&pcb->local_ip);
   LWIP_ASSERT("ipaddr_ntoa returned NULL", ipa != NULL);
   ipa_len = strlen(ipa);
-  LWIP_ASSERT("string too long", ipa_len <= 0xffff);
+  LWIP_ASSERT("string too long", ipa_len <= (SMTP_TX_BUF_LEN-SMTP_CMD_EHLO_1_LEN-SMTP_CMD_EHLO_2_LEN));
 
   *tx_buf_len = SMTP_CMD_EHLO_1_LEN + (u16_t)ipa_len + SMTP_CMD_EHLO_2_LEN;
   LWIP_ASSERT("tx_buf overflow detected", *tx_buf_len <= SMTP_TX_BUF_LEN);
@@ -1034,9 +1034,8 @@ smtp_prepare_auth_or_mail(struct smtp_session *s, u16_t *tx_buf_len)
           auth_len = smtp_base64_encode(&s->tx_buf[SMTP_CMD_AUTHPLAIN_1_LEN],
             SMTP_TX_BUF_LEN - SMTP_CMD_AUTHPLAIN_1_LEN, SMTP_AUTH_PLAIN_DATA(s),
             SMTP_AUTH_PLAIN_LEN(s));
-          LWIP_ASSERT("string too long", auth_len <= 0xffff);
-         *tx_buf_len = SMTP_CMD_AUTHPLAIN_1_LEN + SMTP_CMD_AUTHPLAIN_2_LEN + (u16_t)auth_len;
-          LWIP_ASSERT("tx_buf overflow detected", *tx_buf_len <= SMTP_TX_BUF_LEN);
+          LWIP_ASSERT("string too long", auth_len <= (SMTP_TX_BUF_LEN-SMTP_CMD_AUTHPLAIN_1_LEN-SMTP_CMD_AUTHPLAIN_2_LEN));
+          *tx_buf_len = SMTP_CMD_AUTHPLAIN_1_LEN + SMTP_CMD_AUTHPLAIN_2_LEN + (u16_t)auth_len;
           SMEMCPY(&s->tx_buf[SMTP_CMD_AUTHPLAIN_1_LEN + auth_len], SMTP_CMD_AUTHPLAIN_2,
             SMTP_CMD_AUTHPLAIN_2_LEN);
           return SMTP_AUTH_PLAIN;
