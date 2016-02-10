@@ -155,12 +155,12 @@ low_level_init(struct netif *netif)
     memset(&ifr, 0, sizeof(ifr));
 
 #ifdef DEVTAP_IF
-    strncpy(ifr.ifr_name, DEVTAP_IF, IFNAMSIZ);
+    strncpy(ifr.ifr_name, DEVTAP_IF, sizeof(ifr.ifr_name));
 #else /* DEVTAP_IF */
     if (preconfigured_tapif) {
       strncpy(ifr.ifr_name, preconfigured_tapif, sizeof(ifr.ifr_name));
-      ifr.ifr_name[sizeof(ifr.ifr_name-1)] = 0; /* ensure \0 termination */
     }
+    ifr.ifr_name[sizeof(ifr.ifr_name)-1] = 0; /* ensure \0 termination */
 #endif /* DEVTAP_IF */
 
     ifr.ifr_flags = IFF_TAP|IFF_NO_PI;
