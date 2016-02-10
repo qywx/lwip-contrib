@@ -199,13 +199,6 @@ tcpecho_raw_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
     }
     ret_err = ERR_OK;
   }
-  else if(es->state == ES_CLOSING)
-  {
-    /* odd case, remote side closing twice, trash data */
-    tcp_recved(tpcb, p->tot_len);
-    pbuf_free(p);
-    ret_err = ERR_OK;
-  }
   else
   {
     /* unkown es->state, trash data  */
