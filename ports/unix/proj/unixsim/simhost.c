@@ -633,6 +633,7 @@ main(int argc, char **argv)
         ping_flag = !0;
         ipaddr_aton(optarg, &ping_addr);
         strncpy(ip_str,ipaddr_ntoa(&ping_addr),sizeof(ip_str));
+        ip_str[sizeof(ip_str)-1] = 0; /* ensure \0 termination */
         printf("Using %s to ping\n", ip_str);
         break;
       default:
