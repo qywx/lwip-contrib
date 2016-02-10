@@ -123,7 +123,8 @@ unix_socket_client(const char *name)
                                 /* fill socket address structure w/server's addr */
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
-  strcpy(unix_addr.sun_path, name);
+  strncpy(unix_addr.sun_path, name, sizeof(unix_addr.sun_path));
+  unix_addr.sun_path[sizeof(unix_addr.sun_path)-1] = 0; /* ensure \0 termination */
 #if !defined(LWIP_UNIX_LINUX) && !defined(LWIP_UNIX_CYGWIN) && !defined(__CYGWIN__)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;  
@@ -158,7 +159,8 @@ unix_socket_server(const char *name)
   /* fill in socket address structure */
   memset(&unix_addr, 0, sizeof(unix_addr));
   unix_addr.sun_family = AF_UNIX;
-  strcpy(unix_addr.sun_path, name);
+  strncpy(unix_addr.sun_path, name, sizeof(unix_addr.sun_path));
+  unix_addr.sun_path[sizeof(unix_addr.sun_path)-1] = 0; /* ensure \0 termination */
 #if !defined(LWIP_UNIX_LINUX) && !defined(LWIP_UNIX_CYGWIN) && !defined(__CYGWIN__)
   len = sizeof(unix_addr.sun_len) + sizeof(unix_addr.sun_family) +
     strlen(unix_addr.sun_path) + 1;
