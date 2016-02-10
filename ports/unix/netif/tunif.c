@@ -156,24 +156,26 @@ static struct pbuf *
 low_level_input(struct tunif *tunif)
 {
   struct pbuf *p;
-  u16_t len;
+  ssize_t len;
   char buf[1500];
 
   /* Obtain the size of the packet and put it into the "len"
      variable. */
   len = read(tunif->fd, buf, sizeof(buf));
+  if((len <= 0) || (len > 0xffff)) {
+    return NULL;
+  }
 
   /*  if (((double)rand()/(double)RAND_MAX) < 0.1) {
     printf("drop\n");
     return NULL;
     }*/
 
-
   /* We allocate a pbuf chain of pbufs from the pool. */
-  p = pbuf_alloc(PBUF_LINK, len, PBUF_POOL);
+  p = pbuf_alloc(PBUF_LINK, (u16_t)len, PBUF_POOL);
 
   if (p != NULL) {
-    pbuf_take(p, buf, len);
+    pbuf_take(p, buf, (u16_t)len);
     /* acknowledge that packet has been read(); */
   } else {
     /* drop packet(); */
