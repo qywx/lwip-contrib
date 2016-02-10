@@ -139,12 +139,25 @@ static int sio_init( char * device, int devnum, sio_status_t * siostat )
 	sigaction( SIGIO,&saio,NULL );
 
 	/* allow the process to receive SIGIO */
-	fcntl( fd, F_SETOWN, getpid( ) );
+       	if ( fcntl( fd, F_SETOWN, getpid( ) ) != 0)
+	{
+		perror( device );
+		exit( -1 );
+	}
 	/* Make the file descriptor asynchronous (the manual page says only
 	O_APPEND and O_NONBLOCK, will work with F_SETFL...) */
-	fcntl( fd, F_SETFL, FASYNC );
+       	if ( fcntl( fd, F_SETFL, FASYNC ) != 0)
+	{
+		perror( device );
+		exit( -1 );
+	}
 #else
-	fcntl( fd, F_SETFL, 0 );
+       	if ( fcntl( fd, F_SETFL, 0 ) != 0)
+	{
+		perror( device );
+		exit( -1 );
+	}
+
 #endif /* ! (PPP_SUPPORT || LWIP_HAVE_SLIPIF) */
 
 	tcgetattr( fd,&oldtio ); /* save current port settings */
