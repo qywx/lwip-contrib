@@ -313,7 +313,9 @@ ping_thread(void *arg)
 
 #if LWIP_HAVE_SLIPIF
 /* (manual) host IP configuration */
+#if LWIP_IPV4
 static ip_addr_t ipaddr_slip, netmask_slip, gw_slip;
+#endif /* LWIP_IPV4 */
 struct netif slipif;
 #endif /* LWIP_HAVE_SLIPIF */
 
