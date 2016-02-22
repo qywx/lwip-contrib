@@ -302,7 +302,12 @@
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\md5.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\polarssl\sha1.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\fs.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\fsdata.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\fsdata.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\httpd.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_asn1.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_core.c" />
@@ -319,7 +324,7 @@
     <ClCompile Include="..\sys_arch.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_msg.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmp_msg.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\lwiperf.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\netbiosns.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\netbiosns_opts.h" />
