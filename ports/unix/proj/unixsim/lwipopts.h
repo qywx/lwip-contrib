@@ -264,6 +264,9 @@ extern void sntp_set_system_time(u32_t sec);
 #define SLIP_MAX_SIZE     1500
 #define sio_tryread sio_read
 
+/* ---------- 6LoWPAN options ---------- */
+#define LWIP_6LOWPAN      1
+
 /* ---------- PPP options ---------- */
 
 #define PPP_SUPPORT       1      /* Set > 0 for PPP */
