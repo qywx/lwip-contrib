@@ -146,7 +146,9 @@ a lot of data that needs to be copied, this should be set high. */
  * for certain critical regions during buffer allocation, deallocation and memory
  * allocation and deallocation.
  */
-#define SYS_LIGHTWEIGHT_PROT           1
+#define SYS_LIGHTWEIGHT_PROT    1
+
+#define LWIP_TCPIP_TIMEOUT      1
 
 /* ---------- TCP options ---------- */
 #define LWIP_TCP                1
