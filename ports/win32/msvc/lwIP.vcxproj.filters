@@ -318,9 +318,6 @@
     <ClCompile Include="..\sys_arch.c">
       <Filter>arch</Filter>
     </ClCompile>
-    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_msg.h">
-      <Filter>src\apps\snmp</Filter>
-    </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\httpd.c">
       <Filter>src\apps\httpd</Filter>
     </ClCompile>
@@ -676,6 +673,9 @@
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_threadsync.h">
       <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmp_msg.h">
+      <Filter>src\apps\snmp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
