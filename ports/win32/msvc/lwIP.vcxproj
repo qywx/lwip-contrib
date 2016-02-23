@@ -274,6 +274,7 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\nd6.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\etharp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ethernetif.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\netif\lowpan6.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\slipif.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\auth.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\ccp.c" />
@@ -384,6 +385,8 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\timers.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\udp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\etharp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\lowpan6.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\lowpan6_opts.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\slipif.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ccp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\chap-md5.h" />
