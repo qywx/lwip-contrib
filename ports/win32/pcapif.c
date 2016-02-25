@@ -562,7 +562,7 @@ pcapif_input_thread(void *arg)
 static void
 pcapif_low_level_init(struct netif *netif)
 {
-  u8_t my_mac_addr[ETHARP_HWADDR_LEN] = LWIP_MAC_ADDR_BASE;
+  u8_t my_mac_addr[ETH_HWADDR_LEN] = LWIP_MAC_ADDR_BASE;
   int adapter_num = PACKET_LIB_ADAPTER_NR;
   struct pcapif_private *pa;
 #ifdef PACKET_LIB_GET_ADAPTER_NETADDRESS
@@ -622,9 +622,9 @@ pcapif_low_level_init(struct netif *netif)
   /* change the MAC address to a unique value
      so that multiple ethernetifs are supported */
   /* @todo: this does NOT support multiple processes using this adapter! */
-  my_mac_addr[ETHARP_HWADDR_LEN - 1] += netif->num;
+  my_mac_addr[ETH_HWADDR_LEN - 1] += netif->num;
   /* Copy MAC addr */
-  memcpy(&netif->hwaddr, my_mac_addr, ETHARP_HWADDR_LEN);
+  memcpy(&netif->hwaddr, my_mac_addr, ETH_HWADDR_LEN);
 
   /* get the initial link state of the selected interface */
 #if PCAPIF_HANDLE_LINKSTATE
@@ -740,7 +740,7 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
 #endif /* PCAPIF_FILTER_GROUP_ADDRESSES && !PCAPIF_RECEIVE_PROMISCUOUS */
 
   /* Don't let feedback packets through (limitation in winpcap?) */
-  if(!memcmp(src, netif->hwaddr, ETHARP_HWADDR_LEN)) {
+  if(!memcmp(src, netif->hwaddr, ETH_HWADDR_LEN)) {
     /* don't update counters here! */
     return NULL;
   }
@@ -748,7 +748,7 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
   unicast = ((dest->addr[0] & 0x01) == 0);
 #if !PCAPIF_RECEIVE_PROMISCUOUS
   /* MAC filter: only let my MAC or non-unicast through (pcap receives loopback traffic, too) */
-  if (memcmp(dest, &netif->hwaddr, ETHARP_HWADDR_LEN) &&
+  if (memcmp(dest, &netif->hwaddr, ETH_HWADDR_LEN) &&
 #if PCAPIF_FILTER_GROUP_ADDRESSES
     (memcmp(dest, ipv4mcast, 3) || ((dest->addr[3] & 0x80) != 0)) && 
     memcmp(dest, ipv6mcast, 2) &&
@@ -905,7 +905,7 @@ pcapif_init(struct netif *netif)
 
   netif->mtu = 1500;
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP;
-  netif->hwaddr_len = ETHARP_HWADDR_LEN;
+  netif->hwaddr_len = ETH_HWADDR_LEN;
 
   NETIF_INIT_SNMP(netif, snmp_ifType_ethernet_csmacd, 100000000);
 

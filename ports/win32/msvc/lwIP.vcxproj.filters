@@ -219,6 +219,9 @@
     <ClCompile Include="$(LWIP_DIR)\src\netif\etharp.c">
       <Filter>src\netif</Filter>
     </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\netif\ethernet.c">
+      <Filter>src\netif</Filter>
+    </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\netif\ethernetif.c">
       <Filter>src\netif</Filter>
     </ClCompile>
@@ -519,6 +522,9 @@
       <Filter>src\include\lwip</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\etharp.h">
+      <Filter>src\include\netif</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ethernet.h">
       <Filter>src\include\netif</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\lowpan6.h">
