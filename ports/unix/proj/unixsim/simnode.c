@@ -170,4 +170,12 @@ main(int argc, char **argv)
 }
 
 #endif /* LWIP_IPV4 */
+
+/* dummy, because SNTP is pulled in via LWIP_DHCP_GET_NTP_SRV */
+void
+sntp_set_system_time(u32_t sec)
+{
+  LWIP_UNUSED_ARG(sec);
+}
+
 /*-----------------------------------------------------------------------------------*/
