@@ -61,12 +61,12 @@ void udpecho_raw_recv(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 void
 udpecho_raw_init(void)
 {
-  udpecho_raw_pcb = udp_new();
+  udpecho_raw_pcb = udp_new_ip_type(IPADDR_TYPE_ANY);
   if (udpecho_raw_pcb != NULL)
   {
     err_t err;
 
-    err = udp_bind(udpecho_raw_pcb, IP_ADDR_ANY, 7);
+    err = udp_bind(udpecho_raw_pcb, IP_ANY_TYPE, 7);
     if (err == ERR_OK)
     {
       udp_recv(udpecho_raw_pcb, udpecho_raw_recv, NULL);
