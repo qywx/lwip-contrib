@@ -49,9 +49,9 @@ udpecho_thread(void *arg)
   err_t err;
   LWIP_UNUSED_ARG(arg);
 
-  conn = netconn_new(NETCONN_UDP);
+  conn = netconn_new(NETCONN_UDP_IPANY);
   LWIP_ASSERT("con != NULL", conn != NULL);
-  netconn_bind(conn, NULL, 7);
+  netconn_bind(conn, IP_ANY_TYPE, 7);
 
   while (1) {
     err = netconn_recv(conn, &buf);
