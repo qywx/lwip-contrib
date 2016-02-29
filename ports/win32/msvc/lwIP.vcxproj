@@ -325,6 +325,7 @@
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_table.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_threadsync.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_traps.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ip.c" />
     <ClCompile Include="..\sio.c" />
     <ClCompile Include="..\sys_arch.c" />
   </ItemGroup>

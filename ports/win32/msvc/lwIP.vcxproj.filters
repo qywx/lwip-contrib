@@ -366,6 +366,9 @@
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_traps.c">
       <Filter>src\apps\snmp</Filter>
     </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\core\ip.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\lwiperf.h">
