@@ -66,11 +66,11 @@ http_server_netconn_thread(void *arg)
   LWIP_UNUSED_ARG(arg);
   
   /* Create a new TCP connection handle */
-  conn = netconn_new(NETCONN_TCP);
+  conn = netconn_new(NETCONN_TCP_IPANY);
   LWIP_ERROR("http_server: invalid conn", (conn != NULL), return;);
   
   /* Bind to port 80 (HTTP) with default IP address */
-  netconn_bind(conn, NULL, 80);
+  netconn_bind(conn, IP_ANY_TYPE, 80);
   
   /* Put the connection into LISTEN state */
   netconn_listen(conn);

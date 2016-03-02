@@ -43,8 +43,8 @@ void netio_init(void)
 {
   struct tcp_pcb *pcb;
 
-  pcb = tcp_new();
-  tcp_bind(pcb, IP_ADDR_ANY, 18767);
+  pcb = tcp_new_ip_type(IPADDR_TYPE_ANY);
+  tcp_bind(pcb, IP_ANY_TYPE, 18767);
   pcb = tcp_listen(pcb);
   tcp_accept(pcb, netio_accept);
 }

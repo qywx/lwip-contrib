@@ -46,10 +46,10 @@ tcpecho_thread(void *arg)
   LWIP_UNUSED_ARG(arg);
 
   /* Create a new connection identifier. */
-  conn = netconn_new(NETCONN_TCP);
+  conn = netconn_new(NETCONN_TCP_IPANY);
 
   /* Bind connection to well known port number 7. */
-  netconn_bind(conn, NULL, 7);
+  netconn_bind(conn, IP_ANY_TYPE, 7);
 
   /* Tell connection to go into listening mode. */
   netconn_listen(conn);

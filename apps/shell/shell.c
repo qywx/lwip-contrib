@@ -1168,8 +1168,8 @@ shell_thread(void *arg)
   err_t err;
   LWIP_UNUSED_ARG(arg);
 
-  conn = netconn_new(NETCONN_TCP);
-  netconn_bind(conn, NULL, 23);
+  conn = netconn_new(NETCONN_TCP_IPANY);
+  netconn_bind(conn, IP_ANY_TYPE, 23);
   netconn_listen(conn);
 
   while (1) {

@@ -80,12 +80,12 @@ void tcpecho_raw_free(struct tcpecho_raw_state *es);
 void
 tcpecho_raw_init(void)
 {
-  tcpecho_raw_pcb = tcp_new();
+  tcpecho_raw_pcb = tcp_new_ip_type(IPADDR_TYPE_ANY);
   if (tcpecho_raw_pcb != NULL)
   {
     err_t err;
 
-    err = tcp_bind(tcpecho_raw_pcb, IP_ADDR_ANY, 7);
+    err = tcp_bind(tcpecho_raw_pcb, IP_ANY_TYPE, 7);
     if (err == ERR_OK)
     {
       tcpecho_raw_pcb = tcp_listen(tcpecho_raw_pcb);
