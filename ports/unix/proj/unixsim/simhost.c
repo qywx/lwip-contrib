@@ -84,6 +84,7 @@
 #include "apps/udpecho/udpecho.h"
 #include "apps/tcpecho/tcpecho.h"
 #include "apps/shell/shell.h"
+#include "apps/chargen/chargen.h"
 #include "lwip/apps/netbiosns.h"
 #include "lwip/apps/sntp.h"
 #include "lwip/apps/snmp.h"
@@ -552,6 +553,9 @@ init_netifs(void)
 #if LWIP_UDP && LWIP_NETCONN  
   udpecho_init();
 #endif  
+#if LWIP_SOCKET
+  chargen_init();
+#endif
   /*  sys_timeout(5000, tcp_debug_timeout, NULL);*/
 }
 

@@ -9,5 +9,4 @@ void chargen_init(void);
 
 #endif /* LWIP_SOCKET */
 
-
 #endif /* LWIP_CHARGEN_H */

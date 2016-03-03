@@ -99,7 +99,11 @@ static void chargen_thread(void *arg)
     LWIP_UNUSED_ARG(arg);
 
     /* First acquire our socket for listening for connections */
+#if LWIP_IPV6
+    listenfd = socket(AF_INET6, SOCK_STREAM, 0);
+#else /* LWIP_IPV6 */
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
+#endif /* LWIP_IPV6 */
 
     LWIP_ASSERT("chargen_thread(): Socket create failed.", listenfd >= 0);
     memset(&chargen_saddr, 0, sizeof(chargen_saddr));
