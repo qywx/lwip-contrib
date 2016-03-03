@@ -46,10 +46,15 @@ tcpecho_thread(void *arg)
   LWIP_UNUSED_ARG(arg);
 
   /* Create a new connection identifier. */
-  conn = netconn_new(NETCONN_TCP_IPANY);
-
   /* Bind connection to well known port number 7. */
-  netconn_bind(conn, IP_ANY_TYPE, 7);
+#if LWIP_IPV6
+  conn = netconn_new(NETCONN_TCP_IPV6);
+  netconn_bind(conn, IP6_ADDR_ANY, 7);
+#else /* LWIP_IPV6 */
+  conn = netconn_new(NETCONN_TCP);
+  netconn_bind(conn, IP_ADDR_ANY, 7);
+#endif /* LWIP_IPV6 */
+  LWIP_ERROR("tcpecho: invalid conn", (conn != NULL), return;);
 
   /* Tell connection to go into listening mode. */
   netconn_listen(conn);
