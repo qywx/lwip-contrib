@@ -85,6 +85,7 @@
 #include "apps/tcpecho/tcpecho.h"
 #include "apps/shell/shell.h"
 #include "apps/chargen/chargen.h"
+#include "apps/netio/netio.h"
 #include "lwip/apps/netbiosns.h"
 #include "lwip/apps/sntp.h"
 #include "lwip/apps/snmp.h"
@@ -544,7 +545,10 @@ init_netifs(void)
   /* Only used for testing purposes: */
   netif_add(&ipaddr, &netmask, &gw, NULL, pcapif_init, tcpip_input);
 #endif
-  
+
+#if LWIP_TCP
+  netio_init();
+#endif
 #if LWIP_TCP && LWIP_NETCONN
   tcpecho_init();
   shell_init();
