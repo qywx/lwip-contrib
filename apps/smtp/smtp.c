@@ -464,6 +464,23 @@ static void smtp_free_struct(struct smtp_session *s)
 #define smtp_free_struct(x) SMTP_STATE_FREE(x)
 #endif /* SMTP_BODYDH */
 
+static struct tcp_pcb*
+smtp_setup_pcb(struct smtp_session *s, const ip_addr_t* remote_ip)
+{
+  struct tcp_pcb* pcb;
+  LWIP_UNUSED_ARG(remote_ip);
+
+  pcb = tcp_new_ip_type(IP_GET_TYPE(remote_ip));
+  if (pcb != NULL) {
+    tcp_arg(pcb, s);
+    tcp_recv(pcb, smtp_tcp_recv);
+    tcp_err(pcb, smtp_tcp_err);
+    tcp_poll(pcb, smtp_tcp_poll, SMTP_POLL_INTERVAL);
+    tcp_sent(pcb, smtp_tcp_sent);
+  }
+  return pcb;
+}
+
 /** The actual mail-sending function, called by smtp_send_mail and
  * smtp_send_mail_static after setting up the struct smtp_session.
  */
@@ -471,7 +488,7 @@ static err_t
 smtp_send_mail_alloced(struct smtp_session *s)
 {
   err_t err;
-  struct tcp_pcb* pcb;
+  struct tcp_pcb* pcb = NULL;
   ip_addr_t addr;
 
   LWIP_ASSERT("no smtp_session supplied", s != NULL);
@@ -500,12 +517,6 @@ smtp_send_mail_alloced(struct smtp_session *s)
   }
 #endif /* SMTP_CHECK_DATA */
 
-  pcb = tcp_new();
-  if (pcb == NULL) {
-    err = ERR_MEM;
-    goto leave;
-  }
-
 #if SMTP_COPY_AUTHDATA
   /* copy auth data, ensuring the first byte is always zero */
   memcpy(s->auth_plain + 1, smtp_auth_plain + 1, smtp_auth_plain_len - 1);
@@ -524,18 +535,17 @@ smtp_send_mail_alloced(struct smtp_session *s)
   s->state = SMTP_NULL;
   s->timer = SMTP_TIMEOUT;
 
-  tcp_arg(pcb, s);
-  tcp_recv(pcb, smtp_tcp_recv);
-  tcp_err(pcb, smtp_tcp_err);
-  tcp_poll(pcb, smtp_tcp_poll, SMTP_POLL_INTERVAL);
-  tcp_sent(pcb, smtp_tcp_sent);
-
 #if LWIP_DNS
-  err = dns_gethostbyname(smtp_server, &addr, smtp_dns_found, pcb);
+  err = dns_gethostbyname(smtp_server, &addr, smtp_dns_found, s);
 #else /* LWIP_DNS */
   err = ipaddr_aton(smtp_server, &addr) ? ERR_OK : ERR_ARG;
 #endif /* LWIP_DNS */
   if (err == ERR_OK) {
+    pcb = smtp_setup_pcb(s, &addr);
+    if (pcb == NULL) {
+      err = ERR_MEM;
+      goto leave;
+    }
     err = tcp_connect(pcb, &addr, smtp_server_port, smtp_tcp_connected);
     if (err != ERR_OK) {
       LWIP_DEBUGF(SMTP_DEBUG_WARN_STATE, ("tcp_connect failed: %d\n", (int)err));
@@ -753,14 +763,20 @@ static void
 smtp_close(struct smtp_session *s, struct tcp_pcb *pcb, u8_t result,
            u16_t srv_err, err_t err)
 {
-  tcp_arg(pcb, NULL);
-  if (tcp_close(pcb) == ERR_OK) {
+  if (pcb != NULL) {
+     tcp_arg(pcb, NULL);
+     if (tcp_close(pcb) == ERR_OK) {
+       if (s != NULL) {
+         smtp_free(s, result, srv_err, err);
+       }
+     } else {
+       /* close failed, set back arg */
+       tcp_arg(pcb, s);
+     }
+  } else {
     if (s != NULL) {
       smtp_free(s, result, srv_err, err);
     }
-  } else {
-    /* close failed, set back arg */
-    tcp_arg(pcb, s);
   }
 }
 
@@ -837,27 +853,36 @@ smtp_tcp_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 static void
 smtp_dns_found(const char* hostname, const ip_addr_t *ipaddr, void *arg)
 {
-  struct tcp_pcb *pcb = (struct tcp_pcb *)arg;
+  struct smtp_session *s = (struct smtp_session*)arg;
+  struct tcp_pcb *pcb;
   err_t err;
   u8_t result;
 
   LWIP_UNUSED_ARG(hostname);
 
   if (ipaddr != NULL) {
-    LWIP_DEBUGF(SMTP_DEBUG_STATE, ("smtp_dns_found: hostname resolved, connecting\n"));
-    err = tcp_connect(pcb, ipaddr, smtp_server_port, smtp_tcp_connected);
-    if (err == ERR_OK) {
-      return;
+    pcb = smtp_setup_pcb(s, ipaddr);
+    if (pcb != NULL) {
+      LWIP_DEBUGF(SMTP_DEBUG_STATE, ("smtp_dns_found: hostname resolved, connecting\n"));
+      err = tcp_connect(pcb, ipaddr, smtp_server_port, smtp_tcp_connected);
+      if (err == ERR_OK) {
+        return;
+      }
+      LWIP_DEBUGF(SMTP_DEBUG_WARN_STATE, ("tcp_connect failed: %d\n", (int)err));
+      result = SMTP_RESULT_ERR_CONNECT;
+    } else {
+      LWIP_DEBUGF(SMTP_DEBUG_STATE, ("smtp_dns_found: failed to allocate tcp pcb\n"));
+      result = SMTP_RESULT_ERR_MEM;
+      err = ERR_MEM;
     }
-    LWIP_DEBUGF(SMTP_DEBUG_WARN_STATE, ("tcp_connect failed: %d\n", (int)err));
-    result = SMTP_RESULT_ERR_CONNECT;
   } else {
     LWIP_DEBUGF(SMTP_DEBUG_WARN_STATE, ("smtp_dns_found: failed to resolve hostname: %s\n",
       hostname));
+    pcb = NULL;
     result = SMTP_RESULT_ERR_HOSTNAME;
     err = ERR_ARG;
   }
-  smtp_close((struct smtp_session*)(pcb->callback_arg), pcb, result, 0, err);
+  smtp_close(s, pcb, result, 0, err);
 }
 #endif /* LWIP_DNS */
 

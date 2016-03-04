@@ -25,6 +25,8 @@
 #define SMTP_RESULT_ERR_TIMEOUT   5
 /** Server responded with an unknown response code */
 #define SMTP_RESULT_ERR_SVR_RESP  6
+/** Out of resources locally */
+#define SMTP_RESULT_ERR_MEM       7
 
 /** Prototype of an smtp callback function
  *
