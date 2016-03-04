@@ -98,24 +98,22 @@ static void chargen_thread(void *arg)
     struct charcb *p_charcb;
     LWIP_UNUSED_ARG(arg);
 
-    /* First acquire our socket for listening for connections */
-#if LWIP_IPV6
-    listenfd = socket(AF_INET6, SOCK_STREAM, 0);
-#else /* LWIP_IPV6 */
-    listenfd = socket(AF_INET, SOCK_STREAM, 0);
-#endif /* LWIP_IPV6 */
-
-    LWIP_ASSERT("chargen_thread(): Socket create failed.", listenfd >= 0);
     memset(&chargen_saddr, 0, sizeof(chargen_saddr));
 #if LWIP_IPV6
+    /* First acquire our socket for listening for connections */
+    listenfd = socket(AF_INET6, SOCK_STREAM, 0);
     chargen_saddr.sin6_family = AF_INET6;
     chargen_saddr.sin6_addr = in6addr_any;
     chargen_saddr.sin6_port = htons(19);     /* Chargen server port */
 #else /* LWIP_IPV6 */
+    /* First acquire our socket for listening for connections */
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
     chargen_saddr.sin_family = AF_INET;
     chargen_saddr.sin_addr.s_addr = PP_HTONL(INADDR_ANY);
     chargen_saddr.sin_port = htons(19);     /* Chargen server port */
 #endif /* LWIP_IPV6 */
+
+    LWIP_ASSERT("chargen_thread(): Socket create failed.", listenfd >= 0);
 
     if (bind(listenfd, (struct sockaddr *) &chargen_saddr, sizeof(chargen_saddr)) == -1)
         LWIP_ASSERT("chargen_thread(): Socket bind failed.", 0);
@@ -210,11 +208,8 @@ static void chargen_thread(void *arg)
                 if (++p_charcb->nextchar == 0x7f)
                     p_charcb->nextchar = 0x21;
             }
-            
         }
     }
-    
-    
 }
 
 /**************************************************************
@@ -226,22 +221,22 @@ static void close_chargen(struct charcb *p_charcb)
 {
     struct charcb *p_search_charcb;
 
-        /* Either an error or tcp connection closed on other
-         * end. Close here */
-        close(p_charcb->socket);
-        /* Free charcb */
-        if (charcb_list == p_charcb)
-            charcb_list = p_charcb->next;
-        else
-            for (p_search_charcb = charcb_list; p_search_charcb; p_search_charcb = p_search_charcb->next)
+    /* Either an error or tcp connection closed on other
+     * end. Close here */
+    close(p_charcb->socket);
+    /* Free charcb */
+    if (charcb_list == p_charcb)
+        charcb_list = p_charcb->next;
+    else
+        for (p_search_charcb = charcb_list; p_search_charcb; p_search_charcb = p_search_charcb->next)
+        {
+            if (p_search_charcb->next == p_charcb)
             {
-                if (p_search_charcb->next == p_charcb)
-                {
-                    p_search_charcb->next = p_charcb->next;
-                    break;
-                }
+                p_search_charcb->next = p_charcb->next;
+                break;
             }
-        mem_free(p_charcb);
+        }
+    mem_free(p_charcb);
 }
 
 
@@ -277,7 +272,6 @@ static int do_read(struct charcb *p_charcb)
 void chargen_init(void)
 {
     sys_thread_new( CHARGEN_THREAD_NAME, chargen_thread, 0, CHARGEN_THREAD_STACKSIZE, CHARGEN_PRIORITY);
-    
 }
 
 #endif /* LWIP_SOCKET */
