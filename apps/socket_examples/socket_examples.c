@@ -3,7 +3,7 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_SOCKET && LWIP_IPV4
+#if LWIP_SOCKET && (LWIP_IPV4 || LWIP_IPV6)
 
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
@@ -11,8 +11,12 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifndef SOCK_TARGET_HOST
-#define SOCK_TARGET_HOST  "192.168.1.1"
+#ifndef SOCK_TARGET_HOST4
+#define SOCK_TARGET_HOST4  "192.168.1.1"
+#endif
+
+#ifndef SOCK_TARGET_HOST6
+#define SOCK_TARGET_HOST6  "FE80::12:34FF:FE56:78AB"
 #endif
 
 #ifndef SOCK_TARGET_PORT
@@ -63,25 +67,40 @@ sockex_nonblocking_connect(void *arg)
   int s;
   int ret;
   u32_t opt;
+#if LWIP_IPV6
+  struct sockaddr_in6 addr;
+#else /* LWIP_IPV6 */
   struct sockaddr_in addr;
+#endif /* LWIP_IPV6 */
   fdsets sets;
   struct timeval tv;
   u32_t ticks_a, ticks_b;
   int err;
+  const ip_addr_t *ipaddr = (const ip_addr_t*)arg;
   INIT_FDSETS(&sets);
 
-  LWIP_UNUSED_ARG(arg);
   /* set up address to connect to */
   memset(&addr, 0, sizeof(addr));
+#if LWIP_IPV6
+  addr.sin6_len = sizeof(addr);
+  addr.sin6_family = AF_INET6;
+  addr.sin6_port = PP_HTONS(SOCK_TARGET_PORT);
+  inet6_addr_from_ip6addr(&addr.sin6_addr, ip_2_ip6(ipaddr));
+#else /* LWIP_IPV6 */
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
   addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
-  addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
+  inet_addr_from_ipaddr(&addr.sin_addr, ip_2_ip4(ipaddr));
+#endif /* LWIP_IPV6 */
 
   /* first try blocking: */
 
   /* create the socket */
+#if LWIP_IPV6
+  s = lwip_socket(AF_INET6, SOCK_STREAM, 0);
+#else /* LWIP_IPV6 */
   s = lwip_socket(AF_INET, SOCK_STREAM, 0);
+#endif /* LWIP_IPV6 */
   LWIP_ASSERT("s >= 0", s >= 0);
 
   /* connect */
@@ -100,7 +119,11 @@ sockex_nonblocking_connect(void *arg)
   /* now try nonblocking and close before being connected */
 
   /* create the socket */
+#if LWIP_IPV6
+  s = lwip_socket(AF_INET6, SOCK_STREAM, 0);
+#else /* LWIP_IPV6 */
   s = lwip_socket(AF_INET, SOCK_STREAM, 0);
+#endif /* LWIP_IPV6 */
   LWIP_ASSERT("s >= 0", s >= 0);
   /* nonblocking */
   opt = lwip_fcntl(s, F_GETFL, 0);
@@ -128,7 +151,11 @@ sockex_nonblocking_connect(void *arg)
      this test only works if it is fast enough, i.e. no breakpoints, please! */
 
   /* create the socket */
+#if LWIP_IPV6
+  s = lwip_socket(AF_INET6, SOCK_STREAM, 0);
+#else /* LWIP_IPV6 */
   s = lwip_socket(AF_INET, SOCK_STREAM, 0);
+#endif /* LWIP_IPV6 */
   LWIP_ASSERT("s >= 0", s >= 0);
 
   /* nonblocking */
@@ -202,7 +229,11 @@ sockex_nonblocking_connect(void *arg)
      this test only works if it is fast enough, i.e. no breakpoints, please! */
 
   /* create the socket */
+#if LWIP_IPV6
+  s = lwip_socket(AF_INET6, SOCK_STREAM, 0);
+#else /* LWIP_IPV6 */
   s = lwip_socket(AF_INET, SOCK_STREAM, 0);
+#endif /* LWIP_IPV6 */
   LWIP_ASSERT("s >= 0", s >= 0);
 
   /* nonblocking */
@@ -210,7 +241,11 @@ sockex_nonblocking_connect(void *arg)
   ret = lwip_ioctl(s, FIONBIO, &opt);
   LWIP_ASSERT("ret == 0", ret == 0);
 
+#if LWIP_IPV6
+  addr.sin6_addr.un.u8_addr[0]++; /* this should result in an invalid address */
+#else /* LWIP_IPV6 */
   addr.sin_addr.s_addr++; /* this should result in an invalid address */
+#endif /* LWIP_IPV6 */
 
   /* connect */
   ret = lwip_connect(s, (struct sockaddr*)&addr, sizeof(addr));
@@ -270,25 +305,40 @@ sockex_testrecv(void *arg)
   int err;
   int opt, opt2;
   socklen_t opt2size;
+#if LWIP_IPV6
+  struct sockaddr_in6 addr;
+#else /* LWIP_IPV6 */
   struct sockaddr_in addr;
+#endif /* LWIP_IPV6 */
   size_t len;
   char rxbuf[SOCK_TARGET_MAXHTTPPAGESIZE];
   fd_set readset;
   fd_set errset;
   struct timeval tv;
+  const ip_addr_t *ipaddr = (const ip_addr_t*)arg;
 
-  LWIP_UNUSED_ARG(arg);
   /* set up address to connect to */
   memset(&addr, 0, sizeof(addr));
+#if LWIP_IPV6
+  addr.sin6_len = sizeof(addr);
+  addr.sin6_family = AF_INET6;
+  addr.sin6_port = PP_HTONS(SOCK_TARGET_PORT);
+  inet6_addr_from_ip6addr(&addr.sin6_addr, ip_2_ip6(ipaddr));
+#else /* LWIP_IPV6 */
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
   addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
-  addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
+  inet_addr_from_ipaddr(&addr.sin_addr, ip_2_ip4(ipaddr));
+#endif /* LWIP_IPV6 */
 
   /* first try blocking: */
 
   /* create the socket */
+#if LWIP_IPV6
+  s = lwip_socket(AF_INET6, SOCK_STREAM, 0);
+#else /* LWIP_IPV6 */
   s = lwip_socket(AF_INET, SOCK_STREAM, 0);
+#endif /* LWIP_IPV6 */
   LWIP_ASSERT("s >= 0", s >= 0);
 
   /* connect */
@@ -434,23 +484,39 @@ sockex_testtwoselects(void *arg)
   int s1;
   int s2;
   int ret;
+#if LWIP_IPV6
+  struct sockaddr_in6 addr;
+#else /* LWIP_IPV6 */
   struct sockaddr_in addr;
+#endif /* LWIP_IPV6 */
   size_t len;
   err_t lwiperr;
   struct sockex_select_helper h1, h2, h3, h4;
+  const ip_addr_t *ipaddr = (const ip_addr_t*)arg;
 
-  LWIP_UNUSED_ARG(arg);
   /* set up address to connect to */
   memset(&addr, 0, sizeof(addr));
+#if LWIP_IPV6
+  addr.sin6_len = sizeof(addr);
+  addr.sin6_family = AF_INET6;
+  addr.sin6_port = PP_HTONS(SOCK_TARGET_PORT);
+  inet6_addr_from_ip6addr(&addr.sin6_addr, ip_2_ip6(ipaddr));
+#else /* LWIP_IPV6 */
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
   addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
-  addr.sin_addr.s_addr = inet_addr(SOCK_TARGET_HOST);
+  inet_addr_from_ipaddr(&addr.sin_addr, ip_2_ip4(ipaddr));
+#endif /* LWIP_IPV6 */
 
   /* create the sockets */
+#if LWIP_IPV6
+  s1 = lwip_socket(AF_INET6, SOCK_STREAM, 0);
+  s2 = lwip_socket(AF_INET6, SOCK_STREAM, 0);
+#else /* LWIP_IPV6 */
   s1 = lwip_socket(AF_INET, SOCK_STREAM, 0);
-  LWIP_ASSERT("s1 >= 0", s1 >= 0);
   s2 = lwip_socket(AF_INET, SOCK_STREAM, 0);
+#endif /* LWIP_IPV6 */
+  LWIP_ASSERT("s1 >= 0", s1 >= 0);
   LWIP_ASSERT("s2 >= 0", s2 >= 0);
 
   /* connect, should succeed */
@@ -524,21 +590,30 @@ sockex_testtwoselects(void *arg)
 static void
 socket_example_test(void* arg)
 {
-  LWIP_UNUSED_ARG(arg);
-  sockex_nonblocking_connect(NULL);
-  sockex_testrecv(NULL);
-  sockex_testtwoselects(NULL);
+  sockex_nonblocking_connect(arg);
+  sockex_testrecv(arg);
+  sockex_testtwoselects(arg);
 }
 #endif
 
 void socket_examples_init(void)
 {
+  ip_addr_t ipaddr;
+  
+#if LWIP_IPV6
+  IP_SET_TYPE_VAL(ipaddr, IPADDR_TYPE_V6);
+  ip6addr_aton(SOCK_TARGET_HOST6, ip_2_ip6(&ipaddr));
+#else /* LWIP_IPV6 */
+  IP_SET_TYPE_VAL(ipaddr, IPADDR_TYPE_V4);
+  ip4addr_aton(SOCK_TARGET_HOST4, ip_2_ip4(&ipaddr));
+#endif /* LWIP_IPV6 */
+  
 #if SOCKET_EXAMPLES_RUN_PARALLEL
-  sys_thread_new("sockex_nonblocking_connect", sockex_nonblocking_connect, NULL, 0, 0);
-  sys_thread_new("sockex_testrecv", sockex_testrecv, NULL, 0, 0);
-  sys_thread_new("sockex_testtwoselects", sockex_testtwoselects, NULL, 0, 0);
+  sys_thread_new("sockex_nonblocking_connect", sockex_nonblocking_connect, &ipaddr, 0, 0);
+  sys_thread_new("sockex_testrecv", sockex_testrecv, &ipaddr, 0, 0);
+  sys_thread_new("sockex_testtwoselects", sockex_testtwoselects, &ipaddr, 0, 0);
 #else
-  sys_thread_new("socket_example_test", socket_example_test, NULL, 0, 0);
+  sys_thread_new("socket_example_test", socket_example_test, &ipaddr, 0, 0);
 #endif
 }
 
