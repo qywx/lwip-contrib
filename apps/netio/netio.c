@@ -33,9 +33,11 @@ static err_t netio_accept(void *arg, struct tcp_pcb *pcb, err_t err)
   LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(err);
 
-  tcp_arg(pcb, NULL);
-  tcp_sent(pcb, NULL);
-  tcp_recv(pcb, netio_recv);
+  if (pcb != NULL) {
+    tcp_arg(pcb, NULL);
+    tcp_sent(pcb, NULL);
+    tcp_recv(pcb, netio_recv);
+  }
   return ERR_OK;
 }
 

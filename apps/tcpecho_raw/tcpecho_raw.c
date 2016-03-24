@@ -110,7 +110,9 @@ tcpecho_raw_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
   struct tcpecho_raw_state *es;
 
   LWIP_UNUSED_ARG(arg);
-  LWIP_UNUSED_ARG(err);
+  if ((err != ERR_OK) || (newpcb == NULL)) {
+    return ERR_VAL;
+  }
 
   /* Unless this pcb should have NORMAL priority, set its priority now.
      When running out of pcbs, low priority pcbs can be aborted to create
@@ -136,7 +138,7 @@ tcpecho_raw_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
   {
     ret_err = ERR_MEM;
   }
-  return ret_err;  
+  return ret_err;
 }
 
 err_t
