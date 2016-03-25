@@ -674,7 +674,7 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
     if (p->tot_len >= sizeof(buffer)) {
       LINK_STATS_INC(link.lenerr);
       LINK_STATS_INC(link.drop);
-      snmp_inc_ifoutdiscards(netif);
+      MIB2_STATS_NETIF_INC(netif, ifoutdiscards);
       return ERR_BUF;
     }
     ptr = buffer;
@@ -704,19 +704,19 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
   if (pcap_sendpacket(pa->adapter, buf, tot_len) < 0) {
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.drop);
-    snmp_inc_ifoutdiscards(netif);
+    MIB2_STATS_NETIF_INC(netif, ifoutdiscards);
     return ERR_BUF;
   }
 
   LINK_STATS_INC(link.xmit);
-  snmp_add_ifoutoctets(netif, tot_len);
+  MIB2_STATS_NETIF_ADD(netif, ifoutoctets, tot_len);
   ethhdr = (struct eth_hdr *)p->payload;
   if ((ethhdr->dest.addr[0] & 1) != 0) {
     /* broadcast or multicast packet*/
-    snmp_inc_ifoutnucastpkts(netif);
+    MIB2_STATS_NETIF_INC(netif, ifoutnucastpkts);
   } else {
     /* unicast packet */
-    snmp_inc_ifoutucastpkts(netif);
+    MIB2_STATS_NETIF_INC(netif, ifoutucastpkts);
   }
   return ERR_OK;
 }
@@ -793,16 +793,17 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
       }
     }
     LINK_STATS_INC(link.recv);
-    snmp_add_ifinoctets(netif, p->tot_len);
+    MIB2_STATS_NETIF_ADD(netif, ifinoctets, p->tot_len - ETH_PAD_SIZE);
     if (unicast) {
-      snmp_inc_ifinucastpkts(netif);
+      MIB2_STATS_NETIF_INC(netif, ifinucastpkts);
     } else {
-      snmp_inc_ifinnucastpkts(netif);
+      MIB2_STATS_NETIF_INC(netif, ifinnucastpkts);
     }
   } else {
     /* drop packet */
     LINK_STATS_INC(link.memerr);
     LINK_STATS_INC(link.drop);
+    MIB2_STATS_NETIF_INC(netif, ifindiscards);
   }
 
   return p;
@@ -857,7 +858,7 @@ pcapif_input(u_char *user, const struct pcap_pkthdr *pkt_header, const u_char *p
 
   /* move received packet into a new pbuf */
   p = pcapif_low_level_input(netif, packet, packet_len);
-  /* no packet could be read, silently ignore this */
+  /* if no packet could be read, silently ignore this */
   if (p != NULL) {
 #if PCAPIF_RX_REF
     p = pcapif_rx_ref(p);
