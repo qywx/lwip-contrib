@@ -369,6 +369,30 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\ip.c">
       <Filter>src\core</Filter>
     </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_icmp.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_interfaces.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_ip.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_snmp.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_system.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_tcp.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_udp.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmpv3.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\lwiperf.h">
@@ -693,6 +717,9 @@
       <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmp_msg.h">
+      <Filter>src\apps\snmp</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmpv3.h">
       <Filter>src\apps\snmp</Filter>
     </ClInclude>
   </ItemGroup>

@@ -326,6 +326,14 @@
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_threadsync.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_traps.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ip.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmpv3.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_icmp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_interfaces.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_ip.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_snmp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_system.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_tcp.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_udp.c" />
     <ClCompile Include="..\sio.c" />
     <ClCompile Include="..\sys_arch.c" />
   </ItemGroup>
@@ -430,6 +438,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_scalar.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_table.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_threadsync.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmpv3.h" />
     <ClInclude Include="..\include\arch\bpstruct.h" />
     <ClInclude Include="..\include\arch\cc.h" />
     <ClInclude Include="..\include\arch\epstruct.h" />
