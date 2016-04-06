@@ -38,22 +38,12 @@ LDFLAGS:=$(LDFLAGS) -lcheck -lm -lpthread -lrt -lsubunit
 CFLAGS:=$(CFLAGS) -DLWIP_UNIX_EMPTY_ASSERT -I/usr/include/check -I$(LWIPDIR)/../test/unit \
 	-I$(LWIPDIR)/include -Iunix/include -I. -I../include
 
-COREFILES=$(LWIPDIR)/core/mem.c $(LWIPDIR)/core/memp.c $(LWIPDIR)/core/netif.c \
-	$(LWIPDIR)/core/pbuf.c $(LWIPDIR)/core/raw.c \
-	$(LWIPDIR)/core/stats.c $(LWIPDIR)/core/sys.c \
-	$(LWIPDIR)/core/tcp.c $(LWIPDIR)/core/tcp_in.c \
-	$(LWIPDIR)/core/tcp_out.c $(LWIPDIR)/core/udp.c $(LWIPDIR)/core/ip.c \
-	$(LWIPDIR)/core/init.c $(LWIPDIR)/core/timers.c $(LWIPDIR)/core/def.c \
-	$(LWIPDIR)/core/inet_chksum.c $(LWIPDIR)/netif/etharp.c \
-	$(LWIPDIR)/netif/ethernet.c
-CORE4FILES=$(LWIPDIR)/core/ipv4/icmp.c $(LWIPDIR)/core/ipv4/ip4.c \
-	$(LWIPDIR)/core/ipv4/ip4_addr.c $(LWIPDIR)/core/ipv4/ip_frag.c \
-	$(LWIPDIR)/core/ipv4/dhcp.c
+include $(LWIPDIR)/Filelists.mk
 
 ARCHFILES=$(wildcard $(LWIPARCH)/*.c)
 
 # LWIPFILES: All the above.
-LWIPFILES=$(COREFILES) $(CORE4FILES) $(ARCHFILES)
+LWIPFILES=$(LWIPNOAPPSFILES) $(ARCHFILES)
 LWIPOBJS=$(LWIPFILES:.c=.o)
 
 TESTDIR=$(CODEDIR)/test/unit
@@ -62,7 +52,7 @@ TESTFILES=$(TESTDIR)/lwip_unittests.c $(TESTDIR)/udp/test_udp.c $(TESTDIR)/ethar
 TESTOBJS=$(TESTFILES:.c=.o)
 
 %.o: %.c Makefile $(TESTDIR)/lwipopts.h
-	@$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 all: lwip_unittests
 .PHONY: all clean check
@@ -71,7 +61,7 @@ clean:
 	@rm -f lwip_unittests $(LWIPOBJS) $(TESTOBJS)
 
 lwip_unittests: $(TESTOBJS) $(LWIPOBJS)
-	@$(CC) $(TESTOBJS) $(LWIPOBJS) -o lwip_unittests $(LDFLAGS)
+	$(CC) $(TESTOBJS) $(LWIPOBJS) -o lwip_unittests $(LDFLAGS)
 
 check: lwip_unittests
 	@./lwip_unittests
