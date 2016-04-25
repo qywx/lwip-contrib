@@ -11,6 +11,7 @@
 #include "lwip/sys.h"
 #include "lwip/arch.h"
 #include "lwip/sio.h"
+#include "netif/ppp/ppp_opts.h"
 
 /* Following #undefs are here to keep compiler from issuing warnings
    about them being double defined. (They are defined in lwip/inet.h
