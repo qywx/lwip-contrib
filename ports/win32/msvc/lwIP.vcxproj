@@ -439,6 +439,10 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmp_threadsync.h" />
     <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmpv3.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppapi.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\fs.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\httpd.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\httpd_opts.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmpv3.h" />
     <ClInclude Include="..\include\arch\bpstruct.h" />
     <ClInclude Include="..\include\arch\cc.h" />
     <ClInclude Include="..\include\arch\epstruct.h" />

@@ -722,6 +722,18 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppapi.h">
       <Filter>src\include\netif\ppp</Filter>
     </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\fs.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\httpd.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\httpd_opts.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmpv3.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\lwipcfg_msvc.h.example">
