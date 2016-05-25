@@ -53,6 +53,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include "lwip/def.h"
+
 #ifdef LWIP_UNIX_MACH
 #include <mach/mach.h>
 #include <mach/mach_time.h>
