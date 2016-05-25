@@ -33,7 +33,8 @@ CCDEP=gcc
 CC=gcc
 
 #To compile for openbsd: make UNIXARCH=OPENBSD
-#To compile for cygwin: make UNIXARCH=CYGWIN
+#To compile for cygwin:  make UNIXARCH=CYGWIN
+#To compile for MacOS:   make UNIXARCH=MACH
 UNIXARCH ?= LINUX
 CFLAGS=-g -Wall -DLWIP_UNIX_$(UNIXARCH) -DLWIP_DEBUG -pedantic -Werror \
 	-Wparentheses -Wsequence-point -Wswitch-default \

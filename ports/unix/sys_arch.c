@@ -53,6 +53,11 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#ifdef LWIP_UNIX_MACH
+#include <mach/mach.h>
+#include <mach/mach_time.h>
+#endif
+
 #include "lwip/sys.h"
 #include "lwip/opt.h"
 #include "lwip/stats.h"
@@ -101,6 +106,24 @@ static void sys_sem_free_internal(struct sys_sem *sem);
 
 static u32_t cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex,
                        u32_t timeout);
+
+static void
+get_monotonic_time(struct timespec *ts)
+{
+#ifdef LWIP_UNIX_MACH
+  // darwin impl (no CLOCK_MONOTONIC)
+  uint64_t t = mach_absolute_time();
+  mach_timebase_info_data_t timebase_info = {0, 0};
+  mach_timebase_info(&timebase_info);
+  uint64_t nano = (t * timebase_info.numer) / (timebase_info.denom);
+  uint64_t sec = nano/1000000000L;
+  nano -= sec * 1000000000L;
+  ts->tv_sec = sec;
+  ts->tv_nsec = nano;
+#else
+  clock_gettime(CLOCK_MONOTONIC, ts);
+#endif
+}
 
 /*-----------------------------------------------------------------------------------*/
 static struct sys_thread * 
@@ -352,7 +375,9 @@ sys_sem_new_internal(u8_t count)
   if (sem != NULL) {
     sem->c = count;
     pthread_condattr_init(&(sem->condattr));
+#ifndef LWIP_UNIX_MACH
     pthread_condattr_setclock(&(sem->condattr), CLOCK_MONOTONIC);
+#endif
     pthread_cond_init(&(sem->cond), &(sem->condattr));
     pthread_mutex_init(&(sem->mutex), NULL);
   }
@@ -382,7 +407,12 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
   }
 
   /* Get a timestamp and add the timeout value. */
-  clock_gettime(CLOCK_MONOTONIC, &rtime1);
+  get_monotonic_time(&rtime1);
+#ifdef LWIP_UNIX_MACH
+  ts.tv_sec = timeout / 1000L;
+  ts.tv_nsec = (timeout % 1000L) * 1000000L;
+  ret = pthread_cond_timedwait_relative_np(cond, mutex, &ts);
+#else
   ts.tv_sec = rtime1.tv_sec + timeout / 1000L;
   ts.tv_nsec = rtime1.tv_nsec + (timeout % 1000L) * 1000000L;
   if (ts.tv_nsec >= 1000000000L) {
@@ -391,12 +421,13 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
   }
 
   ret = pthread_cond_timedwait(cond, mutex, &ts);
+#endif
   if (ret == ETIMEDOUT) {
     return SYS_ARCH_TIMEOUT;
   }
 
   /* Calculate for how long we waited for the cond. */
-  clock_gettime(CLOCK_MONOTONIC, &rtime2);
+  get_monotonic_time(&rtime2);
   ts.tv_sec = rtime2.tv_sec - rtime1.tv_sec;
   ts.tv_nsec = rtime2.tv_nsec - rtime1.tv_nsec;
   if (ts.tv_nsec < 0) {
@@ -476,7 +507,7 @@ sys_now(void)
 {
   struct timespec ts;
 
-  clock_gettime(CLOCK_MONOTONIC, &ts);
+  get_monotonic_time(&ts);
   return ts.tv_sec * 1000L + ts.tv_nsec / 1000000L;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -547,6 +578,6 @@ sys_jiffies(void)
 {
   struct timespec ts;
 
-  clock_gettime(CLOCK_MONOTONIC, &ts);
+  get_monotonic_time(&ts);
   return ts.tv_sec * 1000000000L + ts.tv_nsec;
 }
