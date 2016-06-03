@@ -64,6 +64,24 @@
 #include "lwip/opt.h"
 #include "lwip/stats.h"
 
+static void
+get_monotonic_time(struct timespec *ts)
+{
+#ifdef LWIP_UNIX_MACH
+  // darwin impl (no CLOCK_MONOTONIC)
+  uint64_t t = mach_absolute_time();
+  mach_timebase_info_data_t timebase_info = {0, 0};
+  mach_timebase_info(&timebase_info);
+  uint64_t nano = (t * timebase_info.numer) / (timebase_info.denom);
+  uint64_t sec = nano/1000000000L;
+  nano -= sec * 1000000000L;
+  ts->tv_sec = sec;
+  ts->tv_nsec = nano;
+#else
+  clock_gettime(CLOCK_MONOTONIC, ts);
+#endif
+}
+
 #if !NO_SYS
 
 static struct sys_thread *threads = NULL;
@@ -108,24 +126,6 @@ static void sys_sem_free_internal(struct sys_sem *sem);
 
 static u32_t cond_wait(pthread_cond_t * cond, pthread_mutex_t * mutex,
                        u32_t timeout);
-
-static void
-get_monotonic_time(struct timespec *ts)
-{
-#ifdef LWIP_UNIX_MACH
-  // darwin impl (no CLOCK_MONOTONIC)
-  uint64_t t = mach_absolute_time();
-  mach_timebase_info_data_t timebase_info = {0, 0};
-  mach_timebase_info(&timebase_info);
-  uint64_t nano = (t * timebase_info.numer) / (timebase_info.denom);
-  uint64_t sec = nano/1000000000L;
-  nano -= sec * 1000000000L;
-  ts->tv_sec = sec;
-  ts->tv_nsec = nano;
-#else
-  clock_gettime(CLOCK_MONOTONIC, ts);
-#endif
-}
 
 /*-----------------------------------------------------------------------------------*/
 static struct sys_thread * 
