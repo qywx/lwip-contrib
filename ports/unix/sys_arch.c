@@ -68,7 +68,7 @@ static void
 get_monotonic_time(struct timespec *ts)
 {
 #ifdef LWIP_UNIX_MACH
-  // darwin impl (no CLOCK_MONOTONIC)
+  /* darwin impl (no CLOCK_MONOTONIC) */
   uint64_t t = mach_absolute_time();
   mach_timebase_info_data_t timebase_info = {0, 0};
   mach_timebase_info(&timebase_info);
