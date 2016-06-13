@@ -356,7 +356,7 @@ ppp_link_status_cb(ppp_pcb *pcb, int err_code, void *ctx)
     case PPPERR_NONE:               /* No error. */
         {
 #if LWIP_DNS
-        ip_addr_t ns;
+        const ip_addr_t *ns;
 #endif /* LWIP_DNS */
         fprintf(stderr, "ppp_link_status_cb: PPPERR_NONE\n\r");
 #if LWIP_IPV4
@@ -370,9 +370,9 @@ ppp_link_status_cb(ppp_pcb *pcb, int err_code, void *ctx)
 
 #if LWIP_DNS
         ns = dns_getserver(0);
-        fprintf(stderr, "   dns1        = %s\n\r", ipaddr_ntoa(&ns));
+        fprintf(stderr, "   dns1        = %s\n\r", ipaddr_ntoa(ns));
         ns = dns_getserver(1);
-        fprintf(stderr, "   dns2        = %s\n\r", ipaddr_ntoa(&ns));
+        fprintf(stderr, "   dns2        = %s\n\r", ipaddr_ntoa(ns));
 #endif /* LWIP_DNS */
 #if PPP_IPV6_SUPPORT
         fprintf(stderr, "   our6_ipaddr = %s\n\r", ip6addr_ntoa(netif_ip6_addr(pppif, 0)));
