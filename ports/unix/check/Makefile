@@ -35,8 +35,8 @@ CONTRIBDIR=../../..
 LWIPARCH=$(CONTRIBDIR)/ports/unix
 
 LDFLAGS:=$(LDFLAGS) -lcheck -lm -lpthread -lrt -lsubunit
-CFLAGS:=$(CFLAGS) -DLWIP_UNIX_EMPTY_ASSERT -I/usr/include/check -I$(LWIPDIR)/../test/unit \
-	-I$(LWIPDIR)/include -Iunix/include -I. -I../include
+CFLAGS:=$(CFLAGS) -DLWIP_NOASSERT_ON_ERROR -I/usr/include/check -I$(LWIPDIR)/../test/unit \
+	-I$(LWIPDIR)/include -Iunix/include -I. -I../include -g
 
 include $(LWIPDIR)/Filelists.mk
 
