@@ -8,6 +8,8 @@ testing lwIP applications.
 
 * check: Runs the unit tests shipped with main lwIP on the Unix port.
 
+* fuzz: Helper application for fuzzing the lwIP stack
+
 * netif, include/netif: Various network interface implementations and their
   helpers, some explicitly for Unix infrastructure, some generic (but most
   useful on an easy to debug system):
