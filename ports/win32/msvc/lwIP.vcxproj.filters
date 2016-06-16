@@ -605,6 +605,9 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ppp_impl.h">
       <Filter>src\include\netif\ppp</Filter>
     </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\ppp_opts.h">
+      <Filter>src\include\netif\ppp</Filter>
+    </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppcrypt.h">
       <Filter>src\include\netif\ppp</Filter>
     </ClInclude>
