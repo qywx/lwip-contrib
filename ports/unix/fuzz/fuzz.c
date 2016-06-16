@@ -30,16 +30,20 @@
  *
  */
 
+#include "lwip/init.h"
 #include "lwip/netif.h"
 #include "netif/etharp.h"
 #if LWIP_IPV6
 #include "lwip/ethip6.h"
+#include "lwip/nd6.h"
 #endif
-#include <stdio.h>
+#include <string.h>
 
 /* no-op send function */
 static err_t lwip_tx_func(struct netif *netif, struct pbuf *p)
 {
+  LWIP_UNUSED_ARG(netif);
+  LWIP_UNUSED_ARG(p);
   return ERR_OK;
 }
 
@@ -73,6 +77,8 @@ static err_t testif_init(struct netif *netif)
 static void input_pkt(struct netif *netif, const u8_t *data, size_t len)
 {
   struct pbuf *p, *q;
+  err_t err;
+
   LWIP_ASSERT("pkt too big", len <= 0xFFFF);
   p = pbuf_alloc(PBUF_RAW, (u16_t)len, PBUF_POOL);
   LWIP_ASSERT("alloc failed", p);
@@ -80,10 +86,13 @@ static void input_pkt(struct netif *netif, const u8_t *data, size_t len)
     memcpy(q->payload, data, q->len);
     data += q->len;
   }
-  err_t err = netif->input(p, netif);
+  err = netif->input(p, netif);
+  if (err != ERR_OK) {
+    pbuf_free(p);
+  }
 }
 
-int main()
+int main(void)
 {
   struct netif net_test;
   ip4_addr_t addr;
@@ -100,11 +109,13 @@ int main()
 
   netif_add(&net_test, &addr, &netmask, &gw, &net_test, testif_init, ethernet_input);
   netif_set_up(&net_test);
-  
+
+#if LWIP_IPV6
   nd6_tmr(); /* tick nd to join multicast groups */
+#endif
 
   len = fread(pktbuf, 1, sizeof(pktbuf), stdin);
   input_pkt(&net_test, pktbuf, len);
-  
+
   return 0;
 }
