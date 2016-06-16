@@ -38,6 +38,14 @@
 #include "lwip/nd6.h"
 #endif
 #include <string.h>
+#include <stdio.h>
+
+/* LWIP_FUZZ_READ_FROM_FILE == 0: read input from stdin (afl mode)
+ * LWIP_FUZZ_READ_FROM_FILE == 1: pass an afl output file as command-line argument
+ */
+#ifndef LWIP_FUZZ_READ_FROM_FILE
+#define LWIP_FUZZ_READ_FROM_FILE 0
+#endif
 
 /* no-op send function */
 static err_t lwip_tx_func(struct netif *netif, struct pbuf *p)
@@ -92,7 +100,13 @@ static void input_pkt(struct netif *netif, const u8_t *data, size_t len)
   }
 }
 
-int main(void)
+int main(
+#if LWIP_FUZZ_READ_FROM_FILE
+  int argc, char** argv
+#else
+  void
+#endif
+  )
 {
   struct netif net_test;
   ip4_addr_t addr;
@@ -114,7 +128,21 @@ int main(void)
   nd6_tmr(); /* tick nd to join multicast groups */
 #endif
 
+#if LWIP_FUZZ_READ_FROM_FILE
+  {
+    FILE* f;
+    const char* filename;
+    LWIP_ASSERT("argument missing", argc >= 2);
+    filename = argv[1];
+    LWIP_ASSERT("invalid filename", filename != NULL);
+    f = fopen(filename, "rb");
+    LWIP_ASSERT("open failed", f != NULL);
+    len = fread(pktbuf, 1, sizeof(pktbuf), f);
+    fclose(f);
+  }
+#else
   len = fread(pktbuf, 1, sizeof(pktbuf), stdin);
+#endif
   input_pkt(&net_test, pktbuf, len);
 
   return 0;

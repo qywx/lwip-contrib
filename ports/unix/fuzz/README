@@ -12,10 +12,12 @@ Just running make will produce the test program.
 
 Then run afl with:
 
-afl-fuzz -i inputs/<INPUT> -i output ./lwip_fuzz
+afl-fuzz -i inputs/<INPUT> -o output ./lwip_fuzz
 
 and it should start working. It will probably complain about CPU scheduler,
 set AFL_SKIP_CPUFREQ=1 to ignore it.
+If it complains about invalid "/proc/sys/kernel/core_pattern" setting, try
+executing "sudo bash -c 'echo core > /proc/sys/kernel/core_pattern'".
 
 The input is split into different subdirectories since they test different
 parts of the code, and since you want to run one instance of afl-fuzz on each
