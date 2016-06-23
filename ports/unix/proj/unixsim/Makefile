@@ -29,7 +29,7 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
 
-all ipv4 compile: simhost simrouter simnode
+all compile: simhost simrouter simnode
 .PHONY: all
 
 include ../Common.mk

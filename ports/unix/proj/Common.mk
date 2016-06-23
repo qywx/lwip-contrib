@@ -43,7 +43,7 @@ CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 # -ansi
 # -std=c89
 LDFLAGS=-pthread -lutil -lrt
-CONTRIBDIR=../../../..
+CONTRIBDIR?=../../../..
 LWIPARCH=$(CONTRIBDIR)/ports/unix
 ARFLAGS=rs
 

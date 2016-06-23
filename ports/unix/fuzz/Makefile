@@ -28,36 +28,26 @@
 # 
 # Author: Adam Dunkels <adam@sics.se>
 #
- 
-CODEDIR=../../../../lwip
-LWIPDIR=$(CODEDIR)/src
+
+all compile: lwip_fuzz
+.PHONY: all clean
+
 CONTRIBDIR=../../..
-LWIPARCH=$(CONTRIBDIR)/ports/unix
-
-LDFLAGS:=$(LDFLAGS) -lm -lpthread -lrt
-CFLAGS:=$(CFLAGS) -I$(LWIPDIR)/include -Iunix/include -I. -I../include -g -O0
-
-include $(LWIPDIR)/Filelists.mk
-
-ARCHFILES=$(wildcard $(LWIPARCH)/*.c)
-
-# LWIPFILES: All the above.
-LWIPFILES=$(LWIPNOAPPSFILES) $(ARCHFILES)
-LWIPOBJS=$(LWIPFILES:.c=.o)
-
-FUZZFILES=fuzz.c
-FUZZOBJS=$(FUZZFILES:.c=.o)
+include ../proj/Common.mk
 
 CC=afl-gcc
-
-%.o: %.c Makefile lwipopts.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-all: lwip_fuzz
-.PHONY: all clean check
+LDFLAGS:=$(LDFLAGS) -lm
+CFLAGS:=$(CFLAGS) -O0
 
 clean:
-	@rm -f lwip_fuzz $(LWIPOBJS) $(FUZZOBJS)
+	rm -f *.o $(LWIPLIBCOMMON) lwip_fuzz *.s .depend* *.core core
 
-lwip_fuzz: $(FUZZOBJS) $(LWIPOBJS)
-	$(CC) $(FUZZOBJS) $(LWIPOBJS) -o lwip_fuzz $(LDFLAGS)
+depend dep: .depend
+
+include .depend
+
+.depend: fuzz.c $(LWIPFILES) $(APPFILES)
+	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
+
+lwip_fuzz: .depend $(LWIPLIBCOMMON) fuzz.o
+	$(CC) $(CFLAGS) -o lwip_fuzz fuzz.o $(LWIPLIBCOMMON) $(LDFLAGS)
