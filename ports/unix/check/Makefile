@@ -29,38 +29,32 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
  
-CODEDIR=../../../../lwip
-LWIPDIR=$(CODEDIR)/src
+all compile: lwip_unittests
+.PHONY: all clean check
+
 CONTRIBDIR=../../..
-LWIPARCH=$(CONTRIBDIR)/ports/unix
+include ../proj/Common.mk
 
-LDFLAGS:=$(LDFLAGS) -lcheck -lm -lpthread -lrt -lsubunit
-CFLAGS:=$(CFLAGS) -DLWIP_NOASSERT_ON_ERROR -I/usr/include/check -I$(LWIPDIR)/../test/unit \
-	-I$(LWIPDIR)/include -Iunix/include -I. -I../include -g
+LDFLAGS:=$(LDFLAGS) -lcheck -lm -lsubunit
+CFLAGS:=$(CFLAGS) -DLWIP_NOASSERT_ON_ERROR -I/usr/include/check -I$(LWIPDIR)/../test/unit
 
-include $(LWIPDIR)/Filelists.mk
-
-ARCHFILES=$(wildcard $(LWIPARCH)/*.c)
-
-# LWIPFILES: All the above.
-LWIPFILES=$(LWIPNOAPPSFILES) $(ARCHFILES)
-LWIPOBJS=$(LWIPFILES:.c=.o)
-
+CODEDIR=../../../../lwip
 TESTDIR=$(CODEDIR)/test/unit
 TESTFILES=$(TESTDIR)/lwip_unittests.c $(TESTDIR)/udp/test_udp.c $(TESTDIR)/etharp/test_etharp.c $(TESTDIR)/tcp/tcp_helper.c \
 	$(TESTDIR)/tcp/test_tcp_oos.c $(TESTDIR)/tcp/test_tcp.c $(TESTDIR)/core/test_mem.c $(TESTDIR)/dhcp/test_dhcp.c $(TESTDIR)/core/test_pbuf.c
-TESTOBJS=$(TESTFILES:.c=.o)
-
-%.o: %.c Makefile $(TESTDIR)/lwipopts.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-all: lwip_unittests
-.PHONY: all clean check
+TESTOBJS=$(notdir $(TESTFILES:.c=.o))
 
 clean:
-	@rm -f lwip_unittests $(LWIPOBJS) $(TESTOBJS)
+	@rm -f *.o lwip_unittests *.s .depend* *.core core
 
-lwip_unittests: $(TESTOBJS) $(LWIPOBJS)
+depend dep: .depend
+
+include .depend
+
+.depend: $(LWIPFILES) $(TESTFILES)
+	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
+
+lwip_unittests: .depend $(TESTOBJS) $(LWIPOBJS)
 	$(CC) $(TESTOBJS) $(LWIPOBJS) -o lwip_unittests $(LDFLAGS)
 
 check: lwip_unittests
