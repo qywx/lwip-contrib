@@ -31,15 +31,20 @@
  */
 
 #include <stdio.h>
-  
+
+#include "lwip/opt.h"
+
+#if (LWIP_IPV4 || LWIP_IPV6) && LWIP_TCP /* @todo: test IPv6 */
+
 #include "netif/tcpdump.h"
 #include "lwip/ip.h"
+#include "lwip/ip4.h"
+#include "lwip/ip6.h"
+#include "lwip/ip_addr.h"
 #include "lwip/priv/tcp_priv.h"
 #include "lwip/udp.h"
 #include "lwip/inet.h"
 #include "lwip/inet_chksum.h"
-
-#if LWIP_IPV4 && LWIP_TCP /* @todo: test IPv6 */
 
 #ifndef TCPDUMP_DEBUG
 #define TCPDUMP_DEBUG LWIP_DBG_OFF
@@ -80,14 +85,19 @@ tcpdump(struct pbuf *p)
   }
   iphdr = (struct ip_hdr *)p->payload;
   
+#if LWIP_IPV6
   if(IPH_V(iphdr) == 6) {
     struct ip6_hdr *ip6hdr = (struct ip6_hdr*)iphdr;
     ip_addr_copy_from_ip6(src, ip6hdr->src);
     ip_addr_copy_from_ip6(dst, ip6hdr->dest);
-  } else {
+  }
+#endif
+#if LWIP_IPV4
+  if(IPH_V(iphdr) == 4) {
     ip_addr_copy_from_ip4(src, iphdr->src);
     ip_addr_copy_from_ip4(dst, iphdr->dest);
   }
+#endif
   
   switch (IPH_PROTO(iphdr)) {
 #if LWIP_TCP
