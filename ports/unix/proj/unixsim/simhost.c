@@ -593,9 +593,11 @@ main_thread(void *arg)
 #if 0
     stats_display();
 #endif
+#if PPP_SUPPORT
   /* Block forever. */
   sys_thread_new("pppos_rx_thread", pppos_rx_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
   sys_sem_wait(&sem);
+#endif
 }
 /*-----------------------------------------------------------------------------------*/
 int
