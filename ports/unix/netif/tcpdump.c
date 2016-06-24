@@ -39,7 +39,7 @@
 #include "lwip/inet.h"
 #include "lwip/inet_chksum.h"
 
-#if LWIP_IPV4 && LWIP_TCP /* @todo: IPv6 */
+#if LWIP_IPV4 && LWIP_TCP /* @todo: test IPv6 */
 
 #ifndef TCPDUMP_DEBUG
 #define TCPDUMP_DEBUG LWIP_DBG_OFF
@@ -62,6 +62,7 @@ tcpdump_init(void)
 void
 tcpdump(struct pbuf *p)
 {
+  ip_addr_t src, dst;
   struct ip_hdr *iphdr;
 #if LWIP_UDP
   struct udp_hdr *udphdr;
@@ -78,15 +79,23 @@ tcpdump(struct pbuf *p)
     return;
   }
   iphdr = (struct ip_hdr *)p->payload;
+  
+  if(IPH_V(iphdr) == 6) {
+    struct ip6_hdr *ip6hdr = (struct ip6_hdr*)iphdr;
+    ip_addr_copy_from_ip6(src, ip6hdr->src);
+    ip_addr_copy_from_ip6(dst, ip6hdr->dest);
+  } else {
+    ip_addr_copy_from_ip4(src, iphdr->src);
+    ip_addr_copy_from_ip4(dst, iphdr->dest);
+  }
+  
   switch (IPH_PROTO(iphdr)) {
 #if LWIP_TCP
   case IP_PROTO_TCP:
-    tcphdr = (struct tcp_hdr *)((char *)iphdr + IP_HLEN);
+    tcphdr = (struct tcp_hdr *)((char *)iphdr + IPH_HL(iphdr));
 
     pbuf_header(p, -IP_HLEN);
-    if (inet_chksum_pseudo(p, IP_PROTO_TCP, p->tot_len, 
-                           (ip4_addr_t *)&(iphdr->src),
-                           (ip4_addr_t *)&(iphdr->dest)) != 0) {
+    if (ip_chksum_pseudo(p, IP_PROTO_TCP, p->tot_len, &src, &dst) != 0) {
       LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: IP checksum failed!\n"));
       /*
       fprintf(file, "chksum 0x%lx ", tcphdr->chksum);
@@ -114,19 +123,11 @@ tcpdump(struct pbuf *p)
     }
     flags[i++] = 0;
 
-
-
-    fprintf(file, "%d.%d.%d.%d.%u > %d.%d.%d.%d.%u: ",
-           (int)(ntohl(iphdr->src.addr) >> 24) & 0xff,
-           (int)(ntohl(iphdr->src.addr) >> 16) & 0xff,
-           (int)(ntohl(iphdr->src.addr) >> 8) & 0xff,
-           (int)(ntohl(iphdr->src.addr) >> 0) & 0xff,
-           ntohs(tcphdr->src),
-           (int)(ntohl(iphdr->dest.addr) >> 24) & 0xff,
-           (int)(ntohl(iphdr->dest.addr) >> 16) & 0xff,
-           (int)(ntohl(iphdr->dest.addr) >> 8) & 0xff,
-           (int)(ntohl(iphdr->dest.addr) >> 0) & 0xff,
-           ntohs(tcphdr->dest));
+    fprintf(file, "%s.%u > %s.%u: ",
+            ip_ntoa(&src),
+            ntohs(tcphdr->src),
+            ip_ntoa(&dst),
+            ntohs(tcphdr->dest));
     offset = TCPH_HDRLEN(tcphdr);
 
     len = ntohs(IPH_LEN(iphdr)) - offset * 4 - IP_HLEN;
@@ -147,31 +148,22 @@ tcpdump(struct pbuf *p)
 
 #if LWIP_UDP
   case IP_PROTO_UDP:
-    udphdr = (struct udp_hdr *)((char *)iphdr + IP_HLEN);
+    udphdr = (struct udp_hdr *)((char *)iphdr + IPH_HL(iphdr));
 
     pbuf_header(p, -IP_HLEN);
-    if (inet_chksum_pseudo(p, IP_PROTO_UDP, p->tot_len,
-                           (ip4_addr_t *)&(iphdr->src),
-                           (ip4_addr_t *)&(iphdr->dest)) != 0) {
+    if (ip_chksum_pseudo(p, IP_PROTO_UDP, p->tot_len, &src, &dst) != 0) {
       LWIP_DEBUGF(TCPDUMP_DEBUG, ("tcpdump: IP checksum failed!\n"));
       /*
       fprintf(file, "chksum 0x%lx ", tcphdr->chksum);
       tcphdr->chksum = 0;
-      fprintf(file, "should be 0x%lx ", inet_chksum_pseudo(p, (ip_addr_t *)&(iphdr->src),
-             (ip_addr_t *)&(iphdr->dest), IP_PROTO_TCP, p->tot_len));*/
+      fprintf(file, "should be 0x%lx ", ip_chksum_pseudo(p, &src, &dst, IP_PROTO_TCP, p->tot_len));*/
       fprintf(file, "!chksum ");
     }
 
-    fprintf(file, "%d.%d.%d.%d.%u > %d.%d.%d.%d.%u: ",
-            (int)(ntohl(iphdr->src.addr) >> 24) & 0xff,
-            (int)(ntohl(iphdr->src.addr) >> 16) & 0xff,
-            (int)(ntohl(iphdr->src.addr) >> 8) & 0xff,
-            (int)(ntohl(iphdr->src.addr) >> 0) & 0xff,
-            (int)(ntohl(iphdr->dest.addr) >> 24) & 0xff,
+    fprintf(file, "%s.%u > %s.%u: ",
+            ip_ntoa(&src),
             ntohs(udphdr->src),
-            (int)(ntohl(iphdr->dest.addr) >> 16) & 0xff,
-            (int)(ntohl(iphdr->dest.addr) >> 8) & 0xff,
-            (int)(ntohl(iphdr->dest.addr) >> 0) & 0xff,
+            ip_ntoa(&dst),
             ntohs(udphdr->dest));
     fprintf(file, "U ");
     len = ntohs(IPH_LEN(iphdr)) - sizeof(struct udp_hdr) - IP_HLEN;
