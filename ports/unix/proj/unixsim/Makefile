@@ -32,7 +32,7 @@
 all compile: simhost simrouter simnode
 .PHONY: all
 
-include ../Common.mk
+include ../../Common.mk
 
 clean:
 	rm -f *.o $(LWIPLIBCOMMON) $(APPLIB) simhost simnode simrouter *.s .depend* *.core core

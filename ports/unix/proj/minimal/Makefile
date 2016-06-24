@@ -32,7 +32,7 @@
 all ipv4 compile: echop
 .PHONY: all
 
-include ../Common.mk
+include ../../Common.mk
 
 clean:
 	rm -f *.o $(LWIPLIBCOMMON) $(APPLIB) echop .depend* *.core core

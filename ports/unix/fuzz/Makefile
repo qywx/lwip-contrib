@@ -33,7 +33,7 @@ all compile: lwip_fuzz
 .PHONY: all clean
 
 CONTRIBDIR=../../..
-include ../proj/Common.mk
+include ../Common.mk
 
 CC=afl-gcc
 LDFLAGS:=$(LDFLAGS) -lm

@@ -34,7 +34,7 @@ UNIXLIB=liblwip.a
 all: $(UNIXLIB) 
 .PHONY: all
 
-include ../Common.mk
+include ../../Common.mk
 
 CFLAGS+=-fPIC
 
