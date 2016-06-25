@@ -39,9 +39,7 @@ CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 	-Wc++-compat -Wwrite-strings -Wold-style-definition -Wcast-align \
 	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address \
 	-Wunreachable-code -Wuninitialized
-ifeq ($(CC),clang)
-CFLAGS:=$(CFLAGS) -Wno-format
-else
+ifneq ($(CC),clang)
 CFLAGS:=$(CFLAGS) -Wlogical-op
 endif
 # not used for now but interesting:
