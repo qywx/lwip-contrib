@@ -29,9 +29,9 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
 
-CCDEP=gcc
-CC=gcc
+#CC=gcc
 #CC=clang
+CCDEP?=$(CC)
 
 CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 	-Wparentheses -Wsequence-point -Wswitch-default \
