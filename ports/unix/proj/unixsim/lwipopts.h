@@ -32,7 +32,7 @@
 #ifndef LWIP_LWIPOPTS_H
 #define LWIP_LWIPOPTS_H
 
-#include "arch/cc.h"
+#include "lwip/arch.h"
 
 #define LWIP_IPV4          1
 #define LWIP_IPV6          1
