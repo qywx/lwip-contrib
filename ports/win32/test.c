@@ -81,6 +81,7 @@
 #include "lwip/igmp.h"
 #endif /* NO_SYS */
 
+#include "netif/ppp/ppp_opts.h"
 #if PPP_SUPPORT
 /* PPP includes */
 #include "lwip/sio.h"
