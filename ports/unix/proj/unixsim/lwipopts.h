@@ -290,7 +290,8 @@ extern void sntp_set_system_time(u32_t sec);
 #define CBCP_SUPPORT     0      /* Set > 0 for CBCP (NOT FUNCTIONAL!) */
 #define CCP_SUPPORT      0      /* Set > 0 for CCP (NOT FUNCTIONAL!) */
 #ifdef __clang__
-#define VJ_SUPPORT       0      /* VanJacobsen currently does not compile with CLANG */
+/* Van Jacobson TCP header compression currently does not compile without warnings with CLANG */
+#define VJ_SUPPORT       0
 #else
 #define VJ_SUPPORT       1      /* Set > 0 for VJ header compression. */
 #endif
