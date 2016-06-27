@@ -149,7 +149,7 @@ err_t sys_sem_new(sys_sem_t *sem, u8_t count)
    
   /* failed to allocate memory... */
   SYS_STATS_INC(sem.err);
-  sem->sem = SYS_SEM_NULL;
+  sem->sem = NULL;
   return ERR_MEM;
 }
 
@@ -157,7 +157,7 @@ void sys_sem_free(sys_sem_t *sem)
 {
   /* parameter check */
   LWIP_ASSERT("sem != NULL", sem != NULL);
-  LWIP_ASSERT("sem->sem != SYS_SEM_NULL", sem->sem != SYS_SEM_NULL);
+  LWIP_ASSERT("sem->sem != NULL", sem->sem != NULL);
   LWIP_ASSERT("sem->sem != INVALID_HANDLE_VALUE", sem->sem != INVALID_HANDLE_VALUE);
   CloseHandle(sem->sem);
 
@@ -173,7 +173,8 @@ u32_t sys_arch_sem_wait(sys_sem_t *sem, u32_t timeout)
   DWORD ret;
   LONGLONG starttime, endtime;
   LWIP_ASSERT("sem != NULL", sem != NULL);
-  LWIP_ASSERT("sem != INVALID_HANDLE_VALUE", sem != INVALID_HANDLE_VALUE);
+  LWIP_ASSERT("sem->sem != NULL", sem->sem != NULL);
+  LWIP_ASSERT("sem->sem != INVALID_HANDLE_VALUE", sem->sem != INVALID_HANDLE_VALUE);
   if(!timeout)
   {
     /* wait infinite */
@@ -212,6 +213,68 @@ void sys_sem_signal(sys_sem_t *sem)
   ret = ReleaseSemaphore(sem->sem, 1, NULL);
   LWIP_ASSERT("Error releasing semaphore", ret != 0);
 }
+
+err_t sys_mutex_new(sys_mutex_t *mutex)
+{
+  HANDLE new_mut = NULL;
+
+  LWIP_ASSERT("mutex != NULL", mutex != NULL);
+
+  new_mut = CreateMutex(NULL, FALSE, NULL);
+  LWIP_ASSERT("Error creating mutex", new_mut != NULL);
+  if(new_mut != NULL) {
+    SYS_STATS_INC_USED(mutex);
+#if LWIP_STATS && SYS_STATS
+    LWIP_ASSERT("sys_mutex_new() counter overflow", lwip_stats.sys.mutex.used != 0 );
+#endif /* LWIP_STATS && SYS_STATS*/
+    mutex->mut = new_mut;
+    return ERR_OK;
+  }
+   
+  /* failed to allocate memory... */
+  SYS_STATS_INC(mutex.err);
+  mutex->mut = NULL;
+  return ERR_MEM;
+}
+
+void sys_mutex_free(sys_mutex_t *mutex)
+{
+  /* parameter check */
+  LWIP_ASSERT("mutex != NULL", mutex != NULL);
+  LWIP_ASSERT("mutex->mut != NULL", mutex->mut != NULL);
+  LWIP_ASSERT("mutex->mut != INVALID_HANDLE_VALUE", mutex->mut != INVALID_HANDLE_VALUE);
+  CloseHandle(mutex->mut);
+
+  SYS_STATS_DEC(mutex.used);
+#if LWIP_STATS && SYS_STATS
+  LWIP_ASSERT("sys_mutex_free() closed more than created", lwip_stats.sys.mutex.used != (u16_t)-1);
+#endif /* LWIP_STATS && SYS_STATS */
+  mutex->mut = NULL;
+}
+
+void sys_mutex_lock(sys_mutex_t *mutex)
+{
+  DWORD ret;
+  LWIP_ASSERT("mutex != NULL", mutex != NULL);
+  LWIP_ASSERT("mutex->mut != NULL", mutex->mut != NULL);
+  LWIP_ASSERT("mutex->mut != INVALID_HANDLE_VALUE", mutex->mut != INVALID_HANDLE_VALUE);
+  /* wait infinite */
+  ret = WaitForSingleObject(mutex->mut, INFINITE);
+  LWIP_ASSERT("Error waiting for mutex", ret == WAIT_OBJECT_0);
+}
+
+void sys_mutex_unlock(sys_mutex_t *mutex)
+{
+  LWIP_ASSERT("mutex != NULL", mutex != NULL);
+  LWIP_ASSERT("mutex->mut != NULL", mutex->mut != NULL);
+  LWIP_ASSERT("mutex->mut != INVALID_HANDLE_VALUE", mutex->mut != INVALID_HANDLE_VALUE);
+  /* wait infinite */
+  if(!ReleaseMutex(mutex->mut))
+  {
+    LWIP_ASSERT("Error releasing mutex", 0);
+  }
+}
+
 
 #ifdef _MSC_VER
 const DWORD MS_VC_EXCEPTION=0x406D1388;
