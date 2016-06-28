@@ -102,7 +102,7 @@ tcpdump(struct pbuf *p)
   switch (IPH_PROTO(iphdr)) {
 #if LWIP_TCP
   case IP_PROTO_TCP:
-    tcphdr = (struct tcp_hdr *)(void*)((char *)iphdr + IPH_HL(iphdr));
+    tcphdr = (struct tcp_hdr *)((char *)iphdr + IPH_HL(iphdr));
 
     pbuf_header(p, -IP_HLEN);
     if (ip_chksum_pseudo(p, IP_PROTO_TCP, p->tot_len, &src, &dst) != 0) {
@@ -158,7 +158,7 @@ tcpdump(struct pbuf *p)
 
 #if LWIP_UDP
   case IP_PROTO_UDP:
-    udphdr = (struct udp_hdr *)(void*)((char *)iphdr + IPH_HL(iphdr));
+    udphdr = (struct udp_hdr *)((char *)iphdr + IPH_HL(iphdr));
 
     pbuf_header(p, -IP_HLEN);
     if (ip_chksum_pseudo(p, IP_PROTO_UDP, p->tot_len, &src, &dst) != 0) {
