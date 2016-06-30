@@ -50,6 +50,13 @@
 #define BYTE_ORDER LITTLE_ENDIAN
 #endif /* BYTE_ORDER */
 
+/* Do not use lwIP default definitions for data types and format strings 
+ * because these do not work with MSVC 2010 compiler (no inttypes.h +
+ * missing definition in stdint.h)
+ */
+#define LWIP_NO_STDINT_H   1
+#define LWIP_NO_INTTYPES_H 1
+
 /* Define generic types used in lwIP */
 typedef unsigned   char    u8_t;
 typedef signed     char    s8_t;
