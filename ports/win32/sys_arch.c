@@ -92,13 +92,13 @@ static void InitSysArchProtect(void)
 }
 
 #if !NO_SYS
-u32_t sys_arch_protect(void)
+sys_prot_t sys_arch_protect(void)
 {
   EnterCriticalSection(&critSec);
   return 0;
 }
 
-void sys_arch_unprotect(u32_t pval)
+void sys_arch_unprotect(sys_prot_t pval)
 {
   LWIP_UNUSED_ARG(pval);
   LeaveCriticalSection(&critSec);

@@ -50,23 +50,18 @@
 #define BYTE_ORDER LITTLE_ENDIAN
 #endif /* BYTE_ORDER */
 
-/* Do not use lwIP default definitions for data types and format strings 
- * because these do not work with MSVC 2010 compiler (no inttypes.h +
- * missing definition in stdint.h)
+/* #define _INTPTR for Win32 MSVC stdint.h */
+#ifndef _INTPTR
+#define _INTPTR 2
+#endif
+
+typedef int sys_prot_t;
+
+#ifdef _MSC_VER
+/* Do not use lwIP default definitions for format strings 
+ * because these do not work with MSVC 2010 compiler (no inttypes.h)
  */
-#define LWIP_NO_STDINT_H   1
 #define LWIP_NO_INTTYPES_H 1
-
-/* Define generic types used in lwIP */
-typedef unsigned   char    u8_t;
-typedef signed     char    s8_t;
-typedef unsigned   short   u16_t;
-typedef signed     short   s16_t;
-typedef unsigned   long    u32_t;
-typedef signed     long    s32_t;
-
-typedef size_t mem_ptr_t;
-typedef u32_t sys_prot_t;
 
 /* Define (sn)printf formatters for these lwIP types */
 #define X8_F  "02x"
@@ -75,11 +70,6 @@ typedef u32_t sys_prot_t;
 #define S32_F "ld"
 #define X32_F "lx"
 
-#ifdef __GNUC__
-#define S16_F "d"
-#define X16_F "uX"
-#define SZT_F "u"
-#else
 #define S16_F "hd"
 #define X16_F "hx"
 #define SZT_F "lu"
@@ -103,8 +93,6 @@ typedef u32_t sys_prot_t;
 /* C runtime functions redefined */
 #define snprintf _snprintf
 #endif
-
-u32_t dns_lookup_external_hosts_file(const char *name);
 
 #define LWIP_RAND() ((u32_t)rand())
 

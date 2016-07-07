@@ -37,7 +37,8 @@ CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 	-Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-qual \
 	-Wc++-compat -Wwrite-strings -Wold-style-definition -Wcast-align \
 	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address \
-	-Wunreachable-code -Wuninitialized -Wlogical-op
+	-Wunreachable-code -Wuninitialized -Wlogical-op -Wno-format
+# -Wno-format: GCC complains about non-standard 64 bit modifier needed for MSVC runtime
 # not used for now but interesting:
 # -Wpacked
 # -ansi
