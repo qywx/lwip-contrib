@@ -468,7 +468,7 @@ com_stat(struct command *com)
 #endif /* MEM_STATS */
 #if MEMP_STATS
   for(i = 0; i < MEMP_MAX; i++) {
-    com_stat_write_mem(com->conn, &lwip_stats.memp[i], -1);
+    com_stat_write_mem(com->conn, lwip_stats.memp[i], -1);
   }
 #endif /* MEMP_STATS */
 #if SYS_STATS
