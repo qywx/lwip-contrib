@@ -50,14 +50,12 @@
 #define BYTE_ORDER LITTLE_ENDIAN
 #endif /* BYTE_ORDER */
 
-/* #define _INTPTR for Win32 MSVC stdint.h */
-#ifndef _INTPTR
-#define _INTPTR 2
-#endif
-
 typedef int sys_prot_t;
 
 #ifdef _MSC_VER
+/* define _INTPTR for Win32 MSVC stdint.h */
+#define _INTPTR 2
+
 /* Do not use lwIP default definitions for format strings 
  * because these do not work with MSVC 2010 compiler (no inttypes.h)
  */
@@ -73,7 +71,7 @@ typedef int sys_prot_t;
 #define S16_F "hd"
 #define X16_F "hx"
 #define SZT_F "lu"
-#endif
+#endif /* _MSC_VER */
 
 /* Compiler hints for packing structures */
 #define PACK_STRUCT_STRUCT
