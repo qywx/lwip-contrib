@@ -45,4 +45,4 @@ include .depend
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || cmd /c del .depend
 
 test: .depend $(LWIPLIBCOMMON) $(APPLIB) test.o
-	$(CC) $(CFLAGS) -o test test.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
+	$(CC) $(CFLAGS) -o test test.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS) -Xlinker -Map=test.map
