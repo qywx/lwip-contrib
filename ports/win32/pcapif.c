@@ -71,7 +71,7 @@
 #include "lwip/ip.h"
 #include "lwip/snmp.h"
 #include "lwip/tcpip.h"
-#include "lwip/timers.h"
+#include "lwip/timeouts.h"
 #include "lwip/ethip6.h"
 
 #include "netif/etharp.h"

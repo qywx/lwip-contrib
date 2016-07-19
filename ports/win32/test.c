@@ -42,7 +42,7 @@
 #include "lwip/opt.h"
 
 #include "lwip/sys.h"
-#include "lwip/timers.h"
+#include "lwip/timeouts.h"
 #include "lwip/debug.h"
 #include "lwip/stats.h"
 #include "lwip/init.h"
