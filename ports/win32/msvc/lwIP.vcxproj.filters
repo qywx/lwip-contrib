@@ -213,9 +213,6 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\nd6.c">
       <Filter>src\core\ipv6</Filter>
     </ClCompile>
-    <ClCompile Include="$(LWIP_DIR)\src\netif\etharp.c">
-      <Filter>src\netif</Filter>
-    </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\netif\ethernet.c">
       <Filter>src\netif</Filter>
     </ClCompile>
@@ -392,6 +389,9 @@
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppapi.c">
       <Filter>src\netif\ppp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\etharp.c">
+      <Filter>src\core\ipv4</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -736,6 +736,9 @@
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmpv3.h">
       <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\etharp.h">
+      <Filter>src\include\lwip</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
