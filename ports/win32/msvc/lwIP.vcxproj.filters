@@ -674,6 +674,9 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\tcpip_priv.h">
       <Filter>src\include\lwip\priv</Filter>
     </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\memp_priv.h">
+      <Filter>src\include\lwip\priv</Filter>
+    </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\memp_std.h">
       <Filter>src\include\lwip\priv</Filter>
     </ClInclude>

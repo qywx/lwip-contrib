@@ -347,6 +347,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\sntp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\sntp_opts.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\api_msg.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\memp_priv.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\memp_std.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\tcpip_priv.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\priv\tcp_priv.h" />
