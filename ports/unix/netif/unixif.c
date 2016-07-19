@@ -53,7 +53,7 @@
 #include "netif/list.h"
 #include "netif/unixif.h"
 #include "lwip/sys.h"
-#include "lwip/timers.h"
+#include "lwip/timeouts.h"
 
 #if LWIP_IPV4 /* @todo: IPv6 */
 #if !NO_SYS

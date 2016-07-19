@@ -42,7 +42,7 @@
 #include "lwip/mem.h"
 #include "lwip/memp.h"
 #include "lwip/sys.h"
-#include "lwip/timers.h"
+#include "lwip/timeouts.h"
 
 #include "lwip/ip_addr.h"
 

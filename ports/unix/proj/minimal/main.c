@@ -40,12 +40,12 @@
 #include "lwip/mem.h"
 #include "lwip/memp.h"
 #include "lwip/sys.h"
-#include "lwip/timers.h"
+#include "lwip/timeouts.h"
 
 #include "lwip/stats.h"
 
 #include "lwip/ip.h"
-#include "lwip/ip_frag.h"
+#include "lwip/ip4_frag.h"
 #include "lwip/udp.h"
 #include "lwip/tcp.h"
 #include "netif/tapif.h"

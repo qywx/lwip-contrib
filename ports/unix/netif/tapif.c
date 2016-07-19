@@ -52,7 +52,7 @@
 #include "lwip/snmp.h"
 #include "lwip/pbuf.h"
 #include "lwip/sys.h"
-#include "lwip/timers.h"
+#include "lwip/timeouts.h"
 #include "netif/etharp.h"
 #include "lwip/ethip6.h"
 

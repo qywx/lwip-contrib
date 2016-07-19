@@ -49,7 +49,7 @@
 #endif /* LWIP_UNIX_LINUX */
 
 #include "lwip/sys.h"
-#include "lwip/timers.h"
+#include "lwip/timeouts.h"
 
 #ifndef DELIF_DEBUG
 #define DELIF_DEBUG    LWIP_DBG_OFF
