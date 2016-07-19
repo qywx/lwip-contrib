@@ -262,7 +262,6 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\igmp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4_addr.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip_frag.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\dhcp6.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\ethip6.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\icmp6.c" />
@@ -334,6 +333,7 @@
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_tcp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_udp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppapi.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4_frag.c" />
     <ClCompile Include="..\sio.c" />
     <ClCompile Include="..\sys_arch.c" />
   </ItemGroup>
@@ -372,7 +372,6 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip6.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip6_addr.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip_addr.h" />
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip_frag.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\mem.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\memp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\mld6.h" />
@@ -445,6 +444,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\httpd_opts.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmpv3.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\etharp.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip4_frag.h" />
     <ClInclude Include="..\include\arch\bpstruct.h" />
     <ClInclude Include="..\include\arch\cc.h" />
     <ClInclude Include="..\include\arch\epstruct.h" />

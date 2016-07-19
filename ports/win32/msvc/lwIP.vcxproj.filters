@@ -183,9 +183,6 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4_addr.c">
       <Filter>src\core\ipv4</Filter>
     </ClCompile>
-    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip_frag.c">
-      <Filter>src\core\ipv4</Filter>
-    </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv6\dhcp6.c">
       <Filter>src\core\ipv6</Filter>
     </ClCompile>
@@ -393,6 +390,9 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\etharp.c">
       <Filter>src\core\ipv4</Filter>
     </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4_frag.c">
+      <Filter>src\core\ipv4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\lwiperf.h">
@@ -480,9 +480,6 @@
       <Filter>src\include\lwip</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip_addr.h">
-      <Filter>src\include\lwip</Filter>
-    </ClInclude>
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip_frag.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\mem.h">
@@ -738,6 +735,9 @@
       <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\etharp.h">
+      <Filter>src\include\lwip</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip4_frag.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
   </ItemGroup>
