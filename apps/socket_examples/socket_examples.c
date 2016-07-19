@@ -59,6 +59,8 @@ typedef struct _xx
   LWIP_ASSERT("buf4 fail", !memcmp((sets)->buf4, cmpbuf, 8)); \
 }while(0)
 
+static ip_addr_t dstaddr;
+
 /** This is an example function that tests
     blocking- and nonblocking connect. */
 static void
@@ -598,22 +600,21 @@ socket_example_test(void* arg)
 
 void socket_examples_init(void)
 {
-  ip_addr_t ipaddr;
-  
+
 #if LWIP_IPV6
-  IP_SET_TYPE_VAL(ipaddr, IPADDR_TYPE_V6);
-  ip6addr_aton(SOCK_TARGET_HOST6, ip_2_ip6(&ipaddr));
+  IP_SET_TYPE_VAL(dstaddr, IPADDR_TYPE_V6);
+  ip6addr_aton(SOCK_TARGET_HOST6, ip_2_ip6(&dstaddr));
 #else /* LWIP_IPV6 */
-  IP_SET_TYPE_VAL(ipaddr, IPADDR_TYPE_V4);
-  ip4addr_aton(SOCK_TARGET_HOST4, ip_2_ip4(&ipaddr));
+  IP_SET_TYPE_VAL(dstaddr, IPADDR_TYPE_V4);
+  ip4addr_aton(SOCK_TARGET_HOST4, ip_2_ip4(&dstaddr));
 #endif /* LWIP_IPV6 */
   
 #if SOCKET_EXAMPLES_RUN_PARALLEL
-  sys_thread_new("sockex_nonblocking_connect", sockex_nonblocking_connect, &ipaddr, 0, 0);
-  sys_thread_new("sockex_testrecv", sockex_testrecv, &ipaddr, 0, 0);
-  sys_thread_new("sockex_testtwoselects", sockex_testtwoselects, &ipaddr, 0, 0);
+  sys_thread_new("sockex_nonblocking_connect", sockex_nonblocking_connect, &dstaddr, 0, 0);
+  sys_thread_new("sockex_testrecv", sockex_testrecv, &dstaddr, 0, 0);
+  sys_thread_new("sockex_testtwoselects", sockex_testtwoselects, &dstaddr, 0, 0);
 #else
-  sys_thread_new("socket_example_test", socket_example_test, &ipaddr, 0, 0);
+  sys_thread_new("socket_example_test", socket_example_test, &dstaddr, 0, 0);
 #endif
 }
 
