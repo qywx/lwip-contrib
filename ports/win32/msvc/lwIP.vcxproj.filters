@@ -159,9 +159,6 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\tcp_out.c">
       <Filter>src\core</Filter>
     </ClCompile>
-    <ClCompile Include="$(LWIP_DIR)\src\core\timers.c">
-      <Filter>src\core</Filter>
-    </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\core\udp.c">
       <Filter>src\core</Filter>
     </ClCompile>
@@ -393,6 +390,9 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4_frag.c">
       <Filter>src\core\ipv4</Filter>
     </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\core\timeouts.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\lwiperf.h">
@@ -534,9 +534,6 @@
       <Filter>src\include\lwip</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcpip.h">
-      <Filter>src\include\lwip</Filter>
-    </ClInclude>
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\timers.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\udp.h">
@@ -738,6 +735,9 @@
       <Filter>src\include\lwip</Filter>
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip4_frag.h">
+      <Filter>src\include\lwip</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\timeouts.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
   </ItemGroup>

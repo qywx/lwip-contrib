@@ -253,7 +253,6 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\tcp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\tcp_in.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\tcp_out.c" />
-    <ClCompile Include="$(LWIP_DIR)\src\core\timers.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\udp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\autoip.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\dhcp.c" />
@@ -334,6 +333,7 @@
     <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmp_mib2_udp.c" />
     <ClCompile Include="$(LWIP_DIR)\src\netif\ppp\pppapi.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4_frag.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\core\timeouts.c" />
     <ClCompile Include="..\sio.c" />
     <ClCompile Include="..\sys_arch.c" />
   </ItemGroup>
@@ -390,7 +390,6 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\sys.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\tcpip.h" />
-    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\timers.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\udp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\etharp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ethernet.h" />
@@ -445,6 +444,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\snmpv3.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\etharp.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip4_frag.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\timeouts.h" />
     <ClInclude Include="..\include\arch\bpstruct.h" />
     <ClInclude Include="..\include\arch\cc.h" />
     <ClInclude Include="..\include\arch\epstruct.h" />
