@@ -335,16 +335,9 @@ ping_send_now(void)
 
 #endif /* PING_USE_SOCKETS */
 
-#include "lwip/etharp.h"
-
 void
 ping_init(void)
 {
-  ip4_addr_t ipaddr;
-  struct eth_addr ethaddr = {0,1,2,3,4,5};
-  IP4_ADDR(&ipaddr, 10,30,7,254);
-  etharp_add_static_entry(&ipaddr, &ethaddr);
-
 #if PING_USE_SOCKETS
   sys_thread_new("ping_thread", ping_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 #else /* PING_USE_SOCKETS */
