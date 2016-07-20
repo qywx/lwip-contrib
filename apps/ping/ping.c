@@ -202,16 +202,23 @@ static void
 ping_thread(void *arg)
 {
   int s;
-  int timeout = PING_RCV_TIMEO;
+  int ret;
   ip_addr_t ping_target;
-
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
+  int timeout = PING_RCV_TIMEO;
+#else
+  struct timeval timeout;
+  timeout.tv_sec = PING_RCV_TIMEO/1000;
+  timeout.tv_usec = (PING_RCV_TIMEO%1000)*1000;
+#endif
   LWIP_UNUSED_ARG(arg);
 
   if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
     return;
   }
 
-  lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  ret = lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+  LWIP_ASSERT("setting receive timeout failed", ret == 0);
 
   while (1) {
     ip_addr_copy_from_ip4(ping_target, PING_TARGET);
@@ -328,9 +335,16 @@ ping_send_now(void)
 
 #endif /* PING_USE_SOCKETS */
 
+#include "lwip/etharp.h"
+
 void
 ping_init(void)
 {
+  ip4_addr_t ipaddr;
+  struct eth_addr ethaddr = {0,1,2,3,4,5};
+  IP4_ADDR(&ipaddr, 10,30,7,254);
+  etharp_add_static_entry(&ipaddr, &ethaddr);
+
 #if PING_USE_SOCKETS
   sys_thread_new("ping_thread", ping_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 #else /* PING_USE_SOCKETS */
