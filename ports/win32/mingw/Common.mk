@@ -55,6 +55,7 @@ LWIPDIR=$(CONTRIBDIR)/../lwip/src
 PCAPDIR=$(PCAP_DIR)/Include
 
 CFLAGS+=-I. \
+	-I.. \
 	-I$(CONTRIBDIR) \
 	-I$(PCAPDIR) \
 	-I$(LWIPDIR)/include \
