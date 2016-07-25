@@ -372,6 +372,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip4_addr.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip6.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip6_addr.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip6_frag.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip_addr.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\mem.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\memp.h" />

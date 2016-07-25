@@ -479,6 +479,9 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip6_addr.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip6_frag.h">
+      <Filter>src\include\lwip</Filter>
+    </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\ip_addr.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
