@@ -108,10 +108,10 @@ struct sensor_inf
 
 static struct sensor_inf sensors[SENSOR_MAX];
 
-static u16_t sensor_count_get_value(struct snmp_node_instance* instance, void* value);
+static s16_t      sensor_count_get_value(struct snmp_node_instance* instance, void* value);
 static snmp_err_t sensor_table_get_cell_instance(const u32_t* column, const u32_t* row_oid, u8_t row_oid_len, struct snmp_node_instance* cell_instance);
 static snmp_err_t sensor_table_get_next_cell_instance(const u32_t* column, struct snmp_obj_id* row_oid, struct snmp_node_instance* cell_instance);
-static u16_t      sensor_table_get_value(struct snmp_node_instance* instance, void* value);
+static s16_t      sensor_table_get_value(struct snmp_node_instance* instance, void* value);
 static snmp_err_t sensor_table_set_value(struct snmp_node_instance* instance, u16_t len, void *value);
 
 /* sensorentry .1.3.6.1.4.1.26381.1.1.1 (.level0.level1)
@@ -247,7 +247,7 @@ lwip_privmib_init(void)
 }
 
 /* sensorcount .1.3.6.1.4.1.26381.1.2 */
-static u16_t
+static s16_t
 sensor_count_get_value(struct snmp_node_instance* instance, void* value)
 {
   size_t count = 0;
@@ -338,7 +338,7 @@ sensor_table_get_next_cell_instance(const u32_t* column, struct snmp_obj_id* row
   return SNMP_ERR_NOSUCHINSTANCE;
 }
 
-static u16_t
+static s16_t
 sensor_table_get_value(struct snmp_node_instance* instance, void* value)
 {
   u32_t i = instance->reference.u32;
