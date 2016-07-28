@@ -719,9 +719,6 @@
     <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmp_msg.h">
       <Filter>src\apps\snmp</Filter>
     </ClInclude>
-    <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmpv3.h">
-      <Filter>src\apps\snmp</Filter>
-    </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\netif\ppp\pppapi.h">
       <Filter>src\include\netif\ppp</Filter>
     </ClInclude>
