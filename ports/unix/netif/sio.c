@@ -38,6 +38,10 @@
 #include <sys/signal.h>
 #include <sys/types.h>
 
+#ifndef LWIP_HAVE_SLIPIF
+#define LWIP_HAVE_SLIPIF 0
+#endif
+
 #if (PPP_SUPPORT || LWIP_HAVE_SLIPIF) && defined(LWIP_UNIX_LINUX)
 #include <pty.h>
 #endif

@@ -66,6 +66,9 @@
 
 #include "netif/tcpdump.h"
 
+#ifndef LWIP_HAVE_SLIPIF
+#define LWIP_HAVE_SLIPIF 0
+#endif
 #if LWIP_HAVE_SLIPIF
 #include "netif/slipif.h"
 #define SLIP_PTY_TEST 1
