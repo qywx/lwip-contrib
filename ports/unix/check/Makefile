@@ -55,7 +55,7 @@ include .depend
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
 
 lwip_unittests: .depend $(TESTOBJS) $(LWIPOBJS)
-	$(CC) $(TESTOBJS) $(LWIPOBJS) -o lwip_unittests $(LDFLAGS)
+	$(CC) $(CFLAGS) -o lwip_unittests $(TESTOBJS) $(LWIPLIBCOMMON) $(LDFLAGS)
 
 check: lwip_unittests
 	@./lwip_unittests
