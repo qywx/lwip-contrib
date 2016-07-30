@@ -41,6 +41,8 @@ CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 	-Wunreachable-code -Wuninitialized
 ifeq (,$(findstring clang,$(CC)))
 CFLAGS:=$(CFLAGS) -Wlogical-op
+else
+CFLAGS:=$(CFLAGS) -fsanitize=address
 endif
 # not used for now but interesting:
 # -Wpacked
