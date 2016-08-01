@@ -618,4 +618,4 @@ void socket_examples_init(void)
 #endif
 }
 
-#endif /* LWIP_SOCKETS */
+#endif /* LWIP_SOCKET */
