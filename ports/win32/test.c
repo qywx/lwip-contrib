@@ -77,7 +77,7 @@
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
-#include "lwip/ip_frag.h"
+#include "lwip/ip4_frag.h"
 #include "lwip/igmp.h"
 #endif /* NO_SYS */
 
