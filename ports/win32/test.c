@@ -85,7 +85,7 @@
 #if PPP_SUPPORT
 /* PPP includes */
 #include "lwip/sio.h"
-#include "lwip/pppapi.h"
+#include "netif/ppp/pppapi.h"
 #include "netif/ppp/pppos.h"
 #include "netif/ppp/pppoe.h"
 #if !NO_SYS && !LWIP_PPP_API
@@ -169,9 +169,6 @@ pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
 
   switch(errCode) {
     case PPPERR_NONE: {             /* No error. */
-#if LWIP_DNS
-      ip_addr_t ns;
-#endif /* LWIP_DNS */
       printf("pppLinkStatusCallback: PPPERR_NONE\n");
 #if LWIP_IPV4
       printf("   our_ipaddr  = %s\n", ip4addr_ntoa(netif_ip4_addr(pppif)));
@@ -179,10 +176,8 @@ pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
       printf("   netmask     = %s\n", ip4addr_ntoa(netif_ip4_netmask(pppif)));
 #endif /* LWIP_IPV4 */
 #if LWIP_DNS
-      ns = dns_getserver(0);
-      printf("   dns1        = %s\n", ipaddr_ntoa(&ns));
-      ns = dns_getserver(1);
-      printf("   dns2        = %s\n", ipaddr_ntoa(&ns));
+      printf("   dns1        = %s\n", ipaddr_ntoa(dns_getserver(0)));
+      printf("   dns2        = %s\n", ipaddr_ntoa(dns_getserver(1)));
 #endif /* LWIP_DNS */
 #if PPP_IPV6_SUPPORT
       printf("   our6_ipaddr = %s\n", ip6addr_ntoa(netif_ip6_addr(pppif, 0)));
