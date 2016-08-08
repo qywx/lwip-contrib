@@ -74,7 +74,7 @@
 #include "lwip/timeouts.h"
 #include "lwip/ethip6.h"
 
-#include "netif/etharp.h"
+#include "lwip/etharp.h"
 
 /* For compatibility with old pcap */
 #ifndef PCAP_OPENFLAG_PROMISCUOUS
