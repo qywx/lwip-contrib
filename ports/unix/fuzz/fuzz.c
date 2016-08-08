@@ -93,7 +93,7 @@ static void input_pkt(struct netif *netif, const u8_t *data, size_t len)
   }
 }
 
-int mainfuzz(int argc, char** argv)
+int main(int argc, char** argv)
 {
   struct netif net_test;
   ip4_addr_t addr;
