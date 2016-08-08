@@ -36,20 +36,21 @@
 #define NO_SYS                          1
 #define LWIP_NETCONN                    0
 #define LWIP_SOCKET                     0
+#define SYS_LIGHTWEIGHT_PROT            0
 
-#define LWIP_IPV6			1
-#define IPV6_FRAG_COPYHEADER		1
-#define LWIP_IPV6_DUP_DETECT_ATTEMPTS	0
+#define LWIP_IPV6                       1
+#define IPV6_FRAG_COPYHEADER            1
+#define LWIP_IPV6_DUP_DETECT_ATTEMPTS   0
 
 /* Enable DHCP to test it */
 #define LWIP_DHCP                       1
 
 /* Turn off checksum verification of fuzzed data */
-#define CHECKSUM_CHECK_IP		0
-#define CHECKSUM_CHECK_UDP		0
-#define CHECKSUM_CHECK_TCP		0
-#define CHECKSUM_CHECK_ICMP		0
-#define CHECKSUM_CHECK_ICMP6		0
+#define CHECKSUM_CHECK_IP               0
+#define CHECKSUM_CHECK_UDP              0
+#define CHECKSUM_CHECK_TCP              0
+#define CHECKSUM_CHECK_ICMP             0
+#define CHECKSUM_CHECK_ICMP6            0
 
 /* Minimal changes to opt.h required for tcp unit tests: */
 #define MEM_SIZE                        16000
