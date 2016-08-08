@@ -34,7 +34,7 @@
 
 #include "lwip/opt.h"
 
-#if (LWIP_IPV4 || LWIP_IPV6) && LWIP_TCP /* @todo: test IPv6 */
+#if (LWIP_IPV4 || LWIP_IPV6) && LWIP_TCP /* @todo: fix IPv6 */
 
 #include "netif/tcpdump.h"
 #include "lwip/ip.h"
@@ -67,6 +67,7 @@ tcpdump_init(void)
 void
 tcpdump(struct pbuf *p)
 {
+#if LWIP_IPV4
   ip_addr_t src, dst;
   struct ip_hdr *iphdr;
 #if LWIP_UDP
@@ -90,14 +91,17 @@ tcpdump(struct pbuf *p)
     struct ip6_hdr *ip6hdr = (struct ip6_hdr*)iphdr;
     ip_addr_copy_from_ip6(src, ip6hdr->src);
     ip_addr_copy_from_ip6(dst, ip6hdr->dest);
+    fprintf(file, "%s > %s: (IPv6, unsupported) ",
+            ip_ntoa(&src),
+            ip_ntoa(&dst));
+    return; /* not supported */
   }
 #endif
-#if LWIP_IPV4
+
   if(IPH_V(iphdr) == 4) {
     ip_addr_copy_from_ip4(src, iphdr->src);
     ip_addr_copy_from_ip4(dst, iphdr->dest);
   }
-#endif
   
   switch (IPH_PROTO(iphdr)) {
 #if LWIP_TCP
@@ -187,8 +191,10 @@ tcpdump(struct pbuf *p)
   default:
     LWIP_DEBUGF(TCPDUMP_DEBUG, ("unhandled IP protocol: %d\n", (int)IPH_PROTO(iphdr)));
     break;
-
   }
+#else
+  LWIP_UNUSED_ARG(p);
+#endif
 }
 
 #endif /* LWIP_IPV4 && LWIP_TCP */
