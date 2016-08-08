@@ -41,6 +41,8 @@ CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 	-Wunreachable-code -Wuninitialized
 ifeq (,$(findstring clang,$(CC)))
 CFLAGS:=$(CFLAGS) -Wlogical-op
+# GCC newer than 4.8
+#CFLAGS:=$(CFLAGS) -fsanitize=address -fstack-protector -fstack-check
 else
 CFLAGS:=$(CFLAGS) -fsanitize=address
 endif
