@@ -734,16 +734,12 @@ main_loop(void)
 #endif /* USE_ETHERNET */
 }
 
-#if 1//PPP_SUPPORT && PPPOS_SUPPORT
-extern int mainfuzz(int argc, char **argv);
+#if PPP_SUPPORT && PPPOS_SUPPORT
 int main(int argc, char **argv)
 #else /* PPP_SUPPORT && PPPOS_SUPPORT */
 int main(void)
 #endif /* PPP_SUPPORT && PPPOS_SUPPORT */
 {
-#if 1
-  return mainfuzz(argc, argv);
-#else
 #if PPP_SUPPORT && PPPOS_SUPPORT
   if(argc > 1) {
     sio_idx = (u8_t)atoi(argv[1]);
@@ -756,5 +752,4 @@ int main(void)
   main_loop();
 
   return 0;
-#endif
 }
