@@ -472,7 +472,7 @@ com_stat(struct command *com)
 #if SYS_STATS
   com_stat_write_sys(com->conn, &lwip_stats.sys.sem,   "SEM       ");
   com_stat_write_sys(com->conn, &lwip_stats.sys.mutex, "MUTEX     ");
-  com_stat_write_sys(com->conn, &lwip_stats.sys.sem,   "MBOX      ");
+  com_stat_write_sys(com->conn, &lwip_stats.sys.mbox,  "MBOX      ");
 #endif /* SYS_STATS */
 
   return ESUCCESS;
