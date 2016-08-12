@@ -39,23 +39,28 @@ CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 	-Wc++-compat -Wwrite-strings -Wold-style-definition -Wcast-align \
 	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address \
 	-Wunreachable-code -Wuninitialized
+
+# we cannot sanitize alignment on x86-64 targets
 ifeq (,$(findstring clang,$(CC)))
 CFLAGS:=$(CFLAGS) -Wlogical-op
-# GCC newer than 4.8
-#CFLAGS:=$(CFLAGS) -fsanitize=address -fstack-protector -fstack-check
+# if GCC is newer than 4.8/4.9 you may use:
+#CFLAGS:=$(CFLAGS) -fsanitize=address -fstack-protector -fstack-check -fsanitize=undefined -fno-sanitize=alignment
 else
-CFLAGS:=$(CFLAGS) -fsanitize=address
+# because clang wants 64 bit alignment
+CFLAGS:=$(CFLAGS) -fsanitize=address -fsanitize=undefined -fno-sanitize=alignment
 endif
+
 # not used for now but interesting:
 # -Wpacked
 # -ansi
 # -std=c89
+
 LDFLAGS=-pthread -lutil -lrt
 CONTRIBDIR?=../../../..
 LWIPARCH=$(CONTRIBDIR)/ports/unix
 ARFLAGS=rs
 
-#Set this to where you have the lwip core module checked out from CVS
+#Set this to where you have the lwip core module checked out from git
 #default assumes it's a dir named lwip at the same level as the contrib module
 LWIPDIR=$(CONTRIBDIR)/../lwip/src
 
