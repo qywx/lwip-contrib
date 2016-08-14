@@ -186,7 +186,7 @@ delif_output(struct netif *netif, struct pbuf *p, const ip_addr_t *ipaddr)
 #ifdef DELIF_OUTPUT_DROPRATE
   if (((double)rand()/(double)RAND_MAX) < DELIF_OUTPUT_DROPRATE) {
     LWIP_DEBUGF(DELIF_DEBUG, ("delif_output: Packet dropped\n"));
-    return 0;
+    return ERR_BUF;
   }
 #endif /* DELIF_OUTPUT_DROPRATE */
 
