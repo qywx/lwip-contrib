@@ -41,21 +41,22 @@ CFLAGS:=$(CFLAGS) -DLWIP_NOASSERT_ON_ERROR -I/usr/include/check -I$(LWIPDIR)/../
 CODEDIR=../../../../lwip
 TESTDIR=$(CODEDIR)/test/unit
 TESTFILES=$(TESTDIR)/lwip_unittests.c $(TESTDIR)/udp/test_udp.c $(TESTDIR)/etharp/test_etharp.c $(TESTDIR)/tcp/tcp_helper.c \
-	$(TESTDIR)/tcp/test_tcp_oos.c $(TESTDIR)/tcp/test_tcp.c $(TESTDIR)/core/test_mem.c $(TESTDIR)/dhcp/test_dhcp.c $(TESTDIR)/core/test_pbuf.c
+	$(TESTDIR)/tcp/test_tcp_oos.c $(TESTDIR)/tcp/test_tcp.c $(TESTDIR)/core/test_mem.c $(TESTDIR)/dhcp/test_dhcp.c \
+	$(TESTDIR)/core/test_pbuf.c $(TESTDIR)/mdns/test_mdns.c 
 TESTOBJS=$(notdir $(TESTFILES:.c=.o))
 
 clean:
-	@rm -f *.o lwip_unittests *.s .depend* *.core core
+	@rm -f *.o $(LWIPLIBCOMMON) $(APPLIB) lwip_unittests *.s .depend* *.core core
 
 depend dep: .depend
 
 include .depend
 
-.depend: $(LWIPFILES) $(TESTFILES)
+.depend: $(LWIPFILES) $(APPFILES) $(TESTFILES)
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
 
-lwip_unittests: .depend $(TESTOBJS) $(LWIPLIBCOMMON)
-	$(CC) $(CFLAGS) -o lwip_unittests $(TESTOBJS)  -Wl,--start-group $(LWIPLIBCOMMON) $(LDFLAGS) -Wl,--end-group
+lwip_unittests: .depend $(TESTOBJS) $(LWIPLIBCOMMON) $(APPLIB)
+	$(CC) $(CFLAGS) -o lwip_unittests $(TESTOBJS)  -Wl,--start-group $(LWIPLIBCOMMON) $(APPLIB) $(LDFLAGS) -Wl,--end-group
 
 check: lwip_unittests
 	@./lwip_unittests
