@@ -91,6 +91,7 @@
 #include "apps/chargen/chargen.h"
 #include "apps/netio/netio.h"
 #include "lwip/apps/netbiosns.h"
+#include "lwip/apps/mdns.h"
 #include "lwip/apps/sntp.h"
 #include "lwip/apps/snmp.h"
 #include "lwip/apps/snmp_mib2.h"
@@ -218,6 +219,11 @@ tcpip_init_done(void *arg)
   snmp_set_mibs(mibs, LWIP_ARRAYSIZE(mibs));
   snmp_init();
 #endif /* LWIP_SNMP */
+
+#if LWIP_MDNS
+  mdns_resp_init();
+  mdns_resp_add_netif(&netif, "simhost", 1000);
+#endif
   
   sys_sem_signal(sem);
 }
