@@ -182,6 +182,17 @@ sntp_set_system_time(u32_t sec)
   printf("SNTP time: %s\n", buf);
 }
 
+#if LWIP_MDNS
+static void
+srv_txt(struct mdns_service *service, void *txt_userdata)
+{
+  LWIP_UNUSED_ARG(txt_userdata);
+  
+  err_t res = mdns_resp_add_service_txtitem(service, "path=/", 6);
+  LWIP_ERROR("mdns add service txt failed\n", (res == ERR_OK), return);
+}
+#endif
+
 static void
 tcpip_init_done(void *arg)
 {
@@ -222,7 +233,8 @@ tcpip_init_done(void *arg)
 
 #if LWIP_MDNS
   mdns_resp_init();
-  mdns_resp_add_netif(&netif, "simhost", 1000);
+  mdns_resp_add_netif(&netif, "simhost", 3600);
+  mdns_resp_add_service(&netif, "myweb", "_http", DNSSD_PROTO_TCP, 80, 3600, srv_txt, NULL);
 #endif
   
   sys_sem_signal(sem);
