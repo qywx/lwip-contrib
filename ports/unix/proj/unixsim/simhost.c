@@ -186,9 +186,10 @@ sntp_set_system_time(u32_t sec)
 static void
 srv_txt(struct mdns_service *service, void *txt_userdata)
 {
+  err_t res;
   LWIP_UNUSED_ARG(txt_userdata);
   
-  err_t res = mdns_resp_add_service_txtitem(service, "path=/", 6);
+  res = mdns_resp_add_service_txtitem(service, "path=/", 6);
   LWIP_ERROR("mdns add service txt failed\n", (res == ERR_OK), return);
 }
 #endif
