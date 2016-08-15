@@ -76,6 +76,12 @@
     <Filter Include="src\apps\httpd">
       <UniqueIdentifier>{45f6a578-1f4b-4741-9b55-5b5084ecc1d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\apps\mdns">
+      <UniqueIdentifier>{92215272-cad9-4cf0-a2e1-705f6220e2a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\include\lwip\prot">
+      <UniqueIdentifier>{bdd3995a-aa34-4a4e-891e-a13c5373d618}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(LWIP_DIR)\CHANGELOG" />
@@ -392,6 +398,9 @@
     </ClCompile>
     <ClCompile Include="$(LWIP_DIR)\src\core\timeouts.c">
       <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\mdns\mdns.c">
+      <Filter>src\apps\mdns</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -742,6 +751,27 @@
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\timeouts.h">
       <Filter>src\include\lwip</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\mdns.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\mdns_opts.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\prot\autoip.h">
+      <Filter>src\include\lwip\prot</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\prot\dhcp.h">
+      <Filter>src\include\lwip\prot</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\prot\dns.h">
+      <Filter>src\include\lwip\prot</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\prot\ip.h">
+      <Filter>src\include\lwip\prot</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\include\lwip\prot\ip4.h">
+      <Filter>src\include\lwip\prot</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
