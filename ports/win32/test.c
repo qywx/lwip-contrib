@@ -64,6 +64,7 @@
 #include "lwip/apps/netbiosns.h"
 #include "lwip/apps/sntp.h"
 #include "lwip/apps/httpd.h"
+#include "lwip/apps/mdns.h"
 #include "apps/httpserver/httpserver-netconn.h"
 #include "apps/netio/netio.h"
 #include "apps/ping/ping.h"
@@ -571,6 +572,10 @@ apps_init(void)
 #if LWIP_SOCKET_EXAMPLES_APP && LWIP_SOCKET
   socket_examples_init();
 #endif /* LWIP_SOCKET_EXAMPLES_APP && LWIP_SOCKET */
+#if LWIP_MDNS
+  mdns_resp_init();
+  mdns_resp_add_netif(netif_default, "lwip", 3600);
+#endif
 #ifdef LWIP_APP_INIT
   LWIP_APP_INIT();
 #endif
