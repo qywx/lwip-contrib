@@ -541,6 +541,15 @@ apps_init(void)
 #endif /* LWIP_HTTPD_APP_NETCONN */
 #endif /* LWIP_HTTPD_APP && LWIP_TCP */
 
+#if LWIP_MDNS
+  mdns_resp_init();
+#if LWIP_NETIF_HOSTNAME
+  mdns_resp_add_netif(netif_default, netif_default->hostname, 3600);
+#else
+  mdns_resp_add_netif(netif_default, "lwip", 3600);
+#endif
+#endif
+
 #if LWIP_NETIO_APP && LWIP_TCP
   netio_init();
 #endif /* LWIP_NETIO_APP && LWIP_TCP */
@@ -572,10 +581,6 @@ apps_init(void)
 #if LWIP_SOCKET_EXAMPLES_APP && LWIP_SOCKET
   socket_examples_init();
 #endif /* LWIP_SOCKET_EXAMPLES_APP && LWIP_SOCKET */
-#if LWIP_MDNS
-  mdns_resp_init();
-  mdns_resp_add_netif(netif_default, "lwip", 3600);
-#endif
 #ifdef LWIP_APP_INIT
   LWIP_APP_INIT();
 #endif
