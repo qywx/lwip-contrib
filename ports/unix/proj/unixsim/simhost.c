@@ -182,7 +182,7 @@ sntp_set_system_time(u32_t sec)
   printf("SNTP time: %s\n", buf);
 }
 
-#if LWIP_MDNS
+#if LWIP_MDNS_RESPONDER
 static void
 srv_txt(struct mdns_service *service, void *txt_userdata)
 {
@@ -232,7 +232,7 @@ tcpip_init_done(void *arg)
   snmp_init();
 #endif /* LWIP_SNMP */
 
-#if LWIP_MDNS
+#if LWIP_MDNS_RESPONDER
   mdns_resp_init();
   mdns_resp_add_netif(&netif, "simhost", 3600);
   mdns_resp_add_service(&netif, "myweb", "_http", DNSSD_PROTO_TCP, 80, 3600, srv_txt, NULL);
