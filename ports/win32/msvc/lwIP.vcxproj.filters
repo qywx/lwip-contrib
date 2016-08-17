@@ -402,6 +402,12 @@
     <ClCompile Include="$(LWIP_DIR)\src\apps\mdns\mdns.c">
       <Filter>src\apps\mdns</Filter>
     </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmpv3_dummy.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmpv3_mbedtls.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\apps\lwiperf.h">
@@ -772,6 +778,9 @@
     </ClInclude>
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\prot\ip4.h">
       <Filter>src\include\lwip\prot</Filter>
+    </ClInclude>
+    <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmpv3_priv.h">
+      <Filter>src\apps\snmp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

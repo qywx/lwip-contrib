@@ -335,6 +335,8 @@
     <ClCompile Include="$(LWIP_DIR)\src\core\ipv4\ip4_frag.c" />
     <ClCompile Include="$(LWIP_DIR)\src\core\timeouts.c" />
     <ClCompile Include="$(LWIP_DIR)\src\apps\mdns\mdns.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmpv3_dummy.c" />
+    <ClCompile Include="$(LWIP_DIR)\src\apps\snmp\snmpv3_mbedtls.c" />
     <ClCompile Include="..\sio.c" />
     <ClCompile Include="..\sys_arch.c" />
   </ItemGroup>
@@ -454,6 +456,7 @@
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\prot\dns.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\prot\ip.h" />
     <ClInclude Include="$(LWIP_DIR)\src\include\lwip\prot\ip4.h" />
+    <ClInclude Include="$(LWIP_DIR)\src\apps\snmp\snmpv3_priv.h" />
     <ClInclude Include="..\include\arch\bpstruct.h" />
     <ClInclude Include="..\include\arch\cc.h" />
     <ClInclude Include="..\include\arch\epstruct.h" />
