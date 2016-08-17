@@ -42,7 +42,7 @@
 #define MIB2_STATS                 LWIP_SNMP
 
 #define LWIP_DNS                   1
-#define LWIP_MDNS                  1
+#define LWIP_MDNS_RESPONDER        1
 
 #define LWIP_HAVE_LOOPIF           1
 #define LWIP_NETIF_LOOPBACK        1

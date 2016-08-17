@@ -541,7 +541,7 @@ apps_init(void)
 #endif /* LWIP_HTTPD_APP_NETCONN */
 #endif /* LWIP_HTTPD_APP && LWIP_TCP */
 
-#if LWIP_MDNS
+#if LWIP_MDNS_RESPONDER
   mdns_resp_init();
 #if LWIP_NETIF_HOSTNAME
   mdns_resp_add_netif(netif_default, netif_default->hostname, 3600);
