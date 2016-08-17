@@ -222,6 +222,8 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- AUTOIP options ------- */
 #define LWIP_AUTOIP             (LWIP_DHCP)
+#define LWIP_DHCP_AUTOIP_COOP   (LWIP_DHCP)
+#define LWIP_DHCP_AUTOIP_COOP_TRIES  3
 
 /* ---------- SNTP options --------- */
 extern void sntp_set_system_time(u32_t sec);
@@ -238,7 +240,7 @@ extern void sntp_set_system_time(u32_t sec);
 
 /* ---------- MDNS options ---------- */
 #define LWIP_MDNS_RESPONDER        1
-#define LWIP_NUM_NETIF_CLIENT_DATA 1
+#define LWIP_NUM_NETIF_CLIENT_DATA (LWIP_DHCP + LWIP_AUTOIP + LWIP_MDNS_RESPONDER)
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1
