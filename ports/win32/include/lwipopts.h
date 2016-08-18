@@ -44,6 +44,8 @@
 #define LWIP_DNS                   1
 #define LWIP_MDNS_RESPONDER        1
 
+#define LWIP_NUM_NETIF_CLIENT_DATA (LWIP_DHCP + LWIP_AUTOIP + 1)
+
 #define LWIP_HAVE_LOOPIF           1
 #define LWIP_NETIF_LOOPBACK        1
 #define LWIP_LOOPBACK_MAX_PBUFS    10
@@ -220,7 +222,7 @@ a lot of data that needs to be copied, this should be set high. */
 /* ---------- DHCP options ---------- */
 /* Define LWIP_DHCP to 1 if you want DHCP configuration of
    interfaces. */
-#define LWIP_DHCP               0
+#define LWIP_DHCP               1
 
 /* 1 if you want to do an ARP check on the offered address
    (recommended). */
@@ -228,7 +230,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 
 /* ---------- AUTOIP options ------- */
-#define LWIP_AUTOIP             0
+#define LWIP_AUTOIP            (LWIP_DHCP)
 #define LWIP_DHCP_AUTOIP_COOP  (LWIP_DHCP && LWIP_AUTOIP)
 
 
