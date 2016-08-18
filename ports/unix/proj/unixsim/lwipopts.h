@@ -240,7 +240,7 @@ extern void sntp_set_system_time(u32_t sec);
 
 /* ---------- MDNS options ---------- */
 #define LWIP_MDNS_RESPONDER        1
-#define LWIP_NUM_NETIF_CLIENT_DATA (LWIP_DHCP + LWIP_AUTOIP + LWIP_MDNS_RESPONDER)
+#define LWIP_NUM_NETIF_CLIENT_DATA (LWIP_MDNS_RESPONDER)
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1

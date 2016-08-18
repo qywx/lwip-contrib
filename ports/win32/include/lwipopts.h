@@ -44,7 +44,7 @@
 #define LWIP_DNS                   1
 #define LWIP_MDNS_RESPONDER        1
 
-#define LWIP_NUM_NETIF_CLIENT_DATA (LWIP_DHCP + LWIP_AUTOIP + 1)
+#define LWIP_NUM_NETIF_CLIENT_DATA (LWIP_MDNS_RESPONDER)
 
 #define LWIP_HAVE_LOOPIF           1
 #define LWIP_NETIF_LOOPBACK        1
