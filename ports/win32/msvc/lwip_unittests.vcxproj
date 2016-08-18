@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\lwip\test\unit\core\test_mem.c" />
     <ClCompile Include="..\..\..\..\lwip\test\unit\core\test_pbuf.c" />
+    <ClCompile Include="..\..\..\..\lwip\test\unit\mdns\test_mdns.c" />
     <ClCompile Include="..\..\..\..\lwip\test\unit\tcp\tcp_helper.c" />
     <ClCompile Include="..\..\..\..\lwip\test\unit\tcp\test_tcp.c" />
     <ClCompile Include="..\..\..\..\lwip\test\unit\tcp\test_tcp_oos.c" />
@@ -96,6 +97,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\lwip\test\unit\core\test_mem.h" />
     <ClInclude Include="..\..\..\..\lwip\test\unit\core\test_pbuf.h" />
+    <ClInclude Include="..\..\..\..\lwip\test\unit\mdns\test_mdns.h" />
     <ClInclude Include="..\..\..\..\lwip\test\unit\tcp\tcp_helper.h" />
     <ClInclude Include="..\..\..\..\lwip\test\unit\tcp\test_tcp.h" />
     <ClInclude Include="..\..\..\..\lwip\test\unit\tcp\test_tcp_oos.h" />
