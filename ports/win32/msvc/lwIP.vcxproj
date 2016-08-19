@@ -388,6 +388,7 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\netifapi.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\opt.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\pbuf.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\etharp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\igmp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\raw.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\sio.h" />
@@ -459,7 +460,6 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\ip.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\ip4.h" />
     <ClInclude Include="..\..\..\..\lwip\src\apps\snmp\snmpv3_priv.h" />
-    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\arp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\ethernet.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\icmp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\icmp6.h" />

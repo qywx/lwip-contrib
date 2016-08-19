@@ -782,9 +782,6 @@
     <ClInclude Include="..\..\..\..\lwip\src\apps\snmp\snmpv3_priv.h">
       <Filter>src\apps\snmp</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\arp.h">
-      <Filter>src\include\lwip\prot</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\ethernet.h">
       <Filter>src\include\lwip\prot</Filter>
     </ClInclude>
@@ -813,6 +810,9 @@
       <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\igmp.h">
+      <Filter>src\include\lwip\prot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\etharp.h">
       <Filter>src\include\lwip\prot</Filter>
     </ClInclude>
   </ItemGroup>
