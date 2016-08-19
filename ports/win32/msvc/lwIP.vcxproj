@@ -388,6 +388,7 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\netifapi.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\opt.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\pbuf.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\igmp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\raw.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\sio.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\snmp.h" />
