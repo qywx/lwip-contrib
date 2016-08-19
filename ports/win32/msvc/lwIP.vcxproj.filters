@@ -809,6 +809,9 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\udp.h">
       <Filter>src\include\lwip\prot</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mdns_priv.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\lwipcfg_msvc.h.example">
