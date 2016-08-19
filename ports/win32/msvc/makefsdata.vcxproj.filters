@@ -7,7 +7,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(LWIP_DIR)\src\apps\httpd\makefsdata\makefsdata.c">
+    <ClCompile Include="..\..\..\..\lwip\src\apps\httpd\makefsdata\makefsdata.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
