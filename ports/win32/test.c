@@ -58,6 +58,7 @@
 
 /* lwIP netif includes */
 #include "lwip/etharp.h"
+#include "netif/ethernet.h"
 
 /* applications includes */
 #include "lwip/apps/lwiperf.h"
