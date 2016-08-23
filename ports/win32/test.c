@@ -355,20 +355,16 @@ msvc_netif_init(void)
 #endif /* LWIP_IPV4 */
 
 #if NO_SYS
-#if LWIP_ARP
-  netif_set_default(netif_add(&netif, NETIF_ADDRS NULL, pcapif_init, ethernet_input));
-#else /* LWIP_ARP */
-  netif_set_default(netif_add(&netif, NETIF_ADDRS NULL, pcapif_init, ip_input));
-#endif /* LWIP_ARP */
+  netif_set_default(netif_add(&netif, NETIF_ADDRS NULL, pcapif_init, netif_input));
 #else  /* NO_SYS */
   netif_set_default(netif_add(&netif, NETIF_ADDRS NULL, pcapif_init, tcpip_input));
+#endif /* NO_SYS */
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif, 1);
   printf("ip6 linklocal address: ");
   ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, netif_ip6_addr(&netif, 0));
   printf("\n");
 #endif /* LWIP_IPV6 */
-#endif /* NO_SYS */
 #if LWIP_NETIF_STATUS_CALLBACK
   netif_set_status_callback(&netif, status_callback);
 #endif /* LWIP_NETIF_STATUS_CALLBACK */
