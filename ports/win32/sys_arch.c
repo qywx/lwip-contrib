@@ -51,6 +51,7 @@
 
 /* These functions are used from NO_SYS also, for precise timer triggering */
 LARGE_INTEGER freq, sys_start_time;
+#define SYS_INITIALIZED() (freq.QuadPart != 0)
 
 DWORD netconn_sem_tls_index;
 
@@ -65,8 +66,9 @@ static LONGLONG sys_get_ms_longlong(void)
   LONGLONG ret;
   LARGE_INTEGER now;
 #if NO_SYS
-  if (freq.QuadPart == 0) {
-    sys_init_timing();
+  if (!SYS_INITIALIZED()) {
+    sys_init();
+    LWIP_ASSERT("initialization failed", SYS_INITIALIZED());
   }
 #endif /* NO_SYS */
   QueryPerformanceCounter(&now);
@@ -93,6 +95,12 @@ static void InitSysArchProtect(void)
 
 sys_prot_t sys_arch_protect(void)
 {
+#if NO_SYS
+  if (!SYS_INITIALIZED()) {
+    sys_init();
+    LWIP_ASSERT("initialization failed", SYS_INITIALIZED());
+  }
+#endif
   EnterCriticalSection(&critSec);
   return 0;
 }
