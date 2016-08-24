@@ -426,7 +426,7 @@ msvc_netif_init(void)
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&slipif1, 1);
   printf("SLIP ip6 linklocal address: ");
-  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, &slipif1.ip6_addr[0]);
+  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, netif_ip6_addr(&slipif1, 0));
   printf("\n");
 #endif /* LWIP_IPV6 */
 #if LWIP_NETIF_STATUS_CALLBACK
@@ -439,7 +439,7 @@ msvc_netif_init(void)
 
 #if USE_SLIPIF > 1
 #if LWIP_IPV4
-#define SLIP1_ADDRS &ipaddr_slip1, &netmask_slip1, &gw_slip1,
+#define SLIP2_ADDRS &ipaddr_slip2, &netmask_slip2, &gw_slip2,
   LWIP_PORT_INIT_SLIP2_IPADDR(&ipaddr_slip2);
   LWIP_PORT_INIT_SLIP2_GW(&gw_slip2);
   LWIP_PORT_INIT_SLIP2_NETMASK(&netmask_slip2);
@@ -455,7 +455,7 @@ msvc_netif_init(void)
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&slipif1, 1);
   printf("SLIP2 ip6 linklocal address: ");
-  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, &slipif2.ip6_addr[0]);
+  ip6_addr_debug_print(0xFFFFFFFF & ~LWIP_DBG_HALT, netif_ip6_addr(&slipif2, 0));
   printf("\n");
 #endif /* LWIP_IPV6 */
 #if LWIP_NETIF_STATUS_CALLBACK
