@@ -88,6 +88,7 @@
     <None Include="..\..\..\..\lwip\COPYING" />
     <None Include="..\..\..\..\lwip\FILES" />
     <None Include="..\..\..\..\lwip\README" />
+    <None Include="..\..\..\..\lwip\UPGRADING" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\lwip\src\api\api_lib.c">
