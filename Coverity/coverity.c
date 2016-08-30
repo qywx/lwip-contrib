@@ -1,5 +1,7 @@
 typedef unsigned char err_t;
 typedef unsigned int u32_t;
+typedef unsigned short u16_t;
+typedef unsigned char u8_t;
 typedef void sys_sem_t;
 typedef void sys_mutex_t;
 typedef size_t mem_size_t;
@@ -45,11 +47,47 @@ void sys_sem_signal(sys_sem_t *sem)
 
 err_t ethernet_input(struct pbuf *p, struct netif *inp)
 {
-  __coverity_tainted_data_sink__(p); 
+  __coverity_tainted_string_sink_content__(p); 
 }
 err_t tcpip_input(struct pbuf *p, struct netif *inp)
 {
-  __coverity_tainted_data_sink__(p); 
+  __coverity_tainted_string_sink_content__(p); 
+}
+err_t ip_input(struct pbuf *p, struct netif *inp)
+{
+  __coverity_tainted_string_sink_content__(p); 
+}
+err_t ip4_input(struct pbuf *p, struct netif *inp)
+{
+  __coverity_tainted_string_sink_content__(p); 
+}
+err_t ip6_input(struct pbuf *p, struct netif *inp)
+{
+  __coverity_tainted_string_sink_content__(p); 
+}
+
+err_t pbuf_take(struct pbuf *buf, const void *dataptr, u16_t len)
+{
+  __coverity_tainted_string_argument__(buf);
+  __coverity_tainted_data_argument__(buf);
+}
+err_t pbuf_take_at(struct pbuf *buf, const void *dataptr, u16_t len, u16_t offset)
+{
+  __coverity_tainted_string_argument__(buf);
+  __coverity_tainted_data_argument__(buf);
+}
+err_t pbuf_copy(struct pbuf *p_to, struct pbuf *p_from)
+{
+  __coverity_tainted_data_transitive__(p_to, p_from);
+}
+u16_t pbuf_copy_partial(struct pbuf *p, void *dataptr, u16_t len, u16_t offset)
+{
+  __coverity_tainted_string_argument__(dataptr);
+  __coverity_tainted_data_argument__(dataptr);
+}
+u8_t pbuf_get_at(struct pbuf* p, u16_t offset)
+{
+  __coverity_tainted_data_return__();
 }
 
 void abort(void)
