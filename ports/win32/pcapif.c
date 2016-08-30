@@ -225,14 +225,14 @@ get_adapter_index_from_addr(struct in_addr *netaddr, char *guid, size_t guid_len
                if(len > 127) {
                   len = 127;
                }
-               memcpy(name, d->name, len);
+               MEMCPY(name, d->name, len);
                name[len] = 0;
                start = strstr(name, "{");
                if (start != NULL) {
                   end = strstr(start, "}");
                   if (end != NULL) {
                      size_t len = end - start + 1;
-                     memcpy(guid, start, len);
+                     MEMCPY(guid, start, len);
                      ret = index;
                   }
                }
@@ -624,7 +624,7 @@ pcapif_low_level_init(struct netif *netif)
   /* @todo: this does NOT support multiple processes using this adapter! */
   my_mac_addr[ETH_HWADDR_LEN - 1] += netif->num;
   /* Copy MAC addr */
-  memcpy(&netif->hwaddr, my_mac_addr, ETH_HWADDR_LEN);
+  SMEMCPY(&netif->hwaddr, my_mac_addr, ETH_HWADDR_LEN);
 
   /* get the initial link state of the selected interface */
 #if PCAPIF_HANDLE_LINKSTATE
@@ -685,10 +685,10 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
       /* send data from(q->payload, q->len); */
       LWIP_DEBUGF(NETIF_DEBUG, ("netif: send ptr %p q->payload %p q->len %i q->next %p\n", ptr, q->payload, (int)q->len, (void*)q->next));
       if (q == p) {
-        memcpy(ptr, &((char*)q->payload)[ETH_PAD_SIZE], q->len - ETH_PAD_SIZE);
+        MEMCPY(ptr, &((char*)q->payload)[ETH_PAD_SIZE], q->len - ETH_PAD_SIZE);
         ptr += q->len - ETH_PAD_SIZE;
       } else {
-        memcpy(ptr, q->payload, q->len);
+        MEMCPY(ptr, q->payload, q->len);
         ptr += q->len;
       }
     }
@@ -782,9 +782,9 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
         LWIP_ASSERT("q->len >= ETH_PAD_SIZE", q->len >= ETH_PAD_SIZE);
         copy_len -= ETH_PAD_SIZE;
 #endif /* ETH_PAD_SIZE*/
-        memcpy(&((char*)q->payload)[ETH_PAD_SIZE], &((const char*)packet)[start], copy_len);
+        MEMCPY(&((char*)q->payload)[ETH_PAD_SIZE], &((const char*)packet)[start], copy_len);
       } else {
-        memcpy(q->payload, &((const char*)packet)[start], copy_len);
+        MEMCPY(q->payload, &((const char*)packet)[start], copy_len);
       }
       start += copy_len;
       length -= copy_len;

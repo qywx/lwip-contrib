@@ -393,7 +393,7 @@ smtp_set_server_addr(const char* server)
   if (len > SMTP_MAX_SERVERNAME_LEN) {
     len = SMTP_MAX_SERVERNAME_LEN;
   }
-  memcpy(smtp_server, server, len);
+  MEMCPY(smtp_server, server, len);
 }
 
 /** Set TCP port for next SMTP connection
@@ -519,7 +519,7 @@ smtp_send_mail_alloced(struct smtp_session *s)
 
 #if SMTP_COPY_AUTHDATA
   /* copy auth data, ensuring the first byte is always zero */
-  memcpy(s->auth_plain + 1, smtp_auth_plain + 1, smtp_auth_plain_len - 1);
+  MEMCPY(s->auth_plain + 1, smtp_auth_plain + 1, smtp_auth_plain_len - 1);
   s->auth_plain_len = smtp_auth_plain_len;
   /* default username and pass is empty string */
   s->username = s->auth_plain;
@@ -614,10 +614,10 @@ smtp_send_mail(const char* from, const char* to, const char* subject, const char
   s->body_len = (u16_t)body_len;
   /* copy source and target email address */
   /* cast to size_t is a hack to cast away constness */
-  memcpy(sfrom, from, from_len + 1);
-  memcpy(sto, to, to_len + 1);
-  memcpy(ssubject, subject, subject_len + 1);
-  memcpy(sbody, body, body_len + 1);
+  MEMCPY(sfrom, from, from_len + 1);
+  MEMCPY(sto, to, to_len + 1);
+  MEMCPY(ssubject, subject, subject_len + 1);
+  MEMCPY(sbody, body, body_len + 1);
 
   s->callback_fn = callback_fn;
   s->callback_arg = callback_arg;
@@ -1129,7 +1129,7 @@ smtp_prepare_mail(struct smtp_session *s, u16_t *tx_buf_len)
 
   SMEMCPY(target, SMTP_CMD_MAIL_1, SMTP_CMD_MAIL_1_LEN);
   target += SMTP_CMD_MAIL_1_LEN;
-  memcpy(target, s->from, s->from_len);
+  MEMCPY(target, s->from, s->from_len);
   target += s->from_len;
   SMEMCPY(target, SMTP_CMD_MAIL_2, SMTP_CMD_MAIL_2_LEN);
   return SMTP_MAIL;
@@ -1146,7 +1146,7 @@ smtp_prepare_rcpt(struct smtp_session *s, u16_t *tx_buf_len)
 
   SMEMCPY(target, SMTP_CMD_RCPT_1, SMTP_CMD_RCPT_1_LEN);
   target += SMTP_CMD_RCPT_1_LEN;
-  memcpy(target, s->to, s->to_len);
+  MEMCPY(target, s->to, s->to_len);
   target += s->to_len;
   SMEMCPY(target, SMTP_CMD_RCPT_2, SMTP_CMD_RCPT_2_LEN);
   return SMTP_RCPT;
@@ -1165,15 +1165,15 @@ smtp_prepare_header(struct smtp_session *s, u16_t *tx_buf_len)
 
   SMEMCPY(target, SMTP_CMD_HEADER_1, SMTP_CMD_HEADER_1_LEN);
   target += SMTP_CMD_HEADER_1_LEN;
-  memcpy(target, s->from, s->from_len);
+  MEMCPY(target, s->from, s->from_len);
   target += s->from_len;
   SMEMCPY(target, SMTP_CMD_HEADER_2, SMTP_CMD_HEADER_2_LEN);
   target += SMTP_CMD_HEADER_2_LEN;
-  memcpy(target, s->to, s->to_len);
+  MEMCPY(target, s->to, s->to_len);
   target += s->to_len;
   SMEMCPY(target, SMTP_CMD_HEADER_3, SMTP_CMD_HEADER_3_LEN);
   target += SMTP_CMD_HEADER_3_LEN;
-  memcpy(target, s->subject, s->subject_len);
+  MEMCPY(target, s->subject, s->subject_len);
   target += s->subject_len;
   SMEMCPY(target, SMTP_CMD_HEADER_4, SMTP_CMD_HEADER_4_LEN);
 

@@ -84,7 +84,7 @@ static void input_pkt(struct netif *netif, const u8_t *data, size_t len)
   p = pbuf_alloc(PBUF_RAW, (u16_t)len, PBUF_POOL);
   LWIP_ASSERT("alloc failed", p);
   for(q = p; q != NULL; q = q->next) {
-    memcpy(q->payload, data, q->len);
+    MEMCPY(q->payload, data, q->len);
     data += q->len;
   }
   err = netif->input(p, netif);

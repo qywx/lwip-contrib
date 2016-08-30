@@ -140,7 +140,7 @@ rtp_send_packets( int sock, struct sockaddr_in* to)
     rtp_payload      = rtp_send_packet+sizeof(struct rtp_hdr);
     rtp_payload_size = LWIP_MIN(RTP_PAYLOAD_SIZE, (sizeof(rtp_data) - rtp_data_index));
 
-    memcpy(rtp_payload, rtp_data + rtp_data_index, rtp_payload_size);
+    MEMCPY(rtp_payload, rtp_data + rtp_data_index, rtp_payload_size);
 
     /* set MARKER bit in RTP header on the last packet of an image */
     rtphdr->payloadtype = RTP_PAYLOADTYPE | (((rtp_data_index + rtp_payload_size)
