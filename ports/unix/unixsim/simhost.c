@@ -100,7 +100,6 @@
 #if LWIP_RAW
 #include "lwip/icmp.h"
 #include "lwip/raw.h"
-#include "ports/unix/proj/lib/lwipopts.h"
 #endif
 
 #if LWIP_SNMP

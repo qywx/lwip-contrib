@@ -29,24 +29,26 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
 
-UNIXLIB=liblwip.a
-
-all: $(UNIXLIB) 
+all compile: simhost simrouter simnode
 .PHONY: all
 
-include ../../Common.mk
-
-CFLAGS+=-fPIC
+include ../Common.mk
 
 clean:
-	rm -f *.o $(LWIPLIBCOMMON) *.s .depend* *.core core
+	rm -f *.o $(LWIPLIBCOMMON) $(APPLIB) simhost simnode simrouter *.s .depend* *.core core
 
 depend dep: .depend
 
 include .depend
 
-$(UNIXLIB): $(LWIPLIBCOMMON) unixlib.o
-	$(CC) -g -nostartfiles -shared -o $@ $^
-
-.depend: unixlib.c $(LWIPFILES)
+.depend: simhost.c simnode.c simrouter.c $(LWIPFILES) $(APPFILES)
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
+
+simhost: .depend $(LWIPLIBCOMMON) $(APPLIB) simhost.o
+	$(CC) $(CFLAGS) -o simhost simhost.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
+
+simrouter: .depend $(LWIPLIBCOMMON) $(APPLIB) simrouter.o
+	$(CC) $(CFLAGS) -o simrouter simrouter.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
+
+simnode: .depend $(LWIPLIBCOMMON) $(APPLIB) simnode.o 
+	$(CC) $(CFLAGS) -o simnode simnode.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)

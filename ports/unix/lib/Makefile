@@ -29,20 +29,24 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
 
-all ipv4 compile: echop
+UNIXLIB=liblwip.a
+
+all: $(UNIXLIB) 
 .PHONY: all
 
-include ../../Common.mk
+include ../Common.mk
+
+CFLAGS+=-fPIC
 
 clean:
-	rm -f *.o $(LWIPLIBCOMMON) $(APPLIB) echop .depend* *.core core
+	rm -f *.o $(LWIPLIBCOMMON) *.s .depend* *.core core
 
 depend dep: .depend
 
 include .depend
 
-.depend: main.c $(LWIPFILES) $(APPFILES)
-	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
+$(UNIXLIB): $(LWIPLIBCOMMON) unixlib.o
+	$(CC) -g -nostartfiles -shared -o $@ $^
 
-echop: .depend $(LWIPLIBCOMMON) $(APPLIB) main.o $(APPFILES)
-	$(CC) $(CFLAGS) -o echop main.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
+.depend: unixlib.c $(LWIPFILES)
+	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend

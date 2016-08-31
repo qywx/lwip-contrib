@@ -32,7 +32,6 @@
 all compile: lwip_unittests
 .PHONY: all clean check
 
-CONTRIBDIR=../../..
 include ../Common.mk
 
 LDFLAGS:=$(LDFLAGS) -lcheck -lm -lsubunit

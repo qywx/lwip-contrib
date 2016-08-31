@@ -130,6 +130,8 @@ a lot of data that needs to be copied, this should be set high. */
 #define MEMP_NUM_TCPIP_MSG_API   16
 #define MEMP_NUM_TCPIP_MSG_INPKT 16
 
+#define MEMP_OVERFLOW_CHECK      1
+
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */
 #define PBUF_POOL_SIZE          200

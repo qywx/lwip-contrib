@@ -32,7 +32,6 @@
 all compile: lwip_fuzz
 .PHONY: all clean
 
-CONTRIBDIR=../../..
 include ../Common.mk
 
 CC=afl-gcc

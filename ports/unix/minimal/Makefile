@@ -29,26 +29,20 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
 
-all compile: simhost simrouter simnode
+all ipv4 compile: echop
 .PHONY: all
 
-include ../../Common.mk
+include ../Common.mk
 
 clean:
-	rm -f *.o $(LWIPLIBCOMMON) $(APPLIB) simhost simnode simrouter *.s .depend* *.core core
+	rm -f *.o $(LWIPLIBCOMMON) $(APPLIB) echop .depend* *.core core
 
 depend dep: .depend
 
 include .depend
 
-.depend: simhost.c simnode.c simrouter.c $(LWIPFILES) $(APPFILES)
+.depend: main.c $(LWIPFILES) $(APPFILES)
 	$(CCDEP) $(CFLAGS) -MM $^ > .depend || rm -f .depend
 
-simhost: .depend $(LWIPLIBCOMMON) $(APPLIB) simhost.o
-	$(CC) $(CFLAGS) -o simhost simhost.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
-
-simrouter: .depend $(LWIPLIBCOMMON) $(APPLIB) simrouter.o
-	$(CC) $(CFLAGS) -o simrouter simrouter.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
-
-simnode: .depend $(LWIPLIBCOMMON) $(APPLIB) simnode.o 
-	$(CC) $(CFLAGS) -o simnode simnode.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
+echop: .depend $(LWIPLIBCOMMON) $(APPLIB) main.o $(APPFILES)
+	$(CC) $(CFLAGS) -o echop main.o -Wl,--start-group $(APPLIB) $(LWIPLIBCOMMON) -Wl,--end-group $(LDFLAGS)
