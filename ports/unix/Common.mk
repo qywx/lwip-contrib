@@ -57,7 +57,7 @@ endif
 
 LDFLAGS=-pthread -lutil -lrt
 CONTRIBDIR?=../../..
-LWIPARCH=$(CONTRIBDIR)/ports/unix
+LWIPARCH=$(CONTRIBDIR)/ports/unix/port
 ARFLAGS=rs
 
 #Set this to where you have the lwip core module checked out from git

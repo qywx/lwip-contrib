@@ -2,16 +2,16 @@ This port contains infrastructure and examples for running lwIP on Unix-like
 operating systems (Linux, OpenBSD, cygwin). Much of this is targetted towards
 testing lwIP applications.
 
-* sys_arch.c, perf.c, include/arch/: Generic platform porting, for both states
-  of NO_SYS. (Mapping debugging to printf, providing sys_now & co from the
-  system time etc.)
+* port/sys_arch.c, port/perf.c, port/include/arch/: Generic platform porting,
+  for both states of NO_SYS. (Mapping debugging to printf, providing 
+  sys_now & co from the system time etc.)
 
 * check: Runs the unit tests shipped with main lwIP on the Unix port.
 
 * fuzz: Helper application for fuzzing the lwIP stack
 
-* netif, include/netif: Various network interface implementations and their
-  helpers, some explicitly for Unix infrastructure, some generic (but most
+* port/netif, port/include/netif: Various network interface implementations and
+  their helpers, some explicitly for Unix infrastructure, some generic (but most
   useful on an easy to debug system):
 
   * delif: Network interface that inserts delay before receiving or sending
@@ -38,15 +38,15 @@ testing lwIP applications.
   * unixif: Network interface that allows lwIP Unix programs to "meet" at Unix
     socket address and exchange traffic over it.
 
-* proj/lib: Compiling lwIP as a shared library
+* lib: Compiling lwIP as a shared library
 
-* proj/minimal: Standalone example program that runs in NO_SYS=1 mode.
+* minimal: Standalone example program that runs in NO_SYS=1 mode.
   Contains the mintapif network interface implementation, which is similar to
   netif/tapif, but runs without threads.
 
   Runs an echo server and SNMP.
 
-* proj/unixsim: Standalone example program that runs in NO_SYS=0 mode. Uses
+* unixsim: Standalone example program that runs in NO_SYS=0 mode. Uses
   the tapif network interface.
 
   Runs an HTTP server.
