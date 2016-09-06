@@ -505,6 +505,15 @@ lwiperf_report(void *arg, enum lwiperf_report_type report_type,
 }
 #endif /* LWIP_LWIPERF_APP */
 
+#if LWIP_MDNS_RESPONDER
+static void srv_txt(struct mdns_service *service, void *txt_userdata)
+{
+   err_t res = mdns_resp_add_service_txtitem(service, "path=/", 6);
+   LWIP_ERROR("mdns add service txt failed\n", (res == ERR_OK), return);
+   LWIP_UNUSED_ARG(txt_userdata);
+}
+#endif
+
 /* This function initializes applications */
 static void
 apps_init(void)
@@ -548,6 +557,7 @@ apps_init(void)
 #else
   mdns_resp_add_netif(netif_default, "lwip", 3600);
 #endif
+  mdns_resp_add_service(netif_default, "lwipweb", "_http", DNSSD_PROTO_TCP, HTTPD_SERVER_PORT, 3600, srv_txt, NULL);
 #endif
 
 #if LWIP_NETIO_APP && LWIP_TCP
