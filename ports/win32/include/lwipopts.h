@@ -32,6 +32,9 @@
 #ifndef LWIP_LWIPOPTS_H
 #define LWIP_LWIPOPTS_H
 
+#define LWIP_IPV4                  1
+#define LWIP_IPV6                  1
+
 #define NO_SYS                     0
 #define LWIP_SOCKET               (NO_SYS==0)
 #define LWIP_NETCONN              (NO_SYS==0)
@@ -50,13 +53,13 @@
 #define LWIP_NETIF_LOOPBACK        1
 #define LWIP_LOOPBACK_MAX_PBUFS    10
 
-#define TCP_LISTEN_BACKLOG         0
+#define TCP_LISTEN_BACKLOG         1
 
 #define LWIP_COMPAT_SOCKETS        1
 #define LWIP_SO_RCVTIMEO           1
 #define LWIP_SO_RCVBUF             1
 
-#define LWIP_TCPIP_CORE_LOCKING    0
+#define LWIP_TCPIP_CORE_LOCKING    1
 
 #define LWIP_NETIF_LINK_CALLBACK   1
 #define LWIP_NETIF_STATUS_CALLBACK 1
@@ -145,7 +148,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- Pbuf options ---------- */
 /* PBUF_POOL_SIZE: the number of buffers in the pbuf pool. */
-#define PBUF_POOL_SIZE          120
+#define PBUF_POOL_SIZE          160
 
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
 #define PBUF_POOL_BUFSIZE       128
@@ -236,7 +239,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- UDP options ---------- */
 #define LWIP_UDP                1
-#define LWIP_UDPLITE            1
+#define LWIP_UDPLITE            LWIP_UDP
 #define UDP_TTL                 255
 
 
@@ -262,7 +265,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* ---------- PPP options ---------- */
 
-#define PPP_SUPPORT             0      /* Set > 0 for PPP */
+#define PPP_SUPPORT             1      /* Set > 0 for PPP */
 
 #if PPP_SUPPORT
 
