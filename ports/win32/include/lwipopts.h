@@ -243,6 +243,10 @@ a lot of data that needs to be copied, this should be set high. */
 #define UDP_TTL                 255
 
 
+/* ---------- RAW options ---------- */
+#define LWIP_RAW                1
+
+
 /* ---------- Statistics options ---------- */
 
 #define LWIP_STATS              1
