@@ -90,6 +90,7 @@ typedef int sys_prot_t;
 #ifdef _MSC_VER
 /* C runtime functions redefined */
 #define snprintf _snprintf
+#define strdup   _strdup
 #endif
 
 #define LWIP_RAND() ((u32_t)rand())
