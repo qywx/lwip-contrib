@@ -40,13 +40,12 @@ CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address \
 	-Wunreachable-code -Wuninitialized
 
-# we cannot sanitize alignment on x86-64 targets
 ifeq (,$(findstring clang,$(CC)))
 CFLAGS:=$(CFLAGS) -Wlogical-op
 # if GCC is newer than 4.8/4.9 you may use:
 #CFLAGS:=$(CFLAGS) -fsanitize=address -fstack-protector -fstack-check -fsanitize=undefined -fno-sanitize=alignment
 else
-# because clang wants 64 bit alignment
+# we cannot sanitize alignment on x86-64 targets because clang wants 64 bit alignment
 CFLAGS:=$(CFLAGS) -fsanitize=address -fsanitize=undefined -fno-sanitize=alignment
 endif
 
