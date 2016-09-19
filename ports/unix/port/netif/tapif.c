@@ -76,8 +76,12 @@
  *
  * You can also use PRECONFIGURED_TAPIF environment variable to do so.
  */
-/* #define DEVTAP_IF "tap0" */
+#ifndef DEVTAP_DEFAULT_IF
+#define DEVTAP_DEFAULT_IF "tap0"
+#endif
+#ifndef DEVTAP
 #define DEVTAP "/dev/net/tun"
+#endif
 #define NETMASK_ARGS "netmask %d.%d.%d.%d"
 #define IFCONFIG_ARGS "tap0 inet %d.%d.%d.%d " NETMASK_ARGS
 #elif defined(LWIP_UNIX_OPENBSD)
@@ -114,13 +118,11 @@ static void
 low_level_init(struct netif *netif)
 {
   struct tapif *tapif;
-#ifndef DEVTAP_IF
 #if LWIP_IPV4
   int ret;
   char buf[1024];
 #endif /* LWIP_IPV4 */
   char *preconfigured_tapif = getenv("PRECONFIGURED_TAPIF");
-#endif /* DEVTAP_IF */
   
   tapif = (struct tapif *)netif->state;
 
@@ -154,14 +156,12 @@ low_level_init(struct netif *netif)
     struct ifreq ifr;
     memset(&ifr, 0, sizeof(ifr));
 
-#ifdef DEVTAP_IF
-    strncpy(ifr.ifr_name, DEVTAP_IF, sizeof(ifr.ifr_name));
-#else /* DEVTAP_IF */
     if (preconfigured_tapif) {
       strncpy(ifr.ifr_name, preconfigured_tapif, sizeof(ifr.ifr_name));
-    }
+    } else {
+      strncpy(ifr.ifr_name, DEVTAP_DEFAULT_IF, sizeof(ifr.ifr_name));
+    } 
     ifr.ifr_name[sizeof(ifr.ifr_name)-1] = 0; /* ensure \0 termination */
-#endif /* DEVTAP_IF */
 
     ifr.ifr_flags = IFF_TAP|IFF_NO_PI;
     if (ioctl(tapif->fd, TUNSETIFF, (void *) &ifr) < 0) {
@@ -173,7 +173,6 @@ low_level_init(struct netif *netif)
 
   netif_set_link_up(netif);
 
-#ifndef DEVTAP_IF
   if (preconfigured_tapif == NULL) {
 #if LWIP_IPV4
     snprintf(buf, 1024, IFCONFIG_BIN IFCONFIG_ARGS,
@@ -204,7 +203,6 @@ low_level_init(struct netif *netif)
     exit(1);
 #endif /* LWIP_IPV4 */
   }
-#endif /* DEVTAP_IF */
 
 #if !NO_SYS
   sys_thread_new("tapif_thread", tapif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
