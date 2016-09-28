@@ -39,13 +39,17 @@
 #define LWIP_SOCKET               (NO_SYS==0)
 #define LWIP_NETCONN              (NO_SYS==0)
 
-#define LWIP_IGMP                  1
-#define LWIP_ICMP                  1
-#define LWIP_SNMP                  1
+#define LWIP_IGMP                  LWIP_IPV4
+#define LWIP_IPV6_MLD              LWIP_IPV6
+
+#define LWIP_ICMP                  LWIP_IPV4
+#define LWIP_ICMP6                 LWIP_IPV6
+
+#define LWIP_SNMP                  LWIP_UDP
 #define MIB2_STATS                 LWIP_SNMP
 
-#define LWIP_DNS                   1
-#define LWIP_MDNS_RESPONDER        1
+#define LWIP_DNS                   LWIP_UDP
+#define LWIP_MDNS_RESPONDER        LWIP_UDP
 
 #define LWIP_NUM_NETIF_CLIENT_DATA (LWIP_MDNS_RESPONDER)
 

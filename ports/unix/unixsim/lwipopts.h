@@ -206,12 +206,12 @@ a lot of data that needs to be copied, this should be set high. */
 #define IP_FRAG                 1
 #define IPV6_FRAG_COPYHEADER    1
 
-#define LWIP_IGMP               1
-#define LWIP_IPV6_MLD           LWIP_IPV6
-#define LWIP_ICMP6              LWIP_IPV6
+#define LWIP_IGMP               (LWIP_IPV4)
+#define LWIP_IPV6_MLD           (LWIP_IPV6)
 
 /* ---------- ICMP options ---------- */
 #define ICMP_TTL                255
+#define LWIP_ICMP6              (LWIP_IPV6)
 
 /* ---------- DHCP options ---------- */
 /* Define LWIP_DHCP to 1 if you want DHCP configuration of
