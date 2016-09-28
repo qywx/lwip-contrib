@@ -67,7 +67,7 @@
 
 /** ping target - should be an "ip4_addr_t" */
 #ifndef PING_TARGET
-#define PING_TARGET   (netif_default ? *netif_ip4_gw(netif_default) : (*IP4_ADDR_ANY))
+#define PING_TARGET   (netif_default ? *netif_ip4_gw(netif_default) : (*IP4_ADDR_ANY4))
 #endif
 
 /** ping receive timeout - in milliseconds */
