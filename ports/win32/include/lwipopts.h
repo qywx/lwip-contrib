@@ -40,10 +40,7 @@
 #define LWIP_NETCONN              (NO_SYS==0)
 
 #define LWIP_IGMP                  LWIP_IPV4
-#define LWIP_IPV6_MLD              LWIP_IPV6
-
 #define LWIP_ICMP                  LWIP_IPV4
-#define LWIP_ICMP6                 LWIP_IPV6
 
 #define LWIP_SNMP                  LWIP_UDP
 #define MIB2_STATS                 LWIP_SNMP
