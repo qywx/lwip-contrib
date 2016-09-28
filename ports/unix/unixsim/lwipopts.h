@@ -355,4 +355,6 @@ extern void sntp_set_system_time(u32_t sec);
 
 #endif /* PPP_SUPPORT > 0 */
 
+#define LWIP_HTTPD_SSI          1
+
 #endif /* LWIP_LWIPOPTS_H */
