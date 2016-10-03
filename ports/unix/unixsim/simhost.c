@@ -96,6 +96,7 @@
 #include "lwip/apps/snmp.h"
 #include "lwip/apps/snmp_mib2.h"
 #include "apps/snmp_private_mib/private_mib.h"
+#include "lwip/apps/tftp_server.h"
 
 #if LWIP_RAW
 #include "lwip/icmp.h"
@@ -193,6 +194,54 @@ srv_txt(struct mdns_service *service, void *txt_userdata)
 }
 #endif
 
+#if LWIP_UDP
+
+static void*
+tftp_open(const char* fname, const char* mode, u8_t write)
+{
+  LWIP_UNUSED_ARG(mode);
+  
+  if (write) {
+    return (void*)fopen(fname, "wb");
+  } else {
+    return (void*)fopen(fname, "rb");
+  }
+}
+static void 
+tftp_close(void* handle)
+{
+  fclose((FILE*)handle);
+}
+static int
+tftp_read(void* handle, void* buf, int bytes)
+{
+  if (fread(buf, 1, bytes, (FILE*)handle) != (size_t)bytes) {
+    return -1;
+  }
+  return 0;
+}
+static int
+tftp_write(void* handle, struct pbuf* p)
+{
+  while (p != NULL) {
+    if (fwrite(p->payload, 1, p->len, (FILE*)handle) != (size_t)p->len) {
+      return -1;
+    }
+    p = p->next;
+  }
+  
+  return 0;
+}
+
+static const struct tftp_context tftp = {
+  tftp_open,
+  tftp_close,
+  tftp_read,
+  tftp_write
+};
+
+#endif /* LWIP_UDP */
+
 static void
 tcpip_init_done(void *arg)
 {
@@ -236,6 +285,10 @@ tcpip_init_done(void *arg)
   mdns_resp_add_netif(&netif, "simhost", 3600);
   mdns_resp_add_service(&netif, "myweb", "_http", DNSSD_PROTO_TCP, 80, 3600, srv_txt, NULL);
 #endif
+  
+#if LWIP_UDP
+  tftp_init(&tftp);
+#endif /* LWIP_UDP */
   
   sys_sem_signal(sem);
 }
@@ -556,6 +609,7 @@ init_netifs(void)
 #endif /* LWIP_IPV4 */
 #if LWIP_IPV6
   netif_create_ip6_linklocal_address(&netif, 1);
+  netif.ip6_autoconfig_enabled = 1;
 #endif
 #if LWIP_NETIF_STATUS_CALLBACK
   netif_set_status_callback(&netif, netif_status_callback);
