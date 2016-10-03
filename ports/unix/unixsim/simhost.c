@@ -197,11 +197,11 @@ srv_txt(struct mdns_service *service, void *txt_userdata)
 #if LWIP_UDP
 
 static void*
-tftp_open(const char* fname, const char* mode, u8_t write)
+tftp_open(const char* fname, const char* mode, u8_t is_write)
 {
   LWIP_UNUSED_ARG(mode);
   
-  if (write) {
+  if (is_write) {
     return (void*)fopen(fname, "wb");
   } else {
     return (void*)fopen(fname, "rb");
