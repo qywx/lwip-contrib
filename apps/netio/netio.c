@@ -6,9 +6,9 @@
 /* See http://www.nwlab.net/art/netio/netio.html to get the netio tool */
 
 #if LWIP_TCP
-static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
+static err_t
+netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
-
   LWIP_UNUSED_ARG(arg);
 
   if (err == ERR_OK && p != NULL) {
@@ -28,7 +28,8 @@ static err_t netio_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t er
   return ERR_OK;
 }
 
-static err_t netio_accept(void *arg, struct tcp_pcb *pcb, err_t err)
+static err_t
+netio_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 {
   LWIP_UNUSED_ARG(arg);
   LWIP_UNUSED_ARG(err);
@@ -41,7 +42,8 @@ static err_t netio_accept(void *arg, struct tcp_pcb *pcb, err_t err)
   return ERR_OK;
 }
 
-void netio_init(void)
+void
+netio_init(void)
 {
   struct tcp_pcb *pcb;
 
