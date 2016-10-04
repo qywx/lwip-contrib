@@ -82,6 +82,12 @@
     <Filter Include="src\include\lwip\prot">
       <UniqueIdentifier>{bdd3995a-aa34-4a4e-891e-a13c5373d618}</UniqueIdentifier>
     </Filter>
+    <Filter Include="doc\doxygen">
+      <UniqueIdentifier>{d0ce6e8b-4b30-498b-a1bb-aecee958df42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\apps\tftp">
+      <UniqueIdentifier>{6db73869-23f6-48ab-8d92-c8e478e55892}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\lwip\CHANGELOG" />
@@ -89,6 +95,36 @@
     <None Include="..\..\..\..\lwip\FILES" />
     <None Include="..\..\..\..\lwip\README" />
     <None Include="..\..\..\..\lwip\UPGRADING" />
+    <None Include="..\..\..\..\lwip\doc\contrib.txt">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="..\..\..\..\lwip\doc\FILES">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="..\..\..\..\lwip\doc\mdns.txt">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="..\..\..\..\lwip\doc\ppp.txt">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="..\..\..\..\lwip\doc\rawapi.txt">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="..\..\..\..\lwip\doc\savannah.txt">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="..\..\..\..\lwip\doc\sys_arch.txt">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="..\..\..\..\lwip\doc\doxygen\generate.bat">
+      <Filter>doc\doxygen</Filter>
+    </None>
+    <None Include="..\..\..\..\lwip\doc\doxygen\generate.sh">
+      <Filter>doc\doxygen</Filter>
+    </None>
+    <None Include="..\..\..\..\lwip\doc\doxygen\lwip.Doxyfile">
+      <Filter>doc\doxygen</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\lwip\src\api\api_lib.c">
@@ -408,6 +444,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmpv3_mbedtls.c">
       <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\doc\NO_SYS_SampleCode.c">
+      <Filter>doc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\apps\tftp\tftp_server.c">
+      <Filter>src\apps\tftp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -815,6 +857,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\prot\etharp.h">
       <Filter>src\include\lwip\prot</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\doc\doxygen\main_page.h">
+      <Filter>doc\doxygen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_opts.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_server.h">
+      <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

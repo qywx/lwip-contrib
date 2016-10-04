@@ -224,11 +224,27 @@
     </CustomBuildStep>
     <None Include="..\..\..\..\lwip\CHANGELOG" />
     <None Include="..\..\..\..\lwip\COPYING" />
+    <None Include="..\..\..\..\lwip\doc\contrib.txt" />
+    <None Include="..\..\..\..\lwip\doc\doxygen\generate.bat" />
+    <None Include="..\..\..\..\lwip\doc\doxygen\generate.sh" />
+    <None Include="..\..\..\..\lwip\doc\doxygen\lwip.Doxyfile" />
+    <None Include="..\..\..\..\lwip\doc\FILES" />
+    <None Include="..\..\..\..\lwip\doc\mdns.txt" />
+    <None Include="..\..\..\..\lwip\doc\ppp.txt" />
+    <None Include="..\..\..\..\lwip\doc\rawapi.txt" />
+    <None Include="..\..\..\..\lwip\doc\savannah.txt" />
+    <None Include="..\..\..\..\lwip\doc\sys_arch.txt" />
     <None Include="..\..\..\..\lwip\FILES" />
     <None Include="..\..\..\..\lwip\README" />
     <None Include="..\..\..\..\lwip\UPGRADING" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\lwip\doc\NO_SYS_SampleCode.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\lwip\src\api\api_lib.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\api_msg.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\err.c" />
@@ -240,6 +256,7 @@
     <ClCompile Include="..\..\..\..\lwip\src\apps\lwiperf\lwiperf.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\netbiosns\netbiosns.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\sntp\sntp.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\apps\tftp\tftp_server.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\def.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\dns.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\inet_chksum.c" />
@@ -342,6 +359,7 @@
     <ClCompile Include="..\sys_arch.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\lwip\doc\doxygen\main_page.h" />
     <ClInclude Include="..\..\..\..\lwip\src\apps\snmp\snmp_msg.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\lwiperf.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mdns_priv.h" />
@@ -351,6 +369,8 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\sntp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\sntp_opts.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_opts.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_server.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\api_msg.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\memp_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\memp_std.h" />
