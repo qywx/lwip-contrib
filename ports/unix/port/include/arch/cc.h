@@ -33,7 +33,9 @@
 #define LWIP_ARCH_CC_H
 
 /* see https://sourceforge.net/p/predef/wiki/OperatingSystems/ */
-#if defined __linux__
+#if defined __ANDROID__
+#define LWIP_UNIX_ANDROID
+#elif defined __linux__
 #define LWIP_UNIX_LINUX
 #elif defined __APPLE__
 #define LWIP_UNIX_MACH
@@ -76,6 +78,10 @@
 #endif
 
 #define LWIP_RAND() ((u32_t)rand())
+
+#if defined(LWIP_UNIX_ANDROID) && defined(FD_SET)
+typedef __kernel_fd_set fd_set;
+#endif
 
 struct sio_status_s;
 typedef struct sio_status_s sio_status_t;
