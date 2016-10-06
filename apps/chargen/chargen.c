@@ -152,13 +152,13 @@ chargen_thread(void *arg)
   listenfd = socket(AF_INET6, SOCK_STREAM, 0);
   chargen_saddr.sin6_family = AF_INET6;
   chargen_saddr.sin6_addr = in6addr_any;
-  chargen_saddr.sin6_port = htons(19); /* Chargen server port */
+  chargen_saddr.sin6_port = lwip_htons(19); /* Chargen server port */
 #else /* LWIP_IPV6 */
   /* First acquire our socket for listening for connections */
   listenfd = socket(AF_INET, SOCK_STREAM, 0);
   chargen_saddr.sin_family = AF_INET;
   chargen_saddr.sin_addr.s_addr = PP_HTONL(INADDR_ANY);
-  chargen_saddr.sin_port = htons(19); /* Chargen server port */
+  chargen_saddr.sin_port = lwip_htons(19); /* Chargen server port */
 #endif /* LWIP_IPV6 */
 
   LWIP_ASSERT("chargen_thread(): Socket create failed.", listenfd >= 0);

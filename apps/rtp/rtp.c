@@ -132,7 +132,7 @@ rtp_send_packets( int sock, struct sockaddr_in* to)
   rtphdr->version     = RTP_VERSION;
   rtphdr->payloadtype = 0;
   rtphdr->ssrc        = PP_HTONL(RTP_SSRC);
-  rtphdr->timestamp   = htonl(ntohl(rtphdr->timestamp) + RTP_TIMESTAMP_INCREMENT);
+  rtphdr->timestamp   = lwip_htonl(lwip_ntohl(rtphdr->timestamp) + RTP_TIMESTAMP_INCREMENT);
 
   /* send RTP stream packets */
   rtp_data_index = 0;
@@ -149,7 +149,7 @@ rtp_send_packets( int sock, struct sockaddr_in* to)
     /* send RTP stream packet */
     if (sendto(sock, rtp_send_packet, sizeof(struct rtp_hdr) + rtp_payload_size,
         0, (struct sockaddr *)to, sizeof(struct sockaddr)) >= 0) {
-      rtphdr->seqNum  = htons(ntohs(rtphdr->seqNum) + 1);
+      rtphdr->seqNum  = lwip_htons(lwip_ntohs(rtphdr->seqNum) + 1);
       rtp_data_index += rtp_payload_size;
     } else {
       LWIP_DEBUGF(RTP_DEBUG, ("rtp_sender: not sendto==%i\n", errno));
@@ -261,12 +261,12 @@ rtp_recv_thread(void *arg)
             if (result >= sizeof(struct rtp_hdr)) {
               rtphdr = (struct rtp_hdr *)rtp_recv_packet;
               recvrtppackets++;
-              if ((lastrtpseq == 0) || ((lastrtpseq + 1) == ntohs(rtphdr->seqNum))) {
+              if ((lastrtpseq == 0) || ((lastrtpseq + 1) == lwip_ntohs(rtphdr->seqNum))) {
                 RTP_RECV_PROCESSING((rtp_recv_packet + sizeof(rtp_hdr)),(result-sizeof(rtp_hdr)));
               } else {
                 lostrtppackets++;
               }
-              lastrtpseq = ntohs(rtphdr->seqNum);
+              lastrtpseq = lwip_ntohs(rtphdr->seqNum);
               if ((recvrtppackets % RTP_RECV_STATS) == 0) {
                 LWIP_DEBUGF(RTP_DEBUG, ("rtp_recv_thread: recv %6i packet(s) / lost %4i packet(s) (%.4f%%)...\n", recvrtppackets, lostrtppackets, (lostrtppackets*100.0)/recvrtppackets));
               }

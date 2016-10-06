@@ -113,7 +113,7 @@ ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
   ICMPH_CODE_SET(iecho, 0);
   iecho->chksum = 0;
   iecho->id     = PING_ID;
-  iecho->seqno  = htons(++ping_seq_num);
+  iecho->seqno  = lwip_htons(++ping_seq_num);
 
   /* fill the additional data buffer with some data */
   for(i = 0; i < data_len; i++) {
@@ -178,7 +178,7 @@ ping_recv(int s)
 
         iphdr = (struct ip_hdr *)buf;
         iecho = (struct icmp_echo_hdr *)(buf + (IPH_HL(iphdr) * 4));
-        if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
+        if ((iecho->id == PING_ID) && (iecho->seqno == lwip_htons(ping_seq_num))) {
           /* do some ping result processing */
           PING_RESULT((ICMPH_TYPE(iecho) == ICMP_ER));
           return;
@@ -255,7 +255,7 @@ ping_recv(void *arg, struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *addr)
       pbuf_header(p, -PBUF_IP_HLEN) == 0) {
     iecho = (struct icmp_echo_hdr *)p->payload;
 
-    if ((iecho->id == PING_ID) && (iecho->seqno == htons(ping_seq_num))) {
+    if ((iecho->id == PING_ID) && (iecho->seqno == lwip_htons(ping_seq_num))) {
       LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
       ip_addr_debug_print(PING_DEBUG, addr);
       LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", (sys_now()-ping_time)));
