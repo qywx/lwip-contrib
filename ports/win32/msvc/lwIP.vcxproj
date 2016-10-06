@@ -371,6 +371,7 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\sntp_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_server.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\errno.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\api_msg.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\memp_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\memp_std.h" />
@@ -453,6 +454,7 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\netif\ppp\polarssl\md4.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\netif\ppp\polarssl\md5.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\netif\ppp\polarssl\sha1.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\posix\errno.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\posix\netdb.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\posix\sys\socket.h" />
     <ClInclude Include="..\..\..\..\lwip\src\apps\httpd\fsdata.h" />

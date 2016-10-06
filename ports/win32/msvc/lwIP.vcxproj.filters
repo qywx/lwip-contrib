@@ -867,6 +867,12 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_server.h">
       <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\errno.h">
+      <Filter>src\include\lwip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\posix\errno.h">
+      <Filter>src\include\posix</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\lwipcfg_msvc.h.example">
