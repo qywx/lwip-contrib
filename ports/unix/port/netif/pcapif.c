@@ -98,7 +98,7 @@ timeout(void *arg)
   ethhdr = (struct eth_hdr *)pcapif->pkt;
 
   
-  if (htons(ethhdr->type) != ETHTYPE_IP ||
+  if (lwip_htons(ethhdr->type) != ETHTYPE_IP ||
      ip_lookup(pcapif->pkt + 14, netif)) {
     
     /* We allocate a pbuf chain of pbufs from the pool. */
@@ -112,7 +112,7 @@ timeout(void *arg)
 #endif /* LWIP_DEBUG && LWIP_TCPDUMP */
 
       ethhdr = p->payload;
-      switch (htons(ethhdr->type)) {
+      switch (lwip_htons(ethhdr->type)) {
       /* IP or ARP packet? */
       case ETHTYPE_IP:
       case ETHTYPE_ARP:

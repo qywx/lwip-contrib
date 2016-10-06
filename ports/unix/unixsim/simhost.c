@@ -312,7 +312,7 @@ ping_send(int s, const ip_addr_t *addr)
 
   ICMPH_TYPE_SET(iecho,ICMP_ECHO);
   iecho->chksum = 0;
-  iecho->seqno  = htons(seq_num);
+  iecho->seqno  = lwip_htons(seq_num);
   iecho->chksum = inet_chksum(iecho, sizeof(*iecho));
 
 #if LWIP_IPV4

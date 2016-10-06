@@ -139,20 +139,20 @@ tcpdump(struct pbuf *p)
 
     fprintf(file, "%s.%u > %s.%u: ",
             ip_ntoa(&src),
-            ntohs(tcphdr->src),
+            lwip_ntohs(tcphdr->src),
             ip_ntoa(&dst),
-            ntohs(tcphdr->dest));
+            lwip_ntohs(tcphdr->dest));
     offset = TCPH_HDRLEN(tcphdr);
 
-    len = ntohs(IPH_LEN(iphdr)) - offset * 4 - IP_HLEN;
+    len = lwip_ntohs(IPH_LEN(iphdr)) - offset * 4 - IP_HLEN;
     if (len != 0 || flags[0] != '.') {
-      fprintf(file, "%s %u:%u(%u) ", flags, ntohl(tcphdr->seqno),
-              ntohl(tcphdr->seqno) + len, len);
+      fprintf(file, "%s %u:%u(%u) ", flags, lwip_ntohl(tcphdr->seqno),
+              lwip_ntohl(tcphdr->seqno) + len, len);
     }
     if (TCPH_FLAGS(tcphdr) & TCP_ACK) {
-      fprintf(file, "ack %u ", ntohl(tcphdr->ackno));
+      fprintf(file, "ack %u ", lwip_ntohl(tcphdr->ackno));
     }
-    fprintf(file, "wnd %u\n", ntohs(tcphdr->wnd));
+    fprintf(file, "wnd %u\n", lwip_ntohs(tcphdr->wnd));
 
     fflush(file);
 
@@ -176,11 +176,11 @@ tcpdump(struct pbuf *p)
 
     fprintf(file, "%s.%u > %s.%u: ",
             ip_ntoa(&src),
-            ntohs(udphdr->src),
+            lwip_ntohs(udphdr->src),
             ip_ntoa(&dst),
-            ntohs(udphdr->dest));
+            lwip_ntohs(udphdr->dest));
     fprintf(file, "U ");
-    len = ntohs(IPH_LEN(iphdr)) - sizeof(struct udp_hdr) - IP_HLEN;
+    len = lwip_ntohs(IPH_LEN(iphdr)) - sizeof(struct udp_hdr) - IP_HLEN;
     fprintf(file, " %d\n", len);
 
     fflush(file);
