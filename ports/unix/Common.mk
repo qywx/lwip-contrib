@@ -46,7 +46,7 @@ CFLAGS:=$(CFLAGS) -Wlogical-op
 #CFLAGS:=$(CFLAGS) -fsanitize=address -fstack-protector -fstack-check -fsanitize=undefined -fno-sanitize=alignment
 else
 # we cannot sanitize alignment on x86-64 targets because clang wants 64 bit alignment
-CFLAGS:=$(CFLAGS) -fsanitize=address -fsanitize=undefined -fno-sanitize=alignment
+CFLAGS:=$(CFLAGS) -fsanitize=address -fsanitize=undefined -fno-sanitize=alignment -Wdocumentation
 endif
 
 # not used for now but interesting:
