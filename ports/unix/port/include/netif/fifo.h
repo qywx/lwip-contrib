@@ -23,7 +23,7 @@ typedef struct fifo_t {
 /**
 *   Get a character from fifo
 *   Blocking call.
-*	@param 	pointer to fifo data structure
+*	@param 	fifo pointer to fifo data structure
 *	@return	character read from fifo
 */
 u8_t fifoGet(fifo_t * fifo);
@@ -31,7 +31,7 @@ u8_t fifoGet(fifo_t * fifo);
 /**
 *   Get a character from fifo
 *   Non blocking call.
-*	@param 	pointer to fifo data structure
+*	@param 	fifo pointer to fifo data structure
 *	@return	character read from fifo, or < zero if non was available
 */
 s16_t fifoGetNonBlock(fifo_t * fifo);

@@ -98,8 +98,9 @@ static void signal_handler_IO_1( int status )
 
 /**
 * Initiation of serial device 
-* @param device : string with the device name and path, eg. "/dev/ttyS0"
-* @param netif  : netinterface struct, contains interface instance data
+* @param device string with the device name and path, eg. "/dev/ttyS0"
+* @param devnum device number
+* @param siostat status
 * @return file handle to serial dev.
 */
 static int sio_init( char * device, int devnum, sio_status_t * siostat )

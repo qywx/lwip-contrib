@@ -574,7 +574,8 @@ leave:
  * @param to target email address (must be NULL-terminated)
  * @param subject email subject (must be NULL-terminated)
  * @param body email body (must be NULL-terminated)
- * @param 
+ * @param callback_fn callback function
+ * @param callback_arg user argument to callback_fn
  * @returns - ERR_OK if structures were allocated and no error occured starting the connection
  *            (this does not mean the email has been successfully sent!)
  *          - another err_t on error.
