@@ -26,7 +26,7 @@
  *
  * This file is part of the lwIP TCP/IP stack.
  * 
- * Author: Erik Ekman <erik.ekman@verisure.com>
+ * Author: Erik Ekman <erik@kryo.se>
  *
  */
 
