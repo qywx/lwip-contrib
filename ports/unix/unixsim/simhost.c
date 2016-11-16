@@ -375,17 +375,21 @@ ping_thread(void *arg)
 {
   int s;
   LWIP_UNUSED_ARG(arg);
-
+  
 #if LWIP_IPV6
-  if ((s = lwip_socket(AF_INET6, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
-    return;
+  if(IP_IS_V4_VAL(ping_addr) || ip6_addr_isipv6mappedipv4(ip_2_ip6(&ping_addr))) {
+    s = lwip_socket(AF_INET6, SOCK_RAW, IP_PROTO_ICMP);
+  } else {
+    s = lwip_socket(AF_INET6, SOCK_RAW, IP6_NEXTH_ICMP6);
   }
 #else
-  if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
-    return;
-  }
+  s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP);
 #endif
   
+  if(s < 0) {
+    return;
+  }
+
   while (1) {
     printf("sending ping\n");
     ping_send(s,&ping_addr);
