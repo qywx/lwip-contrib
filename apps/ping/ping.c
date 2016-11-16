@@ -145,7 +145,7 @@ ping_send(int s, ip_addr_t *addr)
 
   to.sin_len = sizeof(to);
   to.sin_family = AF_INET;
-  inet_addr_from_ipaddr(&to.sin_addr, ip_2_ip4(addr));
+  inet4_addr_from_ip4addr(&to.sin_addr, ip_2_ip4(addr));
 
   err = lwip_sendto(s, iecho, ping_size, 0, (struct sockaddr*)&to, sizeof(to));
 
@@ -171,7 +171,7 @@ ping_recv(int s)
         LWIP_DEBUGF( PING_DEBUG, ("ping: invalid sin_family\n"));
       } else {
         ip4_addr_t fromaddr;
-        inet_addr_to_ipaddr(&fromaddr, &from.sin_addr);
+        inet4_addr_to_ip4addr(&fromaddr, &from.sin_addr);
         LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
         ip4_addr_debug_print(PING_DEBUG, &fromaddr);
         LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", (sys_now() - ping_time)));
