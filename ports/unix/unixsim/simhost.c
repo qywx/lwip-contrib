@@ -320,7 +320,7 @@ ping_send(int s, const ip_addr_t *addr)
     struct sockaddr_in *to4 = (struct sockaddr_in*)&to;
     to4->sin_len    = sizeof(to);
     to4->sin_family = AF_INET;
-    inet_addr_from_ipaddr(&to4->sin_addr, ip_2_ip4(addr));
+    inet4_addr_from_ip4addr(&to4->sin_addr, ip_2_ip4(addr));
   }
 #endif /* LWIP_IPV4 */
 
@@ -352,16 +352,18 @@ ping_recv(int s, const ip_addr_t *addr)
   len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, &fromlen);
 
 #if LWIP_IPV4
-  if(!IP_IS_V6(addr)) {
+  if(from.ss_family == AF_INET) {
     struct sockaddr_in *from4 = (struct sockaddr_in*)&from;
-    inet_addr_to_ipaddr(ip_2_ip4(&ip_from), &from4->sin_addr);
+    inet4_addr_to_ip4addr(ip_2_ip4(&ip_from), &from4->sin_addr);
+    IP_SET_TYPE(&ip_from, IPADDR_TYPE_V4);
   }
 #endif /* LWIP_IPV4 */
 
 #if LWIP_IPV6
-  if(IP_IS_V6(addr)) {
+  if(from.ss_family == AF_INET6) {
     struct sockaddr_in6 *from6 = (struct sockaddr_in6*)&from;
     inet6_addr_to_ip6addr(ip_2_ip6(&ip_from), &from6->sin6_addr);
+    IP_SET_TYPE(&ip_from, IPADDR_TYPE_V6);
   }
 #endif /* LWIP_IPV6 */
 
@@ -373,8 +375,18 @@ ping_thread(void *arg)
 {
   int s;
   LWIP_UNUSED_ARG(arg);
-
-  if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
+  
+#if LWIP_IPV6
+  if(IP_IS_V4_VAL(ping_addr) || ip6_addr_isipv6mappedipv4(ip_2_ip6(&ping_addr))) {
+    s = lwip_socket(AF_INET6, SOCK_RAW, IP_PROTO_ICMP);
+  } else {
+    s = lwip_socket(AF_INET6, SOCK_RAW, IP6_NEXTH_ICMP6);
+  }
+#else
+  s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP);
+#endif
+  
+  if(s < 0) {
     return;
   }
 
@@ -683,7 +695,7 @@ int
 main(int argc, char **argv)
 {
   int ch;
-  char ip_str[16] = {0};
+  char ip_str[IPADDR_STRLEN_MAX] = {0};
 
   /* startup defaults (may be overridden by one or more opts) */
 #if LWIP_IPV4
