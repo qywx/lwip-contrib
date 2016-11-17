@@ -112,8 +112,13 @@ tcpip_init_done(void *arg)
   netif_create_ip6_linklocal_address(&netif_unix, 1);
 #endif
 
-  system("route add 192.168.1.1 192.168.0.2");
-  system("route add 192.168.1.2 192.168.0.2");
+  if(system("route add 192.168.1.1 192.168.0.2") != 0) {
+    return;
+  }
+  
+  if(system("route add 192.168.1.2 192.168.0.2") != 0) {
+    return;
+  }
 
 
   /*netif_set_default(netif_add(&ipaddr, &netmask, &gw, NULL, sioslipif_init1,

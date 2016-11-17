@@ -106,9 +106,9 @@ low_level_init(struct netif *netif)
            ip4_addr4(netif_ip4_addr(netif)));
 
   LWIP_DEBUGF(TUNIF_DEBUG, ("tunif_init: system(\"%s\");\n", buf));
-  system(buf);
-  sys_thread_new("tunif_thread", tunif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
-
+  if (system(buf) == 0) {
+    sys_thread_new("tunif_thread", tunif_thread, netif, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
+  }
 }
 /*-----------------------------------------------------------------------------------*/
 /*
