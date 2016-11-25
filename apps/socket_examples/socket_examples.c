@@ -92,7 +92,7 @@ sockex_nonblocking_connect(void *arg)
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
   addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
-  inet4_addr_from_ip4addr(&addr.sin_addr, ip_2_ip4(ipaddr));
+  inet_addr_from_ip4addr(&addr.sin_addr, ip_2_ip4(ipaddr));
 #endif /* LWIP_IPV6 */
 
   /* first try blocking: */
@@ -330,7 +330,7 @@ sockex_testrecv(void *arg)
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
   addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
-  inet4_addr_from_ip4addr(&addr.sin_addr, ip_2_ip4(ipaddr));
+  inet_addr_from_ip4addr(&addr.sin_addr, ip_2_ip4(ipaddr));
 #endif /* LWIP_IPV6 */
 
   /* first try blocking: */
@@ -507,7 +507,7 @@ sockex_testtwoselects(void *arg)
   addr.sin_len = sizeof(addr);
   addr.sin_family = AF_INET;
   addr.sin_port = PP_HTONS(SOCK_TARGET_PORT);
-  inet4_addr_from_ip4addr(&addr.sin_addr, ip_2_ip4(ipaddr));
+  inet_addr_from_ip4addr(&addr.sin_addr, ip_2_ip4(ipaddr));
 #endif /* LWIP_IPV6 */
 
   /* create the sockets */

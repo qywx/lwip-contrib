@@ -320,7 +320,7 @@ ping_send(int s, const ip_addr_t *addr)
     struct sockaddr_in *to4 = (struct sockaddr_in*)&to;
     to4->sin_len    = sizeof(to);
     to4->sin_family = AF_INET;
-    inet4_addr_from_ip4addr(&to4->sin_addr, ip_2_ip4(addr));
+    inet_addr_from_ip4addr(&to4->sin_addr, ip_2_ip4(addr));
   }
 #endif /* LWIP_IPV4 */
 
@@ -354,7 +354,7 @@ ping_recv(int s, const ip_addr_t *addr)
 #if LWIP_IPV4
   if(from.ss_family == AF_INET) {
     struct sockaddr_in *from4 = (struct sockaddr_in*)&from;
-    inet4_addr_to_ip4addr(ip_2_ip4(&ip_from), &from4->sin_addr);
+    inet_addr_to_ip4addr(ip_2_ip4(&ip_from), &from4->sin_addr);
     IP_SET_TYPE(&ip_from, IPADDR_TYPE_V4);
   }
 #endif /* LWIP_IPV4 */
