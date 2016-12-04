@@ -131,10 +131,12 @@ ping_send(int s, const ip_addr_t *addr)
   size_t ping_size = sizeof(struct icmp_echo_hdr) + PING_DATA_SIZE;
   LWIP_ASSERT("ping_size is too big", ping_size <= 0xffff);
 
+#if LWIP_IPV6
   if(IP_IS_V6(addr) && !ip6_addr_isipv6mappedipv4(ip_2_ip6(addr))) {
     /* todo: support ICMP6 echo */
     return ERR_VAL;
   }
+#endif /* LWIP_IPV6 */
 
   iecho = (struct icmp_echo_hdr *)mem_malloc((mem_size_t)ping_size);
   if (!iecho) {
