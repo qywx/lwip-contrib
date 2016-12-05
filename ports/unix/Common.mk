@@ -33,7 +33,7 @@
 #CC=clang
 CCDEP?=$(CC)
 
-CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
+CFLAGS+=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 	-Wparentheses -Wsequence-point -Wswitch-default \
 	-Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-qual \
 	-Wc++-compat -Wwrite-strings -Wold-style-definition -Wcast-align \
@@ -41,12 +41,12 @@ CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
 	-Wunreachable-code -Wuninitialized
 
 ifeq (,$(findstring clang,$(CC)))
-CFLAGS:=$(CFLAGS) -Wlogical-op
+CFLAGS+= -Wlogical-op
 # if GCC is newer than 4.8/4.9 you may use:
 #CFLAGS:=$(CFLAGS) -fsanitize=address -fstack-protector -fstack-check -fsanitize=undefined -fno-sanitize=alignment
 else
 # we cannot sanitize alignment on x86-64 targets because clang wants 64 bit alignment
-CFLAGS:=$(CFLAGS) -fsanitize=address -fsanitize=undefined -fno-sanitize=alignment -Wdocumentation
+CFLAGS+= -fsanitize=address -fsanitize=undefined -fno-sanitize=alignment -Wdocumentation
 endif
 
 # not used for now but interesting:
@@ -54,14 +54,14 @@ endif
 # -ansi
 # -std=c89
 
-LDFLAGS=-pthread -lutil -lrt
+LDFLAGS+=-pthread -lutil -lrt
 CONTRIBDIR?=../../..
-LWIPARCH=$(CONTRIBDIR)/ports/unix/port
-ARFLAGS=rs
+LWIPARCH?=$(CONTRIBDIR)/ports/unix/port
+ARFLAGS?=rs
 
 #Set this to where you have the lwip core module checked out from git
 #default assumes it's a dir named lwip at the same level as the contrib module
-LWIPDIR=$(CONTRIBDIR)/../lwip/src
+LWIPDIR?=$(CONTRIBDIR)/../lwip/src
 
 CFLAGS+=-I. \
 	-I$(CONTRIBDIR) \
