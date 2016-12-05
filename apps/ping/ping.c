@@ -40,7 +40,7 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_IPV4 && LWIP_RAW /* don't build if not configured for use in lwipopts.h */
+#if LWIP_RAW /* don't build if not configured for use in lwipopts.h */
 
 #include "ping.h"
 
@@ -51,6 +51,7 @@
 #include "lwip/sys.h"
 #include "lwip/timeouts.h"
 #include "lwip/inet_chksum.h"
+#include "lwip/prot/ip4.h"
 
 #if PING_USE_SOCKETS
 #include "lwip/sockets.h"
@@ -176,8 +177,6 @@ ping_recv(int s)
   char buf[64];
   int len;
   struct sockaddr_storage from;
-  struct ip_hdr *iphdr;
-  struct icmp_echo_hdr *iecho;
   int fromlen = sizeof(from);
 
   while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, (socklen_t*)&fromlen)) > 0) {
@@ -205,7 +204,11 @@ ping_recv(int s)
       LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", (sys_now() - ping_time)));
 
       /* todo: support ICMP6 echo */
+#if LWIP_IPV4
       if (IP_IS_V4_VAL(fromaddr)) {
+        struct ip_hdr *iphdr;
+        struct icmp_echo_hdr *iecho;
+
         iphdr = (struct ip_hdr *)buf;
         iecho = (struct icmp_echo_hdr *)(buf + (IPH_HL(iphdr) * 4));
         if ((iecho->id == PING_ID) && (iecho->seqno == lwip_htons(ping_seq_num))) {
@@ -216,6 +219,7 @@ ping_recv(int s)
           LWIP_DEBUGF( PING_DEBUG, ("ping: drop\n"));
         }
       }
+#endif /* LWIP_IPV4 */
     }
     fromlen = sizeof(from);
   }
@@ -384,4 +388,4 @@ ping_init(const ip_addr_t* ping_addr)
 #endif /* PING_USE_SOCKETS */
 }
 
-#endif /* LWIP_IPV4 && LWIP_RAW */
+#endif /* LWIP_RAW */
