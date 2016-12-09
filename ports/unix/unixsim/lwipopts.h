@@ -82,6 +82,7 @@ extern unsigned char debug_flags;
 #define IP_SOF_BROADCAST_RECV      1
 #define IP_SOF_BROADCAST           1
 #define SO_REUSE_RXTOALL           1
+#define LWIP_SO_RCVTIMEO           (LWIP_SOCKET)
 
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which

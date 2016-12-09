@@ -103,6 +103,11 @@
 #define USE_PCAPIF 1
 #endif
 
+/** Define this to 1 to enable a PPP interface. */
+#ifndef USE_PPP
+#define USE_PPP 0
+#endif
+
 /** Define this to 1 or 2 to support 1 or 2 SLIP interfaces. */
 #ifndef USE_SLIPIF
 #define USE_SLIPIF 0
@@ -145,7 +150,7 @@ struct dhcp netif_dhcp;
 struct autoip netif_autoip;
 #endif /* LWIP_AUTOIP */
 #endif /* USE_ETHERNET */
-#if PPP_SUPPORT
+#if USE_PPP
 /* THE PPP PCB */
 ppp_pcb *ppp;
 /* THE PPP interface */
@@ -153,7 +158,7 @@ struct netif ppp_netif;
 /* THE PPP descriptor */
 u8_t sio_idx = 0;
 sio_fd_t ppp_sio;
-#endif /* PPP_SUPPORT */
+#endif /* USE_PPP */
 #if USE_SLIPIF
 struct netif slipif1;
 #if USE_SLIPIF > 1
@@ -162,7 +167,7 @@ struct netif slipif2;
 #endif /* USE_SLIPIF */
 
 
-#if PPP_SUPPORT
+#if USE_PPP
 static void
 pppLinkStatusCallback(ppp_pcb *pcb, int errCode, void *ctx)
 {
@@ -250,7 +255,7 @@ ppp_output_cb(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx)
   return sio_write(ppp_sio, data, len);
 }
 #endif /* PPPOS_SUPPORT */
-#endif /* PPP_SUPPORT */
+#endif /* USE_PPP */
 
 #if LWIP_NETIF_STATUS_CALLBACK
 static void
@@ -306,7 +311,7 @@ msvc_netif_init(void)
   err_t err;
 #endif
 
-#if PPP_SUPPORT
+#if USE_PPP
   const char *username = NULL, *password = NULL;
 #ifdef PPP_USERNAME
   username = PPP_USERNAME;
@@ -329,7 +334,7 @@ msvc_netif_init(void)
     }
   }
 #endif /* PPPOS_SUPPORT */
-#endif  /* PPP_SUPPORT */
+#endif  /* USE_PPP */
 
 #if USE_ETHERNET
 #if LWIP_IPV4
@@ -393,7 +398,7 @@ msvc_netif_init(void)
   netif.flags |= NETIF_FLAG_ETHERNET; /* but pure ethernet */
 #endif /* USE_ETHERNET_TCPIP */
 
-#if PPP_SUPPORT && PPPOE_SUPPORT
+#if USE_PPP && PPPOE_SUPPORT
   /* start PPPoE after ethernet netif is added! */
   ppp = pppoe_create(&ppp_netif, &netif, NULL, NULL, pppLinkStatusCallback, NULL);
   if (ppp == NULL) {
@@ -402,7 +407,7 @@ msvc_netif_init(void)
     ppp_set_auth(ppp, PPPAUTHTYPE_ANY, username, password);
     ppp_connect(ppp, 0);
   }
-#endif /* PPP_SUPPORT && PPPOE_SUPPORT */
+#endif /* USE_PPP && PPPOE_SUPPORT */
 
 #endif /* USE_ETHERNET */
 #if USE_SLIPIF
@@ -635,13 +640,13 @@ main_loop(void)
   err_t err;
   sys_sem_t init_sem;
 #endif /* NO_SYS */
-#if PPP_SUPPORT
+#if USE_PPP
 #if !USE_ETHERNET
   int count;
   u8_t rxbuf[1024];
 #endif
   volatile int callClosePpp = 0;
-#endif /* PPP_SUPPORT */
+#endif /* USE_PPP */
 
   /* initialize lwIP stack, network interfaces and applications */
 #if NO_SYS
@@ -700,7 +705,7 @@ main_loop(void)
     /* check for loopback packets on all netifs */
     netif_poll_all();
 #endif /* ENABLE_LOOPBACK && !LWIP_NETIF_LOOPBACK_MULTITHREADING */
-#if PPP_SUPPORT
+#if USE_PPP
     {
     int do_hup = 0;
     if(do_hup) {
@@ -718,10 +723,10 @@ main_loop(void)
 #endif
       ppp = NULL;
     }
-#endif /* PPP_SUPPORT */
+#endif /* USE_PPP */
   }
 
-#if PPP_SUPPORT
+#if USE_PPP
     if(ppp) {
       u32_t started;
       printf("Closing PPP connection...\n");
@@ -744,7 +749,7 @@ main_loop(void)
         /* @todo: need a better check here: only wait until PPP is down */
       } while(sys_now() - started < 5000);
     }
-#endif /* PPP_SUPPORT */
+#endif /* USE_PPP */
 #if (LWIP_SOCKET || LWIP_NETCONN) && LWIP_NETCONN_SEM_PER_THREAD
   netconn_thread_cleanup();
 #endif
@@ -754,18 +759,18 @@ main_loop(void)
 #endif /* USE_ETHERNET */
 }
 
-#if PPP_SUPPORT && PPPOS_SUPPORT
+#if USE_PPP && PPPOS_SUPPORT
 int main(int argc, char **argv)
-#else /* PPP_SUPPORT && PPPOS_SUPPORT */
+#else /* USE_PPP && PPPOS_SUPPORT */
 int main(void)
-#endif /* PPP_SUPPORT && PPPOS_SUPPORT */
+#endif /* USE_PPP && PPPOS_SUPPORT */
 {
-#if PPP_SUPPORT && PPPOS_SUPPORT
+#if USE_PPP && PPPOS_SUPPORT
   if(argc > 1) {
     sio_idx = (u8_t)atoi(argv[1]);
   }
   printf("Using serial port %d for PPP\n", sio_idx);
-#endif /* PPP_SUPPORT && PPPOS_SUPPORT */
+#endif /* USE_PPP && PPPOS_SUPPORT */
   /* no stdio-buffering, please! */
   setvbuf(stdout, NULL,_IONBF, 0);
 

@@ -40,7 +40,7 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_IPV4 && LWIP_RAW /* don't build if not configured for use in lwipopts.h */
+#if LWIP_RAW /* don't build if not configured for use in lwipopts.h */
 
 #include "ping.h"
 
@@ -51,6 +51,7 @@
 #include "lwip/sys.h"
 #include "lwip/timeouts.h"
 #include "lwip/inet_chksum.h"
+#include "lwip/prot/ip4.h"
 
 #if PING_USE_SOCKETS
 #include "lwip/sockets.h"
@@ -63,11 +64,6 @@
  */
 #ifndef PING_DEBUG
 #define PING_DEBUG     LWIP_DBG_ON
-#endif
-
-/** ping target - should be an "ip4_addr_t" */
-#ifndef PING_TARGET
-#define PING_TARGET   (netif_default ? *netif_ip4_gw(netif_default) : (*IP4_ADDR_ANY4))
 #endif
 
 /** ping receive timeout - in milliseconds */
@@ -96,6 +92,7 @@
 #endif
 
 /* ping variables */
+static const ip_addr_t* ping_target;
 static u16_t ping_seq_num;
 static u32_t ping_time;
 #if !PING_USE_SOCKETS
@@ -127,14 +124,20 @@ ping_prepare_echo( struct icmp_echo_hdr *iecho, u16_t len)
 
 /* Ping using the socket ip */
 static err_t
-ping_send(int s, ip_addr_t *addr)
+ping_send(int s, const ip_addr_t *addr)
 {
   int err;
   struct icmp_echo_hdr *iecho;
-  struct sockaddr_in to;
+  struct sockaddr_storage to;
   size_t ping_size = sizeof(struct icmp_echo_hdr) + PING_DATA_SIZE;
   LWIP_ASSERT("ping_size is too big", ping_size <= 0xffff);
-  LWIP_ASSERT("ping: expect IPv4 address", !IP_IS_V6(addr));
+
+#if LWIP_IPV6
+  if(IP_IS_V6(addr) && !ip6_addr_isipv6mappedipv4(ip_2_ip6(addr))) {
+    /* todo: support ICMP6 echo */
+    return ERR_VAL;
+  }
+#endif /* LWIP_IPV6 */
 
   iecho = (struct icmp_echo_hdr *)mem_malloc((mem_size_t)ping_size);
   if (!iecho) {
@@ -142,10 +145,24 @@ ping_send(int s, ip_addr_t *addr)
   }
 
   ping_prepare_echo(iecho, (u16_t)ping_size);
+  
+#if LWIP_IPV4
+  if(IP_IS_V4(addr)) {
+    struct sockaddr_in *to4 = (struct sockaddr_in*)&to;
+    to4->sin_len    = sizeof(to4);
+    to4->sin_family = AF_INET;
+    inet_addr_from_ip4addr(&to4->sin_addr, ip_2_ip4(addr));
+  }
+#endif /* LWIP_IPV4 */
 
-  to.sin_len = sizeof(to);
-  to.sin_family = AF_INET;
-  inet4_addr_from_ip4addr(&to.sin_addr, ip_2_ip4(addr));
+#if LWIP_IPV6
+  if(IP_IS_V6(addr)) {
+    struct sockaddr_in6 *to6 = (struct sockaddr_in6*)&to;
+    to6->sin6_len    = sizeof(to6);
+    to6->sin6_family = AF_INET6;
+    inet6_addr_from_ip6addr(&to6->sin6_addr, ip_2_ip6(addr));
+  }
+#endif /* LWIP_IPV6 */
 
   err = lwip_sendto(s, iecho, ping_size, 0, (struct sockaddr*)&to, sizeof(to));
 
@@ -159,22 +176,38 @@ ping_recv(int s)
 {
   char buf[64];
   int len;
-  struct sockaddr_in from;
-  struct ip_hdr *iphdr;
-  struct icmp_echo_hdr *iecho;
+  struct sockaddr_storage from;
   int fromlen = sizeof(from);
 
   while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, (socklen_t*)&fromlen)) > 0) {
     if (len >= (int)(sizeof(struct ip_hdr)+sizeof(struct icmp_echo_hdr))) {
-      if (from.sin_family != AF_INET) {
-        /* Ping is not IPv4 */ 
-        LWIP_DEBUGF( PING_DEBUG, ("ping: invalid sin_family\n"));
-      } else {
-        ip4_addr_t fromaddr;
-        inet4_addr_to_ip4addr(&fromaddr, &from.sin_addr);
-        LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
-        ip4_addr_debug_print(PING_DEBUG, &fromaddr);
-        LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", (sys_now() - ping_time)));
+      ip_addr_t fromaddr;
+      
+#if LWIP_IPV4
+      if(from.ss_family == AF_INET) {
+        struct sockaddr_in *from4 = (struct sockaddr_in*)&from;
+        inet_addr_to_ip4addr(ip_2_ip4(&fromaddr), &from4->sin_addr);
+        IP_SET_TYPE(&fromaddr, IPADDR_TYPE_V4);
+      }
+#endif /* LWIP_IPV4 */
+
+#if LWIP_IPV6
+      if(from.ss_family == AF_INET6) {
+        struct sockaddr_in6 *from6 = (struct sockaddr_in6*)&from;
+        inet6_addr_to_ip6addr(ip_2_ip6(&fromaddr), &from6->sin6_addr);
+        IP_SET_TYPE(&fromaddr, IPADDR_TYPE_V6);
+      }
+#endif /* LWIP_IPV6 */
+      
+      LWIP_DEBUGF( PING_DEBUG, ("ping: recv "));
+      ip_addr_debug_print(PING_DEBUG, &fromaddr);
+      LWIP_DEBUGF( PING_DEBUG, (" %"U32_F" ms\n", (sys_now() - ping_time)));
+
+      /* todo: support ICMP6 echo */
+#if LWIP_IPV4
+      if (IP_IS_V4_VAL(fromaddr)) {
+        struct ip_hdr *iphdr;
+        struct icmp_echo_hdr *iecho;
 
         iphdr = (struct ip_hdr *)buf;
         iecho = (struct icmp_echo_hdr *)(buf + (IPH_HL(iphdr) * 4));
@@ -186,6 +219,7 @@ ping_recv(int s)
           LWIP_DEBUGF( PING_DEBUG, ("ping: drop\n"));
         }
       }
+#endif /* LWIP_IPV4 */
     }
     fromlen = sizeof(from);
   }
@@ -203,7 +237,7 @@ ping_thread(void *arg)
 {
   int s;
   int ret;
-  ip_addr_t ping_target;
+
 #if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
   int timeout = PING_RCV_TIMEO;
 #else
@@ -213,7 +247,16 @@ ping_thread(void *arg)
 #endif
   LWIP_UNUSED_ARG(arg);
 
-  if ((s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP)) < 0) {
+#if LWIP_IPV6
+  if(IP_IS_V4(ping_target) || ip6_addr_isipv6mappedipv4(ip_2_ip6(ping_target))) {
+    s = lwip_socket(AF_INET6, SOCK_RAW, IP_PROTO_ICMP);
+  } else {
+    s = lwip_socket(AF_INET6, SOCK_RAW, IP6_NEXTH_ICMP6);
+  }
+#else
+  s = lwip_socket(AF_INET,  SOCK_RAW, IP_PROTO_ICMP);
+#endif
+  if (s < 0) {
     return;
   }
 
@@ -221,18 +264,16 @@ ping_thread(void *arg)
   LWIP_ASSERT("setting receive timeout failed", ret == 0);
 
   while (1) {
-    ip_addr_copy_from_ip4(ping_target, PING_TARGET);
-
-    if (ping_send(s, &ping_target) == ERR_OK) {
+    if (ping_send(s, ping_target) == ERR_OK) {
       LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
-      ip_addr_debug_print(PING_DEBUG, &ping_target);
+      ip_addr_debug_print(PING_DEBUG, ping_target);
       LWIP_DEBUGF( PING_DEBUG, ("\n"));
 
       ping_time = sys_now();
       ping_recv(s);
     } else {
       LWIP_DEBUGF( PING_DEBUG, ("ping: send "));
-      ip_addr_debug_print(PING_DEBUG, &ping_target);
+      ip_addr_debug_print(PING_DEBUG, ping_target);
       LWIP_DEBUGF( PING_DEBUG, (" - error\n"));
     }
     sys_msleep(PING_DELAY);
@@ -336,8 +377,10 @@ ping_send_now(void)
 #endif /* PING_USE_SOCKETS */
 
 void
-ping_init(void)
+ping_init(const ip_addr_t* ping_addr)
 {
+  ping_target = ping_addr;
+  
 #if PING_USE_SOCKETS
   sys_thread_new("ping_thread", ping_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
 #else /* PING_USE_SOCKETS */
@@ -345,4 +388,4 @@ ping_init(void)
 #endif /* PING_USE_SOCKETS */
 }
 
-#endif /* LWIP_IPV4 && LWIP_RAW */
+#endif /* LWIP_RAW */

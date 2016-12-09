@@ -90,6 +90,7 @@
 #include "apps/shell/shell.h"
 #include "apps/chargen/chargen.h"
 #include "apps/netio/netio.h"
+#include "apps/ping/ping.h"
 #include "lwip/apps/netbiosns.h"
 #include "lwip/apps/mdns.h"
 #include "lwip/apps/sntp.h"
@@ -295,110 +296,6 @@ tcpip_init_done(void *arg)
 
 /*-----------------------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------------------*/
-#if LWIP_SOCKET
-
-/* Ping using the socket api */
-
-static int seq_num;
-
-static void
-ping_send(int s, const ip_addr_t *addr)
-{
-  struct icmp_echo_hdr *iecho;
-  struct sockaddr_storage to;
-
-  if (!(iecho = (struct icmp_echo_hdr *)malloc(sizeof(struct icmp_echo_hdr))))
-    return;
-
-  ICMPH_TYPE_SET(iecho,ICMP_ECHO);
-  iecho->chksum = 0;
-  iecho->seqno  = lwip_htons(seq_num);
-  iecho->chksum = inet_chksum(iecho, sizeof(*iecho));
-
-#if LWIP_IPV4
-  if(!IP_IS_V6(addr)) {
-    struct sockaddr_in *to4 = (struct sockaddr_in*)&to;
-    to4->sin_len    = sizeof(to);
-    to4->sin_family = AF_INET;
-    inet4_addr_from_ip4addr(&to4->sin_addr, ip_2_ip4(addr));
-  }
-#endif /* LWIP_IPV4 */
-
-#if LWIP_IPV6
-  if(IP_IS_V6(addr)) {
-    struct sockaddr_in6 *to6 = (struct sockaddr_in6*)&to;
-    to6->sin6_len    = sizeof(to);
-    to6->sin6_family = AF_INET6;
-    inet6_addr_from_ip6addr(&to6->sin6_addr, ip_2_ip6(addr));
-  }
-#endif /* LWIP_IPV6 */
-
-  lwip_sendto(s, iecho, sizeof(*iecho), 0, (struct sockaddr*)&to, sizeof(to));
-
-  free(iecho);
-  seq_num++;
-}
-
-static void
-ping_recv(int s, const ip_addr_t *addr)
-{
-  char buf[200];
-  socklen_t fromlen;
-  int len;
-  struct sockaddr_storage from;
-  ip_addr_t ip_from;
-  LWIP_UNUSED_ARG(addr);
-
-  len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, &fromlen);
-
-#if LWIP_IPV4
-  if(from.ss_family == AF_INET) {
-    struct sockaddr_in *from4 = (struct sockaddr_in*)&from;
-    inet4_addr_to_ip4addr(ip_2_ip4(&ip_from), &from4->sin_addr);
-    IP_SET_TYPE(&ip_from, IPADDR_TYPE_V4);
-  }
-#endif /* LWIP_IPV4 */
-
-#if LWIP_IPV6
-  if(from.ss_family == AF_INET6) {
-    struct sockaddr_in6 *from6 = (struct sockaddr_in6*)&from;
-    inet6_addr_to_ip6addr(ip_2_ip6(&ip_from), &from6->sin6_addr);
-    IP_SET_TYPE(&ip_from, IPADDR_TYPE_V6);
-  }
-#endif /* LWIP_IPV6 */
-
-  printf("Received %d bytes from %s\n", len, ipaddr_ntoa(&ip_from));
-}
-
-static void
-ping_thread(void *arg)
-{
-  int s;
-  LWIP_UNUSED_ARG(arg);
-  
-#if LWIP_IPV6
-  if(IP_IS_V4_VAL(ping_addr) || ip6_addr_isipv6mappedipv4(ip_2_ip6(&ping_addr))) {
-    s = lwip_socket(AF_INET6, SOCK_RAW, IP_PROTO_ICMP);
-  } else {
-    s = lwip_socket(AF_INET6, SOCK_RAW, IP6_NEXTH_ICMP6);
-  }
-#else
-  s = lwip_socket(AF_INET, SOCK_RAW, IP_PROTO_ICMP);
-#endif
-  
-  if(s < 0) {
-    return;
-  }
-
-  while (1) {
-    printf("sending ping\n");
-    ping_send(s,&ping_addr);
-    ping_recv(s,&ping_addr);
-    sleep(1);
-  }
-}
-
-#endif /* LWIP_SOCKET */
 
 #if LWIP_HAVE_SLIPIF
 /* (manual) host IP configuration */
@@ -670,13 +567,12 @@ main_thread(void *arg)
   printf("TCP/IP initialized.\n");
 
 #if LWIP_SOCKET
-  if(ping_flag) {
-    sys_thread_new("ping_thread", ping_thread, NULL, DEFAULT_THREAD_STACKSIZE, DEFAULT_THREAD_PRIO);
+  if (ping_flag) {
+    ping_init(&ping_addr);
   }
 #endif
 
   printf("Applications started.\n");
-
 
 #ifdef MEM_PERF
   mem_perf_init("/tmp/memstats.client");
