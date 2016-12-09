@@ -201,11 +201,12 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* IP reassembly and segmentation.These are orthogonal even
  * if they both deal with IP fragments */
-#define IP_REASSEMBLY           1
-#define IP_REASS_MAX_PBUFS      10
-#define MEMP_NUM_REASSDATA      10
-#define IP_FRAG                 1
-#define IPV6_FRAG_COPYHEADER    1
+#define IP_REASSEMBLY             1
+#define IP_REASS_MAX_PBUFS        10
+#define MEMP_NUM_REASSDATA        10
+#define IP_FRAG                   1
+#define IPV6_FRAG_COPYHEADER      1
+#define LWIP_IPV6_FRAG            1
 
 #define LWIP_IGMP               (LWIP_IPV4)
 
