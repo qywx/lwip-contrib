@@ -873,6 +873,9 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\posix\errno.h">
       <Filter>src\include\posix</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\nd6_priv.h">
+      <Filter>src\include\lwip\priv</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\lwipcfg_msvc.h.example">
