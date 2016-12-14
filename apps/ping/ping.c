@@ -56,6 +56,7 @@
 #if PING_USE_SOCKETS
 #include "lwip/sockets.h"
 #include "lwip/inet.h"
+#include <string.h>
 #endif /* PING_USE_SOCKETS */
 
 
@@ -183,7 +184,7 @@ ping_recv(int s)
     if (len >= (int)(sizeof(struct ip_hdr)+sizeof(struct icmp_echo_hdr))) {
       ip_addr_t fromaddr;
       memset(&fromaddr, 0, sizeof(fromaddr));
-      
+
 #if LWIP_IPV4
       if(from.ss_family == AF_INET) {
         struct sockaddr_in *from4 = (struct sockaddr_in*)&from;
