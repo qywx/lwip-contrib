@@ -122,6 +122,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\addons\tcp_isn\tcp_isn.c" />
     <ClCompile Include="..\..\..\apps\tcpecho_raw\tcpecho_raw.c" />
     <ClCompile Include="..\..\..\apps\udpecho_raw\udpecho_raw.c" />
     <ClCompile Include="..\test.c">
@@ -146,6 +147,7 @@
     <ClCompile Include="..\..\..\apps\snmp_private_mib\lwip_prvmib.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\addons\tcp_isn\tcp_isn.h" />
     <ClInclude Include="..\..\..\apps\chargen\chargen.h" />
     <ClInclude Include="..\..\..\apps\httpserver\httpserver-netconn.h" />
     <ClInclude Include="..\..\..\apps\netio\netio.h" />
