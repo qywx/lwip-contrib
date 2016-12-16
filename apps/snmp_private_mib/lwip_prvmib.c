@@ -330,7 +330,7 @@ sensor_table_get_next_cell_instance(const u32_t* column, struct snmp_obj_id* row
   if(state.status == SNMP_NEXT_OID_STATUS_SUCCESS) {
     snmp_oid_assign(row_oid, state.next_oid, state.next_oid_len);
     /* store sensor index for subsequent operations (get/test/set) */
-    cell_instance->reference.u32 = (u32_t)(size_t)state.reference;
+    cell_instance->reference.u32 = LWIP_CONST_CAST(u32_t, state.reference);
     return SNMP_ERR_NOERROR;
   }
 
