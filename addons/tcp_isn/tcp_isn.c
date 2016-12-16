@@ -139,15 +139,21 @@ lwip_hook_tcp_isn(const ip_addr_t *local_ip, u16_t local_port,
 #endif /* LWIP_IPV4 && LWIP_IPV6 */
 #if LWIP_IPV4
   {
-    ip_addr_t tmp;
+    const ip4_addr_t *local_ip4, *remote_ip4;
+
+    local_ip4  = ip_2_ip4(local_ip);
+    remote_ip4 = ip_2_ip4(remote_ip);
 
     /* Represent IPv4 addresses as IPv4-mapped IPv6 addresses, to ensure that
      * the IPv4 and IPv6 address spaces are completely disjoint. */
-    ip4_2_ipv6_mapped_ipv4(ip_2_ip6(&tmp), ip_2_ip4(local_ip));
-    SMEMCPY(&input[0], &tmp.u_addr.ip6.addr, 16);
-
-    ip4_2_ipv6_mapped_ipv4(ip_2_ip6(&tmp), ip_2_ip4(remote_ip));
-    SMEMCPY(&input[16], &tmp.u_addr.ip6.addr, 16);
+    memset(&input[0], 0, 10);
+    input[10] = 0xff;
+    input[11] = 0xff;
+    SMEMCPY(&input[12], &local_ip4->addr, 4);
+    memset(&input[16], 0, 10);
+    input[26] = 0xff;
+    input[27] = 0xff;
+    SMEMCPY(&input[28], &remote_ip4->addr, 4);
   }   
 #endif /* LWIP_IPV4 */
 
