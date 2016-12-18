@@ -76,8 +76,10 @@
 #include <string.h>
 
 /* pull in md5 of ppp? */
+#define  PPP_SUPPORT  1
 #include "netif/ppp/ppp_opts.h"
 #if !LWIP_USE_EXTERNAL_POLARSSL && !LWIP_USE_EXTERNAL_MBEDTLS
+#undef  LWIP_INCLUDED_POLARSSL_MD5
 #define LWIP_INCLUDED_POLARSSL_MD5 1
 #include "netif/ppp/polarssl/md5.h"
 #endif
