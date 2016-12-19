@@ -91,7 +91,7 @@ static u32_t base_time;
  * Initialize the TCP ISN module, with the boot time and a secret.
  *
  * @param boot_time Wall clock boot time of the system, in seconds.
- * @param secret A 16-byte secret used to randomize the TCP ISNs.
+ * @param secret_16_bytes A 16-byte secret used to randomize the TCP ISNs.
  */
 void
 lwip_init_tcp_isn(u32_t boot_time, const u8_t *secret_16_bytes)
