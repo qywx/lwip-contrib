@@ -445,7 +445,7 @@ cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex, u32_t timeout)
     ts.tv_sec--;
     ts.tv_nsec += 1000000000L;
   }
-  return ts.tv_sec * 1000L + ts.tv_nsec / 1000000L;
+  return (u32_t)(ts.tv_sec * 1000L + ts.tv_nsec / 1000000L);
 }
 
 u32_t
@@ -568,7 +568,7 @@ sys_now(void)
   struct timespec ts;
 
   get_monotonic_time(&ts);
-  return ts.tv_sec * 1000L + ts.tv_nsec / 1000000L;
+  return (u32_t)(ts.tv_sec * 1000L + ts.tv_nsec / 1000000L);
 }
 
 u32_t
@@ -577,7 +577,7 @@ sys_jiffies(void)
   struct timespec ts;
 
   get_monotonic_time(&ts);
-  return ts.tv_sec * 1000000000L + ts.tv_nsec;
+  return (u32_t)(ts.tv_sec * 1000000000L + ts.tv_nsec);
 }
 
 /*-----------------------------------------------------------------------------------*/

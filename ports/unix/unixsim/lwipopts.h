@@ -142,7 +142,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* PBUF_LINK_HLEN: the number of bytes that should be allocated for a
    link level header. */
-#define PBUF_LINK_HLEN          16 
+#define PBUF_LINK_HLEN          16u 
 
 /** SYS_LIGHTWEIGHT_PROT
  * define SYS_LIGHTWEIGHT_PROT in lwipopts.h if you want inter-task protection
