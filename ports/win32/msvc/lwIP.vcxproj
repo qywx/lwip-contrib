@@ -254,6 +254,7 @@
     <ClCompile Include="..\..\..\..\lwip\src\api\sockets.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\tcpip.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\lwiperf\lwiperf.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\apps\mqtt\mqtt.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\netbiosns\netbiosns.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\sntp\sntp.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\tftp\tftp_server.c" />
@@ -363,6 +364,7 @@
     <ClInclude Include="..\..\..\..\lwip\src\apps\snmp\snmp_msg.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\lwiperf.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mdns_priv.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\netbiosns.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\netbiosns_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp.h" />

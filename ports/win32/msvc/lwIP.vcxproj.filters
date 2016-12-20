@@ -88,6 +88,9 @@
     <Filter Include="src\apps\tftp">
       <UniqueIdentifier>{6db73869-23f6-48ab-8d92-c8e478e55892}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\apps\mqtt">
+      <UniqueIdentifier>{65542a97-c588-47b3-b1f6-ae51645c736e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\lwip\CHANGELOG" />
@@ -450,6 +453,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\lwip\src\apps\tftp\tftp_server.c">
       <Filter>src\apps\tftp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\apps\mqtt\mqtt.c">
+      <Filter>src\apps\mqtt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -875,6 +881,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\nd6_priv.h">
       <Filter>src\include\lwip\priv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt.h">
+      <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
