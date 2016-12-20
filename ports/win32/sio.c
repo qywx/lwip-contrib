@@ -243,6 +243,7 @@ u32_t sio_read(sio_fd_t fd, u8_t* data, u32_t len)
   LWIP_DEBUGF(SIO_DEBUG, ("sio_read()...\n"));
   ret = ReadFile((HANDLE)(fd), data, len, &dwNbBytesReadden, NULL);
   LWIP_DEBUGF(SIO_DEBUG, ("sio_read()=%lu bytes -> %d\n", dwNbBytesReadden, ret));
+  LWIP_UNUSED_ARG(ret);
   return dwNbBytesReadden;
 }
 
@@ -263,6 +264,7 @@ u32_t sio_tryread(sio_fd_t fd, u8_t* data, u32_t len)
   LWIP_DEBUGF(SIO_DEBUG, ("sio_read()...\n"));
   ret = ReadFile((HANDLE)(fd), data, len, &dwNbBytesReadden, NULL);
   LWIP_DEBUGF(SIO_DEBUG, ("sio_read()=%lu bytes -> %d\n", dwNbBytesReadden, ret));
+  LWIP_UNUSED_ARG(ret);
   return dwNbBytesReadden;
 }
 
@@ -283,6 +285,7 @@ u32_t sio_write(sio_fd_t fd, u8_t* data, u32_t len)
   LWIP_DEBUGF(SIO_DEBUG, ("sio_write()...\n"));
   ret = WriteFile((HANDLE)(fd), data, len, &dwNbBytesWritten, NULL);
   LWIP_DEBUGF(SIO_DEBUG, ("sio_write()=%lu bytes -> %d\n", dwNbBytesWritten, ret));
+  LWIP_UNUSED_ARG(ret);
   return dwNbBytesWritten;
 }
 

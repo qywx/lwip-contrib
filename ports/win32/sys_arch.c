@@ -218,6 +218,7 @@ void sys_sem_signal(sys_sem_t *sem)
   LWIP_ASSERT("sem->sem != INVALID_HANDLE_VALUE", sem->sem != INVALID_HANDLE_VALUE);
   ret = ReleaseSemaphore(sem->sem, 1, NULL);
   LWIP_ASSERT("Error releasing semaphore", ret != 0);
+  LWIP_UNUSED_ARG(ret);
 }
 
 err_t sys_mutex_new(sys_mutex_t *mutex)
@@ -267,6 +268,7 @@ void sys_mutex_lock(sys_mutex_t *mutex)
   /* wait infinite */
   ret = WaitForSingleObject(mutex->mut, INFINITE);
   LWIP_ASSERT("Error waiting for mutex", ret == WAIT_OBJECT_0);
+  LWIP_UNUSED_ARG(ret);
 }
 
 void sys_mutex_unlock(sys_mutex_t *mutex)
@@ -351,6 +353,7 @@ sys_thread_t sys_thread_new(const char *name, lwip_thread_fn function, void *arg
     h = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)sys_thread_function, new_thread, 0, &(new_thread->id));
     LWIP_ASSERT("h != 0", h != 0);
     LWIP_ASSERT("h != -1", h != INVALID_HANDLE_VALUE);
+    LWIP_UNUSED_ARG(h);
     SetThreadName(new_thread->id, name);
 
     SYS_ARCH_UNPROTECT(lev);
@@ -415,6 +418,7 @@ void sys_mbox_post(sys_mbox_t *q, void *msg)
   LWIP_ASSERT("mbox is full!", q->head != q->tail);
   ret = ReleaseSemaphore(q->sem, 1, 0);
   LWIP_ASSERT("Error releasing sem", ret != 0);
+  LWIP_UNUSED_ARG(ret);
 
   SYS_ARCH_UNPROTECT(lev);
 }
@@ -446,6 +450,7 @@ err_t sys_mbox_trypost(sys_mbox_t *q, void *msg)
   LWIP_ASSERT("mbox is full!", q->head != q->tail);
   ret = ReleaseSemaphore(q->sem, 1, 0);
   LWIP_ASSERT("Error releasing sem", ret != 0);
+  LWIP_UNUSED_ARG(ret);
 
   SYS_ARCH_UNPROTECT(lev);
   return ERR_OK;

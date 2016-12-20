@@ -655,6 +655,7 @@ main_loop(void)
 #else /* NO_SYS */
   err = sys_sem_new(&init_sem, 0);
   LWIP_ASSERT("failed to create init_sem", err == ERR_OK);
+  LWIP_UNUSED_ARG(err);
   tcpip_init(test_init, &init_sem);
   /* we have to wait for initialization to finish before
    * calling update_adapter()! */

@@ -261,6 +261,7 @@ sockex_nonblocking_connect(void *arg)
   LWIP_ASSERT("ret == -1", ret == -1);
   err = errno;
   LWIP_ASSERT("errno == EINPROGRESS", err == EINPROGRESS);
+  LWIP_UNUSED_ARG(err);
 
   FD_ZERO(&sets.readset);
   FD_SET(s, &sets.readset);
@@ -292,6 +293,7 @@ sockex_nonblocking_connect(void *arg)
   /* close */
   ret = lwip_close(s);
   LWIP_ASSERT("ret == 0", ret == 0);
+  LWIP_UNUSED_ARG(ret);
 
   printf("select() needed %d ticks to return error\n", (int)(ticks_b - ticks_a));
   printf("all tests done, thread ending\n");
@@ -370,6 +372,7 @@ sockex_testrecv(void *arg)
   LWIP_ASSERT("ret == -1", ret == -1);
   err = errno;
   LWIP_ASSERT("errno == EAGAIN", err == EAGAIN);
+  LWIP_UNUSED_ARG(err);
 
   /* write the rest of a GET request */
 #define SNDSTR2 "ET / HTTP_1.1\r\n\r\n"
@@ -408,6 +411,7 @@ sockex_testrecv(void *arg)
   /* close */
   ret = lwip_close(s);
   LWIP_ASSERT("ret == 0", ret == 0);
+  LWIP_UNUSED_ARG(ret);
 
   printf("sockex_testrecv finished successfully\n");
 }
@@ -460,6 +464,7 @@ sockex_select_waiter(void *arg)
   } else {
     LWIP_ASSERT("ret == 0", ret == 0);
   }
+  LWIP_UNUSED_ARG(ret);
   if (helper->expect_read) {
     LWIP_ASSERT("FD_ISSET(helper->socket, &readset)", FD_ISSET(helper->socket, &readset));
   } else {
@@ -534,6 +539,7 @@ sockex_testtwoselects(void *arg)
   LWIP_ASSERT("ret == len", ret == (int)len);
   ret = lwip_write(s2, SNDSTR1, len);
   LWIP_ASSERT("ret == len", ret == (int)len);
+  LWIP_UNUSED_ARG(ret);
 
   h1.wait_read  = 1;
   h1.wait_write = 1;
@@ -561,6 +567,7 @@ sockex_testtwoselects(void *arg)
   h4 = h1;
   lwiperr = sys_sem_new(&h4.sem, 0);
   LWIP_ASSERT("lwiperr == ERR_OK", lwiperr == ERR_OK);
+  LWIP_UNUSED_ARG(lwiperr);
   h4.socket = s2;
   h4.wait_ms = 2000;
 

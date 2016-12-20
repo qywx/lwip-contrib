@@ -264,6 +264,7 @@ ping_thread(void *arg)
 
   ret = lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   LWIP_ASSERT("setting receive timeout failed", ret == 0);
+  LWIP_UNUSED_ARG(ret);
 
   while (1) {
     if (ping_send(s, ping_target) == ERR_OK) {
