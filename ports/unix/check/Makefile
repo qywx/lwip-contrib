@@ -37,8 +37,7 @@ include ../Common.mk
 LDFLAGS:=$(LDFLAGS) -lcheck -lm -lsubunit
 CFLAGS:=$(CFLAGS) -DLWIP_NOASSERT_ON_ERROR -I/usr/include/check -I$(LWIPDIR)/../test/unit
 
-CODEDIR=../../../../lwip
-TESTDIR=$(CODEDIR)/test/unit
+TESTDIR=$(LWIPDIR)/../test/unit
 TESTFILES=$(TESTDIR)/lwip_unittests.c $(TESTDIR)/udp/test_udp.c $(TESTDIR)/etharp/test_etharp.c $(TESTDIR)/tcp/tcp_helper.c \
 	$(TESTDIR)/tcp/test_tcp_oos.c $(TESTDIR)/tcp/test_tcp.c $(TESTDIR)/core/test_mem.c $(TESTDIR)/dhcp/test_dhcp.c \
 	$(TESTDIR)/core/test_pbuf.c $(TESTDIR)/mdns/test_mdns.c 
