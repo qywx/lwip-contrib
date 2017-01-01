@@ -45,16 +45,8 @@
 #define LWIP_UNIX_CYGWIN
 #endif
 
-/* Include some files for defining library routines */
-#include <string.h>
-#include <sys/time.h>
-#include <limits.h>
-
 #define LWIP_TIMEVAL_PRIVATE 0
-
-/* prototypes for printf() and abort() in LWIP_PLATFORM_ASSERT/LWIP_PLATFORM_DIAG */
-#include <stdio.h>
-#include <stdlib.h>
+#include <sys/time.h>
 
 /* different handling for unit test, normally not needed */
 #ifdef LWIP_NOASSERT_ON_ERROR
