@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <time.h>
+#include <string.h>
 
 #include "lwip/opt.h"
 
