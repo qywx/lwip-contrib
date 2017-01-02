@@ -32,10 +32,6 @@
 #ifndef LWIP_ARCH_CC_H
 #define LWIP_ARCH_CC_H
 
-#include <stdio.h> /* printf, fflush, FILE */
-#include <stdlib.h> /* abort */
-#include <limits.h>
-
 #ifdef _MSC_VER
 #pragma warning (disable: 4127) /* conditional expression is constant */
 #pragma warning (disable: 4996) /* 'strncpy' was declared deprecated */
@@ -74,14 +70,7 @@ typedef int sys_prot_t;
 #endif /* _MSC_VER */
 
 /* Compiler hints for packing structures */
-#define PACK_STRUCT_STRUCT
 #define PACK_STRUCT_USE_INCLUDES
-
-/* Plaform specific diagnostic output */
-#define LWIP_PLATFORM_DIAG(x)   do { printf x; } while(0)
-
-#define LWIP_PLATFORM_ASSERT(x) do { printf("Assertion \"%s\" failed at line %d in %s\n", \
-                                     x, __LINE__, __FILE__); fflush(NULL); abort(); } while(0)
 
 #define LWIP_ERROR(message, expression, handler) do { if (!(expression)) { \
   printf("Assertion \"%s\" failed at line %d in %s\n", message, __LINE__, __FILE__); \
@@ -92,8 +81,6 @@ typedef int sys_prot_t;
 #define snprintf _snprintf
 #define strdup   _strdup
 #endif
-
-#define LWIP_RAND() ((u32_t)rand())
 
 #define PPP_INCLUDE_SETTINGS_HEADER
 
