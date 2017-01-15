@@ -44,5 +44,5 @@ CONTRIBAPPFILES=$(CONTRIBDIR)/apps/httpserver/httpserver-netconn.c \
 	$(CONTRIBDIR)/apps/smtp/smtp.c \
 	$(CONTRIBDIR)/apps/socket_examples/socket_examples.c \
 	$(CONTRIBDIR)/apps/rtp/rtp.c \
-	$(CONTRIBDIR)/addons/tcp_isn/tcp_isn.c
-
+	$(CONTRIBDIR)/addons/tcp_isn/tcp_isn.c \
+	$(CONTRIBDIR)/addons/ipv6_static_routing/ip6_route_table.c
