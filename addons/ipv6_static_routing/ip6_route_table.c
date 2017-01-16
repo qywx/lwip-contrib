@@ -67,13 +67,13 @@ static struct ip6_route_entry static_route_table[LWIP_IPV6_NUM_ROUTE_ENTRIES];
  * @param ip6_prefix the route prefix entry to add.
  * @param netif pointer to target netif.
  * @param gateway the gateway address to use to send through. Has to be link local.
- * @param index return value argument of index where route entry was added in table.
+ * @param idx return value argument of index where route entry was added in table.
  * @return ERR_OK  if addition was successful.
  *         ERR_MEM if table is already full.
  *         ERR_ARG if passed argument is bad or route already exists in table.
  */
 err_t
-ip6_add_route_entry(const struct ip6_prefix *ip6_prefix, struct netif *netif, const ip6_addr_t *gateway, s8_t *index)
+ip6_add_route_entry(const struct ip6_prefix *ip6_prefix, struct netif *netif, const ip6_addr_t *gateway, s8_t *idx)
 {
   int i = -1;
   err_t retval = ERR_OK;
@@ -113,8 +113,8 @@ insert:
   /* Add gateway to route table */
   static_route_table[i].gateway = gateway;
 
-  if (index != NULL) {
-    *index = i;
+  if (idx != NULL) {
+    *idx = i;
   }
 
 exit:
@@ -164,23 +164,23 @@ ip6_remove_route_entry(const struct ip6_prefix *ip6_prefix)
  * index.
  *
  * @param ip6_dest_addr the destination address to match
- * @return the index of the found route entry; -1 if not found.
+ * @return the idx of the found route entry; -1 if not found.
  */
 s8_t
 ip6_find_route_entry(const ip6_addr_t *ip6_dest_addr)
 {
-  int i, index = -1;
+  int i, idx = -1;
 
   /* Search prefix in the sorted(decreasing order of prefix length) list */
   for(i = 0; i < LWIP_IPV6_NUM_ROUTE_ENTRIES; i++) {
     if (memcmp(ip6_dest_addr, &static_route_table[i].prefix.addr,
         static_route_table[i].prefix.prefix_len / 8) == 0) {
-      index = i;
+      idx = i;
       break;
     }
   }
 
-  return index;
+  return idx;
 }
 
 /**
