@@ -248,6 +248,7 @@
     <ClCompile Include="..\..\..\..\lwip\src\api\api_lib.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\api_msg.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\err.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\api\if.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\netbuf.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\netdb.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\netifapi.c" />
@@ -374,6 +375,7 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_server.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\errno.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\if.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\api_msg.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\memp_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\memp_std.h" />

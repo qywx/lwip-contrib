@@ -457,6 +457,9 @@
     <ClCompile Include="..\..\..\..\lwip\src\apps\mqtt\mqtt.c">
       <Filter>src\apps\mqtt</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\api\if.c">
+      <Filter>src\api</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\lwiperf.h">
@@ -884,6 +887,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt.h">
       <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\if.h">
+      <Filter>src\include\lwip</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
