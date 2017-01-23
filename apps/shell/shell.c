@@ -980,10 +980,10 @@ com_idxtoname(struct command *com)
 static s8_t
 com_nametoidx(struct command *com)
 {
-  unsigned int index = if_nametoindex(com->args[0]);
+  unsigned int idx = if_nametoindex(com->args[0]);
 
-  if (index) {
-    snprintf((char *)buffer, sizeof(buffer), "%u"NEWLINE, index);
+  if (idx) {
+    snprintf((char *)buffer, sizeof(buffer), "%u"NEWLINE, idx);
     netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
   } else {
     sendstr("No interface found"NEWLINE, com->conn);
