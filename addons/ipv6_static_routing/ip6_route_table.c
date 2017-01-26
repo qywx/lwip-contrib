@@ -75,7 +75,7 @@ static struct ip6_route_entry static_route_table[LWIP_IPV6_NUM_ROUTE_ENTRIES];
 err_t
 ip6_add_route_entry(const struct ip6_prefix *ip6_prefix, struct netif *netif, const ip6_addr_t *gateway, s8_t *idx)
 {
-  int i = -1;
+  s8_t i = -1;
   err_t retval = ERR_OK;
 
   if (!ip6_prefix_valid(ip6_prefix->prefix_len) || (netif == NULL)) {
@@ -169,7 +169,7 @@ ip6_remove_route_entry(const struct ip6_prefix *ip6_prefix)
 s8_t
 ip6_find_route_entry(const ip6_addr_t *ip6_dest_addr)
 {
-  int i, idx = -1;
+  s8_t i, idx = -1;
 
   /* Search prefix in the sorted(decreasing order of prefix length) list */
   for(i = 0; i < LWIP_IPV6_NUM_ROUTE_ENTRIES; i++) {
