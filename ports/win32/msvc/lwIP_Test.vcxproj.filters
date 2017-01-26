@@ -14,6 +14,9 @@
     <Filter Include="Source Files\addons\tcp_isn">
       <UniqueIdentifier>{4ffb2268-6fc6-44d7-8e3b-2a3f68b8d5a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\addons\ipv6_static_routing">
+      <UniqueIdentifier>{93b36161-88b2-448c-9c45-ac6f27b98290}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\test.c">
@@ -61,6 +64,9 @@
     <ClCompile Include="..\..\..\addons\tcp_isn\tcp_isn.c">
       <Filter>Source Files\addons\tcp_isn</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\addons\ipv6_static_routing\ip6_route_table.c">
+      <Filter>Source Files\addons\ipv6_static_routing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\apps\chargen\chargen.h">
@@ -105,8 +111,14 @@
     <ClInclude Include="..\..\..\addons\tcp_isn\tcp_isn.h">
       <Filter>Source Files\addons\tcp_isn</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\addons\ipv6_static_routing\ip6_route_table.h">
+      <Filter>Source Files\addons\ipv6_static_routing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="readme.txt" />
+    <None Include="..\..\..\addons\ipv6_static_routing\README">
+      <Filter>Source Files\addons\ipv6_static_routing</Filter>
+    </None>
   </ItemGroup>
 </Project>
