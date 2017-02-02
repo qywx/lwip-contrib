@@ -248,7 +248,7 @@
     <ClCompile Include="..\..\..\..\lwip\src\api\api_lib.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\api_msg.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\err.c" />
-    <ClCompile Include="..\..\..\..\lwip\src\api\if.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\api\if_api.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\netbuf.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\netdb.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\netifapi.c" />

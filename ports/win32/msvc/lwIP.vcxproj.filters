@@ -457,7 +457,7 @@
     <ClCompile Include="..\..\..\..\lwip\src\apps\mqtt\mqtt.c">
       <Filter>src\apps\mqtt</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\lwip\src\api\if.c">
+    <ClCompile Include="..\..\..\..\lwip\src\api\if_api.c">
       <Filter>src\api</Filter>
     </ClCompile>
   </ItemGroup>
