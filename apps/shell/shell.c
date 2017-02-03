@@ -46,7 +46,7 @@
 #include "lwip/stats.h"
 
 #if LWIP_SOCKET
-#include "lwip/if.h"
+#include "lwip/if_api.h"
 #endif
 
 #ifdef WIN32

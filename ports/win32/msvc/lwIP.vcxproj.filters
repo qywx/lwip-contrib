@@ -888,7 +888,7 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt.h">
       <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\if.h">
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\if_api.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
   </ItemGroup>
