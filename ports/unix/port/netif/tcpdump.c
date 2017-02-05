@@ -36,6 +36,7 @@
 
 #if (LWIP_IPV4 || LWIP_IPV6) && LWIP_TCP /* @todo: fix IPv6 */
 
+#include <string.h> /* memcpy */
 #include "netif/tcpdump.h"
 #include "lwip/ip.h"
 #include "lwip/ip4.h"
@@ -89,8 +90,16 @@ tcpdump(struct pbuf *p)
 #if LWIP_IPV6
   if(IPH_V(iphdr) == 6) {
     struct ip6_hdr *ip6hdr = (struct ip6_hdr*)iphdr;
-    ip_addr_copy_from_ip6(src, ip6hdr->src);
-    ip_addr_copy_from_ip6(dst, ip6hdr->dest);
+
+    /* create aligned copies if IPv6 src/dest addr */    
+    MEMCPY(ip_2_ip6(&src)->addr, ip6hdr->src.addr,  sizeof(ip_2_ip6(&src)->addr));
+    ip6_addr_clear_zone(ip_2_ip6(&src));
+    IP_SET_TYPE_VAL(src, IPADDR_TYPE_V6);
+
+    MEMCPY(ip_2_ip6(&dst)->addr, ip6hdr->dest.addr, sizeof(ip_2_ip6(&dst)->addr));
+    ip6_addr_clear_zone(ip_2_ip6(&dst));
+    IP_SET_TYPE_VAL(dst, IPADDR_TYPE_V6);
+
     fprintf(file, "%s > %s: (IPv6, unsupported) ",
             ip_ntoa(&src),
             ip_ntoa(&dst));
