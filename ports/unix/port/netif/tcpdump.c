@@ -38,6 +38,8 @@
 
 #include <string.h> /* memcpy */
 #include "netif/tcpdump.h"
+#include "lwip/pbuf.h"
+#include "lwip/netif.h"
 #include "lwip/ip.h"
 #include "lwip/ip4.h"
 #include "lwip/ip6.h"
@@ -66,7 +68,7 @@ tcpdump_init(void)
 }
 /*-----------------------------------------------------------------------------------*/
 void
-tcpdump(struct pbuf *p)
+tcpdump(struct pbuf *p, struct netif* netif)
 {
 #if LWIP_IPV4
   ip_addr_t src, dst;
@@ -82,6 +84,8 @@ tcpdump(struct pbuf *p)
   int offset;
 #endif
 
+  LWIP_UNUSED_ARG(netif); /* in case IPv6 is disabled */
+  
   if (file == NULL) {
     return;
   }
@@ -93,11 +97,11 @@ tcpdump(struct pbuf *p)
 
     /* create aligned copies if IPv6 src/dest addr */    
     MEMCPY(ip_2_ip6(&src)->addr, ip6hdr->src.addr,  sizeof(ip_2_ip6(&src)->addr));
-    ip6_addr_clear_zone(ip_2_ip6(&src));
+    ip6_addr_set_zone(ip_2_ip6(&src), netif->num);
     IP_SET_TYPE_VAL(src, IPADDR_TYPE_V6);
 
     MEMCPY(ip_2_ip6(&dst)->addr, ip6hdr->dest.addr, sizeof(ip_2_ip6(&dst)->addr));
-    ip6_addr_clear_zone(ip_2_ip6(&dst));
+    ip6_addr_set_zone(ip_2_ip6(&dst), netif->num);
     IP_SET_TYPE_VAL(dst, IPADDR_TYPE_V6);
 
     fprintf(file, "%s > %s: (IPv6, unsupported) ",
@@ -203,6 +207,7 @@ tcpdump(struct pbuf *p)
   }
 #else
   LWIP_UNUSED_ARG(p);
+  LWIP_UNUSED_ARG(netif);
 #endif
 }
 
