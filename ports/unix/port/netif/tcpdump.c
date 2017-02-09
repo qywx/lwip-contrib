@@ -96,12 +96,12 @@ tcpdump(struct pbuf *p, struct netif* netif)
     struct ip6_hdr *ip6hdr = (struct ip6_hdr*)iphdr;
 
     /* create aligned copies if IPv6 src/dest addr */    
-    MEMCPY(ip_2_ip6(&src)->addr, ip6hdr->src.addr,  sizeof(ip_2_ip6(&src)->addr));
-    ip6_addr_set_zone(ip_2_ip6(&src), netif->num);
+    ip6_addr_copy_from_packed(*ip_2_ip6(&src), ip6hdr->src);
+    ip6_addr_assign_zone(ip_2_ip6(&src), IP6_UNKNOWN, netif);
     IP_SET_TYPE_VAL(src, IPADDR_TYPE_V6);
 
-    MEMCPY(ip_2_ip6(&dst)->addr, ip6hdr->dest.addr, sizeof(ip_2_ip6(&dst)->addr));
-    ip6_addr_set_zone(ip_2_ip6(&dst), netif->num);
+    ip6_addr_copy_from_packed(*ip_2_ip6(&dst), ip6hdr->dest);
+    ip6_addr_assign_zone(ip_2_ip6(&dst), IP6_UNKNOWN, netif);
     IP_SET_TYPE_VAL(dst, IPADDR_TYPE_V6);
 
     fprintf(file, "%s > %s: (IPv6, unsupported) ",
