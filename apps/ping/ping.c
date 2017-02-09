@@ -134,7 +134,7 @@ ping_send(int s, const ip_addr_t *addr)
   LWIP_ASSERT("ping_size is too big", ping_size <= 0xffff);
 
 #if LWIP_IPV6
-  if(IP_IS_V6(addr) && !ip6_addr_isipv6mappedipv4(ip_2_ip6(addr))) {
+  if(IP_IS_V6(addr) && !ip6_addr_isipv4mappedipv6(ip_2_ip6(addr))) {
     /* todo: support ICMP6 echo */
     return ERR_VAL;
   }
@@ -250,7 +250,7 @@ ping_thread(void *arg)
   LWIP_UNUSED_ARG(arg);
 
 #if LWIP_IPV6
-  if(IP_IS_V4(ping_target) || ip6_addr_isipv6mappedipv4(ip_2_ip6(ping_target))) {
+  if(IP_IS_V4(ping_target) || ip6_addr_isipv4mappedipv6(ip_2_ip6(ping_target))) {
     s = lwip_socket(AF_INET6, SOCK_RAW, IP_PROTO_ICMP);
   } else {
     s = lwip_socket(AF_INET6, SOCK_RAW, IP6_NEXTH_ICMP6);
