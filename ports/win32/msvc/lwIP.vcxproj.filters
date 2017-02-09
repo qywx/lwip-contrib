@@ -891,6 +891,9 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\if_api.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\ip6_zone.h">
+      <Filter>src\include\lwip</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\lwipcfg_msvc.h.example">

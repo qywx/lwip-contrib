@@ -376,6 +376,7 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_server.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\errno.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\if_api.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\ip6_zone.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\api_msg.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\memp_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\memp_std.h" />
