@@ -894,6 +894,9 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\ip6_zone.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\sockets_priv.h">
+      <Filter>src\include\lwip\priv</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\lwipcfg_msvc.h.example">
