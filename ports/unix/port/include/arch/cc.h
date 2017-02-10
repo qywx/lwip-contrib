@@ -48,7 +48,7 @@
 #define LWIP_TIMEVAL_PRIVATE 0
 #include <sys/time.h>
 
-#define LWIP_ERRNO_INCLUDE <errno.h>
+#define LWIP_ERRNO_INCLUDE "errno.h"
 
 /* different handling for unit test, normally not needed */
 #ifdef LWIP_NOASSERT_ON_ERROR
