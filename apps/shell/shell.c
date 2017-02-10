@@ -46,6 +46,7 @@
 #include "lwip/stats.h"
 
 #if LWIP_SOCKET
+#include "lwip/errno.h"
 #include "lwip/if_api.h"
 #endif
 
@@ -972,7 +973,8 @@ com_idxtoname(struct command *com)
     netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
     sendstr(NEWLINE, com->conn);
   } else {
-    sendstr("No interface found"NEWLINE, com->conn);
+    snprintf((char *)buffer, sizeof(buffer), "if_indextoname() failed: %d"NEWLINE, errno);
+    netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
   }
   return ESUCCESS;
 }
