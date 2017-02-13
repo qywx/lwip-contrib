@@ -82,6 +82,8 @@ typedef int sys_prot_t;
 #define strdup   _strdup
 #endif
 
+#define LWIP_RAND() ((u32_t)rand())
+
 #define PPP_INCLUDE_SETTINGS_HEADER
 
 #endif /* LWIP_ARCH_CC_H */
