@@ -84,10 +84,6 @@
 #include "netif/ppp/polarssl/md5.h"
 #endif
 
-#ifdef LWIP_HOOK_FILENAME
-#include LWIP_HOOK_FILENAME
-#endif
-
 static u8_t input[64];
 static u32_t base_time;
 
