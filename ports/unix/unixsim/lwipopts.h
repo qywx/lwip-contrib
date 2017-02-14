@@ -260,11 +260,12 @@ extern void sntp_set_system_time(u32_t sec);
  * is 0
  * */
 
-#define LWIP_STATS        1
+#define LWIP_STATS                     1
 
-#define LWIP_NETIF_API    1
-#define LWIP_NETIF_STATUS_CALLBACK 1
-#define LWIP_NETIF_HOSTNAME 0
+#define LWIP_NETIF_API                 1
+#define LWIP_NETIF_STATUS_CALLBACK     1
+#define LWIP_NETIF_EXT_STATUS_CALLBACK 1
+#define LWIP_NETIF_HOSTNAME            0
 
 /* ---------- SLIP options ---------- */
 
