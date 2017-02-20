@@ -102,7 +102,7 @@ clos [connection #]: closes a TCP or UDP connection."NEWLINE"\
 stat: prints out lwIP statistics."NEWLINE"\
 idxtoname [index]: outputs interface name from index."NEWLINE"\
 nametoidx [name]: outputs interface index from name."NEWLINE"\
-quit: quits."NEWLINE"";
+quit: quits"NEWLINE"";
 
 #if LWIP_STATS
 static char padding_10spaces[] = "          ";
