@@ -296,7 +296,7 @@ sockex_nonblocking_connect(void *arg)
   LWIP_UNUSED_ARG(ret);
 
   printf("select() needed %d ticks to return error\n", (int)(ticks_b - ticks_a));
-  printf("all tests done, thread ending\n");
+  printf("sockex_nonblocking_connect finished successfully\n");
 }
 
 /** This is an example function that tests
@@ -307,7 +307,11 @@ sockex_testrecv(void *arg)
   int s;
   int ret;
   int err;
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
   int opt, opt2;
+#else
+  struct timeval opt, opt2;
+#endif
   socklen_t opt2size;
 #if LWIP_IPV6
   struct sockaddr_in6 addr;
@@ -351,15 +355,30 @@ sockex_testrecv(void *arg)
   LWIP_ASSERT("ret == 0", ret == 0);
 
   /* set recv timeout (100 ms) */
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
   opt = 100;
-  ret = lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &opt, sizeof(int));
+#else
+  opt.tv_sec = 0;
+  opt.tv_usec = 100 * 1000;
+#endif
+  ret = lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &opt, sizeof(opt));
   LWIP_ASSERT("ret == 0", ret == 0);
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
   opt2 = 0;
+#else
+  opt2.tv_sec = 0;
+  opt2.tv_usec = 0;
+#endif
   opt2size = sizeof(opt2);
   ret = lwip_getsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &opt2, &opt2size);
   LWIP_ASSERT("ret == 0", ret == 0);
   LWIP_ASSERT("opt2size == sizeof(opt2)", opt2size == sizeof(opt2));
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
   LWIP_ASSERT("opt == opt2", opt == opt2);
+#else
+  LWIP_ASSERT("opt == opt2", opt.tv_sec == opt2.tv_sec);
+  LWIP_ASSERT("opt == opt2", opt.tv_usec == opt2.tv_usec);
+#endif
 
   /* write the start of a GET request */
 #define SNDSTR1 "G"
@@ -602,6 +621,7 @@ socket_example_test(void* arg)
   sockex_nonblocking_connect(arg);
   sockex_testrecv(arg);
   sockex_testtwoselects(arg);
+  printf("all tests done, thread ending\n");
 }
 #endif
 
