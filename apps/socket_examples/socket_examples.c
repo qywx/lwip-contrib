@@ -445,7 +445,7 @@ sockex_testsendmsg_tcp(void *arg)
   int i;
   int result;
   int bytes_written;
-  u32_t opt;
+  int opt;
   struct sockaddr_storage addr_storage;
 #if LWIP_IPV6
   struct sockaddr_in6 *addr;
@@ -454,7 +454,7 @@ sockex_testsendmsg_tcp(void *arg)
 #endif /* LWIP_IPV6 */
   struct iovec iovs[8];
   struct msghdr msg;
-  char * big_bytes;
+  u8_t * big_bytes;
   const ip_addr_t *ipaddr = (const ip_addr_t*)arg;
 
   /* set up address to send to */
@@ -488,7 +488,7 @@ sockex_testsendmsg_tcp(void *arg)
   /* allocate a buffer for a stream of 0xDEADBEEF which we will use to create an input
   vector set that is larger than the TCP's send buffer. This will force execution of
   the partial IO vector send case when non-blocking */
-  big_bytes = mem_malloc(TCP_SND_BUF/4 * sizeof(*big_bytes));
+  big_bytes = (u8_t*)mem_malloc(TCP_SND_BUF/4 * sizeof(*big_bytes));
   LWIP_ASSERT("big_bytes != NULL", big_bytes != NULL);
   for (i = 0; i < TCP_SND_BUF/4; i += 4) {
     big_bytes[i] = 0xDE;
@@ -588,7 +588,7 @@ sockex_testsendmsg_udp(void *arg)
 #endif /* LWIP_IPV6 */
   struct iovec iovs[4];
   struct msghdr msg;
-  char bytes[4];
+  u8_t bytes[4];
   const ip_addr_t *ipaddr = (const ip_addr_t*)arg;
 
   /* each datagram should be 0xDEADBEEF */
