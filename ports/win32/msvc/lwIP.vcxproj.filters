@@ -442,9 +442,6 @@
     <ClCompile Include="..\..\..\..\lwip\src\apps\mdns\mdns.c">
       <Filter>src\apps\mdns</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmpv3_dummy.c">
-      <Filter>src\apps\snmp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmpv3_mbedtls.c">
       <Filter>src\apps\snmp</Filter>
     </ClCompile>
@@ -459,6 +456,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\lwip\src\api\if_api.c">
       <Filter>src\api</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmp_snmpv2_framework.c">
+      <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmp_snmpv2_usm.c">
+      <Filter>src\apps\snmp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
