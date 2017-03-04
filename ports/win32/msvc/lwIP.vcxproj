@@ -355,7 +355,6 @@
     <ClCompile Include="..\..\..\..\lwip\src\core\ipv4\ip4_frag.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\timeouts.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\mdns\mdns.c" />
-    <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmpv3_dummy.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmpv3_mbedtls.c" />
     <ClCompile Include="..\sio.c" />
     <ClCompile Include="..\sys_arch.c" />
