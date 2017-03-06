@@ -66,6 +66,7 @@
 #include "lwip/apps/sntp.h"
 #include "lwip/apps/httpd.h"
 #include "lwip/apps/mdns.h"
+#include "lwip/apps/snmp.h"
 #include "apps/httpserver/httpserver-netconn.h"
 #include "apps/netio/netio.h"
 #include "apps/ping/ping.h"
@@ -76,6 +77,7 @@
 #include "apps/udpecho/udpecho.h"
 #include "apps/tcpecho_raw/tcpecho_raw.h"
 #include "apps/socket_examples/socket_examples.h"
+#include "apps/snmp_v3/snmpv3_dummy.h"
 
 #if NO_SYS
 /* ... then we need information about the timer intervals: */
@@ -596,6 +598,12 @@ apps_init(void)
 #if LWIP_SOCKET_EXAMPLES_APP && LWIP_SOCKET
   socket_examples_init();
 #endif /* LWIP_SOCKET_EXAMPLES_APP && LWIP_SOCKET */
+#if LWIP_SNMP && LWIP_UDP
+#if LWIP_SNMP_V3
+  snmpv3_dummy_init();
+#endif
+  snmp_init();
+#endif /* LWIP_SNMP && LWIP_UDP */
 #ifdef LWIP_APP_INIT
   LWIP_APP_INIT();
 #endif

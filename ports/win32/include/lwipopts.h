@@ -43,6 +43,7 @@
 #define LWIP_ICMP                  LWIP_IPV4
 
 #define LWIP_SNMP                  LWIP_UDP
+#define LWIP_SNMP_V3               0
 #define MIB2_STATS                 LWIP_SNMP
 
 #define LWIP_DNS                   LWIP_UDP
