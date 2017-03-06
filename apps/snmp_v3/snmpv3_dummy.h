@@ -37,6 +37,7 @@
 
 #include "lwip/apps/snmp_opts.h"
 #include "lwip/err.h"
+#include "lwip/apps/snmpv3.h"
 
 #if LWIP_SNMP && LWIP_SNMP_V3
 

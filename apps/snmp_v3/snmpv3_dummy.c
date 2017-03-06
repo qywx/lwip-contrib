@@ -380,7 +380,7 @@ snmpv3_reset_engine_time(void)
 void
 snmpv3_dummy_init(void)
 {
-  snmpv3_set_engine_id("\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02", 12);
+  snmpv3_set_engine_id("FOO", 3);
 
   snmpv3_set_user_auth_algo("lwip", SNMP_V3_AUTH_ALGO_SHA);
   snmpv3_set_user_auth_key("lwip", "maplesyrup");
