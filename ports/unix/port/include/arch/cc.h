@@ -45,36 +45,18 @@
 #define LWIP_UNIX_CYGWIN
 #endif
 
-/* Include some files for defining library routines */
-#include <string.h>
-#include <sys/time.h>
-#include <limits.h>
-
 #define LWIP_TIMEVAL_PRIVATE 0
+#include <sys/time.h>
 
-/* Define platform endianness */
-#ifndef BYTE_ORDER
-#define BYTE_ORDER LITTLE_ENDIAN
-#endif /* BYTE_ORDER */
+#define LWIP_ERRNO_INCLUDE <errno.h>
 
-/* Compiler hints for packing structures */
-#define PACK_STRUCT_STRUCT __attribute__((packed))
+#define LWIP_RAND() ((u32_t)rand())
 
-/* prototypes for printf() and abort() */
-#include <stdio.h>
-#include <stdlib.h>
-/* Plaform specific diagnostic output */
-#define LWIP_PLATFORM_DIAG(x)	do {printf x;} while(0)
-
-#define LWIP_PLATFORM_ASSERT(x) do {printf("Assertion \"%s\" failed at line %d in %s\n", \
-                                     x, __LINE__, __FILE__); fflush(NULL); abort();} while(0)
-
+/* different handling for unit test, normally not needed */
 #ifdef LWIP_NOASSERT_ON_ERROR
 #define LWIP_ERROR(message, expression, handler) do { if (!(expression)) { \
   handler;}} while(0)
 #endif
-
-#define LWIP_RAND() ((u32_t)rand())
 
 #if defined(LWIP_UNIX_ANDROID) && defined(FD_SET)
 typedef __kernel_fd_set fd_set;

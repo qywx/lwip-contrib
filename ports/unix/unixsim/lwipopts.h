@@ -142,7 +142,7 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* PBUF_LINK_HLEN: the number of bytes that should be allocated for a
    link level header. */
-#define PBUF_LINK_HLEN          16 
+#define PBUF_LINK_HLEN          16u 
 
 /** SYS_LIGHTWEIGHT_PROT
  * define SYS_LIGHTWEIGHT_PROT in lwipopts.h if you want inter-task protection
@@ -201,11 +201,12 @@ a lot of data that needs to be copied, this should be set high. */
 
 /* IP reassembly and segmentation.These are orthogonal even
  * if they both deal with IP fragments */
-#define IP_REASSEMBLY           1
-#define IP_REASS_MAX_PBUFS      10
-#define MEMP_NUM_REASSDATA      10
-#define IP_FRAG                 1
-#define IPV6_FRAG_COPYHEADER    1
+#define IP_REASSEMBLY             1
+#define IP_REASS_MAX_PBUFS        10
+#define MEMP_NUM_REASSDATA        10
+#define IP_FRAG                   1
+#define IPV6_FRAG_COPYHEADER      1
+#define LWIP_IPV6_FRAG            1
 
 #define LWIP_IGMP               (LWIP_IPV4)
 
@@ -259,11 +260,12 @@ extern void sntp_set_system_time(u32_t sec);
  * is 0
  * */
 
-#define LWIP_STATS        1
+#define LWIP_STATS                     1
 
-#define LWIP_NETIF_API    1
-#define LWIP_NETIF_STATUS_CALLBACK 1
-#define LWIP_NETIF_HOSTNAME 0
+#define LWIP_NETIF_API                 1
+#define LWIP_NETIF_STATUS_CALLBACK     1
+#define LWIP_NETIF_EXT_STATUS_CALLBACK 1
+#define LWIP_NETIF_HOSTNAME            0
 
 /* ---------- SLIP options ---------- */
 

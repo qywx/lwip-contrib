@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <time.h>
+#include <string.h>
 
 #include "lwip/opt.h"
 
@@ -443,10 +444,6 @@ netif_status_callback(struct netif *nif)
 #if LWIP_NETIF_HOSTNAME
   printf("FQDN: %s\n", netif_get_hostname(nif));
 #endif /* LWIP_NETIF_HOSTNAME */
-  
-#if LWIP_MDNS_RESPONDER
-  mdns_resp_netif_settings_changed(nif);
-#endif
 }
 #endif /* LWIP_NETIF_STATUS_CALLBACK */
 

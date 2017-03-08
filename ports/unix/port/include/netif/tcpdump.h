@@ -32,9 +32,10 @@
 #ifndef LWIP_NETIF_TCPDUMP_H
 #define LWIP_NETIF_TCPDUMP_H
 
-#include "lwip/pbuf.h"
+struct pbuf;
+struct netif;
 
 void tcpdump_init(void);
-void tcpdump(struct pbuf *p);
+void tcpdump(struct pbuf *p, struct netif *netif);
 
 #endif /* LWIP_NETIF_TCPDUMP_H */

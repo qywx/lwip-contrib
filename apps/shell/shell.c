@@ -45,6 +45,11 @@
 #include "lwip/api.h"
 #include "lwip/stats.h"
 
+#if LWIP_SOCKET
+#include "lwip/errno.h"
+#include "lwip/if_api.h"
+#endif
+
 #ifdef WIN32
 #define NEWLINE "\r\n"
 #else /* WIN32 */
@@ -95,7 +100,9 @@ usnd [connection #] [message]: sends a message on a UDP connection."NEWLINE"\
 recv [connection #]: recieves data on a TCP or UDP connection."NEWLINE"\
 clos [connection #]: closes a TCP or UDP connection."NEWLINE"\
 stat: prints out lwIP statistics."NEWLINE"\
-quit: quits."NEWLINE"";
+idxtoname [index]: outputs interface name from index."NEWLINE"\
+nametoidx [name]: outputs interface index from name."NEWLINE"\
+quit: quits"NEWLINE"";
 
 #if LWIP_STATS
 static char padding_10spaces[] = "          ";
@@ -955,6 +962,38 @@ com_usnd(struct command *com)
   return ESUCCESS;
 }
 /*-----------------------------------------------------------------------------------*/
+#if LWIP_SOCKET
+/*-----------------------------------------------------------------------------------*/
+static s8_t
+com_idxtoname(struct command *com)
+{
+  long i = strtol(com->args[0], NULL, 10);
+
+  if (if_indextoname(i, (char *)buffer)) {
+    netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
+    sendstr(NEWLINE, com->conn);
+  } else {
+    snprintf((char *)buffer, sizeof(buffer), "if_indextoname() failed: %d"NEWLINE, errno);
+    netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
+  }
+  return ESUCCESS;
+}
+/*-----------------------------------------------------------------------------------*/
+static s8_t
+com_nametoidx(struct command *com)
+{
+  unsigned int idx = if_nametoindex(com->args[0]);
+
+  if (idx) {
+    snprintf((char *)buffer, sizeof(buffer), "%u"NEWLINE, idx);
+    netconn_write(com->conn, buffer, strlen((const char *)buffer), NETCONN_COPY);
+  } else {
+    sendstr("No interface found"NEWLINE, com->conn);
+  }
+  return ESUCCESS;
+}
+#endif /* LWIP_SOCKET */
+/*-----------------------------------------------------------------------------------*/
 static s8_t
 com_help(struct command *com)
 {
@@ -1007,6 +1046,14 @@ parse_command(struct command *com, u32_t len)
   } else if (strncmp((const char *)buffer, "usnd", 4) == 0) {
     com->exec = com_usnd;
     com->nargs = 2;
+#if LWIP_SOCKET
+  } else if (strncmp((const char *)buffer, "idxtoname", 9) == 0) {
+    com->exec = com_idxtoname;
+    com->nargs = 1;
+  } else if (strncmp((const char *)buffer, "nametoidx", 9) == 0) {
+    com->exec = com_nametoidx;
+    com->nargs = 1;
+#endif /* LWIP_SOCKET */
   } else if (strncmp((const char *)buffer, "help", 4) == 0) {
     com->exec = com_help;
     com->nargs = 0;

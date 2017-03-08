@@ -248,12 +248,14 @@
     <ClCompile Include="..\..\..\..\lwip\src\api\api_lib.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\api_msg.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\err.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\api\if_api.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\netbuf.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\netdb.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\netifapi.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\sockets.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\tcpip.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\lwiperf\lwiperf.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\apps\mqtt\mqtt.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\netbiosns\netbiosns.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\sntp\sntp.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\tftp\tftp_server.c" />
@@ -353,7 +355,6 @@
     <ClCompile Include="..\..\..\..\lwip\src\core\ipv4\ip4_frag.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\timeouts.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\mdns\mdns.c" />
-    <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmpv3_dummy.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmpv3_mbedtls.c" />
     <ClCompile Include="..\sio.c" />
     <ClCompile Include="..\sys_arch.c" />
@@ -363,6 +364,7 @@
     <ClInclude Include="..\..\..\..\lwip\src\apps\snmp\snmp_msg.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\lwiperf.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mdns_priv.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\netbiosns.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\netbiosns_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp.h" />
@@ -372,9 +374,13 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_server.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\errno.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\if_api.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\ip6_zone.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\api_msg.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\memp_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\memp_std.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\nd6_priv.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\sockets_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\tcpip_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\priv\tcp_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\api.h" />

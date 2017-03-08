@@ -122,6 +122,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\addons\ipv6_static_routing\ip6_route_table.c" />
+    <ClCompile Include="..\..\..\addons\tcp_isn\tcp_isn.c" />
     <ClCompile Include="..\..\..\apps\tcpecho_raw\tcpecho_raw.c" />
     <ClCompile Include="..\..\..\apps\udpecho_raw\udpecho_raw.c" />
     <ClCompile Include="..\test.c">
@@ -146,6 +148,8 @@
     <ClCompile Include="..\..\..\apps\snmp_private_mib\lwip_prvmib.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\addons\ipv6_static_routing\ip6_route_table.h" />
+    <ClInclude Include="..\..\..\addons\tcp_isn\tcp_isn.h" />
     <ClInclude Include="..\..\..\apps\chargen\chargen.h" />
     <ClInclude Include="..\..\..\apps\httpserver\httpserver-netconn.h" />
     <ClInclude Include="..\..\..\apps\netio\netio.h" />
@@ -161,6 +165,7 @@
     <ClInclude Include="..\..\..\apps\udpecho_raw\udpecho_raw.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\addons\ipv6_static_routing\README" />
     <None Include="readme.txt" />
   </ItemGroup>
   <ItemGroup>

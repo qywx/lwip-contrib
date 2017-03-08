@@ -6,6 +6,7 @@
 #if LWIP_SOCKET && (LWIP_IPV4 || LWIP_IPV6)
 
 #include "lwip/sockets.h"
+#include "lwip/mem.h"
 #include "lwip/sys.h"
 
 #include <string.h>
@@ -261,6 +262,7 @@ sockex_nonblocking_connect(void *arg)
   LWIP_ASSERT("ret == -1", ret == -1);
   err = errno;
   LWIP_ASSERT("errno == EINPROGRESS", err == EINPROGRESS);
+  LWIP_UNUSED_ARG(err);
 
   FD_ZERO(&sets.readset);
   FD_SET(s, &sets.readset);
@@ -292,9 +294,10 @@ sockex_nonblocking_connect(void *arg)
   /* close */
   ret = lwip_close(s);
   LWIP_ASSERT("ret == 0", ret == 0);
+  LWIP_UNUSED_ARG(ret);
 
   printf("select() needed %d ticks to return error\n", (int)(ticks_b - ticks_a));
-  printf("all tests done, thread ending\n");
+  printf("sockex_nonblocking_connect finished successfully\n");
 }
 
 /** This is an example function that tests
@@ -305,7 +308,11 @@ sockex_testrecv(void *arg)
   int s;
   int ret;
   int err;
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
   int opt, opt2;
+#else
+  struct timeval opt, opt2;
+#endif
   socklen_t opt2size;
 #if LWIP_IPV6
   struct sockaddr_in6 addr;
@@ -349,15 +356,30 @@ sockex_testrecv(void *arg)
   LWIP_ASSERT("ret == 0", ret == 0);
 
   /* set recv timeout (100 ms) */
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
   opt = 100;
-  ret = lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &opt, sizeof(int));
+#else
+  opt.tv_sec = 0;
+  opt.tv_usec = 100 * 1000;
+#endif
+  ret = lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &opt, sizeof(opt));
   LWIP_ASSERT("ret == 0", ret == 0);
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
   opt2 = 0;
+#else
+  opt2.tv_sec = 0;
+  opt2.tv_usec = 0;
+#endif
   opt2size = sizeof(opt2);
   ret = lwip_getsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &opt2, &opt2size);
   LWIP_ASSERT("ret == 0", ret == 0);
   LWIP_ASSERT("opt2size == sizeof(opt2)", opt2size == sizeof(opt2));
+#if LWIP_SO_SNDRCVTIMEO_NONSTANDARD
   LWIP_ASSERT("opt == opt2", opt == opt2);
+#else
+  LWIP_ASSERT("opt == opt2", opt.tv_sec == opt2.tv_sec);
+  LWIP_ASSERT("opt == opt2", opt.tv_usec == opt2.tv_usec);
+#endif
 
   /* write the start of a GET request */
 #define SNDSTR1 "G"
@@ -370,6 +392,7 @@ sockex_testrecv(void *arg)
   LWIP_ASSERT("ret == -1", ret == -1);
   err = errno;
   LWIP_ASSERT("errno == EAGAIN", err == EAGAIN);
+  LWIP_UNUSED_ARG(err);
 
   /* write the rest of a GET request */
 #define SNDSTR2 "ET / HTTP_1.1\r\n\r\n"
@@ -408,8 +431,216 @@ sockex_testrecv(void *arg)
   /* close */
   ret = lwip_close(s);
   LWIP_ASSERT("ret == 0", ret == 0);
+  LWIP_UNUSED_ARG(ret);
 
   printf("sockex_testrecv finished successfully\n");
+}
+
+/** This is an example function that tests
+the sendmsg function for TCP sockets */
+static void
+sockex_testsendmsg_tcp(void *arg)
+{
+  int s;
+  int i;
+  int result;
+  int bytes_written;
+  int opt;
+  struct sockaddr_storage addr_storage;
+#if LWIP_IPV6
+  struct sockaddr_in6 *addr;
+#else /* LWIP_IPV6 */
+  struct sockaddr_in *addr;
+#endif /* LWIP_IPV6 */
+  struct iovec iovs[8];
+  struct msghdr msg;
+  u8_t * big_bytes;
+  const ip_addr_t *ipaddr = (const ip_addr_t*)arg;
+
+  /* set up address to send to */
+  memset(&addr_storage, 0, sizeof(addr_storage));
+#if LWIP_IPV6
+  addr = (struct sockaddr_in6*)&addr_storage;
+  addr->sin6_len = sizeof(*addr);
+  addr->sin6_family = AF_INET6;
+  addr->sin6_port = PP_HTONS(SOCK_TARGET_PORT);
+  inet6_addr_from_ip6addr(&addr->sin6_addr, ip_2_ip6(ipaddr));
+#else /* LWIP_IPV6 */
+  addr = (struct sockaddr_in*)&addr_storage;
+  addr->sin_len = sizeof(*addr);
+  addr->sin_family = AF_INET;
+  addr->sin_port = PP_HTONS(SOCK_TARGET_PORT);
+  inet_addr_from_ip4addr(&addr->sin_addr, ip_2_ip4(ipaddr));
+#endif /* LWIP_IPV6 */
+
+  /* for TCP, we will have a stream of 0xDEADBEEF repeated */
+#if LWIP_IPV6
+  s = lwip_socket(AF_INET6, SOCK_STREAM, 0);
+#else /* LWIP_IPV6 */
+  s = lwip_socket(AF_INET, SOCK_STREAM, 0);
+#endif /* LWIP_IPV6 */
+  LWIP_ASSERT("s >= 0", s >= 0);
+
+  /* connect, should succeed */
+  result = lwip_connect(s, (struct sockaddr*)addr, sizeof(*addr));
+  LWIP_ASSERT("result == 0", result == 0);
+
+  /* allocate a buffer for a stream of 0xDEADBEEF which we will use to create an input
+  vector set that is larger than the TCP's send buffer. This will force execution of
+  the partial IO vector send case when non-blocking */
+  big_bytes = (u8_t*)mem_malloc(TCP_SND_BUF/4 * sizeof(*big_bytes));
+  LWIP_ASSERT("big_bytes != NULL", big_bytes != NULL);
+  for (i = 0; i < TCP_SND_BUF/4; i += 4) {
+    big_bytes[i] = 0xDE;
+    big_bytes[i+1] = 0xAD;
+    big_bytes[i+2] = 0xBE;
+    big_bytes[i+3] = 0xEF;
+  }
+
+  /* send the big bytes buffer 8 times in one message, equating to TCP_SND_BUF * 2 */
+  for (i = 0; i < 8; i++) {
+    iovs[i].iov_base = big_bytes;
+    iovs[i].iov_len = TCP_SND_BUF/4;
+  }
+
+  /* perform a blocking sendmsg, should return when all IO vectors have been accepted */
+  msg.msg_name = NULL; /* we are already connected */
+  msg.msg_namelen = 0;
+  msg.msg_iov = iovs;
+  msg.msg_iovlen = 8;
+  msg.msg_control = NULL;
+  msg.msg_controllen = 0;
+  msg.msg_flags = 0;
+
+  result = lwip_sendmsg(s, &msg, 0);
+  LWIP_ASSERT("result == TCP_SND_BUF * 2", result == (TCP_SND_BUF * 2));
+  
+  /* repeat again, using non-blocking sockets.  This will hit fun cases where only part
+  of our IO vectors were accepted */
+  opt = lwip_fcntl(s, F_GETFL, 0);
+  LWIP_ASSERT("opt != -1", opt != -1);
+  opt |= O_NONBLOCK;
+  result = lwip_fcntl(s, F_SETFL, opt);
+  LWIP_ASSERT("result != -1", result != -1);
+
+  bytes_written = 0;
+  while (bytes_written < (TCP_SND_BUF * 2)) {
+    result = lwip_sendmsg(s, &msg, 0);
+    LWIP_ASSERT("sendmsg returned 0", (result != 0));
+    /* some data was sent */
+    if (result > 0) {
+      bytes_written += result;
+      if (bytes_written < (TCP_SND_BUF * 2)) {
+        /* process fully consumed vectors */
+        for (i = 0; i < msg.msg_iovlen; i++) {
+          if (msg.msg_iov[i].iov_len <= (size_t)result) {
+            /* reduce result by amount of this vector */
+            result -= msg.msg_iov[i].iov_len;
+          } else /* iov not fully consumed */
+            break;
+        }
+
+        /* slide down over fully consumed vectors */
+        if (i != 0) {
+          msg.msg_iov = &msg.msg_iov[i];
+        }
+        msg.msg_iovlen -= i;
+
+        /* update new first vector */
+        msg.msg_iov[0].iov_base = ((u8_t *)msg.msg_iov[0].iov_base + result);
+        msg.msg_iov[0].iov_len -= result;
+      }
+    } else { /* error received on socket */
+      int optval;
+      socklen_t optlen = sizeof(optval);
+      fd_set write_fds;
+      
+      result = lwip_getsockopt(s, SOL_SOCKET, SO_ERROR, &optval, &optlen);
+      LWIP_ASSERT("lwip_getsockopt returned non-zero", (result == 0));
+      LWIP_ASSERT("SO_ERROR not EWOULDBLOCK", (optval == EWOULDBLOCK));
+
+      /* EWOULDBLOCK, use select to wait for send availability */
+      FD_ZERO(&write_fds);
+      FD_SET(s, &write_fds);
+      result = lwip_select(s+1, NULL, &write_fds, NULL, NULL);
+      LWIP_ASSERT("Error in select", (result > 0));
+      LWIP_ASSERT("Write FD not set", FD_ISSET(s, &write_fds));
+    }
+  }
+  /* verify TCP_SND_BUF * 2 bytes received by peer, stream of 0xDEADBEEF */
+  close(s);
+  mem_free(big_bytes);
+}
+
+/** This is an example function that tests
+the sendmsg function for UDP sockets */
+static void
+sockex_testsendmsg_udp(void *arg)
+{
+  int s;
+  int i;
+  int result;
+  struct sockaddr_storage addr_storage;
+#if LWIP_IPV6
+  struct sockaddr_in6 *addr;
+#else /* LWIP_IPV6 */
+  struct sockaddr_in *addr;
+#endif /* LWIP_IPV6 */
+  struct iovec iovs[4];
+  struct msghdr msg;
+  u8_t bytes[4];
+  const ip_addr_t *ipaddr = (const ip_addr_t*)arg;
+
+  /* each datagram should be 0xDEADBEEF */
+  bytes[0] = 0xDE;
+  bytes[1] = 0xAD;
+  bytes[2] = 0xBE;
+  bytes[3] = 0xEF;
+
+  /* initialize IO vectors with data */
+  for (i = 0; i < 4; i++) {
+    iovs[i].iov_base = &bytes[i];
+    iovs[i].iov_len = sizeof(char);
+  }
+
+  /* set up address to send to */
+  memset(&addr_storage, 0, sizeof(addr_storage));
+#if LWIP_IPV6
+  addr = (struct sockaddr_in6*)&addr_storage;
+  addr->sin6_len = sizeof(*addr);
+  addr->sin6_family = AF_INET6;
+  addr->sin6_port = PP_HTONS(SOCK_TARGET_PORT);
+  inet6_addr_from_ip6addr(&addr->sin6_addr, ip_2_ip6(ipaddr));
+#else /* LWIP_IPV6 */
+  addr = (struct sockaddr_in*)&addr_storage;
+  addr->sin_len = sizeof(*addr);
+  addr->sin_family = AF_INET;
+  addr->sin_port = PP_HTONS(SOCK_TARGET_PORT);
+  inet_addr_from_ip4addr(&addr->sin_addr, ip_2_ip4(ipaddr));
+#endif /* LWIP_IPV6 */
+
+#if LWIP_IPV6
+  s = lwip_socket(AF_INET6, SOCK_DGRAM, 0);
+#else /* LWIP_IPV6 */
+  s = lwip_socket(AF_INET, SOCK_DGRAM, 0);
+#endif /* LWIP_IPV6 */
+  LWIP_ASSERT("s >= 0", s >= 0);
+
+  msg.msg_name = addr;
+  msg.msg_namelen = sizeof(*addr);
+  msg.msg_iov = iovs;
+  msg.msg_iovlen = 4;
+  msg.msg_control = NULL;
+  msg.msg_controllen = 0;
+  msg.msg_flags = 0;
+
+  /* send our datagram of IO vectors 100 times */
+  for (i = 0; i < 100; i++) {
+    result = lwip_sendmsg(s, &msg, 0);
+    LWIP_ASSERT("result == 4", result == 4);
+    /* verify 0xDEADBEEF on receiver or network capture */
+  }
+  close(s);
 }
 
 /** helper struct for the 2 functions below (multithreaded: thread-argument) */
@@ -460,6 +691,7 @@ sockex_select_waiter(void *arg)
   } else {
     LWIP_ASSERT("ret == 0", ret == 0);
   }
+  LWIP_UNUSED_ARG(ret);
   if (helper->expect_read) {
     LWIP_ASSERT("FD_ISSET(helper->socket, &readset)", FD_ISSET(helper->socket, &readset));
   } else {
@@ -534,6 +766,7 @@ sockex_testtwoselects(void *arg)
   LWIP_ASSERT("ret == len", ret == (int)len);
   ret = lwip_write(s2, SNDSTR1, len);
   LWIP_ASSERT("ret == len", ret == (int)len);
+  LWIP_UNUSED_ARG(ret);
 
   h1.wait_read  = 1;
   h1.wait_write = 1;
@@ -561,6 +794,7 @@ sockex_testtwoselects(void *arg)
   h4 = h1;
   lwiperr = sys_sem_new(&h4.sem, 0);
   LWIP_ASSERT("lwiperr == ERR_OK", lwiperr == ERR_OK);
+  LWIP_UNUSED_ARG(lwiperr);
   h4.socket = s2;
   h4.wait_ms = 2000;
 
@@ -595,6 +829,9 @@ socket_example_test(void* arg)
   sockex_nonblocking_connect(arg);
   sockex_testrecv(arg);
   sockex_testtwoselects(arg);
+  sockex_testsendmsg_tcp(arg);
+  sockex_testsendmsg_udp(arg);
+  printf("all tests done, thread ending\n");
 }
 #endif
 
@@ -613,6 +850,8 @@ void socket_examples_init(void)
   sys_thread_new("sockex_nonblocking_connect", sockex_nonblocking_connect, &dstaddr, 0, 0);
   sys_thread_new("sockex_testrecv", sockex_testrecv, &dstaddr, 0, 0);
   sys_thread_new("sockex_testtwoselects", sockex_testtwoselects, &dstaddr, 0, 0);
+  sys_thread_new("sockex_testsendmsg_tcp", sockex_testsendmsg_tcp, &dstaddr, 0, 0);
+  sys_thread_new("sockex_testsendmsg_udp", sockex_testsendmsg_udp, &dstaddr, 0, 0);
 #else
   sys_thread_new("socket_example_test", socket_example_test, &dstaddr, 0, 0);
 #endif

@@ -56,6 +56,7 @@
 #if PING_USE_SOCKETS
 #include "lwip/sockets.h"
 #include "lwip/inet.h"
+#include <string.h>
 #endif /* PING_USE_SOCKETS */
 
 
@@ -133,7 +134,7 @@ ping_send(int s, const ip_addr_t *addr)
   LWIP_ASSERT("ping_size is too big", ping_size <= 0xffff);
 
 #if LWIP_IPV6
-  if(IP_IS_V6(addr) && !ip6_addr_isipv6mappedipv4(ip_2_ip6(addr))) {
+  if(IP_IS_V6(addr) && !ip6_addr_isipv4mappedipv6(ip_2_ip6(addr))) {
     /* todo: support ICMP6 echo */
     return ERR_VAL;
   }
@@ -182,7 +183,8 @@ ping_recv(int s)
   while((len = lwip_recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr*)&from, (socklen_t*)&fromlen)) > 0) {
     if (len >= (int)(sizeof(struct ip_hdr)+sizeof(struct icmp_echo_hdr))) {
       ip_addr_t fromaddr;
-      
+      memset(&fromaddr, 0, sizeof(fromaddr));
+
 #if LWIP_IPV4
       if(from.ss_family == AF_INET) {
         struct sockaddr_in *from4 = (struct sockaddr_in*)&from;
@@ -248,7 +250,7 @@ ping_thread(void *arg)
   LWIP_UNUSED_ARG(arg);
 
 #if LWIP_IPV6
-  if(IP_IS_V4(ping_target) || ip6_addr_isipv6mappedipv4(ip_2_ip6(ping_target))) {
+  if(IP_IS_V4(ping_target) || ip6_addr_isipv4mappedipv6(ip_2_ip6(ping_target))) {
     s = lwip_socket(AF_INET6, SOCK_RAW, IP_PROTO_ICMP);
   } else {
     s = lwip_socket(AF_INET6, SOCK_RAW, IP6_NEXTH_ICMP6);
@@ -262,6 +264,7 @@ ping_thread(void *arg)
 
   ret = lwip_setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
   LWIP_ASSERT("setting receive timeout failed", ret == 0);
+  LWIP_UNUSED_ARG(ret);
 
   while (1) {
     if (ping_send(s, ping_target) == ERR_OK) {

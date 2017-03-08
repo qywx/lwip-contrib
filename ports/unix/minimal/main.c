@@ -32,6 +32,7 @@
 
 #include <unistd.h>
 #include <getopt.h>
+#include <string.h>
 
 #include "lwip/sio.h"
 #include "netif/sio.h"

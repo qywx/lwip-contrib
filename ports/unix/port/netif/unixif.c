@@ -227,7 +227,7 @@ unixif_input_handler(void *data)
       pbuf_realloc(p, len);
       LINK_STATS_INC(link.recv);
 #if LWIP_IPV4 && LWIP_TCP
-      tcpdump(p);
+      tcpdump(p, netif);
 #endif
       netif->input(p, netif);
     } else {
@@ -393,7 +393,7 @@ unixif_output_timeout(void *arg)
     abort();
   }
 #if LWIP_IPV4 && LWIP_TCP
-  tcpdump(p);
+  tcpdump(p, netif);
 #endif
   LINK_STATS_INC(link.xmit);
 

@@ -108,7 +108,7 @@ timeout(void *arg)
       pbuf_take(p, pcapif->pkt, pcapif->len);
 
 #if defined(LWIP_DEBUG) && defined(LWIP_TCPDUMP)
-      tcpdump(p);
+      tcpdump(p, netif);
 #endif /* LWIP_DEBUG && LWIP_TCPDUMP */
 
       ethhdr = p->payload;

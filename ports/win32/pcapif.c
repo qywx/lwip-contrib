@@ -575,7 +575,7 @@ pcapif_low_level_init(struct netif *netif)
      the index of the adapter to use (+ 1 because 0==NULL is invalid).
      This can be used to instantiate multiple PCAP drivers. */
   if (netif->state != NULL) {
-    adapter_num = ((int)(size_t)netif->state) - 1;
+    adapter_num = (LWIP_PTR_NUMERIC_CAST(int, netif->state)) - 1;
     if (adapter_num < 0) {
       printf("ERROR: invalid adapter index \"%d\"!\n", adapter_num);
       LWIP_ASSERT("ERROR initializing network adapter!\n", 0);

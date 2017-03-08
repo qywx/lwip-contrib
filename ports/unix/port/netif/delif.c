@@ -360,9 +360,7 @@ delif_init_thread(struct netif *netif)
 
 #if LWIP_IPV4
   netif->output = delif_output4;
-  netif_set_ipaddr(del->netif, netif_ip4_addr(netif));
-  netif_set_gw(del->netif, netif_ip4_gw(netif));
-  netif_set_netmask(del->netif, netif_ip4_netmask(netif));
+  netif_set_addr(del->netif, netif_ip4_addr(netif), netif_ip4_netmask(netif), netif_ip4_gw(netif));
 #endif /* LWIP_IPV4 */
 
 #if LWIP_IPV6
