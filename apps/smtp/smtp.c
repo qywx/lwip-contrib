@@ -46,7 +46,7 @@
 
 #include "lwip/opt.h"
 
-#if LWIP_TCP
+#if LWIP_TCP && LWIP_CALLBACK_API
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
 #include "lwip/tcp.h"
@@ -1530,4 +1530,4 @@ smtp_send_body_data_handler(struct smtp_session *s, struct tcp_pcb *pcb)
 }
 #endif /* SMTP_BODYDH */
 
-#endif /* LWIP_TCP */
+#endif /* LWIP_TCP && LWIP_CALLBACK_API */
