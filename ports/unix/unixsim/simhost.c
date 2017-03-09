@@ -217,10 +217,11 @@ tftp_close(void* handle)
 static int
 tftp_read(void* handle, void* buf, int bytes)
 {
-  if (fread(buf, 1, bytes, (FILE*)handle) != (size_t)bytes) {
+  int ret = fread(buf, 1, bytes, (FILE*)handle);
+  if (ret <= 0) {
     return -1;
   }
-  return 0;
+  return ret;
 }
 static int
 tftp_write(void* handle, struct pbuf* p)
