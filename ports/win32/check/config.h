@@ -1,4 +1,4 @@
-/* config.h for check-0.9.8 on win32 under MSVC/MinGW */
+/* config.h for check-0.11.0 on win32 under MSVC/MinGW */
 
 #ifdef _MSC_VER
 
@@ -24,3 +24,7 @@ typedef unsigned int uint32_t;
 #define LWIP_UNITTESTS_NOFORK
 
 #include <io.h>
+
+typedef unsigned int clockid_t;
+typedef unsigned int timer_t;
+#define STRUCT_TIMESPEC_DEFINITION_MISSING

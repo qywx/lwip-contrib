@@ -66,6 +66,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\check\lib\libcompat.h" />
     <ClInclude Include="..\check\config.h" />
     <ClInclude Include="..\check\unistd.h" />
     <ClInclude Include="..\check\sys\time.h" />
@@ -80,6 +81,8 @@
     <ClInclude Include="..\..\..\..\check\src\check_str.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\check\lib\clock_gettime.c" />
+    <ClCompile Include="..\..\..\..\check\lib\libcompat.c" />
     <ClCompile Include="..\check\time.c" />
     <ClCompile Include="..\..\..\..\check\src\check.c" />
     <ClCompile Include="..\..\..\..\check\src\check_error.c" />

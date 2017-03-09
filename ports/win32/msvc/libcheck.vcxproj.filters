@@ -51,6 +51,9 @@
     <ClInclude Include="..\..\..\..\check\src\check_str.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\check\lib\libcompat.h">
+      <Filter>libcompat</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\check\time.c">
@@ -82,6 +85,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\check\src\check_str.c">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\check\lib\libcompat.c">
+      <Filter>libcompat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\check\lib\clock_gettime.c">
+      <Filter>libcompat</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
