@@ -22,6 +22,6 @@ using the winpcap library.
 lwIP: http://savannah.nongnu.org/projects/lwip/
 WinPCap: http://netgroup-serv.polito.it/winpcap/
 
-To compile the unittests, download check (tested with v0.9.8) from
-http://sourceforge.net/projects/check/
+To compile the unittests, download check (tested with v0.11.0) from
+https://github.com/libcheck/check/releases/
 and place it in a folder "check" next to the "contrib" folder.
