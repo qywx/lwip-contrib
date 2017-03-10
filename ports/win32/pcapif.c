@@ -86,8 +86,10 @@
 #define PCAPIF_FILTER_GROUP_ADDRESSES 1
 #endif
 
-/** Set this to 1 to receive all frames (also unicast to other addresses;
-    this is only needed for test purposes) */
+/** Set this to 1 to receive all frames (also unicast to other addresses)
+ * In this mode, filtering out our own tx packets from loopback receiving
+ * is done via matching rx against recent tx (memcmp).
+ */
 #ifndef PCAPIF_RECEIVE_PROMISCUOUS
 #define PCAPIF_RECEIVE_PROMISCUOUS    0
 #endif
@@ -159,6 +161,17 @@
 #define ADAPTER_NAME_LEN       128
 #define ADAPTER_DESC_LEN       128
 
+#if PCAPIF_RECEIVE_PROMISCUOUS
+#ifndef PCAPIF_LOOPBACKFILTER_NUM_TX_PACKETS
+#define PCAPIF_LOOPBACKFILTER_NUM_TX_PACKETS  128
+#endif
+struct pcapipf_pending_packet {
+  struct pcapipf_pending_packet *next;
+  u16_t len;
+  u8_t data[ETH_MAX_FRAME_LEN];
+};
+#endif /* PCAPIF_RECEIVE_PROMISCUOUS */
+
 /* Packet Adapter informations */
 struct pcapif_private {
   void            *input_fn_arg;
@@ -174,7 +187,101 @@ struct pcapif_private {
   struct pcapifh_linkstate *link_state;
   enum pcapifh_link_event last_link_event;
 #endif /* PCAPIF_HANDLE_LINKSTATE */
+#if PCAPIF_RECEIVE_PROMISCUOUS
+  struct pcapipf_pending_packet packets[PCAPIF_LOOPBACKFILTER_NUM_TX_PACKETS];
+  struct pcapipf_pending_packet *tx_packets;
+  struct pcapipf_pending_packet *free_packets;
+#endif /* PCAPIF_RECEIVE_PROMISCUOUS */
 };
+
+#if PCAPIF_RECEIVE_PROMISCUOUS
+static void
+pcapif_init_tx_packets(struct pcapif_private *priv)
+{
+  int i;
+  priv->tx_packets = NULL;
+  priv->free_packets = NULL;
+  for (i = 0; i < PCAPIF_LOOPBACKFILTER_NUM_TX_PACKETS; i++) {
+    struct pcapipf_pending_packet *pack = &priv->packets[i];
+    pack->len = 0;
+    pack->next = priv->free_packets;
+    priv->free_packets = pack;
+  }
+}
+
+static void
+pcapif_add_tx_packet(struct pcapif_private *priv, struct pbuf *p)
+{
+  struct pcapipf_pending_packet *tx;
+  struct pcapipf_pending_packet *pack = priv->free_packets;
+  LWIP_ASSERT("no free packet", pack != NULL);
+  priv->free_packets = pack->next;
+  if (priv->tx_packets != NULL) {
+    for (tx = priv->tx_packets; tx->next != NULL; tx = tx->next);
+    LWIP_ASSERT("bug", tx != NULL);
+    tx->next = pack;
+  } else {
+    priv->tx_packets = pack;
+  }
+  pack->next = NULL;
+  pack->len = p->tot_len;
+  pbuf_copy_partial(p, pack->data, p->tot_len, 0);
+}
+
+static int
+pcapif_compare_packets(struct pcapipf_pending_packet *pack, const void *packet, int packet_len)
+{
+  if (pack->len == packet_len) {
+    if (!memcmp(pack->data, packet, packet_len)) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+static int
+pcaipf_is_tx_packet(struct netif *netif, const void *packet, int packet_len)
+{
+  struct pcapif_private *priv = (struct pcapif_private*)netif->state;
+  struct pcapipf_pending_packet *iter, *last;
+  if (priv->tx_packets == NULL) {
+    return 0;
+  }
+  if (pcapif_compare_packets(priv->tx_packets, packet, packet_len)) {
+    iter = priv->tx_packets;
+    priv->tx_packets = iter->next;
+    iter->next = priv->free_packets;
+    priv->free_packets = iter;
+    return 1;
+  }
+  last = priv->tx_packets;
+  for (iter = last->next; iter != NULL; last = iter, iter = iter->next) {
+    if (pcapif_compare_packets(iter, packet, packet_len)) {
+      iter = priv->tx_packets;
+      priv->tx_packets = iter->next;
+      iter->next = priv->free_packets;
+      priv->free_packets = iter;
+      return 1;
+    }
+  }
+  return 0;
+}
+#else /* PCAPIF_RECEIVE_PROMISCUOUS */
+#define pcapif_init_tx_packets(priv)
+#define pcapif_add_tx_packet(priv, p)
+static int
+pcaipf_is_tx_packet(struct netif *netif, const void *packet, int packet_len)
+{
+  const struct eth_addr *src = (const struct eth_addr *)packet + 1;
+  if (packet_len >= (ETH_HWADDR_LEN * 2)) {
+    /* Don't let feedback packets through (limitation in winpcap?) */
+    if(!memcmp(src, netif->hwaddr, ETH_HWADDR_LEN)) {
+      return 1;
+    }
+  }
+  return 0;
+}
+#endif /* PCAPIF_RECEIVE_PROMISCUOUS */
 
 #if PCAPIF_RX_REF
 struct pcapif_pbuf_custom
@@ -353,6 +460,7 @@ pcapif_init_adapter(int adapter_num, void *arg)
   }
 
   memset(pa, 0, sizeof(struct pcapif_private));
+  pcapif_init_tx_packets(pa);
   pa->input_fn_arg = arg;
 
   /* Retrieve the interfaces list */
@@ -665,6 +773,8 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
   LWIP_ASSERT("p->next == NULL && p->len == p->tot_len", p->next == NULL && p->len == p->tot_len);
 #endif
 
+  pcapif_add_tx_packet(pa, p);
+
   /* initiate transfer */
   if ((p->len == p->tot_len) && (p->len >= ETH_MIN_FRAME_LEN + ETH_PAD_SIZE)) {
     /* no pbuf chain, don't have to copy -> faster */
@@ -731,7 +841,6 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
   int start;
   int length = packet_len;
   const struct eth_addr *dest = (const struct eth_addr*)packet;
-  const struct eth_addr *src = dest + 1;
   int unicast;
 #if PCAPIF_FILTER_GROUP_ADDRESSES && !PCAPIF_RECEIVE_PROMISCUOUS
   const u8_t bcast[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -739,8 +848,7 @@ pcapif_low_level_input(struct netif *netif, const void *packet, int packet_len)
   const u8_t ipv6mcast[] = {0x33, 0x33};
 #endif /* PCAPIF_FILTER_GROUP_ADDRESSES && !PCAPIF_RECEIVE_PROMISCUOUS */
 
-  /* Don't let feedback packets through (limitation in winpcap?) */
-  if(!memcmp(src, netif->hwaddr, ETH_HWADDR_LEN)) {
+  if (pcaipf_is_tx_packet(netif, packet, packet_len)) {
     /* don't update counters here! */
     return NULL;
   }
