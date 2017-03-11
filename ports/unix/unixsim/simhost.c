@@ -96,8 +96,10 @@
 #include "lwip/apps/mdns.h"
 #include "lwip/apps/sntp.h"
 #include "lwip/apps/snmp.h"
+#include "lwip/apps/snmpv3.h"
 #include "lwip/apps/snmp_mib2.h"
 #include "apps/snmp_private_mib/private_mib.h"
+#include "apps/snmp_v3/snmpv3_dummy.h"
 #include "lwip/apps/tftp_server.h"
 
 #if LWIP_RAW
@@ -278,6 +280,10 @@ tcpip_init_done(void *arg)
   snmp_mib2_set_syslocation_readonly((const u8_t*)"lwIP development PC", NULL);
   snmp_mib2_set_sysdescr((const u8_t*)"simhost", NULL);
 #endif /* SNMP_LWIP_MIB2 */
+
+#ifdef LWIP_HAVE_MBEDTLS
+  snmpv3_dummy_init();
+#endif
 
   snmp_set_mibs(mibs, LWIP_ARRAYSIZE(mibs));
   snmp_init();
