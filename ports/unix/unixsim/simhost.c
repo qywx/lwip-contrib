@@ -96,10 +96,12 @@
 #include "lwip/apps/mdns.h"
 #include "lwip/apps/sntp.h"
 #include "lwip/apps/snmp.h"
-#include "lwip/apps/snmpv3.h"
 #include "lwip/apps/snmp_mib2.h"
 #include "apps/snmp_private_mib/private_mib.h"
+#include "lwip/apps/snmpv3.h"
 #include "apps/snmp_v3/snmpv3_dummy.h"
+#include "lwip/apps/snmp_snmpv2_framework.h"
+#include "lwip/apps/snmp_snmpv2_usm.h"
 #include "lwip/apps/tftp_server.h"
 
 #if LWIP_RAW
@@ -111,6 +113,10 @@
 static const struct snmp_mib *mibs[] = {
   &mib2,
   &mib_private
+#if LWIP_HAVE_MBEDTLS
+  , &snmpframeworkmib
+  , &snmpusmmib
+#endif
 };
 #endif /* LWIP_SNMP */
 
