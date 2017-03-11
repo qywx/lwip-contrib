@@ -68,6 +68,12 @@ CFLAGS+=-I. \
 	-I$(LWIPDIR)/include \
 	-I$(LWIPARCH)/include
 
+# Add include path and link to mbedTLS lib if available
+ifneq (,$(wildcard $(CONTRIBDIR)/../mbedtls/include/mbedtls/*.h))
+LDFLAGS+=-L$(CONTRIBDIR)/../mbedtls/library -lmbedtls -lmbedcrypto
+CFLAGS+=-I$(CONTRIBDIR)/../mbedtls/include
+endif
+
 include $(CONTRIBDIR)/ports/Filelists.mk
 include $(LWIPDIR)/Filelists.mk
 
