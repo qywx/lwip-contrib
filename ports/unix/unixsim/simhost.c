@@ -113,7 +113,7 @@
 static const struct snmp_mib *mibs[] = {
   &mib2,
   &mib_private
-#if LWIP_HAVE_MBEDTLS
+#if LWIP_SNMP_V3
   , &snmpframeworkmib
   , &snmpusmmib
 #endif
@@ -287,7 +287,7 @@ tcpip_init_done(void *arg)
   snmp_mib2_set_sysdescr((const u8_t*)"simhost", NULL);
 #endif /* SNMP_LWIP_MIB2 */
 
-#ifdef LWIP_HAVE_MBEDTLS
+#if LWIP_SNMP_V3
   snmpv3_dummy_init();
 #endif
 
