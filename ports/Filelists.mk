@@ -39,7 +39,6 @@ CONTRIBAPPFILES=$(CONTRIBDIR)/apps/httpserver/httpserver-netconn.c \
 	$(CONTRIBDIR)/apps/tcpecho_raw/tcpecho_raw.c \
 	$(CONTRIBDIR)/apps/netio/netio.c \
 	$(CONTRIBDIR)/apps/ping/ping.c \
-	$(CONTRIBDIR)/apps/shell/shell.c \
 	$(CONTRIBDIR)/apps/snmp_private_mib/lwip_prvmib.c \
 	$(CONTRIBDIR)/apps/snmp_v3/snmpv3_dummy.c \
 	$(CONTRIBDIR)/apps/smtp/smtp.c \
