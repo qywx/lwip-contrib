@@ -213,9 +213,27 @@ static void
 pcapif_add_tx_packet(struct pcapif_private *priv, struct pbuf *p)
 {
   struct pcapipf_pending_packet *tx;
-  struct pcapipf_pending_packet *pack = priv->free_packets;
+  struct pcapipf_pending_packet *pack;
+  SYS_ARCH_DECL_PROTECT(lev);
+
+  /* get a free packet (locked) */
+  SYS_ARCH_PROTECT(lev);
+  pack = priv->free_packets;
   LWIP_ASSERT("no free packet", pack != NULL);
   priv->free_packets = pack->next;
+  pack->next = NULL;
+  SYS_ARCH_UNPROTECT(lev);
+
+  /* set up the packet (unlocked) */
+  pack->len = p->tot_len;
+  pbuf_copy_partial(p, pack->data, p->tot_len, 0);
+  if (pack->len < 60) {
+    memset(&pack->data[pack->len], 0, 60 - pack->len);
+    pack->len = 60;
+  }
+
+  /* put the packet on the list (locked) */
+  SYS_ARCH_PROTECT(lev);
   if (priv->tx_packets != NULL) {
     for (tx = priv->tx_packets; tx->next != NULL; tx = tx->next);
     LWIP_ASSERT("bug", tx != NULL);
@@ -223,9 +241,7 @@ pcapif_add_tx_packet(struct pcapif_private *priv, struct pbuf *p)
   } else {
     priv->tx_packets = pack;
   }
-  pack->next = NULL;
-  pack->len = p->tot_len;
-  pbuf_copy_partial(p, pack->data, p->tot_len, 0);
+  SYS_ARCH_UNPROTECT(lev);
 }
 
 static int
@@ -244,26 +260,42 @@ pcaipf_is_tx_packet(struct netif *netif, const void *packet, int packet_len)
 {
   struct pcapif_private *priv = (struct pcapif_private*)netif->state;
   struct pcapipf_pending_packet *iter, *last;
-  if (priv->tx_packets == NULL) {
+  SYS_ARCH_DECL_PROTECT(lev);
+
+  last = priv->tx_packets;
+  if (last == NULL) {
+    /* list is empty */
     return 0;
   }
-  if (pcapif_compare_packets(priv->tx_packets, packet, packet_len)) {
-    iter = priv->tx_packets;
-    priv->tx_packets = iter->next;
-    iter->next = priv->free_packets;
-    priv->free_packets = iter;
+  /* compare the first packet */
+  if (pcapif_compare_packets(last, packet, packet_len)) {
+    SYS_ARCH_PROTECT(lev);
+    LWIP_ASSERT("list has changed", last == priv->tx_packets);
+    priv->tx_packets = last->next;
+    last->next = priv->free_packets;
+    priv->free_packets = last;
+    last->len = 0;
+    SYS_ARCH_UNPROTECT(lev);
     return 1;
   }
-  last = priv->tx_packets;
+  SYS_ARCH_PROTECT(lev);
   for (iter = last->next; iter != NULL; last = iter, iter = iter->next) {
+    /* unlock while comparing (this works because we have a clean threading separation
+       of adding and removing items and adding is only done at the end) */
+    SYS_ARCH_UNPROTECT(lev);
     if (pcapif_compare_packets(iter, packet, packet_len)) {
-      iter = priv->tx_packets;
-      priv->tx_packets = iter->next;
+      SYS_ARCH_PROTECT(lev);
+      LWIP_ASSERT("last != NULL", last != NULL);
+      last->next = iter->next;
       iter->next = priv->free_packets;
       priv->free_packets = iter;
+      last->len = 0;
+      SYS_ARCH_UNPROTECT(lev);
       return 1;
     }
+    SYS_ARCH_PROTECT(lev);
   }
+  SYS_ARCH_UNPROTECT(lev);
   return 0;
 }
 #else /* PCAPIF_RECEIVE_PROMISCUOUS */
