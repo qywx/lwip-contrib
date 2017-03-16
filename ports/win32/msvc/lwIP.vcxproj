@@ -257,6 +257,8 @@
     <ClCompile Include="..\..\..\..\lwip\src\apps\lwiperf\lwiperf.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\mqtt\mqtt.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\netbiosns\netbiosns.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmp_snmpv2_framework.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmp_snmpv2_usm.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\sntp\sntp.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\tftp\tftp_server.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\def.c" />
@@ -290,6 +292,7 @@
     <ClCompile Include="..\..\..\..\lwip\src\core\ipv6\ip6_frag.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\ipv6\mld6.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\ipv6\nd6.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\netif\bridgeif.c" />
     <ClCompile Include="..\..\..\..\lwip\src\netif\ethernet.c" />
     <ClCompile Include="..\..\..\..\lwip\src\netif\ethernetif.c" />
     <ClCompile Include="..\..\..\..\lwip\src\netif\lowpan6.c" />
@@ -427,6 +430,8 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\tcp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\tcpip.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\udp.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\netif\bridgeif.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\netif\bridgeif_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\netif\etharp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\netif\ethernet.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\netif\lowpan6.h" />
