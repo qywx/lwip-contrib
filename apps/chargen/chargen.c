@@ -56,7 +56,7 @@
 
 #include "chargen.h"
 
-#if LWIP_SOCKET
+#if LWIP_SOCKET && LWIP_SOCKET_SELECT
 
 #define MAX_SERV                 5         /* Maximum number of chargen services. Don't need too many */
 #define CHARGEN_THREAD_NAME      "chargen"
@@ -271,4 +271,4 @@ chargen_init(void)
   sys_thread_new(CHARGEN_THREAD_NAME, chargen_thread, 0, CHARGEN_THREAD_STACKSIZE, CHARGEN_PRIORITY);
 }
 
-#endif /* LWIP_SOCKET */
+#endif /* LWIP_SOCKET && LWIP_SOCKET_SELECT */

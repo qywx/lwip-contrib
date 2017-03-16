@@ -67,6 +67,7 @@ static ip_addr_t dstaddr;
 static void
 sockex_nonblocking_connect(void *arg)
 {
+#if LWIP_SOCKET_SELECT
   int s;
   int ret;
   u32_t opt;
@@ -298,6 +299,9 @@ sockex_nonblocking_connect(void *arg)
 
   printf("select() needed %d ticks to return error\n", (int)(ticks_b - ticks_a));
   printf("sockex_nonblocking_connect finished successfully\n");
+#else
+  LWIP_UNUSED_ARG(arg);
+#endif
 }
 
 /** This is an example function that tests
@@ -321,9 +325,11 @@ sockex_testrecv(void *arg)
 #endif /* LWIP_IPV6 */
   size_t len;
   char rxbuf[SOCK_TARGET_MAXHTTPPAGESIZE];
+#if LWIP_SOCKET_SELECT
   fd_set readset;
   fd_set errset;
   struct timeval tv;
+#endif
   const ip_addr_t *ipaddr = (const ip_addr_t*)arg;
 
   /* set up address to connect to */
@@ -407,6 +413,7 @@ sockex_testrecv(void *arg)
   ret = lwip_read(s, rxbuf, SOCK_TARGET_MAXHTTPPAGESIZE);
   LWIP_ASSERT("ret > 0", ret > 0);
 
+#if LWIP_SOCKET_SELECT
   /* now select should directly return because the socket is readable */
   FD_ZERO(&readset);
   FD_ZERO(&errset);
@@ -418,6 +425,7 @@ sockex_testrecv(void *arg)
   LWIP_ASSERT("ret == 1", ret == 1);
   LWIP_ASSERT("!FD_ISSET(s, &errset)", !FD_ISSET(s, &errset));
   LWIP_ASSERT("FD_ISSET(s, &readset)", FD_ISSET(s, &readset));
+#endif
 
   /* should not time out but receive a response */
   ret = lwip_read(s, rxbuf, SOCK_TARGET_MAXHTTPPAGESIZE);
@@ -444,8 +452,10 @@ sockex_testsendmsg_tcp(void *arg)
   int s;
   int i;
   int result;
+#if LWIP_SOCKET_SELECT
   int bytes_written;
   int opt;
+#endif
   struct sockaddr_storage addr_storage;
 #if LWIP_IPV6
   struct sockaddr_in6 *addr;
@@ -515,6 +525,7 @@ sockex_testsendmsg_tcp(void *arg)
   result = lwip_sendmsg(s, &msg, 0);
   LWIP_ASSERT("result == TCP_SND_BUF * 2", result == (TCP_SND_BUF * 2));
   
+#if LWIP_SOCKET_SELECT
   /* repeat again, using non-blocking sockets.  This will hit fun cases where only part
   of our IO vectors were accepted */
   opt = lwip_fcntl(s, F_GETFL, 0);
@@ -568,6 +579,7 @@ sockex_testsendmsg_tcp(void *arg)
     }
   }
   /* verify TCP_SND_BUF * 2 bytes received by peer, stream of 0xDEADBEEF */
+#endif /* LWIP_SOCKET_SELECT */
   close(s);
   mem_free(big_bytes);
 }
@@ -643,6 +655,7 @@ sockex_testsendmsg_udp(void *arg)
   close(s);
 }
 
+#if LWIP_SOCKET_SELECT
 /** helper struct for the 2 functions below (multithreaded: thread-argument) */
 struct sockex_select_helper {
   int socket;
@@ -821,6 +834,13 @@ sockex_testtwoselects(void *arg)
 
   printf("sockex_testtwoselects finished successfully\n");
 }
+#else
+static void
+sockex_testtwoselects(void *arg)
+{
+  LWIP_UNUSED_ARG(arg);
+}
+#endif
 
 #if !SOCKET_EXAMPLES_RUN_PARALLEL
 static void
