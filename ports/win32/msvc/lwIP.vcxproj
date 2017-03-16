@@ -360,7 +360,10 @@
     <ClCompile Include="..\..\..\..\lwip\src\apps\mdns\mdns.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmpv3_mbedtls.c" />
     <ClCompile Include="..\sio.c" />
-    <ClCompile Include="..\sys_arch.c" />
+    <ClCompile Include="..\sys_arch.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\lwip\doc\doxygen\main_page.h" />
