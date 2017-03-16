@@ -210,7 +210,7 @@ pcapif_init_tx_packets(struct pcapif_private *priv)
 }
 
 static void
-pcapif_add_tx_packet(struct pcapif_private *priv, struct pbuf *p)
+pcapif_add_tx_packet(struct pcapif_private *priv, unsigned char *buf, u16_t tot_len)
 {
   struct pcapipf_pending_packet *tx;
   struct pcapipf_pending_packet *pack;
@@ -219,18 +219,19 @@ pcapif_add_tx_packet(struct pcapif_private *priv, struct pbuf *p)
   /* get a free packet (locked) */
   SYS_ARCH_PROTECT(lev);
   pack = priv->free_packets;
+  if ((pack == NULL) && (priv->tx_packets != NULL)) {
+    /* no free packets, reuse the oldest */
+    pack = priv->tx_packets;
+    priv->tx_packets = pack->next;
+  }
   LWIP_ASSERT("no free packet", pack != NULL);
   priv->free_packets = pack->next;
   pack->next = NULL;
   SYS_ARCH_UNPROTECT(lev);
 
   /* set up the packet (unlocked) */
-  pack->len = p->tot_len;
-  pbuf_copy_partial(p, pack->data, p->tot_len, 0);
-  if (pack->len < 60) {
-    memset(&pack->data[pack->len], 0, 60 - pack->len);
-    pack->len = 60;
-  }
+  pack->len = tot_len;
+  memcpy(pack->data, buf, tot_len);
 
   /* put the packet on the list (locked) */
   SYS_ARCH_PROTECT(lev);
@@ -300,7 +301,7 @@ pcaipf_is_tx_packet(struct netif *netif, const void *packet, int packet_len)
 }
 #else /* PCAPIF_RECEIVE_PROMISCUOUS */
 #define pcapif_init_tx_packets(priv)
-#define pcapif_add_tx_packet(priv, p)
+#define pcapif_add_tx_packet(priv, buf, tot_len)
 static int
 pcaipf_is_tx_packet(struct netif *netif, const void *packet, int packet_len)
 {
@@ -805,8 +806,6 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
   LWIP_ASSERT("p->next == NULL && p->len == p->tot_len", p->next == NULL && p->len == p->tot_len);
 #endif
 
-  pcapif_add_tx_packet(pa, p);
-
   /* initiate transfer */
   if ((p->len == p->tot_len) && (p->len >= ETH_MIN_FRAME_LEN + ETH_PAD_SIZE)) {
     /* no pbuf chain, don't have to copy -> faster */
@@ -848,6 +847,9 @@ pcapif_low_level_output(struct netif *netif, struct pbuf *p)
     LINK_STATS_INC(link.drop);
     MIB2_STATS_NETIF_INC(netif, ifoutdiscards);
     return ERR_BUF;
+  }
+  if (netif_is_link_up(netif)) {
+    pcapif_add_tx_packet(pa, buf, tot_len);
   }
 
   LINK_STATS_INC(link.xmit);
