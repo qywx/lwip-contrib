@@ -73,7 +73,7 @@ LDFLAGS+=-L$(MBEDTLSDIR)/library -lmbedtls -lmbedcrypto
 CFLAGS+=-I$(MBEDTLSDIR)/include -DLWIP_HAVE_MBEDTLS=1
 endif
 
-include $(CONTRIBDIR)/ports/Filelists.mk
+include $(CONTRIBDIR)/Filelists.mk
 include $(LWIPDIR)/Filelists.mk
 
 # LWIPFILES: All the above.
