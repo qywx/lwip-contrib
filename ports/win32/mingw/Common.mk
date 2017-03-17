@@ -31,12 +31,12 @@
 
 CC=gcc
 
-include ../../Common.allports.mk
-
 # Architecture specific files.
 LWIPARCH?=$(CONTRIBDIR)/ports/win32
 ARCHFILES=$(LWIPARCH)/sys_arch.c $(LWIPARCH)/test.c $(LWIPARCH)/pcapif.c \
 	$(LWIPARCH)/pcapif_helper.c $(LWIPARCH)/sio.c
+
+include ../../Common.allports.mk
 
 PCAPDIR=$(PCAP_DIR)/Include
 LDFLAGS=-L$(PCAP_DIR)/lib -lwpcap -lpacket

@@ -29,12 +29,12 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
 
-include ../../Common.allports.mk
-
 # Architecture specific files.
 LWIPARCH?=$(CONTRIBDIR)/ports/unix/port
 ARCHFILES=$(LWIPARCH)/perf.c $(LWIPARCH)/sys_arch.c $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tunif.c \
 	$(LWIPARCH)/netif/unixif.c $(LWIPARCH)/netif/list.c $(LWIPARCH)/netif/tcpdump.c \
 	$(LWIPARCH)/netif/delif.c $(LWIPARCH)/netif/sio.c $(LWIPARCH)/netif/fifo.c
+
+include ../../Common.allports.mk
 
 LDFLAGS+=-pthread -lutil -lrt
