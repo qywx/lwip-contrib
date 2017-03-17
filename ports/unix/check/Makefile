@@ -35,6 +35,8 @@ all compile: lwip_unittests
 # The include path to sys_arch.h and lwipopts.h must be first, so this must be before Common.mk
 CFLAGS=-DLWIP_NOASSERT_ON_ERROR -I/usr/include/check -I$(LWIPDIR)/../test/unit
 
+# Prevent compiling sys_arch.c of unix port because unit test provide their own port
+SYSARCH?=
 include ../Common.mk
 
 LDFLAGS:=$(LDFLAGS) -lcheck -lm -lsubunit
