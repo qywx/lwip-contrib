@@ -584,77 +584,6 @@ sockex_testsendmsg_tcp(void *arg)
   mem_free(big_bytes);
 }
 
-/** This is an example function that tests
-the sendmsg function for UDP sockets */
-static void
-sockex_testsendmsg_udp(void *arg)
-{
-  int s;
-  int i;
-  int result;
-  struct sockaddr_storage addr_storage;
-#if LWIP_IPV6
-  struct sockaddr_in6 *addr;
-#else /* LWIP_IPV6 */
-  struct sockaddr_in *addr;
-#endif /* LWIP_IPV6 */
-  struct iovec iovs[4];
-  struct msghdr msg;
-  u8_t bytes[4];
-  const ip_addr_t *ipaddr = (const ip_addr_t*)arg;
-
-  /* each datagram should be 0xDEADBEEF */
-  bytes[0] = 0xDE;
-  bytes[1] = 0xAD;
-  bytes[2] = 0xBE;
-  bytes[3] = 0xEF;
-
-  /* initialize IO vectors with data */
-  for (i = 0; i < 4; i++) {
-    iovs[i].iov_base = &bytes[i];
-    iovs[i].iov_len = sizeof(char);
-  }
-
-  /* set up address to send to */
-  memset(&addr_storage, 0, sizeof(addr_storage));
-#if LWIP_IPV6
-  addr = (struct sockaddr_in6*)&addr_storage;
-  addr->sin6_len = sizeof(*addr);
-  addr->sin6_family = AF_INET6;
-  addr->sin6_port = PP_HTONS(SOCK_TARGET_PORT);
-  inet6_addr_from_ip6addr(&addr->sin6_addr, ip_2_ip6(ipaddr));
-#else /* LWIP_IPV6 */
-  addr = (struct sockaddr_in*)&addr_storage;
-  addr->sin_len = sizeof(*addr);
-  addr->sin_family = AF_INET;
-  addr->sin_port = PP_HTONS(SOCK_TARGET_PORT);
-  inet_addr_from_ip4addr(&addr->sin_addr, ip_2_ip4(ipaddr));
-#endif /* LWIP_IPV6 */
-
-#if LWIP_IPV6
-  s = lwip_socket(AF_INET6, SOCK_DGRAM, 0);
-#else /* LWIP_IPV6 */
-  s = lwip_socket(AF_INET, SOCK_DGRAM, 0);
-#endif /* LWIP_IPV6 */
-  LWIP_ASSERT("s >= 0", s >= 0);
-
-  msg.msg_name = addr;
-  msg.msg_namelen = sizeof(*addr);
-  msg.msg_iov = iovs;
-  msg.msg_iovlen = 4;
-  msg.msg_control = NULL;
-  msg.msg_controllen = 0;
-  msg.msg_flags = 0;
-
-  /* send our datagram of IO vectors 100 times */
-  for (i = 0; i < 100; i++) {
-    result = lwip_sendmsg(s, &msg, 0);
-    LWIP_ASSERT("result == 4", result == 4);
-    /* verify 0xDEADBEEF on receiver or network capture */
-  }
-  close(s);
-}
-
 #if LWIP_SOCKET_SELECT
 /** helper struct for the 2 functions below (multithreaded: thread-argument) */
 struct sockex_select_helper {
@@ -850,7 +779,6 @@ socket_example_test(void* arg)
   sockex_testrecv(arg);
   sockex_testtwoselects(arg);
   sockex_testsendmsg_tcp(arg);
-  sockex_testsendmsg_udp(arg);
   printf("all tests done, thread ending\n");
 }
 #endif
@@ -871,7 +799,6 @@ void socket_examples_init(void)
   sys_thread_new("sockex_testrecv", sockex_testrecv, &dstaddr, 0, 0);
   sys_thread_new("sockex_testtwoselects", sockex_testtwoselects, &dstaddr, 0, 0);
   sys_thread_new("sockex_testsendmsg_tcp", sockex_testsendmsg_tcp, &dstaddr, 0, 0);
-  sys_thread_new("sockex_testsendmsg_udp", sockex_testsendmsg_udp, &dstaddr, 0, 0);
 #else
   sys_thread_new("socket_example_test", socket_example_test, &dstaddr, 0, 0);
 #endif
