@@ -29,7 +29,7 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
 
-include ../Common.allports.mk
+include ../../Common.allports.mk
 
 # Architecture specific files.
 LWIPARCH?=$(CONTRIBDIR)/ports/unix/port
