@@ -32,10 +32,12 @@
 all compile: lwip_unittests
 .PHONY: all clean check
 
+# The include path to sys_arch.h and lwipopts.h must be first, so this must be before Common.mk
+CFLAGS=-DLWIP_NOASSERT_ON_ERROR -I/usr/include/check -I$(LWIPDIR)/../test/unit
+
 include ../Common.mk
 
 LDFLAGS:=$(LDFLAGS) -lcheck -lm -lsubunit
-CFLAGS:=$(CFLAGS) -DLWIP_NOASSERT_ON_ERROR -I/usr/include/check -I$(LWIPDIR)/../test/unit
 
 TESTDIR=$(LWIPDIR)/../test/unit
 include $(TESTDIR)/Filelists.mk
