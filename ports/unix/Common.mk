@@ -29,72 +29,12 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
 
-#CC=gcc
-#CC=clang
-CCDEP?=$(CC)
+include ../Common.allports.mk
 
-CFLAGS+=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
-	-Wparentheses -Wsequence-point -Wswitch-default \
-	-Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-qual \
-	-Wc++-compat -Wwrite-strings -Wold-style-definition -Wcast-align \
-	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address \
-	-Wunreachable-code -Wuninitialized
-
-ifeq (,$(findstring clang,$(CC)))
-CFLAGS+= -Wlogical-op
-# if GCC is newer than 4.8/4.9 you may use:
-#CFLAGS:=$(CFLAGS) -fsanitize=address -fstack-protector -fstack-check -fsanitize=undefined -fno-sanitize=alignment
-else
-# we cannot sanitize alignment on x86-64 targets because clang wants 64 bit alignment
-CFLAGS+= -fsanitize=address -fsanitize=undefined -fno-sanitize=alignment -Wdocumentation -Wno-documentation-deprecated-sync
-endif
-
-# not used for now but interesting:
-# -Wpacked
-# -ansi
-# -std=c89
-
-LDFLAGS+=-pthread -lutil -lrt
-CONTRIBDIR?=../../..
+# Architecture specific files.
 LWIPARCH?=$(CONTRIBDIR)/ports/unix/port
-ARFLAGS?=rs
-
-#Set this to where you have the lwip core module checked out from git
-#default assumes it's a dir named lwip at the same level as the contrib module
-LWIPDIR?=$(CONTRIBDIR)/../lwip/src
-
-CFLAGS+=-I. \
-	-I$(CONTRIBDIR) \
-	-I$(LWIPDIR)/include \
-	-I$(LWIPARCH)/include
-
-# Add include path and link to mbedTLS lib if available
-MBEDTLSDIR?=$(CONTRIBDIR)/../mbedtls
-ifneq (,$(wildcard $(MBEDTLSDIR)/include/mbedtls/*.h))
-LDFLAGS+=-L$(MBEDTLSDIR)/library -lmbedtls -lmbedcrypto
-CFLAGS+=-I$(MBEDTLSDIR)/include -DLWIP_HAVE_MBEDTLS=1
-endif
-
-include $(CONTRIBDIR)/ports/Filelists.mk
-include $(LWIPDIR)/Filelists.mk
-
-# ARCHFILES: architecture specific files.
 ARCHFILES=$(LWIPARCH)/perf.c $(LWIPARCH)/sys_arch.c $(LWIPARCH)/netif/tapif.c $(LWIPARCH)/netif/tunif.c \
 	$(LWIPARCH)/netif/unixif.c $(LWIPARCH)/netif/list.c $(LWIPARCH)/netif/tcpdump.c \
 	$(LWIPARCH)/netif/delif.c $(LWIPARCH)/netif/sio.c $(LWIPARCH)/netif/fifo.c
 
-LWIPFILES=$(LWIPNOAPPSFILES) $(ARCHFILES)
-LWIPOBJS=$(notdir $(LWIPFILES:.c=.o))
-
-LWIPLIBCOMMON=liblwipcommon.a
-$(LWIPLIBCOMMON): $(LWIPOBJS)
-	$(AR) $(ARFLAGS) $(LWIPLIBCOMMON) $?
-
-APPFILES=$(CONTRIBAPPFILES) $(LWIPAPPFILES)
-APPLIB=liblwipapps.a
-APPOBJS=$(notdir $(APPFILES:.c=.o))
-$(APPLIB): $(APPOBJS)
-	$(AR) $(ARFLAGS) $(APPLIB) $?
-
-%.o:
-	$(CC) $(CFLAGS) -c $(<:.o=.c)
+LDFLAGS+=-pthread -lutil -lrt

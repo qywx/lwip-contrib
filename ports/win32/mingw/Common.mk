@@ -29,61 +29,19 @@
 # Author: Adam Dunkels <adam@sics.se>
 #
 
-CCDEP=gcc
 CC=gcc
 
-CFLAGS=-g -Wall -DLWIP_DEBUG -pedantic -Werror \
-	-Wparentheses -Wsequence-point -Wswitch-default \
-	-Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-qual \
-	-Wc++-compat -Wwrite-strings -Wold-style-definition -Wcast-align \
-	-Wmissing-prototypes -Wredundant-decls -Wnested-externs -Wno-address \
-	-Wunreachable-code -Wuninitialized -Wlogical-op -Wno-format
-# -Wno-format: GCC complains about non-standard 64 bit modifier needed for MSVC runtime
-# not used for now but interesting:
-# -Wpacked
-# -ansi
-# -std=c89
-LDFLAGS=-L$(PCAP_DIR)/lib -lwpcap -lpacket
-CONTRIBDIR=../../..
-LWIPARCH=$(CONTRIBDIR)/ports/win32
-ARFLAGS=rs
+include ../../Common.allports.mk
 
-#Set this to where you have the lwip core module checked out from CVS
-#default assumes it's a dir named lwip at the same level as the contrib module
-LWIPDIR=$(CONTRIBDIR)/../lwip/src
-
-PCAPDIR=$(PCAP_DIR)/Include
-
-CFLAGS+=-I. \
-	-I.. \
-	-I$(CONTRIBDIR) \
-	-I$(PCAPDIR) \
-	-I$(LWIPDIR)/include \
-	-I$(LWIPARCH)/include
-
-include $(CONTRIBDIR)/ports/Filelists.mk
-include $(LWIPDIR)/Filelists.mk
-
-# ARCHFILES: Architecture specific files.
+# Architecture specific files.
+LWIPARCH?=$(CONTRIBDIR)/ports/win32
 ARCHFILES=$(LWIPARCH)/sys_arch.c $(LWIPARCH)/test.c $(LWIPARCH)/pcapif.c \
 	$(LWIPARCH)/pcapif_helper.c $(LWIPARCH)/sio.c
 
-# LWIPFILES: All the above.
-LWIPFILES=$(LWIPNOAPPSFILES) $(ARCHFILES)
-LWIPOBJS=$(notdir $(LWIPFILES:.c=.o))
-
-LWIPLIBCOMMON=liblwipcommon.a
-$(LWIPLIBCOMMON): $(LWIPOBJS)
-	$(AR) $(ARFLAGS) $(LWIPLIBCOMMON) $?
-
-APPFILES=$(CONTRIBAPPFILES) $(LWIPAPPFILES)
-APPLIB=liblwipapps.a
-APPOBJS=$(notdir $(APPFILES:.c=.o))
-$(APPLIB): $(APPOBJS)
-	$(AR) $(ARFLAGS) $(APPLIB) $?
-
-%.o:
-	$(CC) $(CFLAGS) -c $(<:.o=.c)
+PCAPDIR=$(PCAP_DIR)/Include
+LDFLAGS=-L$(PCAP_DIR)/lib -lwpcap -lpacket
+# -Wno-format: GCC complains about non-standard 64 bit modifier needed for MSVC runtime
+CFLAGS+=-I$(PCAPDIR) -Wno-format
 
 pcapif.o:
 	$(CC) $(CFLAGS) -Wno-error -Wno-redundant-decls -c $(<:.o=.c)
