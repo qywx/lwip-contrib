@@ -152,12 +152,12 @@ sio_fd_t sio_open(u8_t devnum)
 #else /* SIO_USE_COMPORT */
   _snprintf(fileName, 255, SIO_DEVICENAME"%lu", (DWORD)(devnum & ~1));
   if ((devnum & 1) == 0) {
-    fileHandle = CreateNamedPipe(fileName, PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_NOWAIT,
+    fileHandle = CreateNamedPipeA(fileName, PIPE_ACCESS_DUPLEX, PIPE_TYPE_BYTE | PIPE_NOWAIT,
       PIPE_UNLIMITED_INSTANCES, 102400, 102400, 100, NULL);
   } else
 #endif /* SIO_USE_COMPORT */
   {
-    fileHandle = CreateFile(fileName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    fileHandle = CreateFileA(fileName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
   }
   if (fileHandle != INVALID_HANDLE_VALUE) {
     sio_abort = 0;
