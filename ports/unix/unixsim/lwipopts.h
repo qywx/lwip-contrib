@@ -158,7 +158,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_TTL                 255
 
 #define LWIP_ALTCP_TLS          (LWIP_TCP)
-#if LWIP_HAVE_MBEDTLS
+#ifdef LWIP_HAVE_MBEDTLS
 #define LWIP_ALTCP_TLS          (LWIP_TCP)
 #define LWIP_ALTCP_TLS_MBEDTLS  (LWIP_TCP)
 #endif

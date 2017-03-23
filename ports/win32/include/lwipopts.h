@@ -44,7 +44,7 @@
 
 #define LWIP_SNMP                  LWIP_UDP
 #define MIB2_STATS                 LWIP_SNMP
-#if LWIP_HAVE_MBEDTLS
+#ifdef LWIP_HAVE_MBEDTLS
 #define LWIP_SNMP_V3               (LWIP_SNMP)
 #endif
 
@@ -174,7 +174,7 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_TTL                 255
 
 #define LWIP_ALTCP              (LWIP_TCP)
-#if LWIP_HAVE_MBEDTLS
+#ifdef LWIP_HAVE_MBEDTLS
 #define LWIP_ALTCP_TLS          (LWIP_TCP)
 #define LWIP_ALTCP_TLS_MBEDTLS  (LWIP_TCP)
 #endif
