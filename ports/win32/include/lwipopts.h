@@ -35,6 +35,13 @@
 #define LWIP_IPV4                  1
 #define LWIP_IPV6                  1
 
+#define LWIP_ALTCP                 1
+#if LWIP_HAVE_MBEDTLS
+#define LWIP_ALTCP_TLS             1
+#define LWIP_ALTCP_TLS_MBEDTLS     1
+#define LWIP_SNMP_V3               1
+#endif
+
 #define NO_SYS                     0
 #define LWIP_SOCKET               (NO_SYS==0)
 #define LWIP_NETCONN              (NO_SYS==0)
@@ -43,7 +50,6 @@
 #define LWIP_ICMP                  LWIP_IPV4
 
 #define LWIP_SNMP                  LWIP_UDP
-#define LWIP_SNMP_V3               0
 #define MIB2_STATS                 LWIP_SNMP
 
 #define LWIP_DNS                   LWIP_UDP
