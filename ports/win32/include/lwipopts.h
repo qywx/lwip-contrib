@@ -35,13 +35,6 @@
 #define LWIP_IPV4                  1
 #define LWIP_IPV6                  1
 
-#define LWIP_ALTCP                 1
-#if LWIP_HAVE_MBEDTLS
-#define LWIP_ALTCP_TLS             1
-#define LWIP_ALTCP_TLS_MBEDTLS     1
-#define LWIP_SNMP_V3               1
-#endif
-
 #define NO_SYS                     0
 #define LWIP_SOCKET               (NO_SYS==0)
 #define LWIP_NETCONN              (NO_SYS==0)
@@ -51,6 +44,9 @@
 
 #define LWIP_SNMP                  LWIP_UDP
 #define MIB2_STATS                 LWIP_SNMP
+#if LWIP_HAVE_MBEDTLS
+#define LWIP_SNMP_V3               (LWIP_SNMP)
+#endif
 
 #define LWIP_DNS                   LWIP_UDP
 #define LWIP_MDNS_RESPONDER        LWIP_UDP
@@ -176,6 +172,13 @@ a lot of data that needs to be copied, this should be set high. */
 /* ---------- TCP options ---------- */
 #define LWIP_TCP                1
 #define TCP_TTL                 255
+
+#define LWIP_ALTCP              (LWIP_TCP)
+#if LWIP_HAVE_MBEDTLS
+#define LWIP_ALTCP_TLS          (LWIP_TCP)
+#define LWIP_ALTCP_TLS_MBEDTLS  (LWIP_TCP)
+#endif
+
 
 /* Controls if TCP should queue segments that arrive out of
    order. Define to 0 if your device is low on memory. */
