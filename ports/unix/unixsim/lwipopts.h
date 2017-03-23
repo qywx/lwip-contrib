@@ -157,6 +157,12 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_TCP                1
 #define TCP_TTL                 255
 
+#define LWIP_ALTCP_TLS          (LWIP_TCP)
+#if LWIP_HAVE_MBEDTLS
+#define LWIP_ALTCP_TLS          (LWIP_TCP)
+#define LWIP_ALTCP_TLS_MBEDTLS  (LWIP_TCP)
+#endif
+
 #define TCP_LISTEN_BACKLOG      1
 
 /* Controls if TCP should queue segments that arrive out of
@@ -176,7 +182,7 @@ a lot of data that needs to be copied, this should be set high. */
 /* TCP writable space (bytes). This must be less than or equal
    to TCP_SND_BUF. It is the amount of space which must be
    available in the tcp snd_buf for select to return writable */
-#define TCP_SNDLOWAT		(TCP_SND_BUF/2)
+#define TCP_SNDLOWAT            (TCP_SND_BUF/2)
 
 /* TCP receive window. */
 #define TCP_WND                 8096
@@ -234,12 +240,12 @@ extern void sntp_set_system_time(u32_t sec);
 #define SNTP_SET_SYSTEM_TIME(s) sntp_set_system_time(s)
 
 /* ---------- SNMP options ---------- */
-#define LWIP_SNMP               1
+#define LWIP_SNMP               (LWIP_UDP)
 #ifdef LWIP_HAVE_MBEDTLS
-#define LWIP_SNMP_V3            1
+#define LWIP_SNMP_V3            (LWIP_SNMP)
 #endif
-#define MIB2_STATS              LWIP_SNMP
-#define SNMP_USE_NETCONN        LWIP_NETCONN
+#define MIB2_STATS              (LWIP_SNMP)
+#define SNMP_USE_NETCONN        (LWIP_NETCONN)
 #define SNMP_USE_RAW            (!LWIP_NETCONN)
 
 /* ---------- DNS options ---------- */
