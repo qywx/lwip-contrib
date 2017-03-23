@@ -254,6 +254,18 @@
     <ClCompile Include="..\..\..\..\lwip\src\api\netifapi.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\sockets.c" />
     <ClCompile Include="..\..\..\..\lwip\src\api\tcpip.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls.c">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\..\mbedtls\include;..\..\..\..\lwip\src\include;..\..\..\..\lwip\src\include\ipv4;..\..\..\..\lwip\src\include\ipv6;..\include;..;..\..\..\apps\snmp_private_mib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\..\mbedtls\include;..\..\..\..\lwip\src\include;..\..\..\..\lwip\src\include\ipv4;..\..\..\..\lwip\src\include\ipv6;..\include;..;..\..\..\apps\snmp_private_mib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">..\..\..\..\mbedtls\include;..\..\..\..\lwip\test\unit;..\..\..\..\lwip\src\include;..\..\..\..\lwip\src\include\ipv4;..\..\..\..\lwip\src\include\ipv6;..\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">..\..\..\..\mbedtls\include;..\..\..\..\lwip\test\unit;..\..\..\..\lwip\src\include;..\..\..\..\lwip\src\include\ipv4;..\..\..\..\lwip\src\include\ipv6;..\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls_mem.c">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..\..\mbedtls\include;..\..\..\..\lwip\src\include;..\..\..\..\lwip\src\include\ipv4;..\..\..\..\lwip\src\include\ipv6;..\include;..;..\..\..\apps\snmp_private_mib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..\..\mbedtls\include;..\..\..\..\lwip\src\include;..\..\..\..\lwip\src\include\ipv4;..\..\..\..\lwip\src\include\ipv6;..\include;..;..\..\..\apps\snmp_private_mib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug unittests|Win32'">..\..\..\..\mbedtls\include;..\..\..\..\lwip\test\unit;..\..\..\..\lwip\src\include;..\..\..\..\lwip\src\include\ipv4;..\..\..\..\lwip\src\include\ipv6;..\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release unittests|Win32'">..\..\..\..\mbedtls\include;..\..\..\..\lwip\test\unit;..\..\..\..\lwip\src\include;..\..\..\..\lwip\src\include\ipv4;..\..\..\..\lwip\src\include\ipv6;..\include;..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="..\..\..\..\lwip\src\apps\lwiperf\lwiperf.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\mqtt\mqtt.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\netbiosns\netbiosns.c" />
@@ -261,6 +273,8 @@
     <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmp_snmpv2_usm.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\sntp\sntp.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\tftp\tftp_server.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\core\altcp.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\core\altcp_tcp.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\def.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\dns.c" />
     <ClCompile Include="..\..\..\..\lwip\src\core\inet_chksum.c" />
@@ -367,7 +381,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\lwip\doc\doxygen\main_page.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls_mem.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls_structs.h" />
     <ClInclude Include="..\..\..\..\lwip\src\apps\snmp\snmp_msg.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\altcp.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\altcp_tcp.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\altcp_tls.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\lwiperf.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mdns_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt.h" />

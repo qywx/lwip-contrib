@@ -91,6 +91,9 @@
     <Filter Include="src\apps\mqtt">
       <UniqueIdentifier>{65542a97-c588-47b3-b1f6-ae51645c736e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\apps\altcp_tls">
+      <UniqueIdentifier>{ffd283f4-44f0-4be2-83a3-8bd55f29e80f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\lwip\CHANGELOG" />
@@ -465,6 +468,18 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmp_snmpv2_usm.c">
       <Filter>src\apps\snmp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\core\altcp.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\core\altcp_tcp.c">
+      <Filter>src\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls.c">
+      <Filter>src\apps\altcp_tls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls_mem.c">
+      <Filter>src\apps\altcp_tls</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -908,6 +923,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\lwip\src\include\netif\bridgeif_opts.h">
       <Filter>src\include\netif</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\altcp.h">
+      <Filter>src\include\lwip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\altcp_tcp.h">
+      <Filter>src\include\lwip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\altcp_tls.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls_mem.h">
+      <Filter>src\apps\altcp_tls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls_structs.h">
+      <Filter>src\apps\altcp_tls</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
