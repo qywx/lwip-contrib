@@ -259,7 +259,7 @@ pcapif_compare_packets(struct pcapipf_pending_packet *pack, const void *packet, 
 static int
 pcaipf_is_tx_packet(struct netif *netif, const void *packet, int packet_len)
 {
-  struct pcapif_private *priv = (struct pcapif_private*)netif->state;
+  struct pcapif_private *priv = (struct pcapif_private*)PCAPIF_GET_STATE_PTR(netif);
   struct pcapipf_pending_packet *iter, *last;
   SYS_ARCH_DECL_PROTECT(lev);
 
