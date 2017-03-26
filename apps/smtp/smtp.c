@@ -49,8 +49,10 @@
 #if LWIP_TCP && LWIP_CALLBACK_API
 #include "lwip/sys.h"
 #include "lwip/sockets.h"
-#include "lwip/tcp.h"
+#include "lwip/altcp.h"
 #include "lwip/dns.h"
+#include "lwip/mem.h"
+#include "lwip/altcp_tcp.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -336,20 +338,20 @@ static char smtp_auth_plain[SMTP_MAX_USERNAME_LEN + SMTP_MAX_PASS_LEN + 3];
 static size_t smtp_auth_plain_len;
 
 static err_t  smtp_verify(const char *data, size_t data_len, u8_t linebreaks_allowed);
-static err_t  smtp_tcp_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err);
+static err_t  smtp_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t err);
 static void   smtp_tcp_err(void *arg, err_t err);
-static err_t  smtp_tcp_poll(void *arg, struct tcp_pcb *pcb);
-static err_t  smtp_tcp_sent(void *arg, struct tcp_pcb *pcb, u16_t len);
-static err_t  smtp_tcp_connected(void *arg, struct tcp_pcb *pcb, err_t err);
+static err_t  smtp_tcp_poll(void *arg, struct altcp_pcb *pcb);
+static err_t  smtp_tcp_sent(void *arg, struct altcp_pcb *pcb, u16_t len);
+static err_t  smtp_tcp_connected(void *arg, struct altcp_pcb *pcb, err_t err);
 #if LWIP_DNS
 static void   smtp_dns_found(const char* hostname, const ip_addr_t *ipaddr, void *arg);
 #endif /* LWIP_DNS */
 static size_t smtp_base64_encode(char* target, size_t target_len, const char* source, size_t source_len);
 static enum   smtp_session_state smtp_prepare_mail(struct smtp_session *s, u16_t *tx_buf_len);
-static void   smtp_send_body(struct smtp_session *s, struct tcp_pcb *pcb);
-static void   smtp_process(void *arg, struct tcp_pcb *pcb, struct pbuf *p);
+static void   smtp_send_body(struct smtp_session *s, struct altcp_pcb *pcb);
+static void   smtp_process(void *arg, struct altcp_pcb *pcb, struct pbuf *p);
 #if SMTP_BODYDH
-static void   smtp_send_body_data_handler(struct smtp_session *s, struct tcp_pcb *pcb);
+static void   smtp_send_body_data_handler(struct smtp_session *s, struct altcp_pcb *pcb);
 #endif /* SMTP_BODYDH */
 
 
@@ -464,19 +466,19 @@ static void smtp_free_struct(struct smtp_session *s)
 #define smtp_free_struct(x) SMTP_STATE_FREE(x)
 #endif /* SMTP_BODYDH */
 
-static struct tcp_pcb*
+static struct altcp_pcb*
 smtp_setup_pcb(struct smtp_session *s, const ip_addr_t* remote_ip)
 {
-  struct tcp_pcb* pcb;
+  struct altcp_pcb* pcb;
   LWIP_UNUSED_ARG(remote_ip);
 
-  pcb = tcp_new_ip_type(IP_GET_TYPE(remote_ip));
+  pcb = altcp_tcp_new_ip_type(IP_GET_TYPE(remote_ip));
   if (pcb != NULL) {
-    tcp_arg(pcb, s);
-    tcp_recv(pcb, smtp_tcp_recv);
-    tcp_err(pcb, smtp_tcp_err);
-    tcp_poll(pcb, smtp_tcp_poll, SMTP_POLL_INTERVAL);
-    tcp_sent(pcb, smtp_tcp_sent);
+    altcp_arg(pcb, s);
+    altcp_recv(pcb, smtp_tcp_recv);
+    altcp_err(pcb, smtp_tcp_err);
+    altcp_poll(pcb, smtp_tcp_poll, SMTP_POLL_INTERVAL);
+    altcp_sent(pcb, smtp_tcp_sent);
   }
   return pcb;
 }
@@ -488,7 +490,7 @@ static err_t
 smtp_send_mail_alloced(struct smtp_session *s)
 {
   err_t err;
-  struct tcp_pcb* pcb = NULL;
+  struct altcp_pcb* pcb = NULL;
   ip_addr_t addr;
 
   LWIP_ASSERT("no smtp_session supplied", s != NULL);
@@ -546,7 +548,7 @@ smtp_send_mail_alloced(struct smtp_session *s)
       err = ERR_MEM;
       goto leave;
     }
-    err = tcp_connect(pcb, &addr, smtp_server_port, smtp_tcp_connected);
+    err = altcp_connect(pcb, &addr, smtp_server_port, smtp_tcp_connected);
     if (err != ERR_OK) {
       LWIP_DEBUGF(SMTP_DEBUG_WARN_STATE, ("tcp_connect failed: %d\n", (int)err));
       goto deallocate_and_leave;
@@ -559,8 +561,8 @@ smtp_send_mail_alloced(struct smtp_session *s)
 
 deallocate_and_leave:
   if (pcb != NULL) {
-    tcp_arg(pcb, NULL);
-    tcp_close(pcb);
+    altcp_arg(pcb, NULL);
+    altcp_close(pcb);
   }
 leave:
   smtp_free_struct(s);
@@ -761,18 +763,18 @@ smtp_free(struct smtp_session *s, u8_t result, u16_t srv_err, err_t err)
 
 /** Try to close a pcb and free the arg if successful */
 static void
-smtp_close(struct smtp_session *s, struct tcp_pcb *pcb, u8_t result,
+smtp_close(struct smtp_session *s, struct altcp_pcb *pcb, u8_t result,
            u16_t srv_err, err_t err)
 {
   if (pcb != NULL) {
-     tcp_arg(pcb, NULL);
-     if (tcp_close(pcb) == ERR_OK) {
+     altcp_arg(pcb, NULL);
+     if (altcp_close(pcb) == ERR_OK) {
        if (s != NULL) {
          smtp_free(s, result, srv_err, err);
        }
      } else {
        /* close failed, set back arg */
-       tcp_arg(pcb, s);
+       altcp_arg(pcb, s);
      }
   } else {
     if (s != NULL) {
@@ -794,7 +796,7 @@ smtp_tcp_err(void *arg, err_t err)
 
 /** Raw API TCP poll callback */
 static err_t
-smtp_tcp_poll(void *arg, struct tcp_pcb *pcb)
+smtp_tcp_poll(void *arg, struct altcp_pcb *pcb)
 {
   if (arg != NULL) {
     struct smtp_session *s = (struct smtp_session*)arg;
@@ -808,7 +810,7 @@ smtp_tcp_poll(void *arg, struct tcp_pcb *pcb)
 
 /** Raw API TCP sent callback */
 static err_t
-smtp_tcp_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
+smtp_tcp_sent(void *arg, struct altcp_pcb *pcb, u16_t len)
 {
   LWIP_UNUSED_ARG(len);
 
@@ -819,11 +821,11 @@ smtp_tcp_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 
 /** Raw API TCP recv callback */
 static err_t
-smtp_tcp_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
+smtp_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t err)
 {
   LWIP_UNUSED_ARG(err);
   if (p != NULL) {
-    tcp_recved(pcb, p->tot_len);
+    altcp_recved(pcb, p->tot_len);
     smtp_process(arg, pcb, p);
   } else {
     LWIP_DEBUGF(SMTP_DEBUG_WARN_STATE, ("smtp_tcp_recv: connection closed by remote host\n"));
@@ -833,7 +835,7 @@ smtp_tcp_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 }
 
 static err_t
-smtp_tcp_connected(void *arg, struct tcp_pcb *pcb, err_t err)
+smtp_tcp_connected(void *arg, struct altcp_pcb *pcb, err_t err)
 {
   LWIP_UNUSED_ARG(arg);
 
@@ -855,7 +857,7 @@ static void
 smtp_dns_found(const char* hostname, const ip_addr_t *ipaddr, void *arg)
 {
   struct smtp_session *s = (struct smtp_session*)arg;
-  struct tcp_pcb *pcb;
+  struct altcp_pcb *pcb;
   err_t err;
   u8_t result;
 
@@ -865,7 +867,7 @@ smtp_dns_found(const char* hostname, const ip_addr_t *ipaddr, void *arg)
     pcb = smtp_setup_pcb(s, ipaddr);
     if (pcb != NULL) {
       LWIP_DEBUGF(SMTP_DEBUG_STATE, ("smtp_dns_found: hostname resolved, connecting\n"));
-      err = tcp_connect(pcb, ipaddr, smtp_server_port, smtp_tcp_connected);
+      err = altcp_connect(pcb, ipaddr, smtp_server_port, smtp_tcp_connected);
       if (err == ERR_OK) {
         return;
       }
@@ -1011,10 +1013,10 @@ again:
 
 /** Prepare HELO/EHLO message */
 static enum smtp_session_state
-smtp_prepare_helo(struct smtp_session *s, u16_t *tx_buf_len, struct tcp_pcb *pcb)
+smtp_prepare_helo(struct smtp_session *s, u16_t *tx_buf_len, struct altcp_pcb *pcb)
 {
   size_t ipa_len;
-  const char *ipa = ipaddr_ntoa(&pcb->local_ip);
+  const char *ipa = ipaddr_ntoa(altcp_get_ip(pcb, 1));
   LWIP_ASSERT("ipaddr_ntoa returned NULL", ipa != NULL);
   ipa_len = strlen(ipa);
   LWIP_ASSERT("string too long", ipa_len <= (SMTP_TX_BUF_LEN-SMTP_CMD_EHLO_1_LEN-SMTP_CMD_EHLO_2_LEN));
@@ -1194,7 +1196,7 @@ smtp_prepare_quit(struct smtp_session *s, u16_t *tx_buf_len)
 
 /** If in state SMTP_BODY, try to send more body data */
 static void
-smtp_send_body(struct smtp_session *s, struct tcp_pcb *pcb)
+smtp_send_body(struct smtp_session *s, struct altcp_pcb *pcb)
 {
   err_t err;
 
@@ -1207,13 +1209,13 @@ smtp_send_body(struct smtp_session *s, struct tcp_pcb *pcb)
     {
       u16_t send_len = s->body_len - s->body_sent;
       if (send_len > 0) {
-        u16_t snd_buf = tcp_sndbuf(pcb);
+        u16_t snd_buf = altcp_sndbuf(pcb);
         if (send_len > snd_buf) {
           send_len = snd_buf;
         }
         if (send_len > 0) {
           /* try to send something out */
-          err = tcp_write(pcb, &s->body[s->body_sent], (u16_t)send_len, TCP_WRITE_FLAG_COPY);
+          err = altcp_write(pcb, &s->body[s->body_sent], (u16_t)send_len, TCP_WRITE_FLAG_COPY);
           if (err == ERR_OK) {
             s->timer = SMTP_TIMEOUT_DATABLOCK;
             s->body_sent += send_len;
@@ -1229,7 +1231,7 @@ smtp_send_body(struct smtp_session *s, struct tcp_pcb *pcb)
       /* the whole body has been written, write last line */
       LWIP_DEBUGF(SMTP_DEBUG_STATE, ("smtp_send_body: body completely written (%d bytes), appending end-of-body\n",
         s->body_len));
-      err = tcp_write(pcb, SMTP_CMD_BODY_FINISHED, SMTP_CMD_BODY_FINISHED_LEN, 0);
+      err = altcp_write(pcb, SMTP_CMD_BODY_FINISHED, SMTP_CMD_BODY_FINISHED_LEN, 0);
       if (err == ERR_OK) {
         s->timer = SMTP_TIMEOUT_DATATERM;
         LWIP_DEBUGF(SMTP_DEBUG_STATE, ("smtp_send_body: end-of-body written, changing state to %s\n",
@@ -1244,7 +1246,7 @@ smtp_send_body(struct smtp_session *s, struct tcp_pcb *pcb)
 /** State machine-like implementation of an SMTP client.
  */
 static void
-smtp_process(void *arg, struct tcp_pcb *pcb, struct pbuf *p)
+smtp_process(void *arg, struct altcp_pcb *pcb, struct pbuf *p)
 {
   struct smtp_session* s = (struct smtp_session*)arg;
   u16_t response_code = 0;
@@ -1396,7 +1398,7 @@ smtp_process(void *arg, struct tcp_pcb *pcb, struct pbuf *p)
   }
   if (tx_buf_len > 0) {
     SMTP_TX_BUF_MAX(tx_buf_len);
-    if (tcp_write(pcb, s->tx_buf, tx_buf_len, TCP_WRITE_FLAG_COPY) == ERR_OK) {
+    if (altcp_write(pcb, s->tx_buf, tx_buf_len, TCP_WRITE_FLAG_COPY) == ERR_OK) {
       LWIP_DEBUGF(SMTP_DEBUG_TRACE, ("smtp_process[%s]: received command %d (%s)\n",
         smtp_state_str[s->state], response_code, smtp_pbuf_str(s->p)));
       LWIP_DEBUGF(SMTP_DEBUG_TRACE, ("smtp_process[%s]: sent %"U16_F" bytes: \"%s\"\n",
@@ -1412,7 +1414,7 @@ smtp_process(void *arg, struct tcp_pcb *pcb, struct pbuf *p)
         smtp_send_body(s, pcb);
       } else if (next_state == SMTP_CLOSED) {
         /* sent out all data, delete structure */
-        tcp_arg(pcb, NULL);
+        altcp_arg(pcb, NULL);
         smtp_free(s, SMTP_RESULT_OK, 0, ERR_OK);
       }
     }
@@ -1427,7 +1429,7 @@ smtp_process(void *arg, struct tcp_pcb *pcb, struct pbuf *p)
  *           0 no data has been written
  */
 static int
-smtp_send_bodyh_data(struct tcp_pcb *pcb, char **from, u16_t *howmany)
+smtp_send_bodyh_data(struct altcp_pcb *pcb, char **from, u16_t *howmany)
 {
   err_t err;
   u16_t len = *howmany;
@@ -1487,7 +1489,7 @@ smtp_send_mail_bodycback(const char *from, const char* to, const char* subject,
 }
 
 static void
-smtp_send_body_data_handler(struct smtp_session *s, struct tcp_pcb *pcb)
+smtp_send_body_data_handler(struct smtp_session *s, struct altcp_pcb *pcb)
 {
   struct smtp_bodydh_state *bdh = s->bodydh;
   int res = 0, ret;
