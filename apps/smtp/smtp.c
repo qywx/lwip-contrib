@@ -53,6 +53,7 @@
 #include "lwip/dns.h"
 #include "lwip/mem.h"
 #include "lwip/altcp_tcp.h"
+#include "lwip/apps/altcp_tls.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -329,6 +330,10 @@ struct smtp_session {
 static char smtp_server[SMTP_MAX_SERVERNAME_LEN + 1];
 /** TCP port of the server to use for next SMTP request */
 static u16_t smtp_server_port = SMTP_DEFAULT_PORT;
+#if LWIP_ALTCP && LWIP_ALTCP_TLS
+/** If this is set, mail is sent using SMTPS */
+static struct altcp_tls_config *smtp_server_tls_config;
+#endif
 /** Username to use for the next SMTP request */
 static char *smtp_username;
 /** Password to use for the next SMTP request */
@@ -410,6 +415,14 @@ smtp_set_server_port(u16_t port)
   smtp_server_port = port;
 }
 
+#if LWIP_ALTCP && LWIP_ALTCP_TLS
+void
+smtp_set_tls_config(struct altcp_tls_config *tls_config)
+{
+  smtp_server_tls_config = tls_config;
+}
+#endif
+
 /** Set authentication parameters for next SMTP connection
  *
  * @param username login name as passed to the server
@@ -476,6 +489,16 @@ smtp_setup_pcb(struct smtp_session *s, const ip_addr_t* remote_ip)
 
   pcb = altcp_tcp_new_ip_type(IP_GET_TYPE(remote_ip));
   if (pcb != NULL) {
+#if LWIP_ALTCP_TLS
+    if (smtp_server_tls_config) {
+      struct altcp_pcb *pcb_tls = altcp_tls_new(smtp_server_tls_config, pcb);
+      if (pcb_tls == NULL) {
+        altcp_close(pcb);
+        return NULL;
+      }
+      pcb = pcb_tls;
+    }
+#endif
     altcp_arg(pcb, s);
     altcp_recv(pcb, smtp_tcp_recv);
     altcp_err(pcb, smtp_tcp_err);
