@@ -9,7 +9,7 @@
 #include "lwip/err.h"
 
 /** The default TCP port used for SMTP */
-#define SMTP_DEFAULT_PORT  25
+#define SMTP_DEFAULT_PORT         25
 
 /** Email successfully sent */
 #define SMTP_RESULT_OK            0
@@ -102,7 +102,7 @@ err_t smtp_send_mail_bodycback(const char *from, const char* to, const char* sub
 #endif /* SMTP_BODYDH */
 
 
-void smtp_set_server_addr(const char* server);
+err_t smtp_set_server_addr(const char* server);
 void smtp_set_server_port(u16_t port);
 err_t smtp_set_auth(const char* username, const char* pass);
 err_t smtp_send_mail(const char *from, const char* to, const char* subject, const char* body,

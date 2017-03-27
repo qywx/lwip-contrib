@@ -267,6 +267,7 @@ const char *smtp_result_strs[] = {
   "SMTP_RESULT_ERR_CLOSED",
   "SMTP_RESULT_ERR_TIMEOUT",
   "SMTP_RESULT_ERR_SVR_RESP",
+  "SMTP_RESULT_ERR_MEM"
 };
 #endif /* LWIP_DEBUG */
 
@@ -360,7 +361,7 @@ static void   smtp_send_body_data_handler(struct smtp_session *s, struct altcp_p
 const char*
 smtp_result_str(u8_t smtp_result)
 {
-  if (smtp_result > SMTP_RESULT_ERR_SVR_RESP) {
+  if (smtp_result >= LWIP_ARRAYSIZE(smtp_result_strs)) {
     return "UNKNOWN";
   }
   return smtp_result_strs[smtp_result];
@@ -385,7 +386,7 @@ smtp_pbuf_str(struct pbuf* p)
  *
  * @param server IP address (in ASCII representation) or DNS name of the server
  */
-void
+err_t
 smtp_set_server_addr(const char* server)
 {
   size_t len = 0;
@@ -393,9 +394,10 @@ smtp_set_server_addr(const char* server)
     len = strlen(server);
   }
   if (len > SMTP_MAX_SERVERNAME_LEN) {
-    len = SMTP_MAX_SERVERNAME_LEN;
+    return ERR_MEM;
   }
   MEMCPY(smtp_server, server, len);
+  return ERR_OK;
 }
 
 /** Set TCP port for next SMTP connection
@@ -513,9 +515,9 @@ smtp_send_mail_alloced(struct smtp_session *s)
   if (s->bodydh == NULL)
 #endif /* SMTP_BODYDH */
   {
-  if (smtp_verify(s->body, s->body_len, 0) != ERR_OK) {
-    return ERR_ARG;
-  }
+    if (smtp_verify(s->body, s->body_len, 0) != ERR_OK) {
+      return ERR_ARG;
+    }
   }
 #endif /* SMTP_CHECK_DATA */
 
