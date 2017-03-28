@@ -489,7 +489,7 @@ smtp_setup_pcb(struct smtp_session *s, const ip_addr_t* remote_ip)
 
   pcb = altcp_tcp_new_ip_type(IP_GET_TYPE(remote_ip));
   if (pcb != NULL) {
-#if LWIP_ALTCP_TLS
+#if LWIP_ALTCP && LWIP_ALTCP_TLS
     if (smtp_server_tls_config) {
       struct altcp_pcb *pcb_tls = altcp_tls_new(smtp_server_tls_config, pcb);
       if (pcb_tls == NULL) {
