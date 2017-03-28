@@ -7,7 +7,6 @@
 #endif
 
 #include "lwip/err.h"
-#include "lwip/apps/altcp_tls.h"
 
 /** The default TCP port used for SMTP */
 #define SMTP_DEFAULT_PORT         25

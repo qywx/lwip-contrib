@@ -53,7 +53,7 @@
 #include "lwip/dns.h"
 #include "lwip/mem.h"
 #include "lwip/altcp_tcp.h"
-#include "lwip/apps/altcp_tls.h"
+#include "lwip/altcp_tls.h"
 
 #include <string.h>
 #include <stdlib.h>
