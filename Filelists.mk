@@ -41,7 +41,6 @@ CONTRIBAPPFILES=$(CONTRIBDIR)/apps/httpserver/httpserver-netconn.c \
 	$(CONTRIBDIR)/apps/ping/ping.c \
 	$(CONTRIBDIR)/apps/snmp_private_mib/lwip_prvmib.c \
 	$(CONTRIBDIR)/apps/snmp_v3/snmpv3_dummy.c \
-	$(CONTRIBDIR)/apps/smtp/smtp.c \
 	$(CONTRIBDIR)/apps/socket_examples/socket_examples.c \
 	$(CONTRIBDIR)/apps/rtp/rtp.c \
 	$(CONTRIBDIR)/addons/tcp_isn/tcp_isn.c \
