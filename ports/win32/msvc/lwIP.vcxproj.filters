@@ -94,6 +94,9 @@
     <Filter Include="src\apps\altcp_tls">
       <UniqueIdentifier>{ffd283f4-44f0-4be2-83a3-8bd55f29e80f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\apps\smtp">
+      <UniqueIdentifier>{d9456888-d299-48ff-8165-ff499e5a0ba3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\lwip\CHANGELOG" />
@@ -480,6 +483,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls_mem.c">
       <Filter>src\apps\altcp_tls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\src\apps\smtp\smtp.c">
+      <Filter>src\apps\smtp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -946,6 +952,12 @@
       <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp_snmpv2_usm.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\smtp.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\smtp_opts.h">
       <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
   </ItemGroup>

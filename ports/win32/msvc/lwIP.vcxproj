@@ -269,6 +269,7 @@
     <ClCompile Include="..\..\..\..\lwip\src\apps\lwiperf\lwiperf.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\mqtt\mqtt.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\netbiosns\netbiosns.c" />
+    <ClCompile Include="..\..\..\..\lwip\src\apps\smtp\smtp.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmp_snmpv2_framework.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\snmp\snmp_snmpv2_usm.c" />
     <ClCompile Include="..\..\..\..\lwip\src\apps\sntp\sntp.c" />
@@ -393,6 +394,8 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\netbiosns.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\netbiosns_opts.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\smtp.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\smtp_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp_snmpv2_framework.h" />
