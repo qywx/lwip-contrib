@@ -386,7 +386,8 @@
     <ClInclude Include="..\..\..\..\lwip\src\apps\snmp\snmp_msg.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\altcp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\altcp_tcp.h" />
-    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\altcp_tls.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\altcp_tls.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\altcp_tls_mbedtls_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\lwiperf.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mdns_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt.h" />
@@ -394,6 +395,8 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\netbiosns_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp_opts.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp_snmpv2_framework.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp_snmpv2_usm.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\sntp.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\sntp_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\tftp_opts.h" />

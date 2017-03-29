@@ -930,14 +930,23 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\altcp_tcp.h">
       <Filter>src\include\lwip</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\altcp_tls.h">
-      <Filter>src\include\lwip\apps</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls_mem.h">
       <Filter>src\apps\altcp_tls</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\lwip\src\apps\altcp_tls\altcp_tls_mbedtls_structs.h">
       <Filter>src\apps\altcp_tls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\altcp_tls.h">
+      <Filter>src\include\lwip</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\altcp_tls_mbedtls_opts.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp_snmpv2_framework.h">
+      <Filter>src\include\lwip\apps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\snmp_snmpv2_usm.h">
+      <Filter>src\include\lwip\apps</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
