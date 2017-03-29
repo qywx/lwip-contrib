@@ -70,7 +70,7 @@ CFLAGS+=-I. \
 MBEDTLSDIR?=$(CONTRIBDIR)/../mbedtls
 ifneq (,$(wildcard $(MBEDTLSDIR)/include/mbedtls/*.h))
 LDFLAGS+=-L$(MBEDTLSDIR)/library -lmbedtls -lmbedcrypto
-CFLAGS+=-I$(MBEDTLSDIR)/include -DLWIP_HAVE_MBEDTLS=1
+CFLAGS+=-I$(MBEDTLSDIR)/include -Wno-redundant-decls -DLWIP_HAVE_MBEDTLS=1
 endif
 
 include $(CONTRIBDIR)/Filelists.mk
