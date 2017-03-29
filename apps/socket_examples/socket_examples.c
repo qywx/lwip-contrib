@@ -643,15 +643,15 @@ socket_example_test(void* arg)
 
 void socket_examples_init(void)
 {
-
+  int addr_ok;
 #if LWIP_IPV6
   IP_SET_TYPE_VAL(dstaddr, IPADDR_TYPE_V6);
-  ip6addr_aton(SOCK_TARGET_HOST6, ip_2_ip6(&dstaddr));
+  addr_ok = ip6addr_aton(SOCK_TARGET_HOST6, ip_2_ip6(&dstaddr));
 #else /* LWIP_IPV6 */
   IP_SET_TYPE_VAL(dstaddr, IPADDR_TYPE_V4);
-  ip4addr_aton(SOCK_TARGET_HOST4, ip_2_ip4(&dstaddr));
+  addr_ok = ip4addr_aton(SOCK_TARGET_HOST4, ip_2_ip4(&dstaddr));
 #endif /* LWIP_IPV6 */
-  
+  LWIP_ASSERT("invalid address", addr_ok);
 #if SOCKET_EXAMPLES_RUN_PARALLEL
   sys_thread_new("sockex_nonblocking_connect", sockex_nonblocking_connect, &dstaddr, 0, 0);
   sys_thread_new("sockex_testrecv", sockex_testrecv, &dstaddr, 0, 0);
