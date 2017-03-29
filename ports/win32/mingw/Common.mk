@@ -39,7 +39,7 @@ ARCHFILES=$(LWIPARCH)/sys_arch.c $(LWIPARCH)/test.c $(LWIPARCH)/pcapif.c \
 include ../../Common.allports.mk
 
 PCAPDIR=$(PCAP_DIR)/Include
-LDFLAGS=-L$(PCAP_DIR)/lib -lwpcap -lpacket
+LDFLAGS+=-L$(PCAP_DIR)/lib -lwpcap -lpacket
 # -Wno-format: GCC complains about non-standard 64 bit modifier needed for MSVC runtime
 CFLAGS+=-I$(PCAPDIR) -Wno-format
 

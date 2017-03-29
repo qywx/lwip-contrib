@@ -69,7 +69,7 @@ CFLAGS+=-I. \
 # Add include path and link to mbedTLS lib if available
 MBEDTLSDIR?=$(CONTRIBDIR)/../mbedtls
 ifneq (,$(wildcard $(MBEDTLSDIR)/include/mbedtls/*.h))
-LDFLAGS+=-L$(MBEDTLSDIR)/library -lmbedtls -lmbedcrypto
+LDFLAGS+=-L$(MBEDTLSDIR)/library -lmbedtls -lmbedcrypto -lmbedx509
 CFLAGS+=-I$(MBEDTLSDIR)/include -Wno-redundant-decls -DLWIP_HAVE_MBEDTLS=1
 endif
 
