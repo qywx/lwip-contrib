@@ -35,7 +35,7 @@ all ipv4 compile: test
 include Common.mk
 
 clean:
-	cmd /c del /q *.o $(LWIPLIBCOMMON) $(APPLIB) test.exe *.s .depend*
+	cmd /c del /q *.o $(LWIPLIBCOMMON) $(APPLIB) test.exe *.s .depend* *.map
 
 depend dep: .depend
 
