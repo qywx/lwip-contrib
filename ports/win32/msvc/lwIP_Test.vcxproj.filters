@@ -64,6 +64,9 @@
     <ClCompile Include="..\..\..\addons\ipv6_static_routing\ip6_route_table.c">
       <Filter>Source Files\addons\ipv6_static_routing</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\apps\snmp_v3\snmpv3_dummy.c">
+      <Filter>Source Files\apps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\apps\chargen\chargen.h">
@@ -107,6 +110,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\addons\ipv6_static_routing\ip6_route_table.h">
       <Filter>Source Files\addons\ipv6_static_routing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\apps\snmp_v3\snmpv3_dummy.h">
+      <Filter>Source Files\apps</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
