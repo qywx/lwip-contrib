@@ -103,6 +103,7 @@
 #include "lwip/apps/snmp_snmpv2_framework.h"
 #include "lwip/apps/snmp_snmpv2_usm.h"
 #include "lwip/apps/tftp_server.h"
+#include "addons/tcp_isn/tcp_isn.h"
 
 #if LWIP_RAW
 #include "lwip/icmp.h"
@@ -569,6 +570,8 @@ main_thread(void *arg)
   sys_sem_t sem;
   LWIP_UNUSED_ARG(arg);
 
+  lwip_init_tcp_isn(sys_now(), (u8_t*)&netif);
+  
   if(sys_sem_new(&sem, 0) != ERR_OK) {
     LWIP_ASSERT("Failed to create semaphore", 0);
   }
