@@ -55,6 +55,24 @@ LARGE_INTEGER freq, sys_start_time;
 
 DWORD netconn_sem_tls_index;
 
+HCRYPTPROV hcrypt;
+u32_t sys_win_rand(void)
+{
+  u32_t ret;
+  if (CryptGenRandom(hcrypt, sizeof(ret), (BYTE*)&ret)) {
+    return ret;
+  }
+  LWIP_ASSERT("CryptGenRandom failed", 0);
+  return 0;
+}
+
+static void sys_win_rand_init(void)
+{
+  if(!CryptAcquireContext(&hcrypt, NULL, NULL, PROV_RSA_FULL, 0)) {
+    LWIP_ASSERT("CryptAcquireContext failed", 0);
+  }
+}
+
 static void sys_init_timing(void)
 {
   QueryPerformanceFrequency(&freq);
@@ -113,7 +131,7 @@ void sys_arch_unprotect(sys_prot_t pval)
 
 static void msvc_sys_init(void)
 {
-  srand((unsigned int)time(0));
+  sys_win_rand_init();
   sys_init_timing();
   InitSysArchProtect();
   netconn_sem_tls_index = TlsAlloc();
