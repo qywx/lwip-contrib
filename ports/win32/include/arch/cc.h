@@ -82,8 +82,10 @@ typedef int sys_prot_t;
 #define strdup   _strdup
 #endif
 
+#ifndef LWIP_NORAND
 extern unsigned int sys_win_rand(void);
 #define LWIP_RAND() (sys_win_rand())
+#endif
 
 #define PPP_INCLUDE_SETTINGS_HEADER
 
