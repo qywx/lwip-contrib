@@ -25,6 +25,9 @@
     <Filter Include="arch">
       <UniqueIdentifier>{b04f182c-1910-456d-9388-397dfe82dbc9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mqtt">
+      <UniqueIdentifier>{fd48ae04-ec85-478f-a97c-a7c8384a2d94}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\lwip\test\unit\core\test_mem.c">
@@ -60,6 +63,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\lwip\test\unit\arch\sys_arch.c">
       <Filter>arch</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\lwip\test\unit\mqtt\test_mqtt.c">
+      <Filter>mqtt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +103,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\lwip\test\unit\arch\sys_arch.h">
       <Filter>arch</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\lwip\test\unit\mqtt\test_mqtt.h">
+      <Filter>mqtt</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -392,6 +392,8 @@
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\lwiperf.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mdns_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt_opts.h" />
+    <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\mqtt_priv.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\netbiosns.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\netbiosns_opts.h" />
     <ClInclude Include="..\..\..\..\lwip\src\include\lwip\apps\smtp.h" />
