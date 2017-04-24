@@ -20,7 +20,7 @@ Included in the contrib\ports\win32 directory is the network interface driver
 using the winpcap library.
 
 lwIP: http://savannah.nongnu.org/projects/lwip/
-WinPCap: http://netgroup-serv.polito.it/winpcap/
+WinPCap: https://www.winpcap.org/devel.htm
 
 To compile the unittests, download check (tested with v0.11.0) from
 https://github.com/libcheck/check/releases/
